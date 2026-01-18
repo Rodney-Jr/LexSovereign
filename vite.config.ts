@@ -19,6 +19,16 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.'),
       }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'lucide-react'],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 1000,
     }
   };
 });
