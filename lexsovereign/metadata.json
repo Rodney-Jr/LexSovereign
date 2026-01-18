@@ -1,0 +1,5 @@
+{
+  "name": "LexSovereign Architecture",
+  "description": "A high-security, multi-tenant AI Legal Ops platform featuring data sovereignty, dual-agent UPL guardrails, and a regulatory rules engine for law firms and enterprise departments.",
+  "requestFramePermissions": []
+}
