@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import Layout from './components/Layout';
+import Layout from './components/Layout.tsx';
 import Dashboard from './components/Dashboard';
 import DocumentVault from './components/DocumentVault';
 import LegalChat from './components/LegalChat';
@@ -74,7 +74,7 @@ const App: React.FC = () => {
           setUserRole(role);
           setIsAuthenticated(true);
           if (role === UserRole.GLOBAL_ADMIN) {
-             setActiveTab('platform-ops');
+            setActiveTab('platform-ops');
           }
         }
       } catch (e) {
@@ -87,7 +87,7 @@ const App: React.FC = () => {
     setUserRole(role);
     setIsAuthenticated(true);
     if (role === UserRole.GLOBAL_ADMIN) {
-       setActiveTab('platform-ops');
+      setActiveTab('platform-ops');
     }
   };
 
@@ -141,34 +141,34 @@ const App: React.FC = () => {
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between gap-4">
-             <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-[2rem] flex-1 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-emerald-500/20 rounded-2xl"><Rocket className="text-emerald-400" /></div>
-                  <div>
-                    <h4 className="font-bold text-white tracking-tight">Sovereign Enclave Pulse</h4>
-                    <p className="text-xs text-slate-400">Verified as <span className="text-emerald-400 font-bold">{userRole}</span> • GH-ACC-1</p>
-                  </div>
+            <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-[2rem] flex-1 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-500/20 rounded-2xl"><Rocket className="text-emerald-400" /></div>
+                <div>
+                  <h4 className="font-bold text-white tracking-tight">Sovereign Enclave Pulse</h4>
+                  <p className="text-xs text-slate-400">Verified as <span className="text-emerald-400 font-bold">{userRole}</span> • GH-ACC-1</p>
                 </div>
-                <div className="flex gap-3">
-                  <button onClick={handleLogout} className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
-                    <LogOut size={18} />
-                  </button>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={handleLogout} className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
+                  <LogOut size={18} />
+                </button>
+              </div>
+            </div>
+            {userRole !== UserRole.GLOBAL_ADMIN && (
+              <div onClick={() => setShowMatterModal(true)} className="bg-blue-500/10 border border-blue-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-blue-500/20 transition-all flex items-center gap-4">
+                <div className="p-3 bg-blue-500/20 rounded-2xl"><Briefcase className="text-blue-400" /></div>
+                <div>
+                  <h4 className="font-bold text-white">Incept Matter</h4>
+                  <p className="text-xs text-slate-400">New Global Instance</p>
                 </div>
-             </div>
-             {userRole !== UserRole.GLOBAL_ADMIN && (
-                <div onClick={() => setShowMatterModal(true)} className="bg-blue-500/10 border border-blue-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-blue-500/20 transition-all flex items-center gap-4">
-                  <div className="p-3 bg-blue-500/20 rounded-2xl"><Briefcase className="text-blue-400" /></div>
-                  <div>
-                    <h4 className="font-bold text-white">Incept Matter</h4>
-                    <p className="text-xs text-slate-400">New Global Instance</p>
-                  </div>
-                </div>
-             )}
+              </div>
+            )}
           </div>
           <Dashboard mode={mode} />
         </div>
       )}
-      
+
       {activeTab === 'platform-ops' && <GlobalControlPlane />}
       {activeTab === 'org-blueprint' && <OrgChart />}
       {activeTab === 'integration-bridge' && <BridgeRegistry />}
@@ -196,8 +196,8 @@ const App: React.FC = () => {
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-colors"><Scale size={20} className="text-emerald-400" /></div>
                     <div>
-                       <h4 className="font-bold text-white">{matter.name}</h4>
-                       <p className="text-[10px] text-slate-500 font-mono">{matter.id} • {matter.client}</p>
+                      <h4 className="font-bold text-white">{matter.name}</h4>
+                      <p className="text-[10px] text-slate-500 font-mono">{matter.id} • {matter.client}</p>
                     </div>
                   </div>
                   <ChevronRight className="text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
