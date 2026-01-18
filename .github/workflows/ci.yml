@@ -2,9 +2,9 @@ name: LexSovereign CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -15,19 +15,23 @@ jobs:
         node-version: [18.x]
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: 'lexsovereign/package-lock.json'
+      - uses: actions/checkout@v3
 
-    - name: Install Dependencies
-      working-directory: ./lexsovereign
-      run: npm ci
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: "lexsovereign/package-lock.json"
 
-    - name: Build
-      working-directory: ./lexsovereign
-      run: npm run build
+      - name: Install Dependencies
+        working-directory: ./lexsovereign
+        run: npm ci
+
+      - name: Build
+        working-directory: ./
+        run: npm run build
+
+      - name: Build Docker Image
+        working-directory: ./
+        run: docker build . --file Dockerfile --tag lexsovereign:latest
