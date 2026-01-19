@@ -10,10 +10,16 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) return res.sendStatus(401);
+    if (!token) {
+        res.sendStatus(401);
+        return;
+    }
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-        if (err) return res.sendStatus(403);
+        if (err) {
+            res.sendStatus(403);
+            return;
+        }
         req.user = user;
         next();
     });

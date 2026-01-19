@@ -34,4 +34,34 @@ router.post('/scrub', async (req, res) => {
     }
 });
 
+router.post('/evaluate-rre', async (req, res) => {
+    try {
+        const { text, rules } = req.body;
+        const result = await geminiService.evaluateRRE(text, rules);
+        res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/public-chat', async (req, res) => {
+    try {
+        const { input, config, knowledge } = req.body;
+        const result = await geminiService.publicChat(input, config, knowledge);
+        res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/billing-description', async (req, res) => {
+    try {
+        const { rawNotes } = req.body;
+        const result = await geminiService.generateBillingDescription(rawNotes);
+        res.json({ description: result });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

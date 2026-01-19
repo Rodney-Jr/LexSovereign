@@ -35,7 +35,8 @@ router.post('/login', async (req, res) => {
         const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user || !await bcrypt.compare(password, user.passwordHash)) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            res.status(401).json({ error: 'Invalid credentials' });
+            return;
         }
 
         const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '8h' });

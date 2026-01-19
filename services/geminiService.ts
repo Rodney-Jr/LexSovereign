@@ -42,19 +42,42 @@ export class LexGeminiService {
     const response = await fetch(`${this.baseUrl}/scrub`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, role, privilege })
+      body: JSON.stringify({ content: rawContent, role, privilege })
     });
     return response.json();
   }
 
   // Stubs for other methods to keep type safety
   async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]) {
-    return { text: "Public chat backend not connected yet.", confidence: 0 };
+    const response = await fetch(`${this.baseUrl}/public-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input, config, knowledge })
+    });
+    return response.json();
   }
 
-  async generateBillingDescription(rawNotes: string) { return "Billing backend pending."; }
+  async generateBillingDescription(rawNotes: string) {
+    const response = await fetch(`${this.baseUrl}/billing-description`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rawNotes })
+    });
+    const data = await response.json();
+    return data.description;
+  }
+
   async validateTimeEntry(entry: Partial<TimeEntry>) { return { isSafe: true, feedback: "Backend pending." }; }
-  async evaluateRRE(text: string, rules: RegulatoryRule[]) { return { isBlocked: false }; }
+
+  async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
+    const response = await fetch(`${this.baseUrl}/evaluate-rre`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, rules })
+    });
+    return response.json();
+  }
+
   async verifyOutput(input: string, output: string) { return { isSafe: true }; }
   async sanitizeForMobile(text: string) { return { sanitized: text, entitiesRemoved: 0 }; }
   async generateComplianceReport(logs: any[]) { return "Report backend pending."; }

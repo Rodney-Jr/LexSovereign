@@ -11,6 +11,7 @@ import mattersRouter from './routes/matters';
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
 const app = express();
+// Force reload for env var update (Key Rotation)
 const port = process.env.PORT || 3001;
 
 // Middleware

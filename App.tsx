@@ -87,6 +87,24 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Fetch matters on mount
+  useEffect(() => {
+    const fetchMatters = async () => {
+      try {
+        const res = await fetch('/api/matters');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setMatters(data);
+          }
+        }
+      } catch (e) {
+        console.log("Using local matters (API offline)");
+      }
+    };
+    fetchMatters();
+  }, []);
+
   const handleAuthenticated = (role: UserRole) => {
     setUserRole(role);
     setIsAuthenticated(true);
@@ -140,23 +158,7 @@ const App: React.FC = () => {
     return <AuthFlow onAuthenticated={handleAuthenticated} onStartOnboarding={() => setIsOnboarding(true)} onSecretTrigger={() => setIsPlatformMode(true)} />;
   }
 
-  // Fetch matters on mount
-  useEffect(() => {
-    const fetchMatters = async () => {
-      try {
-        const res = await fetch('/api/matters');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setMatters(data);
-          }
-        }
-      } catch (e) {
-        console.log("Using local matters (API offline)");
-      }
-    };
-    fetchMatters();
-  }, []);
+
 
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive}>
@@ -239,17 +241,26 @@ const App: React.FC = () => {
   );
 };
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-  static getDerivedStateFromError(error: any) {
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: any;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: any): ErrorBoundaryState {
     return { hasError: true, error };
   }
+
   componentDidCatch(error: any, errorInfo: any) {
     console.error("Uncaught error:", error, errorInfo);
   }
+
   render() {
     if (this.state.hasError) {
       return (

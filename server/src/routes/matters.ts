@@ -29,7 +29,8 @@ router.post('/', async (req, res) => {
 
         // Basic validation
         if (!name || !client || !type || !internalCounselId || !tenantId) {
-            return res.status(400).json({ error: 'Missing required fields' });
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
         }
 
         const matter = await prisma.matter.create({

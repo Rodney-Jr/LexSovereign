@@ -107,8 +107,8 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         ...formData,
         id: `MT-${Math.floor(Math.random() * 900 + 100)}`,
         status: 'Open',
-        attachedFiles: attachedFiles.map(f => f.name),
-        createdAt: new Date().toISOString().split('T')[0]
+        attachedFiles: attachedFiles.map(f => f.name) as string[],
+        createdAt: new Date().toISOString().split('T')[0] ?? new Date().toISOString()
       };
       onCreated(fallbackMatter);
     } finally {

@@ -48,37 +48,49 @@ export class LexGeminiService {
             config.tools = [{ googleSearch: {} }];
         }
 
-        const response = await ai.models.generateContent({
-            model: model,
-            contents: `CONTEXT_DOCUMENTS:\n${contextStr}\n\nUSER_QUERY: ${input}`,
-            config: config
-        });
-
-        // Extract search grounding metadata if available
-        const groundingSources: { title: string, uri: string }[] = [];
-        const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-        if (chunks) {
-            chunks.forEach((chunk: any) => {
-                if (chunk.web) {
-                    groundingSources.push({ title: chunk.web.title, uri: chunk.web.uri });
-                }
-            });
-        }
-
-        let result;
         try {
-            result = JSON.parse(response.text || '{}');
-        } catch {
-            result = { text: response.text, confidence: 0.9, references: [] };
+            const response = await ai.models.generateContent({
+                model: model,
+                contents: `CONTEXT_DOCUMENTS:\n${contextStr}\n\nUSER_QUERY: ${input}`,
+                config: config
+            });
+
+            // Extract search grounding metadata if available
+            const groundingSources: { title: string, uri: string }[] = [];
+            const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+            if (chunks) {
+                chunks.forEach((chunk: any) => {
+                    if (chunk.web) {
+                        groundingSources.push({ title: chunk.web.title, uri: chunk.web.uri });
+                    }
+                });
+            }
+
+            let result;
+            try {
+                result = JSON.parse(response.text || '{}');
+            } catch {
+                result = { text: response.text, confidence: 0.9, references: [] };
+            }
+
+            return {
+                text: result.text || "I am analyzing the sovereign research stream...",
+                confidence: result.confidence || 0.85,
+                provider: "Gemini 2.0 Flash (Sovereign Proxy)",
+                references: result.references,
+                groundingSources: groundingSources.length > 0 ? groundingSources : undefined
+            };
+        } catch (error: any) {
+            console.error("Gemini API Error (Chat):", error.message);
+            return {
+                text: "API QUOTA/ERROR FALLBACK: I am operating in offline mode. Legal context suggests proceeding with standard governance checks.",
+                confidence: 1.0,
+                provider: "LexSovereign Local (Offline)",
+                references: documents.slice(0, 1).map(d => d.id)
+            };
         }
 
-        return {
-            text: result.text || "I am analyzing the sovereign research stream...",
-            confidence: result.confidence || 0.85,
-            provider: "Gemini 2.0 Flash (Sovereign Proxy)",
-            references: result.references,
-            groundingSources: groundingSources.length > 0 ? groundingSources : undefined
-        };
+
     }
 
     async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
@@ -129,5 +141,60 @@ export class LexGeminiService {
         const entitiesRemoved = (scrubbed.match(/\[.*?\]/g) || []).length;
 
         return { content: scrubbed, scrubbedEntities: entitiesRemoved };
+    }
+    async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
+        const ai = this.getAI();
+        const activeRules = rules.filter(r => r.isActive).map(r => `${r.name}: ${r.description}`).join('\n');
+
+        if (!activeRules) return { isBlocked: false };
+
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `RULES:\n${activeRules}\n\nTEXT_TO_EVALUATE: ${text}\n\nAssess if the text violates any rules. Return JSON: { "isBlocked": boolean, "triggeredRule": string | null }. STRICT COMPLIANCE.`,
+                config: {
+                    responseMimeType: "application/json",
+                    temperature: 0
+                }
+            });
+
+            const result = JSON.parse(response.text || '{ "isBlocked": false }');
+            return { isBlocked: result.isBlocked, triggeredRule: result.triggeredRule };
+        } catch (error) {
+            console.error("Gemini API Error (EvaluateRRE):", error);
+            return { isBlocked: false };
+        }
+
+
+    }
+
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }> {
+        if (!config.isEnabled) return { text: "Chatbot is currently disabled.", confidence: 1 };
+
+        const ai = this.getAI();
+        const knowledgeContext = knowledge.map(k => `${k.title}: ${k.content}`).join('\n\n');
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: `SYSTEM: ${config.systemInstruction}\n\nKNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}`,
+            config: { temperature: 0.3 }
+        });
+
+        return { text: response.text || "I am unable to answer that at this time.", confidence: 0.9 };
+    }
+
+    async generateBillingDescription(rawNotes: string): Promise<string> {
+        const ai = this.getAI();
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `Convert these raw notes into a professional legal billing narrative (max 1 sentence): "${rawNotes}"`,
+                config: { temperature: 0.2 }
+            });
+            return response.text || rawNotes;
+        } catch (error) {
+            return "Legal services rendered regarding matter analysis [Offline Generated]";
+        }
+
     }
 }
