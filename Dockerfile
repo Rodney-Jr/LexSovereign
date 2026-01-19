@@ -1,28 +1,41 @@
-# Stage 1: Build the application
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json package-lock.json ./
-
-# Install dependencies
+# Stage 1: Build the React Client
+FROM node:18-alpine AS client-builder
+WORKDIR /app-client
+COPY package*.json ./
 RUN npm ci
-
-# Copy source code
 COPY . .
-
-# Build the application
+# Build the client to /app-client/dist
 RUN npm run build
 
-# Stage 2: Serve the application
-FROM nginx:alpine
+# Stage 2: Build the Node.js Server
+FROM node:18-alpine AS server-builder
+WORKDIR /app-server
+COPY server/package*.json ./
+RUN npm ci
+COPY server/ .
+# Build the server to /app-server/dist
+RUN npm run build
 
-# Copy built assets from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Stage 3: Production Runtime
+FROM node:18-alpine
+WORKDIR /app
 
-# Expose port 80
-EXPOSE 80
+# Copy server dependencies
+COPY --from=server-builder /app-server/package*.json ./
+COPY --from=server-builder /app-server/node_modules ./node_modules
+# Copy server build artifacts
+COPY --from=server-builder /app-server/dist ./dist
+# Copy Prisma schema and migrations
+COPY --from=server-builder /app-server/prisma ./prisma
+# Copy client build artifacts to 'public' folder served by Express
+COPY --from=client-builder /app-client/dist ./public
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Environment variables
+ENV PORT=3001
+ENV NODE_ENV=production
+
+# Expose the port
+EXPOSE 3001
+
+# Start the server (includes migration)
+CMD ["npm", "start"]

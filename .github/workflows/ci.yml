@@ -24,14 +24,19 @@ jobs:
           cache: "npm"
           cache-dependency-path: "lexsovereign/package-lock.json"
 
-      - name: Install Dependencies
-        working-directory: ./lexsovereign
+      - name: Install Dependencies (Root)
         run: npm ci
 
-      - name: Build
-        working-directory: ./
+      - name: Build Client
+        run: npm run build
+
+      - name: Install Dependencies (Server)
+        working-directory: ./server
+        run: npm ci
+
+      - name: Build Server
+        working-directory: ./server
         run: npm run build
 
       - name: Build Docker Image
-        working-directory: ./
         run: docker build . --file Dockerfile --tag lexsovereign:latest

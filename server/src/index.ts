@@ -27,6 +27,15 @@ app.use('/api/auth', authRouter);
 app.use('/api', apiRouter);
 app.use('/api/matters', mattersRouter);
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../public')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
 // Start server
 app.listen(port, () => {
     console.log(`[Sovereign Proxy] Server running on port ${port}`);
