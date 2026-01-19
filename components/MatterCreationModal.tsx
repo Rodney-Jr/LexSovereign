@@ -85,7 +85,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         // region: formData.region  // Region is not on Matter schema yet, likely inferred from Tenant or User
       };
 
-      const response = await fetch('http://localhost:3001/api/matters', {
+      const response = await fetch('/api/matters', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

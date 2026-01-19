@@ -144,7 +144,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchMatters = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/matters');
+        const res = await fetch('/api/matters');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
