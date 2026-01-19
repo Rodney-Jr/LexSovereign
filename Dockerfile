@@ -35,7 +35,6 @@ COPY --from=server-builder /app-server/prisma ./prisma
 COPY --from=client-builder /app-client/dist ./public
 
 # Environment variables
-ENV PORT=3001
 ENV NODE_ENV=production
 
 # Expose the port

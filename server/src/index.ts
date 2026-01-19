@@ -47,3 +47,14 @@ app.listen(Number(port), '0.0.0.0', () => {
         console.log(`[Heartbeat] RSS: ${(memoryUsage.rss / 1024 / 1024).toFixed(2)}MB`);
     }, 30000);
 });
+
+// Global Error Handlers
+process.on('uncaughtException', (err) => {
+    console.error('[CRITICAL] Uncaught Exception:', err);
+    // Give it time to flush logs before exit? Or just let it crash cleanly.
+    // process.exit(1); 
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[CRITICAL] Unhandled Rejection at:', promise, 'reason:', reason);
+});
