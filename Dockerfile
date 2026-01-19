@@ -14,6 +14,7 @@ COPY server/package*.json ./
 RUN npm ci
 COPY server/ .
 # Build the server to /app-server/dist
+RUN npx prisma generate
 RUN npm run build
 
 # Stage 3: Production Runtime
