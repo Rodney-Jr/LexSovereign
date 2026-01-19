@@ -20,6 +20,9 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /app
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 # Copy server dependencies
 COPY --from=server-builder /app-server/package*.json ./
 COPY --from=server-builder /app-server/node_modules ./node_modules
