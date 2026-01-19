@@ -172,7 +172,7 @@ const App: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button onClick={handleLogout} className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
+                <button onClick={handleLogout} aria-label="Logout" title="Logout" className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
                   <LogOut size={18} />
                 </button>
               </div>
