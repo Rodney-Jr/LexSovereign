@@ -239,4 +239,49 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-white text-center">
+          <ShieldAlert className="text-red-500 w-16 h-16 mb-6" />
+          <h1 className="text-3xl font-bold mb-4">Sovereign Protocol Halted</h1>
+          <p className="text-slate-400 max-w-lg mx-auto mb-8">
+            An unrecoverable error occurred in the enclave governance layer.
+            This has been logged to the forensic ledger.
+          </p>
+          <div className="bg-slate-900 p-6 rounded-xl border border-red-500/20 text-left w-full max-w-2xl overflow-auto max-h-64">
+            <p className="text-red-400 font-mono text-xs whitespace-pre-wrap">
+              {this.state.error?.toString()}
+            </p>
+          </div>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="mt-8 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-bold transition-all border border-red-500/20"
+          >
+            Re-Initialize Session
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function WrappedApp() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}
