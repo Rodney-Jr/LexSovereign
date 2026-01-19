@@ -37,7 +37,7 @@ app.get('*', (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
+app.listen(Number(port), '0.0.0.0', () => {
     console.log(`[Sovereign Proxy] Server running on port ${port}`);
     console.log(`[Sovereign Proxy] Environment: ${process.env.NODE_ENV}`);
 
