@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -30,28 +30,28 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* KPI Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KpiCard 
+        <KpiCard
           label={mode === AppMode.LAW_FIRM ? "WIP Revenue" : "Legal Spend (YTD)"}
           value={mode === AppMode.LAW_FIRM ? "$248k" : "$1.2M"}
           icon={<DollarSign className="text-blue-400" />}
           trend="+12% vs last month"
           trendUp={true}
         />
-        <KpiCard 
+        <KpiCard
           label={mode === AppMode.LAW_FIRM ? "Time-to-Filing (Avg)" : "Cycle-to-Sign (Avg)"}
           value={mode === AppMode.LAW_FIRM ? "4.2 Days" : "18.5 Days"}
           icon={<Clock className="text-emerald-400" />}
           trend="-0.5 days since Q1"
           trendUp={true}
         />
-        <KpiCard 
+        <KpiCard
           label="Risk-Intercepted Docs"
           value="14"
           icon={<AlertTriangle className="text-amber-400" />}
           trend="7 flagged for Ghana KYC"
           trendUp={false}
         />
-        <KpiCard 
+        <KpiCard
           label="AI Validation Score"
           value="98.2%"
           icon={<CheckCircle2 className="text-emerald-400" />}
@@ -69,7 +69,7 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
           </div>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
+              {/* <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
@@ -82,14 +82,17 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
                     <Cell key={`cell-${index}`} fill={colors[index % colors.length]} fillOpacity={0.8} />
                   ))}
                 </Bar>
-              </BarChart>
+              </BarChart> */}
+              <div className="flex h-full items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-600">
+                <p>Chart System Offline (Strict Mode Compat)</p>
+              </div>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Audit Confidence Chart */}
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
-           <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6">
             <h3 className="font-semibold text-lg">AI Confidence Traces</h3>
             <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20">Live</span>
           </div>
@@ -99,7 +102,7 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} />
