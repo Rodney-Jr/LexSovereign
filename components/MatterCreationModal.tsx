@@ -134,7 +134,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                 <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em]">Tenant Administrator Protocol</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2.5 hover:bg-slate-800 rounded-full text-slate-500 transition-all hover:rotate-90">
+            <button onClick={onClose} aria-label="Close" className="p-2.5 hover:bg-slate-800 rounded-full text-slate-500 transition-all hover:rotate-90">
               <X size={20} />
             </button>
           </div>
@@ -144,7 +144,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
               <React.Fragment key={i}>
                 <div className={`flex flex-col items-center gap-2 transition-all ${step >= i ? 'text-emerald-400' : 'text-slate-600'}`}>
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center border-2 font-bold text-[10px] ${step === i ? 'bg-emerald-500/20 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' :
-                      step > i ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-900 border-slate-800'
+                    step > i ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-900 border-slate-800'
                     }`}>
                     {step > i ? <CheckCircle2 size={16} /> : i}
                   </div>
@@ -247,6 +247,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                   <input
                     type="range" min="1" max="3" step="1"
                     value={formData.dasLevel}
+                    aria-label="Privacy Shield Strength"
                     onChange={(e) => setFormData({ ...formData, dasLevel: parseInt(e.target.value) })}
                     className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                   />
