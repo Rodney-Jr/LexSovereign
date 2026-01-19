@@ -68,7 +68,7 @@ const App: React.FC = () => {
   const [showMatterModal, setShowMatterModal] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('lexSovereign_session');
+    const saved = localStorage.getItem('lexSovereign_session') || sessionStorage.getItem('lexSovereign_session');
     if (saved) {
       try {
         const { role, userId: savedUserId, tenantId: savedTenantId } = JSON.parse(saved);

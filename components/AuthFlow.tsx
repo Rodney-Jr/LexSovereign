@@ -32,7 +32,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    const [isProcessing, setIsProcessing] = useState(false);
    const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.TENANT_ADMIN);
    const [mfaStatus, setMfaStatus] = useState<'IDLE' | 'SCANNING' | 'VERIFIED'>('IDLE');
-   const [rememberMe, setRememberMe] = useState(false);
+   const [rememberMe, setRememberMe] = useState(true);
    const [logoClicks, setLogoClicks] = useState(0);
 
    const handleLogoClick = () => {
@@ -61,13 +61,17 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    };
 
    const finalizeAuth = () => {
+      const sessionData = JSON.stringify({
+         role: selectedRole,
+         domain,
+         userId: '11111111-1111-1111-1111-111111111111',
+         tenantId: '22222222-2222-2222-2222-222222222222'
+      });
+
       if (rememberMe) {
-         localStorage.setItem('lexSovereign_session', JSON.stringify({
-            role: selectedRole,
-            domain,
-            userId: '11111111-1111-1111-1111-111111111111', // Mock User ID for Proto
-            tenantId: '22222222-2222-2222-2222-222222222222' // Mock Tenant ID for Proto
-         }));
+         localStorage.setItem('lexSovereign_session', sessionData);
+      } else {
+         sessionStorage.setItem('lexSovereign_session', sessionData);
       }
       onAuthenticated(selectedRole);
    };
@@ -164,8 +168,8 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                         <div
                            onClick={mfaStatus === 'IDLE' ? handleMFA : undefined}
                            className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center border-4 cursor-pointer transition-all duration-700 relative group ${mfaStatus === 'VERIFIED' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.3)] scale-110' :
-                                 mfaStatus === 'SCANNING' ? 'bg-blue-500/20 border-blue-500 text-blue-400 animate-pulse' :
-                                    'bg-slate-800/50 border-slate-700 text-slate-500 hover:border-emerald-500/50'
+                              mfaStatus === 'SCANNING' ? 'bg-blue-500/20 border-blue-500 text-blue-400 animate-pulse' :
+                                 'bg-slate-800/50 border-slate-700 text-slate-500 hover:border-emerald-500/50'
                               }`}
                         >
                            {mfaStatus === 'SCANNING' && (
@@ -204,8 +208,8 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                               key={role}
                               onClick={() => setSelectedRole(role)}
                               className={`p-5 rounded-2xl border text-left transition-all flex items-center justify-between group ${selectedRole === role
-                                    ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-900/20'
-                                    : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-emerald-500/50 hover:text-slate-300'
+                                 ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-900/20'
+                                 : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-emerald-500/50 hover:text-slate-300'
                                  }`}
                            >
                               <div className="space-y-1">
