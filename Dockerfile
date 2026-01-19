@@ -37,8 +37,7 @@ COPY --from=client-builder /app-client/dist ./public
 # Environment variables
 ENV NODE_ENV=production
 
-# Expose the port
-EXPOSE 3001
+
 
 # Start the server directly (bypassing npm to avoid script caching issues)
 CMD ["node", "dist/index.js"]
