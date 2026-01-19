@@ -39,4 +39,11 @@ app.get('*', (req, res) => {
 // Start server
 app.listen(port, () => {
     console.log(`[Sovereign Proxy] Server running on port ${port}`);
+    console.log(`[Sovereign Proxy] Environment: ${process.env.NODE_ENV}`);
+
+    // Heartbeat to prove process is alive in logs
+    setInterval(() => {
+        const memoryUsage = process.memoryUsage();
+        console.log(`[Heartbeat] RSS: ${(memoryUsage.rss / 1024 / 1024).toFixed(2)}MB`);
+    }, 30000);
 });
