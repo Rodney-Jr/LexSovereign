@@ -43,18 +43,50 @@ const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBa
     }, 1500);
   };
 
-  const handleHardwareMFA = () => {
+  const handleHardwareMFA = async () => {
     setMfaStatus('CHALLENGE');
     addLog("AWAITING HARDWARE ROOT SIGNATURE...");
 
-    setTimeout(() => {
+    try {
+      // Simulate hardware delay for effect
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      addLog("VERIFYING CREDENTIALS WITH SOVEREIGN PROXY...");
+
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'admin@lexsovereign.com',
+          password: 'password123'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('ROOT AUTHENTICATION FAILED');
+      }
+
+      const data = await response.json();
+
+      // Store session securely (mocking hardware enclave storage here)
+      localStorage.setItem('lexSovereign_session', JSON.stringify({
+        role: data.user.role,
+        token: data.token,
+        userId: data.user.id
+      }));
+
       addLog("FIPS 140-2 LEVEL 3 SIGNATURE VERIFIED.");
-      addLog("IDENTITY PROJECTION: LEAD_ARCHITECT AUTHORIZED.");
+      addLog(`IDENTITY PROJECTION: ${data.user.name.toUpperCase()} AUTHORIZED.`);
       setMfaStatus('VERIFIED');
+
       setTimeout(() => {
-        onAuthenticated(UserRole.GLOBAL_ADMIN);
+        onAuthenticated(data.user.role as UserRole);
       }, 1000);
-    }, 2500);
+
+    } catch (error) {
+      addLog(`CRITICAL ERROR: ${(error as Error).message}`);
+      setMfaStatus('IDLE');
+    }
   };
 
   return (
@@ -118,8 +150,8 @@ const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBa
                 <div
                   onClick={mfaStatus === 'IDLE' ? handleHardwareMFA : undefined}
                   className={`w-36 h-36 rounded-[3rem] flex items-center justify-center border-4 cursor-pointer transition-all duration-700 relative group ${mfaStatus === 'VERIFIED' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-400 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-110' :
-                      mfaStatus === 'CHALLENGE' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-500 animate-pulse' :
-                        'bg-slate-900 border-slate-800 text-slate-700 hover:border-cyan-500/50 hover:text-cyan-500'
+                    mfaStatus === 'CHALLENGE' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-500 animate-pulse' :
+                      'bg-slate-900 border-slate-800 text-slate-700 hover:border-cyan-500/50 hover:text-cyan-500'
                     }`}
                 >
                   {mfaStatus === 'CHALLENGE' && (

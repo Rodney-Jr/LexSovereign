@@ -56,6 +56,8 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mode, setMode] = useState<AppMode>(AppMode.LAW_FIRM);
   const [userRole, setUserRole] = useState<UserRole>(UserRole.TENANT_ADMIN);
+  const [userId, setUserId] = useState<string>('11111111-1111-1111-1111-111111111111');
+  const [tenantId, setTenantId] = useState<string>('22222222-2222-2222-2222-222222222222');
   const [killSwitchActive, setKillSwitchActive] = useState(false);
   const [rules, setRules] = useState<RegulatoryRule[]>(INITIAL_RULES);
   const [documents, setDocuments] = useState<DocumentMetadata[]>(INITIAL_DOCS);
@@ -69,9 +71,11 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('lexSovereign_session');
     if (saved) {
       try {
-        const { role } = JSON.parse(saved);
+        const { role, userId: savedUserId, tenantId: savedTenantId } = JSON.parse(saved);
         if (role) {
           setUserRole(role);
+          if (savedUserId) setUserId(savedUserId);
+          if (savedTenantId) setTenantId(savedTenantId);
           setIsAuthenticated(true);
           if (role === UserRole.GLOBAL_ADMIN) {
             setActiveTab('platform-ops');
@@ -135,6 +139,24 @@ const App: React.FC = () => {
     }
     return <AuthFlow onAuthenticated={handleAuthenticated} onStartOnboarding={() => setIsOnboarding(true)} onSecretTrigger={() => setIsPlatformMode(true)} />;
   }
+
+  // Fetch matters on mount
+  useEffect(() => {
+    const fetchMatters = async () => {
+      try {
+        const res = await fetch('http://localhost:3001/api/matters');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setMatters(data);
+          }
+        }
+      } catch (e) {
+        console.log("Using local matters (API offline)");
+      }
+    };
+    fetchMatters();
+  }, []);
 
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive}>
@@ -212,7 +234,7 @@ const App: React.FC = () => {
       {activeTab === 'status' && <ProjectStatus />}
       {activeTab === 'settings' && <Settings mode={mode} killSwitchActive={killSwitchActive} setKillSwitchActive={setKillSwitchActive} />}
 
-      {showMatterModal && <MatterCreationModal mode={mode} onClose={() => setShowMatterModal(false)} onCreated={handleCreateMatter} />}
+      {showMatterModal && <MatterCreationModal mode={mode} userId={userId} tenantId={tenantId} onClose={() => setShowMatterModal(false)} onCreated={handleCreateMatter} />}
     </Layout>
   );
 };

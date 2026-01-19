@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums matching types.ts (As strings for SQLite support)
+
+// Models
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  passwordHash      String
+  name              String
+  role              String    @default("INTERNAL_COUNSEL")
+  region            String    @default("GH_ACC_1")
+  
+  // Relations
+  tenantId          String?
+  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+  assignedMatters   Matter[]
+  timeEntries       TimeEntry[]
+  auditLogs         AuditLog[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Tenant {
+  id                String    @id @default(uuid())
+  name              String
+  plan              String    @default("STANDARD")
+  primaryRegion     String    @default("GH_ACC_1")
+  
+  users             User[]
+  matters           Matter[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Matter {
+  id                String    @id @default(uuid())
+  name              String
+  client            String
+  type              String
+  status            String    @default("OPEN")
+  riskLevel         String    @default("LOW")
+  description       String?
+  
+  // Relations
+  tenantId          String
+  tenant            Tenant    @relation(fields: [tenantId], references: [id])
+  internalCounselId String
+  internalCounsel   User      @relation(fields: [internalCounselId], references: [id])
+  
+  documents         Document[]
+  timeEntries       TimeEntry[]
+  risks             PredictiveRisk[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Document {
+  id                String    @id @default(uuid())
+  name              String
+  uri               String    // Path to blob storage
+  jurisdiction      String
+  privilege         String    @default("INTERNAL")
+  classification    String    @default("Confidential")
+  
+  matterId          String
+  matter            Matter    @relation(fields: [matterId], references: [id])
+
+  lastReviewed      DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+}
+
+model TimeEntry {
+  id                String    @id @default(uuid())
+  description       String
+  durationMinutes   Int
+  startTime         DateTime
+  isBillable        Boolean   @default(true)
+  status            String    @default("Draft")
+
+  matterId          String
+  matter            Matter    @relation(fields: [matterId], references: [id])
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+}
+
+model PredictiveRisk {
+  id                String    @id @default(uuid())
+  type              String
+  probability       Float
+  impact            String
+  description       String
+
+  matterId          String
+  matter            Matter    @relation(fields: [matterId], references: [id])
+}
+
+model AuditLog {
+  id                String    @id @default(uuid())
+  action            String
+  timestamp         DateTime  @default(now())
+  
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id])
+  
+  details           String?   // JSON string
+  ipAddress         String?
+  resourceId        String?
+}
