@@ -33,7 +33,7 @@ import AuthFlow from './components/AuthFlow';
 import PlatformGateway from './components/PlatformGateway';
 import ZkConflictSearch from './components/ZkConflictSearch';
 import { AppMode, RegulatoryRule, AuditLogEntry, DocumentMetadata, UserRole, Matter, Region } from './types';
-import { INITIAL_RULES, INITIAL_DOCS } from './constants';
+import { INITIAL_RULES, INITIAL_DOCS, TAB_PERMISSIONS } from './constants';
 import { Scale, ChevronRight, Plus, Rocket, ShieldCheck, Briefcase, LogOut, UserPlus, ShieldAlert } from 'lucide-react';
 
 const INITIAL_MATTERS: Matter[] = [
@@ -160,8 +160,29 @@ const App: React.FC = () => {
 
 
 
+  // RBAC Gatekeeper: Redirect if unauthorized
+  const isAllowed = (tab: string) => {
+    // Lazy load the permissions inside the component to avoid import cycles if any
+    // (though constants.ts is safe).
+    // Better: define or import TAB_PERMISSIONS.
+    return TAB_PERMISSIONS[tab]?.includes(userRole) ?? false;
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && !isAllowed(activeTab)) {
+      // If user is on a tab they shouldn't see, send them to dashboard
+      if (isAllowed('dashboard')) {
+        setActiveTab('dashboard');
+      } else {
+        // If they can't even see dashboard (unlikely), send to client portal or similar.
+        // For now, default to dashboard or logout check.
+        console.warn(`User ${userRole} attempted access to restricted tab: ${activeTab}`);
+      }
+    }
+  }, [activeTab, userRole, isAuthenticated]);
+
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive}>
+    <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive} userRole={userRole}>
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between gap-4">
