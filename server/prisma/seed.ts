@@ -31,6 +31,26 @@ const PERMISSIONS = [
     { id: 'read_billing', description: 'View billing dashboards', resource: 'BILLING', action: 'READ' },
     { id: 'configure_rre', description: 'Configure Regulatory Rules Engine', resource: 'RRE', action: 'CONFIGURE' },
     { id: 'configure_scrub', description: 'Configure PII scrubbing', resource: 'SCRUB', action: 'CONFIGURE' },
+
+    // Banking Specific
+    { id: 'approve_kyc', description: 'Approve KYC applications', resource: 'COMPLIANCE', action: 'APPROVE_KYC' },
+    { id: 'report_suspicious', description: 'File Suspicious Activity Reports', resource: 'COMPLIANCE', action: 'REPORT_SAR' },
+    { id: 'edit_policy', description: 'Edit internal banking policies', resource: 'POLICY', action: 'EDIT' },
+    { id: 'verify_collateral', description: 'Verify loan collateral', resource: 'FINANCE', action: 'VERIFY' },
+    { id: 'audit_access', description: 'Audit data access logs', resource: 'AUDIT', action: 'AUDIT_ACCESS' },
+
+    // Insurance Specific
+    { id: 'assess_coverage', description: 'Assess insurance coverage', resource: 'CLAIM', action: 'ASSESS' },
+    { id: 'approve_settlement', description: 'Approve claim settlements', resource: 'CLAIM', action: 'APPROVE_SETTLEMENT' },
+    { id: 'manage_outside_counsel', description: 'Manage external panel counsel', resource: 'VENDOR', action: 'MANAGE' },
+    { id: 'assign_counsel', description: 'Assign counsel to litigation', resource: 'LITIGATION', action: 'ASSIGN' },
+    { id: 'review_policy_language', description: 'Review policy wording', resource: 'POLICY', action: 'REVIEW' },
+
+    // General Industry
+    { id: 'review_work', description: 'Review associate work', resource: 'WORK', action: 'REVIEW' },
+    { id: 'organize_files', description: 'Organize file systems', resource: 'FILE', action: 'ORGANIZE' },
+    { id: 'execute_research', description: 'Execute legal research', resource: 'RESEARCH', action: 'EXECUTE' },
+    { id: 'check_conflicts', description: 'Perform conflict checks', resource: 'CONFLICT', action: 'CHECK' },
 ];
 
 const ROLES = [
