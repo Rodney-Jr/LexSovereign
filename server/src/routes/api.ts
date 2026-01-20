@@ -1,10 +1,11 @@
 import express from 'express';
 import { LexGeminiService } from '../services/LexGeminiService';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 const geminiService = new LexGeminiService();
 
-router.post('/chat', async (req, res) => {
+router.post('/chat', authenticateToken as any, async (req, res) => {
     try {
         const { input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch } = req.body;
         const result = await geminiService.chat(input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch);

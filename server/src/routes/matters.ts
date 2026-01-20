@@ -1,11 +1,11 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Get all matters
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken as any, async (req, res) => {
     try {
         const matters = await prisma.matter.findMany({
             include: {
@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create a new matter
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken as any, async (req, res) => {
     try {
         const { name, client, type, region, internalCounselId, tenantId, description } = req.body;
 

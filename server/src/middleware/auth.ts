@@ -1,0 +1,51 @@
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../jwtConfig';
+import { requestContext } from '../db';
+
+export interface AuthRequest extends Request {
+    user?: {
+        id: string;
+        email: string;
+        role: string;
+    };
+}
+
+export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        res.sendStatus(401); // Unauthorized
+        return;
+    }
+
+    jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+        if (err) {
+            res.sendStatus(403); // Forbidden
+            return;
+        }
+        req.user = user;
+
+        requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {
+            next();
+        });
+    });
+};
+
+export const requireRole = (allowedRoles: string[]) => {
+    return (req: AuthRequest, res: Response, next: NextFunction) => {
+        if (!req.user) {
+            res.sendStatus(401);
+            return;
+        }
+
+        if (!allowedRoles.includes(req.user.role)) {
+            console.warn(`[RBAC] User ${req.user.email} with role ${req.user.role} attempted to access protected route requiring ${allowedRoles.join(', ')}`);
+            res.status(403).json({ error: 'Insufficient permissions' });
+            return;
+        }
+
+        next();
+    };
+};

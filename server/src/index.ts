@@ -6,6 +6,8 @@ import path from 'path';
 import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 import mattersRouter from './routes/matters';
+import bridgesRouter from './routes/bridges';
+import rolesRouter from './routes/roles';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
@@ -44,6 +46,8 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api', apiRouter);
 app.use('/api/matters', mattersRouter);
+app.use('/api/bridges', bridgesRouter);
+app.use('/api/roles', rolesRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));

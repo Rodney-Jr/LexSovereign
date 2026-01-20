@@ -20,7 +20,11 @@ model User {
   email             String    @unique
   passwordHash      String
   name              String
-  role              String    @default("INTERNAL_COUNSEL")
+  roleId            String?
+  role              Role?     @relation(fields: [roleId], references: [id])
+  // Legacy string role for backward compatibility during migration
+  roleString        String    @default("INTERNAL_COUNSEL") @map("role")
+  
   region            String    @default("GH_ACC_1")
   
   // Relations
@@ -34,6 +38,28 @@ model User {
   updatedAt         DateTime  @updatedAt
 }
 
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique // e.g., "TENANT_ADMIN"
+  description String?
+  isSystem    Boolean      @default(false) // System roles cannot be deleted
+  
+  users       User[]
+  permissions Permission[]
+
+  tenantId    String?      // Null = Global Role, Set = Custom Tenant Role
+  tenant      Tenant?      @relation(fields: [tenantId], references: [id])
+}
+
+model Permission {
+  id          String       @id // e.g., "MATTER_CREATE"
+  description String
+  resource    String       // e.g., "MATTER"
+  action      String       // e.g., "CREATE"
+  
+  roles       Role[]
+}
+
 model Tenant {
   id                String    @id @default(uuid())
   name              String
@@ -41,6 +67,7 @@ model Tenant {
   primaryRegion     String    @default("GH_ACC_1")
   
   users             User[]
+  roles             Role[]
   matters           Matter[]
 
   createdAt         DateTime  @default(now())
