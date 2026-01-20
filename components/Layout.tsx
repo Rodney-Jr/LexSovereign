@@ -71,145 +71,197 @@ const Layout: React.FC<LayoutProps> = ({
         </div>
 
         <nav className="flex-1 px-4 space-y-1.5 mt-4 overflow-y-auto scrollbar-hide">
-          <NavItem
-            icon={<LayoutDashboard size={18} />}
-            label="Intelligence Hub"
-            isActive={activeTab === 'dashboard'}
-            onClick={() => setActiveTab('dashboard')}
-          />
+          {/* Intelligence Hub - Public/Common */}
+          {isAllowed('dashboard') && (
+            <NavItem
+              icon={<LayoutDashboard size={18} />}
+              label="Intelligence Hub"
+              isActive={activeTab === 'dashboard'}
+              onClick={() => setActiveTab('dashboard')}
+            />
+          )}
 
-          <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Platform Owner</span>
-            <Monitor size={10} className="text-cyan-500" />
-          </div>
-          <NavItem
-            icon={<Globe size={18} className="text-cyan-400" />}
-            label="Global Plane"
-            isActive={activeTab === 'platform-ops'}
-            onClick={() => setActiveTab('platform-ops')}
-          />
-          <NavItem
-            icon={<LayoutGrid size={18} />}
-            label="Tenant Governance"
-            isActive={activeTab === 'governance'}
-            onClick={() => setActiveTab('governance')}
-          />
+          {/* Platform Owner Section */}
+          {(isAllowed('platform-ops') || isAllowed('governance')) && (
+            <div className="pt-4 pb-2 px-4 flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Platform Owner</span>
+              <Monitor size={10} className="text-cyan-500" />
+            </div>
+          )}
+          {isAllowed('platform-ops') && (
+            <NavItem
+              icon={<Globe size={18} className="text-cyan-400" />}
+              label="Global Plane"
+              isActive={activeTab === 'platform-ops'}
+              onClick={() => setActiveTab('platform-ops')}
+            />
+          )}
+          {isAllowed('governance') && (
+            <NavItem
+              icon={<LayoutGrid size={18} />}
+              label="Tenant Governance"
+              isActive={activeTab === 'governance'}
+              onClick={() => setActiveTab('governance')}
+            />
+          )}
 
-          <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Management</span>
-          </div>
-          <NavItem
-            icon={<GitBranch size={18} className="text-blue-400" />}
-            label="Firm Blueprint"
-            isActive={activeTab === 'org-blueprint'}
-            onClick={() => setActiveTab('org-blueprint')}
-          />
-          <NavItem
-            icon={<Plug size={18} className="text-emerald-400" />}
-            label="Bridge Registry"
-            isActive={activeTab === 'integration-bridge'}
-            onClick={() => setActiveTab('integration-bridge')}
-          />
-          <NavItem
-            icon={<Building2 size={18} />}
-            label="Tenant Admin"
-            isActive={activeTab === 'tenant-admin'}
-            onClick={() => setActiveTab('tenant-admin')}
-          />
-          <NavItem
-            icon={<Key size={18} />}
-            label="Access Governance"
-            isActive={activeTab === 'identity'}
-            onClick={() => setActiveTab('identity')}
-          />
-          <NavItem
-            icon={<ClipboardList size={18} />}
-            label="Eng Backlog"
-            isActive={activeTab === 'backlog'}
-            onClick={() => setActiveTab('backlog')}
-          />
+          {/* Management Section */}
+          {(isAllowed('org-blueprint') || isAllowed('integration-bridge') || isAllowed('tenant-admin') || isAllowed('identity') || isAllowed('backlog')) && (
+            <div className="pt-4 pb-2 px-4 flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Management</span>
+            </div>
+          )}
+          {isAllowed('org-blueprint') && (
+            <NavItem
+              icon={<GitBranch size={18} className="text-blue-400" />}
+              label="Firm Blueprint"
+              isActive={activeTab === 'org-blueprint'}
+              onClick={() => setActiveTab('org-blueprint')}
+            />
+          )}
+          {isAllowed('integration-bridge') && (
+            <NavItem
+              icon={<Plug size={18} className="text-emerald-400" />}
+              label="Bridge Registry"
+              isActive={activeTab === 'integration-bridge'}
+              onClick={() => setActiveTab('integration-bridge')}
+            />
+          )}
+          {isAllowed('tenant-admin') && (
+            <NavItem
+              icon={<Building2 size={18} />}
+              label="Tenant Admin"
+              isActive={activeTab === 'tenant-admin'}
+              onClick={() => setActiveTab('tenant-admin')}
+            />
+          )}
+          {isAllowed('identity') && (
+            <NavItem
+              icon={<Key size={18} />}
+              label="Access Governance"
+              isActive={activeTab === 'identity'}
+              onClick={() => setActiveTab('identity')}
+            />
+          )}
+          {isAllowed('backlog') && (
+            <NavItem
+              icon={<ClipboardList size={18} />}
+              label="Eng Backlog"
+              isActive={activeTab === 'backlog'}
+              onClick={() => setActiveTab('backlog')}
+            />
+          )}
 
-          <div className="pt-4 pb-2 px-4">
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Operations</span>
-          </div>
-          <NavItem
-            icon={<Search size={18} className="text-blue-400" />}
-            label="ZK Conflict Check"
-            isActive={activeTab === 'conflict-check'}
-            onClick={() => setActiveTab('conflict-check')}
-          />
-          <NavItem
-            icon={<Scale size={18} />}
-            label="Review Hub"
-            isActive={activeTab === 'reviews'}
-            onClick={() => setActiveTab('reviews')}
-          />
-          <NavItem
-            icon={<Zap size={18} />}
-            label="Workflow Engine"
-            isActive={activeTab === 'workflow'}
-            onClick={() => setActiveTab('workflow')}
-          />
-          <NavItem
-            icon={<FileLock size={18} />}
-            label="Sovereign Vault"
-            isActive={activeTab === 'vault'}
-            onClick={() => setActiveTab('vault')}
-          />
-          <NavItem
-            icon={<MessageSquare size={18} />}
-            label="Legal Chat"
-            isActive={activeTab === 'chat'}
-            onClick={() => setActiveTab('chat')}
-          />
+          {/* Operations Section */}
+          {(isAllowed('conflict-check') || isAllowed('reviews') || isAllowed('workflow') || isAllowed('vault') || isAllowed('chat')) && (
+            <div className="pt-4 pb-2 px-4">
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Operations</span>
+            </div>
+          )}
+          {isAllowed('conflict-check') && (
+            <NavItem
+              icon={<Search size={18} className="text-blue-400" />}
+              label="ZK Conflict Check"
+              isActive={activeTab === 'conflict-check'}
+              onClick={() => setActiveTab('conflict-check')}
+            />
+          )}
+          {isAllowed('reviews') && (
+            <NavItem
+              icon={<Scale size={18} />}
+              label="Review Hub"
+              isActive={activeTab === 'reviews'}
+              onClick={() => setActiveTab('reviews')}
+            />
+          )}
+          {isAllowed('workflow') && (
+            <NavItem
+              icon={<Zap size={18} />}
+              label="Workflow Engine"
+              isActive={activeTab === 'workflow'}
+              onClick={() => setActiveTab('workflow')}
+            />
+          )}
+          {isAllowed('vault') && (
+            <NavItem
+              icon={<FileLock size={18} />}
+              label="Sovereign Vault"
+              isActive={activeTab === 'vault'}
+              onClick={() => setActiveTab('vault')}
+            />
+          )}
+          {isAllowed('chat') && (
+            <NavItem
+              icon={<MessageSquare size={18} />}
+              label="Legal Chat"
+              isActive={activeTab === 'chat'}
+              onClick={() => setActiveTab('chat')}
+            />
+          )}
 
-          <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Enterprise Tier</span>
-            <Lock size={10} className="text-slate-700" />
-          </div>
-          <NavItem
-            icon={<Box size={18} />}
-            label="Physical Enclave"
-            isActive={activeTab === 'enclave'}
-            disabled={true}
-            onClick={() => setActiveTab('enclave')}
-          />
-          <NavItem
-            icon={<Coins size={18} />}
-            label="Business Growth"
-            isActive={activeTab === 'growth'}
-            onClick={() => setActiveTab('growth')}
-          />
-          <NavItem
-            icon={<Activity size={18} />}
-            label="Forensic Traces"
-            isActive={activeTab === 'audit'}
-            onClick={() => setActiveTab('audit')}
-          />
+          {/* Enterprise Tier Section */}
+          {(isAllowed('enclave') || isAllowed('growth') || isAllowed('audit')) && (
+            <div className="pt-4 pb-2 px-4 flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Enterprise Tier</span>
+              <Lock size={10} className="text-slate-700" />
+            </div>
+          )}
+          {isAllowed('enclave') && (
+            <NavItem
+              icon={<Box size={18} />}
+              label="Physical Enclave"
+              isActive={activeTab === 'enclave'}
+              disabled={true}
+              onClick={() => setActiveTab('enclave')}
+            />
+          )}
+          {isAllowed('growth') && (
+            <NavItem
+              icon={<Coins size={18} />}
+              label="Business Growth"
+              isActive={activeTab === 'growth'}
+              onClick={() => setActiveTab('growth')}
+            />
+          )}
+          {isAllowed('audit') && (
+            <NavItem
+              icon={<Activity size={18} />}
+              label="Forensic Traces"
+              isActive={activeTab === 'audit'}
+              onClick={() => setActiveTab('audit')}
+            />
+          )}
 
-          <div className="pt-4 pb-2 px-4">
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">System</span>
-          </div>
-          <NavItem
-            icon={<Target size={18} />}
-            label="Project Roadmap"
-            isActive={activeTab === 'status'}
-            onClick={() => setActiveTab('status')}
-          />
-          {/* Global Infrastructure Settings */}
-          <NavItem
-            icon={<Globe size={18} className="text-blue-400" />}
-            label="Infrastructure Plane"
-            isActive={activeTab === 'system-settings'}
-            onClick={() => setActiveTab('system-settings')}
-          />
-          {/* Tenant Governance Settings */}
-          <NavItem
-            icon={<Settings size={18} />}
-            label="Gov Controls"
-            isActive={activeTab === 'tenant-settings'}
-            onClick={() => setActiveTab('tenant-settings')}
-          />
+          {/* System Section */}
+          {(isAllowed('status') || isAllowed('system-settings') || isAllowed('tenant-settings')) && (
+            <div className="pt-4 pb-2 px-4">
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">System</span>
+            </div>
+          )}
+          {isAllowed('status') && (
+            <NavItem
+              icon={<Target size={18} />}
+              label="Project Roadmap"
+              isActive={activeTab === 'status'}
+              onClick={() => setActiveTab('status')}
+            />
+          )}
+          {isAllowed('system-settings') && (
+            <NavItem
+              icon={<Globe size={18} className="text-blue-400" />}
+              label="Infrastructure Plane"
+              isActive={activeTab === 'system-settings'}
+              onClick={() => setActiveTab('system-settings')}
+            />
+          )}
+          {isAllowed('tenant-settings') && (
+            <NavItem
+              icon={<Settings size={18} />}
+              label="Gov Controls"
+              isActive={activeTab === 'tenant-settings'}
+              onClick={() => setActiveTab('tenant-settings')}
+            />
+          )}
         </nav>
 
         <div className="p-4 border-t border-slate-800 space-y-4">
