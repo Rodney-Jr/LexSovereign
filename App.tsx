@@ -34,7 +34,7 @@ import AuthFlow from './components/AuthFlow';
 import PlatformGateway from './components/PlatformGateway';
 import ZkConflictSearch from './components/ZkConflictSearch';
 import { AppMode, RegulatoryRule, AuditLogEntry, DocumentMetadata, UserRole, Matter, Region } from './types';
-import { INITIAL_RULES, INITIAL_DOCS, TAB_REQUIRED_PERMISSIONS } from './constants';
+import { INITIAL_RULES, INITIAL_DOCS, TAB_REQUIRED_PERMISSIONS, ROLE_DEFAULT_PERMISSIONS } from './constants';
 import { Scale, ChevronRight, Plus, Rocket, ShieldCheck, Briefcase, LogOut, UserPlus, ShieldAlert } from 'lucide-react';
 
 const INITIAL_MATTERS: Matter[] = [
@@ -97,7 +97,14 @@ const AppContent: React.FC = () => {
         const { role, userId: savedUserId, tenantId: savedTenantId, permissions } = JSON.parse(saved);
         if (role) {
           setRole(role);
-          if (permissions) setPermissions(permissions);
+
+          let activePermissions = permissions;
+          // Self-Healing: If session has no permissions (stale cache), hydrate from defaults
+          if (!activePermissions || activePermissions.length === 0) {
+            activePermissions = ROLE_DEFAULT_PERMISSIONS[role] || [];
+          }
+
+          setPermissions(activePermissions);
 
           if (savedUserId) setUserId(savedUserId);
           if (savedTenantId) setTenantId(savedTenantId);
