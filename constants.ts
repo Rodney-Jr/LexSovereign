@@ -40,7 +40,8 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'growth': ['read_billing'],
   'system-settings': ['manage_platform'],
   'tenant-settings': ['manage_tenant'],
-  'status': ['manage_platform']
+  'status': ['manage_platform'],
+  'client': ['client_portal_access']
 };
 
 // Default Permissions for Roles (Fallback/Mock)
@@ -49,7 +50,13 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
   'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits'],
   'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits'], // Just in case
-  'Sovereign LegalTech Architect': ['manage_platform', 'manage_tenant', 'read_all_audits', 'create_matter', 'read_billing', 'manage_users', 'design_workflow', 'configure_bridge', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document']
+  'Sovereign LegalTech Architect': ['manage_platform', 'manage_tenant', 'read_all_audits', 'create_matter', 'read_billing', 'manage_users', 'design_workflow', 'configure_bridge', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
+  'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles'],
+  'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter'],
+  'CLIENT': ['read_assigned_matter', 'client_portal_access'],
+  'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing'],
+  'COMPLIANCE': ['read_all_audits', 'manage_tenant'],
+  'FINANCE_BILLING': ['read_billing']
 };
 
 export const TAB_PERMISSIONS: Record<string, UserRole[]> = {}; // Deprecated, keeping temporarily to avoid breakages if any imports remain
