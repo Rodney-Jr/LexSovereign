@@ -138,9 +138,25 @@ const AppContent: React.FC = () => {
   }, []);
 
   const handleAuthenticated = (roleName: string, permissions: string[]) => {
+    let finalPermissions = permissions;
+    // Fallback: If no permissions provided (e.g. from simplistic onboarding), use defaults
+    if (!finalPermissions || finalPermissions.length === 0) {
+      finalPermissions = ROLE_DEFAULT_PERMISSIONS[roleName] || [];
+    }
+
     setRole(roleName);
-    setPermissions(permissions);
+    setPermissions(finalPermissions);
     setIsAuthenticated(true);
+
+    // Persist session immediately to avoid refresh issues
+    const sessionData = JSON.stringify({
+      role: roleName,
+      userId,
+      tenantId,
+      permissions: finalPermissions
+    });
+    localStorage.setItem('lexSovereign_session', sessionData);
+
     if (roleName === 'GLOBAL_ADMIN') {
       setActiveTab('platform-ops');
     }
@@ -162,9 +178,8 @@ const AppContent: React.FC = () => {
   const handleInceptionComplete = (selectedMode: AppMode) => {
     setMode(selectedMode);
     setIsOnboarding(false);
-    setIsAuthenticated(true);
-    setRole('TENANT_ADMIN'); // Default or fetch real one
-    // Ideally we re-fetch permissions here
+    // Automatically login as Tenant Admin with full permissions
+    handleAuthenticated('TENANT_ADMIN', []);
   };
 
   // ... (keep document handlers)
