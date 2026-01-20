@@ -131,16 +131,21 @@ export class LexGeminiService {
       TEXT: ${rawContent}
     `;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: prompt,
-            config: { temperature: 0 }
-        });
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: prompt,
+                config: { temperature: 0 }
+            });
 
-        const scrubbed = response.text || "[CONTENT REDACTED BY SOVEREIGN PROXY]";
-        const entitiesRemoved = (scrubbed.match(/\[.*?\]/g) || []).length;
-
-        return { content: scrubbed, scrubbedEntities: entitiesRemoved };
+            const scrubbed = response.text || "[CONTENT REDACTED BY SOVEREIGN PROXY]";
+            const entitiesRemoved = (scrubbed.match(/\[.*?\]/g) || []).length;
+            return { content: scrubbed, scrubbedEntities: entitiesRemoved };
+        } catch (error) {
+            console.error("Scrubbing API Failed:", error);
+            // Fail Closed: Return fully redacted placeholder
+            return { content: "[SYSTEM_AUDIT: CONTENT REDACTED DUE TO ENCLAVE DISCONNECTION]", scrubbedEntities: 999 };
+        }
     }
     async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
         const ai = this.getAI();
