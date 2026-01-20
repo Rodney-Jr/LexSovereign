@@ -68,25 +68,9 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
             <TrendingUp size={20} className="text-emerald-500" />
           </div>
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              {/* <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                  itemStyle={{ color: '#f1f5f9' }}
-                />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} fillOpacity={0.8} />
-                  ))}
-                </Bar>
-              </BarChart> */}
-              <div className="flex h-full items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-600">
-                <p>Chart System Offline (Strict Mode Compat)</p>
-              </div>
-            </ResponsiveContainer>
+            <div className="flex h-full items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-600">
+              <p>Chart System Offline (Strict Mode Compat)</p>
+            </div>
           </div>
         </div>
 
