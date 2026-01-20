@@ -143,23 +143,6 @@ const App: React.FC = () => {
     setShowMatterModal(false);
   };
 
-  if (isOnboarding) {
-    return <TenantOnboarding onComplete={handleInceptionComplete} />;
-  }
-
-  if (isUserInvitation) {
-    return <TenantUserOnboarding mode={mode} onComplete={handleAuthenticated} />;
-  }
-
-  if (!isAuthenticated) {
-    if (isPlatformMode) {
-      return <PlatformGateway onAuthenticated={handleAuthenticated} onBackToTenant={() => setIsPlatformMode(false)} />;
-    }
-    return <AuthFlow onAuthenticated={handleAuthenticated} onStartOnboarding={() => setIsOnboarding(true)} onSecretTrigger={() => setIsPlatformMode(true)} />;
-  }
-
-
-
   // RBAC Gatekeeper: Redirect if unauthorized
   const isAllowed = (tab: string) => {
     // Lazy load the permissions inside the component to avoid import cycles if any
@@ -180,6 +163,21 @@ const App: React.FC = () => {
       }
     }
   }, [activeTab, userRole, isAuthenticated]);
+
+  if (isOnboarding) {
+    return <TenantOnboarding onComplete={handleInceptionComplete} />;
+  }
+
+  if (isUserInvitation) {
+    return <TenantUserOnboarding mode={mode} onComplete={handleAuthenticated} />;
+  }
+
+  if (!isAuthenticated) {
+    if (isPlatformMode) {
+      return <PlatformGateway onAuthenticated={handleAuthenticated} onBackToTenant={() => setIsPlatformMode(false)} />;
+    }
+    return <AuthFlow onAuthenticated={handleAuthenticated} onStartOnboarding={() => setIsOnboarding(true)} onSecretTrigger={() => setIsPlatformMode(true)} />;
+  }
 
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive} userRole={userRole}>
