@@ -50,7 +50,8 @@ export const INITIAL_RULES: RegulatoryRule[] = [
 export const TAB_PERMISSIONS: Record<string, UserRole[]> = {
   // Public / Common
   'dashboard': Object.values(UserRole),
-  'settings': Object.values(UserRole),
+  'tenant-settings': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.LEGAL_OPS, UserRole.GLOBAL_ADMIN], // Global Admin access for debugging
+  'system-settings': [UserRole.GLOBAL_ADMIN],
   'status': [UserRole.GLOBAL_ADMIN],
 
   // Platform Level (Global Admin Only)

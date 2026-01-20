@@ -39,6 +39,21 @@ const assertions = [
         name: "Tenant Admin cannot access Enclave (Physical)",
         check: () => !TAB_PERMISSIONS['enclave'].includes(UserRole.TENANT_ADMIN),
         expected: true
+    },
+    {
+        name: "Tenant Admin CAN access Tenant Settings",
+        check: () => TAB_PERMISSIONS['tenant-settings'].includes(UserRole.TENANT_ADMIN),
+        expected: true
+    },
+    {
+        name: "Tenant Admin cannot access System Infrastructure Settings",
+        check: () => !TAB_PERMISSIONS['system-settings'].includes(UserRole.TENANT_ADMIN),
+        expected: true
+    },
+    {
+        name: "Global Admin CAN access System Settings",
+        check: () => TAB_PERMISSIONS['system-settings'].includes(UserRole.GLOBAL_ADMIN),
+        expected: true
     }
 ];
 

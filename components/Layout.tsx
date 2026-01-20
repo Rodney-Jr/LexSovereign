@@ -196,11 +196,19 @@ const Layout: React.FC<LayoutProps> = ({
             isActive={activeTab === 'status'}
             onClick={() => setActiveTab('status')}
           />
+          {/* Global Infrastructure Settings */}
+          <NavItem
+            icon={<Globe size={18} className="text-blue-400" />}
+            label="Infrastructure Plane"
+            isActive={activeTab === 'system-settings'}
+            onClick={() => setActiveTab('system-settings')}
+          />
+          {/* Tenant Governance Settings */}
           <NavItem
             icon={<Settings size={18} />}
-            label="Meta-Config"
-            isActive={activeTab === 'settings'}
-            onClick={() => setActiveTab('settings')}
+            label="Gov Controls"
+            isActive={activeTab === 'tenant-settings'}
+            onClick={() => setActiveTab('tenant-settings')}
           />
         </nav>
 

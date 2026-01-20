@@ -6,7 +6,8 @@ import DocumentVault from './components/DocumentVault';
 import LegalChat from './components/LegalChat';
 import ArchitectureMap from './components/ArchitectureMap';
 import OmnichannelPreview from './components/OmnichannelPreview';
-import Settings from './components/Settings';
+import TenantSettings from './components/TenantSettings';
+import GlobalSettings from './components/GlobalSettings';
 import ProjectStatus from './components/ProjectStatus';
 import ValidationHub from './components/ValidationHub';
 import MatterIntelligence from './components/MatterIntelligence';
@@ -253,7 +254,8 @@ const App: React.FC = () => {
 
       {activeTab === 'chat' && <LegalChat killSwitchActive={killSwitchActive} rules={rules} documents={documents} matters={matters} />}
       {activeTab === 'status' && <ProjectStatus />}
-      {activeTab === 'settings' && <Settings mode={mode} killSwitchActive={killSwitchActive} setKillSwitchActive={setKillSwitchActive} />}
+      {activeTab === 'tenant-settings' && <TenantSettings mode={mode} killSwitchActive={killSwitchActive} setKillSwitchActive={setKillSwitchActive} />}
+      {activeTab === 'system-settings' && <GlobalSettings />}
 
       {showMatterModal && <MatterCreationModal mode={mode} userId={userId} tenantId={tenantId} onClose={() => setShowMatterModal(false)} onCreated={handleCreateMatter} />}
     </Layout>
