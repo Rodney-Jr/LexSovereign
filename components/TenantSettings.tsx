@@ -52,6 +52,7 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ mode, killSwitchActive,
                                 <button
                                     onClick={() => setKillSwitchActive(!killSwitchActive)}
                                     className={`w-12 h-6 rounded-full transition-all duration-300 relative ${killSwitchActive ? 'bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.5)]' : 'bg-slate-700'}`}
+                                    aria-label="Toggle Deterministic Lock"
                                 >
                                     <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all duration-300 ${killSwitchActive ? 'left-6.5' : 'left-0.5'}`}></div>
                                 </button>
