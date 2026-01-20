@@ -61,12 +61,21 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    };
 
    const finalizeAuth = () => {
+      // Mock Permissions for Simulation Mode (to satisfy RBAC)
+      const MOCK_PERMISSIONS: Record<string, string[]> = {
+         'TENANT_ADMIN': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'manage_platform'],
+         'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
+         'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits']
+      };
+
+      const permissions = MOCK_PERMISSIONS[selectedRole] || [];
+
       const sessionData = JSON.stringify({
          role: selectedRole,
          domain,
          userId: '11111111-1111-1111-1111-111111111111',
          tenantId: '22222222-2222-2222-2222-222222222222',
-         permissions: [] // Mock permissions for hardware auth flow
+         permissions
       });
 
       if (rememberMe) {
@@ -74,7 +83,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       } else {
          sessionStorage.setItem('lexSovereign_session', sessionData);
       }
-      onAuthenticated(selectedRole, []);
+      onAuthenticated(selectedRole, permissions);
    };
 
    return (

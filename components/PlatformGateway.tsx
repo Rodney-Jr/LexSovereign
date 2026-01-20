@@ -18,7 +18,7 @@ import {
 import { UserRole } from '../types';
 
 interface PlatformGatewayProps {
-  onAuthenticated: (role: UserRole) => void;
+  onAuthenticated: (role: UserRole, permissions: string[]) => void;
   onBackToTenant: () => void;
 }
 
@@ -80,7 +80,7 @@ const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBa
       setMfaStatus('VERIFIED');
 
       setTimeout(() => {
-        onAuthenticated(data.user.role as UserRole);
+        onAuthenticated(data.user.role as UserRole, data.user.permissions || []);
       }, 1000);
 
     } catch (error) {
