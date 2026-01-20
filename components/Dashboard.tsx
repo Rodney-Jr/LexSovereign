@@ -81,17 +81,9 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
             <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20">Live</span>
           </div>
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                />
-                <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="flex h-full items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-600">
+              <p>Chart System Offline (Strict Mode Compat)</p>
+            </div>
           </div>
         </div>
       </div>
