@@ -45,7 +45,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
 
 // Default Permissions for Roles (Fallback/Mock)
 export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  'TENANT_ADMIN': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'manage_platform', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow'],
+  'TENANT_ADMIN': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow'],
   'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
   'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits'],
   'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits'], // Just in case
