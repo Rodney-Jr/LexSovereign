@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
 import { requestContext } from '../db';
+import { CONFIG } from '../config';
 
 export interface AuthRequest extends Request {
     user?: {
@@ -25,6 +26,12 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
             res.sendStatus(403); // Forbidden
             return;
         }
+
+        // Deployment Adaptation: On-Premise Enclaves are Single Tenant
+        if (!CONFIG.ENABLE_MULTI_TENANCY) {
+            user.tenantId = CONFIG.SINGLE_TENANT_ID;
+        }
+
         req.user = user;
 
         requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {

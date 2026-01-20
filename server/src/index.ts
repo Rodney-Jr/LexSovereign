@@ -8,6 +8,7 @@ import authRouter from './routes/auth';
 import mattersRouter from './routes/matters';
 import bridgesRouter from './routes/bridges';
 import rolesRouter from './routes/roles';
+import auditRouter from './routes/audit';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../.env.local') });

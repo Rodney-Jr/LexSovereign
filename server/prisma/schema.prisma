@@ -35,7 +35,12 @@ model User {
   auditLogs         AuditLog[]
 
   createdAt         DateTime  @default(now())
+  attributes        Json?     @default("{}")
   updatedAt         DateTime  @updatedAt
+
+  // OIDC / Federation
+  provider          String    @default("LOCAL")
+  providerId        String?
 }
 
 model Role {
@@ -46,6 +51,7 @@ model Role {
   
   users       User[]
   permissions Permission[]
+  policies    Policy[]
 
   tenantId    String?      // Null = Global Role, Set = Custom Tenant Role
   tenant      Tenant?      @relation(fields: [tenantId], references: [id])
@@ -60,6 +66,25 @@ model Permission {
   roles       Role[]
 }
 
+model Policy {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  effect      String   @default("DENY") // ALLOW or DENY
+  resource    String   // e.g. "MATTER", "AI_MODEL"
+  action      String   // e.g. "EXECUTE", "VIEW"
+  condition   String?  // JSON Logic string
+  priority    Int      @default(0)
+
+  roles       Role[]   // Roles this policy applies to
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Tenant {
   id                String    @id @default(uuid())
   name              String
@@ -69,6 +94,7 @@ model Tenant {
   users             User[]
   roles             Role[]
   matters           Matter[]
+  policies          Policy[]
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -83,6 +109,8 @@ model Matter {
   riskLevel         String    @default("LOW")
   description       String?
   
+  attributes        Json?     @default("{}")
+
   // Relations
   tenantId          String
   tenant            Tenant    @relation(fields: [tenantId], references: [id])
@@ -104,6 +132,8 @@ model Document {
   jurisdiction      String
   privilege         String    @default("INTERNAL")
   classification    String    @default("Confidential")
+
+  attributes        Json?     @default("{}")
   
   matterId          String
   matter            Matter    @relation(fields: [matterId], references: [id])

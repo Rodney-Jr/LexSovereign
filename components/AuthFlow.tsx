@@ -21,7 +21,7 @@ import {
 import { UserRole } from '../types';
 
 interface AuthFlowProps {
-   onAuthenticated: (role: UserRole) => void;
+   onAuthenticated: (role: string, permissions: string[]) => void;
    onStartOnboarding: () => void;
    onSecretTrigger?: () => void;
 }
@@ -65,7 +65,8 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
          role: selectedRole,
          domain,
          userId: '11111111-1111-1111-1111-111111111111',
-         tenantId: '22222222-2222-2222-2222-222222222222'
+         tenantId: '22222222-2222-2222-2222-222222222222',
+         permissions: [] // Mock permissions for hardware auth flow
       });
 
       if (rememberMe) {
@@ -73,7 +74,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       } else {
          sessionStorage.setItem('lexSovereign_session', sessionData);
       }
-      onAuthenticated(selectedRole);
+      onAuthenticated(selectedRole, []);
    };
 
    return (

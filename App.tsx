@@ -34,7 +34,7 @@ import AuthFlow from './components/AuthFlow';
 import PlatformGateway from './components/PlatformGateway';
 import ZkConflictSearch from './components/ZkConflictSearch';
 import { AppMode, RegulatoryRule, AuditLogEntry, DocumentMetadata, UserRole, Matter, Region } from './types';
-import { INITIAL_RULES, INITIAL_DOCS, TAB_PERMISSIONS } from './constants';
+import { INITIAL_RULES, INITIAL_DOCS, TAB_REQUIRED_PERMISSIONS } from './constants';
 import { Scale, ChevronRight, Plus, Rocket, ShieldCheck, Briefcase, LogOut, UserPlus, ShieldAlert } from 'lucide-react';
 
 const INITIAL_MATTERS: Matter[] = [
@@ -51,12 +51,16 @@ const INITIAL_MATTERS: Matter[] = [
   }
 ];
 
-const App: React.FC = () => {
+import { PermissionProvider, usePermissions } from './hooks/usePermissions';
+
+// ... (keep existing imports)
+
+const AppContent: React.FC = () => {
+  const { setPermissions, setRole, role: contextRole, hasAnyPermission } = usePermissions();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isPlatformMode, setIsPlatformMode] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mode, setMode] = useState<AppMode>(AppMode.LAW_FIRM);
-  const [userRole, setUserRole] = useState<UserRole>(UserRole.TENANT_ADMIN);
   const [userId, setUserId] = useState<string>('11111111-1111-1111-1111-111111111111');
   const [tenantId, setTenantId] = useState<string>('22222222-2222-2222-2222-222222222222');
   const [killSwitchActive, setKillSwitchActive] = useState(false);
@@ -68,17 +72,37 @@ const App: React.FC = () => {
   const [isUserInvitation, setIsUserInvitation] = useState(false);
   const [showMatterModal, setShowMatterModal] = useState(false);
 
+  // RBAC Gatekeeper
+  const isAllowed = (tab: string) => {
+    if (contextRole === 'GLOBAL_ADMIN') return true;
+    const required = TAB_REQUIRED_PERMISSIONS[tab];
+    if (!required || required.length === 0) return true;
+    return hasAnyPermission(required);
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && !isAllowed(activeTab)) {
+      if (isAllowed('dashboard')) {
+        setActiveTab('dashboard');
+      } else {
+        console.warn('Redirecting unauthorized access');
+      }
+    }
+  }, [activeTab, contextRole, isAuthenticated, hasAnyPermission]);
+
   useEffect(() => {
     const saved = localStorage.getItem('lexSovereign_session') || sessionStorage.getItem('lexSovereign_session');
     if (saved) {
       try {
-        const { role, userId: savedUserId, tenantId: savedTenantId } = JSON.parse(saved);
+        const { role, userId: savedUserId, tenantId: savedTenantId, permissions } = JSON.parse(saved);
         if (role) {
-          setUserRole(role);
+          setRole(role);
+          if (permissions) setPermissions(permissions);
+
           if (savedUserId) setUserId(savedUserId);
           if (savedTenantId) setTenantId(savedTenantId);
           setIsAuthenticated(true);
-          if (role === UserRole.GLOBAL_ADMIN) {
+          if (role === 'GLOBAL_ADMIN') {
             setActiveTab('platform-ops');
           }
         }
@@ -88,7 +112,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Fetch matters on mount
+  // Fetch matters on mount... (keep existing)
   useEffect(() => {
     const fetchMatters = async () => {
       try {
@@ -106,10 +130,11 @@ const App: React.FC = () => {
     fetchMatters();
   }, []);
 
-  const handleAuthenticated = (role: UserRole) => {
-    setUserRole(role);
+  const handleAuthenticated = (roleName: string, permissions: string[]) => {
+    setRole(roleName);
+    setPermissions(permissions);
     setIsAuthenticated(true);
-    if (role === UserRole.GLOBAL_ADMIN) {
+    if (roleName === 'GLOBAL_ADMIN') {
       setActiveTab('platform-ops');
     }
   };
@@ -122,15 +147,20 @@ const App: React.FC = () => {
     setIsUserInvitation(false);
     setIsOnboarding(false);
     localStorage.removeItem('lexSovereign_session');
+    sessionStorage.removeItem('lexSovereign_session');
+    setRole('');
+    setPermissions([]);
   };
 
   const handleInceptionComplete = (selectedMode: AppMode) => {
     setMode(selectedMode);
     setIsOnboarding(false);
     setIsAuthenticated(true);
-    setUserRole(UserRole.TENANT_ADMIN);
+    setRole('TENANT_ADMIN'); // Default or fetch real one
+    // Ideally we re-fetch permissions here
   };
 
+  // ... (keep document handlers)
   const handleAddDocument = (doc: DocumentMetadata) => {
     setDocuments(prev => [...prev, doc]);
   };
@@ -144,44 +174,25 @@ const App: React.FC = () => {
     setShowMatterModal(false);
   };
 
-  // RBAC Gatekeeper: Redirect if unauthorized
-  const isAllowed = (tab: string) => {
-    // Lazy load the permissions inside the component to avoid import cycles if any
-    // (though constants.ts is safe).
-    // Better: define or import TAB_PERMISSIONS.
-    return TAB_PERMISSIONS[tab]?.includes(userRole) ?? false;
-  };
-
-  useEffect(() => {
-    if (isAuthenticated && !isAllowed(activeTab)) {
-      // If user is on a tab they shouldn't see, send them to dashboard
-      if (isAllowed('dashboard')) {
-        setActiveTab('dashboard');
-      } else {
-        // If they can't even see dashboard (unlikely), send to client portal or similar.
-        // For now, default to dashboard or logout check.
-        console.warn(`User ${userRole} attempted access to restricted tab: ${activeTab}`);
-      }
-    }
-  }, [activeTab, userRole, isAuthenticated]);
-
   if (isOnboarding) {
     return <TenantOnboarding onComplete={handleInceptionComplete} />;
   }
 
   if (isUserInvitation) {
-    return <TenantUserOnboarding mode={mode} onComplete={handleAuthenticated} />;
+    return <TenantUserOnboarding mode={mode} onComplete={(role) => handleAuthenticated(role, [])} />;
+    // TODO: Update TenantUserOnboarding signature later
   }
 
   if (!isAuthenticated) {
     if (isPlatformMode) {
-      return <PlatformGateway onAuthenticated={handleAuthenticated} onBackToTenant={() => setIsPlatformMode(false)} />;
+      return <PlatformGateway onAuthenticated={(role) => handleAuthenticated(role, [])} onBackToTenant={() => setIsPlatformMode(false)} />;
     }
     return <AuthFlow onAuthenticated={handleAuthenticated} onStartOnboarding={() => setIsOnboarding(true)} onSecretTrigger={() => setIsPlatformMode(true)} />;
   }
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive} userRole={userRole}>
+    <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive} userRole={contextRole as any}>
+      {/* userRole cast as any temporary until Layout updated */}
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between gap-4">
@@ -190,7 +201,7 @@ const App: React.FC = () => {
                 <div className="p-3 bg-emerald-500/20 rounded-2xl"><Rocket className="text-emerald-400" /></div>
                 <div>
                   <h4 className="font-bold text-white tracking-tight">Sovereign Enclave Pulse</h4>
-                  <p className="text-xs text-slate-400">Verified as <span className="text-emerald-400 font-bold">{userRole}</span> • GH-ACC-1</p>
+                  <p className="text-xs text-slate-400">Verified as <span className="text-emerald-400 font-bold">{contextRole}</span> • GH-ACC-1</p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -199,7 +210,7 @@ const App: React.FC = () => {
                 </button>
               </div>
             </div>
-            {userRole !== UserRole.GLOBAL_ADMIN && (
+            {contextRole !== 'GLOBAL_ADMIN' && (
               <div onClick={() => setShowMatterModal(true)} className="bg-blue-500/10 border border-blue-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-blue-500/20 transition-all flex items-center gap-4">
                 <div className="p-3 bg-blue-500/20 rounded-2xl"><Briefcase className="text-blue-400" /></div>
                 <div>
@@ -216,8 +227,8 @@ const App: React.FC = () => {
       {activeTab === 'platform-ops' && <GlobalControlPlane />}
       {activeTab === 'org-blueprint' && <OrgChart />}
       {activeTab === 'integration-bridge' && <BridgeRegistry />}
-      {activeTab === 'identity' && <AccessGovernance userRole={userRole} setUserRole={setUserRole} />}
-      {activeTab === 'reviews' && <ReviewHub userRole={userRole} />}
+      {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
+      {activeTab === 'reviews' && <ReviewHub userRole={contextRole as any} />}
       {activeTab === 'governance' && <TenantGovernance />}
       {activeTab === 'tenant-admin' && <TenantAdministration />}
       {activeTab === 'growth' && <MonetizationStrategy />}
@@ -312,8 +323,10 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 export default function WrappedApp() {
   return (
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <PermissionProvider>
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
+    </PermissionProvider>
   );
 }

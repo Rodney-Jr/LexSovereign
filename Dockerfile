@@ -11,6 +11,7 @@ RUN npm run build
 FROM node:18-alpine AS server-builder
 WORKDIR /app-server
 COPY server/package*.json ./
+RUN apk add --no-cache openssl
 RUN npm ci
 COPY server/ .
 # Build the server to /app-server/dist

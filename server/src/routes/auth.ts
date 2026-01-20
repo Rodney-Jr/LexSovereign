@@ -3,6 +3,7 @@ import { prisma } from '../db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
+import { OIDCService } from '../services/oidcService';
 
 const router = express.Router();
 
@@ -35,11 +36,11 @@ router.post('/register', async (req, res) => {
             include: { role: { include: { permissions: true } } }
         });
 
-        const permissions = user.role?.permissions.map(p => p.id) || [];
+        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
         const token = jwt.sign({
             id: user.id,
             email: user.email,
-            role: user.role?.name,
+            role: (user as any).role?.name,
             permissions,
             tenantId: user.tenantId
         }, JWT_SECRET, { expiresIn: '8h' });
@@ -75,12 +76,12 @@ router.post('/login', async (req, res) => {
             return;
         }
 
-        const permissions = user.role?.permissions.map(p => p.id) || [];
+        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
 
         const token = jwt.sign({
             id: user.id,
             email: user.email,
-            role: user?.role?.name || 'UNKNOWN',
+            role: (user as any)?.role?.name || 'UNKNOWN',
             permissions,
             tenantId: user.tenantId
         }, JWT_SECRET, { expiresIn: '8h' });
@@ -117,12 +118,12 @@ router.get('/me', async (req, res) => {
 
         if (!user) { res.sendStatus(404); return; }
 
-        const permissions = user.role?.permissions.map(p => p.id) || [];
+        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
         res.json({
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role?.name,
+            role: (user as any).role?.name,
             tenantId: user.tenantId,
             permissions
         });

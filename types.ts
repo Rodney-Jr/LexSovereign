@@ -1,4 +1,16 @@
 
+
+export interface Policy {
+  id: string;
+  name: string;
+  description?: string;
+  effect: 'ALLOW' | 'DENY';
+  resource: string;
+  action: string;
+  condition?: string;
+  priority: number;
+}
+
 export enum IntegrationStatus {
   NOMINAL = 'Nominal',
   SYNCING = 'Syncing',
@@ -138,13 +150,21 @@ export interface ReviewArtifact {
 export interface DocumentMetadata {
   id: string;
   name: string;
-  matterId: string;
-  jurisdiction: string;
-  privilege: PrivilegeStatus;
-  region: Region;
-  encryption: 'BYOK' | 'SYSTEM';
-  classification: 'Confidential' | 'Highly Sensitive' | 'Public';
-  lastReviewed: string;
+  matterId?: string; // made optional as initial docs don't have it
+  jurisdiction?: string; // made optional
+  privilege?: PrivilegeStatus; // made optional
+  region?: Region; // made optional
+  encryption?: 'BYOK' | 'SYSTEM'; // made optional
+  classification: 'Confidential' | 'Highly Sensitive' | 'Public' | 'Internal' | 'Privileged'; // added Internal/Privileged to allow constants usage, or fix constants
+  lastReviewed?: string; // made optional
+  attributes?: Record<string, any>;
+
+  // New UI fields
+  type?: string;
+  size?: string;
+  uploadedBy?: string;
+  uploadedAt?: string;
+
 }
 
 export interface LegalProfessional {
@@ -167,6 +187,7 @@ export interface Matter {
   description?: string;
   createdAt: string;
   attachedFiles?: string[];
+  attributes?: Record<string, any>;
 }
 
 export interface TimeEntry {
@@ -191,6 +212,7 @@ export interface RegulatoryRule {
   blockThreshold: number;
   description: string;
   isActive: boolean;
+  region?: Region;
 }
 
 export interface AuditLogEntry {
@@ -292,4 +314,5 @@ export interface TenantUser {
   role: UserRole;
   lastActive: string;
   mfaEnabled: boolean;
+  attributes?: Record<string, any>;
 }

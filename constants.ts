@@ -1,84 +1,46 @@
 
-import { AppMode, DocumentMetadata, PrivilegeStatus, Region, RegulatoryRule, UserRole } from './types';
+import { RegulatoryRule, DocumentMetadata, AppMode, UserRole, Matter, Region } from './types';
 
-export const INITIAL_DOCS: DocumentMetadata[] = [
-  {
-    id: 'doc_001',
-    name: 'Shareholder_Agreement_v2.pdf',
-    matterId: 'MT-772',
-    jurisdiction: 'Ghana',
-    privilege: PrivilegeStatus.PRIVILEGED,
-    region: Region.GHANA,
-    encryption: 'BYOK',
-    classification: 'Highly Sensitive',
-    lastReviewed: '2024-05-15'
-  },
-  {
-    id: 'doc_002',
-    name: 'MSA_Standard_2024.docx',
-    matterId: 'ENT-991',
-    jurisdiction: 'EU-Germany',
-    privilege: PrivilegeStatus.INTERNAL,
-    region: Region.GERMANY,
-    encryption: 'SYSTEM',
-    classification: 'Confidential',
-    lastReviewed: '2024-05-18'
-  }
-];
 
 export const INITIAL_RULES: RegulatoryRule[] = [
-  {
-    id: 'RULE-GBA-001',
-    name: 'Ghana Bar Association - Legal Advice Rule',
-    authority: 'GBA Ethics Committee',
-    triggerKeywords: ['advise you to', 'you should file', 'legal opinion'],
-    blockThreshold: 0.85,
-    description: 'Intercepts phrases that imply a definitive course of legal action for non-lawyer users.',
-    isActive: true
-  },
-  {
-    id: 'RULE-BOG-KYC',
-    name: 'Bank of Ghana KYC Compliance',
-    authority: 'BoG Financial Intelligence',
-    triggerKeywords: ['identity verification', 'source of wealth', 'aml bypass'],
-    blockThreshold: 0.9,
-    description: 'Flags compliance risks related to identity and AML protocols.',
-    isActive: true
-  }
+  { id: 'REG-001', name: 'GDPR Data Sovereignty', description: 'Ensure EU user data remains within EU enclaves.', region: Region.GERMANY, isActive: true, authority: 'EU Commission', triggerKeywords: ['personal data', 'eu citizen'], blockThreshold: 0.8 },
+  { id: 'REG-002', name: 'CCPA Consumer Rights', description: 'Enforce right to deletion for CA residents.', region: Region.USA, isActive: true, authority: 'California State', triggerKeywords: ['california', 'consumer'], blockThreshold: 0.7 },
+  { id: 'REG-003', name: 'Banking Secrecy Act', description: 'Flag transactions over $10k for review.', region: Region.USA, isActive: false, authority: 'FinCEN', triggerKeywords: ['transaction', 'structuring'], blockThreshold: 0.9 }
 ];
 
-export const TAB_PERMISSIONS: Record<string, UserRole[]> = {
-  // Public / Common
-  'dashboard': Object.values(UserRole),
-  'tenant-settings': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.LEGAL_OPS, UserRole.GLOBAL_ADMIN], // Global Admin access for debugging
-  'system-settings': [UserRole.GLOBAL_ADMIN],
-  'status': [UserRole.GLOBAL_ADMIN],
+export const INITIAL_DOCS: DocumentMetadata[] = [
+  { id: 'DOC-101', name: 'Merger Agreement v4.pdf', type: 'Contract', size: '2.4 MB', uploadedBy: 'Jane Doe', uploadedAt: '10:42 AM', region: Region.USA, classification: 'Privileged' },
+  { id: 'DOC-102', name: 'Financial Audit 2023.xlsx', type: 'Financial', size: '8.1 MB', uploadedBy: 'System', uploadedAt: '09:15 AM', region: Region.USA, classification: 'Confidential' },
+  { id: 'DOC-103', name: 'Employee Handbook.docx', type: 'Policy', size: '1.2 MB', uploadedBy: 'HR Bot', uploadedAt: 'Yesterday', region: Region.USA, classification: 'Internal' }
+];
 
-  // Platform Level (Global Admin Only)
-  'platform-ops': [UserRole.GLOBAL_ADMIN],
-  'enclave': [UserRole.GLOBAL_ADMIN],
-  'audit': [UserRole.GLOBAL_ADMIN, UserRole.COMPLIANCE, UserRole.TENANT_ADMIN],
+// Replaced Role-based map with Permission-based map
+export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
+  'dashboard': [], // Public
+  'platform-ops': ['manage_platform'],
+  'enclave': ['manage_platform'], // Restricted
+  'audit': ['read_all_audits'],
 
-  // Tenant Admin / Governance
-  'governance': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC],
-  'tenant-admin': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN],
-  'org-blueprint': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC],
-  'integration-bridge': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN],
-  'identity': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.LEGAL_OPS],
-  'growth': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.FINANCE_BILLING],
+  // Tenant
+  'governance': ['manage_tenant'],
+  'tenant-admin': ['manage_users', 'manage_roles'],
+  'org-blueprint': ['manage_users'],
+  'integration-bridge': ['configure_bridge'],
+  'identity': ['manage_users'],
+  'backlog': ['manage_platform'],
 
-  // Legal Operations
-  // Legal Operations
-  'backlog': [UserRole.GLOBAL_ADMIN],
-  'conflict-check': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL],
-  'reviews': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL],
-  'workflow': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL, UserRole.LEGAL_OPS],
+  // Ops
+  'conflict-check': ['check_conflicts', 'create_matter'],
+  'reviews': ['review_work'],
+  'workflow': ['design_workflow'],
+  'vault': ['upload_document', 'read_assigned_matter'],
+  'chat': ['create_matter', 'read_assigned_matter'],
 
-  // Core Legal Work
-  'vault': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL, UserRole.EXTERNAL_COUNSEL, UserRole.LEGAL_OPS, UserRole.CLIENT],
-  'chat': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL, UserRole.EXTERNAL_COUNSEL, UserRole.LEGAL_OPS, UserRole.CLIENT],
-
-  // Client Specific
-  'client': [UserRole.CLIENT, UserRole.TENANT_ADMIN],
-  'predictive': [UserRole.TENANT_ADMIN, UserRole.LEGAL_OPS, UserRole.DEPUTY_GC]
+  // Finance/Growth
+  'growth': ['read_billing'],
+  'system-settings': ['manage_platform'],
+  'tenant-settings': ['manage_tenant'],
+  'status': ['manage_platform']
 };
+
+export const TAB_PERMISSIONS: Record<string, UserRole[]> = {}; // Deprecated, keeping temporarily to avoid breakages if any imports remain

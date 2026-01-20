@@ -130,4 +130,73 @@ router.post('/templates/:type', authenticateToken as any, requireRole(['TENANT_A
     }
 });
 
+// Update a role
+router.put('/:id', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, permissionIds } = req.body;
+        const tenantId = (req as any).user.tenantId;
+
+        // Verify ownership and system status
+        const role = await prisma.role.findFirst({
+            where: { id, tenantId }
+        });
+
+        if (!role) {
+            res.status(404).json({ error: 'Role not found or access denied' });
+            return;
+        }
+
+        if (role.isSystem) {
+            res.status(403).json({ error: 'Cannot modify system roles' });
+            return;
+        }
+
+        const updated = await prisma.role.update({
+            where: { id },
+            data: {
+                name,
+                description,
+                permissions: {
+                    set: permissionIds.map((pid: string) => ({ id: pid }))
+                }
+            },
+            include: { permissions: true }
+        });
+
+        res.json(updated);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete a role
+router.delete('/:id', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = (req as any).user.tenantId;
+
+        const role = await prisma.role.findFirst({
+            where: { id, tenantId }
+        });
+
+        if (!role) {
+            res.status(404).json({ error: 'Role not found' });
+            return;
+        }
+
+        if (role.isSystem) {
+            res.status(403).json({ error: 'Cannot delete system roles' });
+            return;
+        }
+
+        // Check if users are assigned? (Optional safety)
+
+        await prisma.role.delete({ where: { id } });
+        res.json({ message: 'Role deleted successfully' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

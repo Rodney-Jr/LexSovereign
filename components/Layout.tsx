@@ -35,7 +35,10 @@ import {
   Cloud
 } from 'lucide-react';
 import { AppMode, UserRole } from '../types';
-import { TAB_PERMISSIONS } from '../constants';
+import { usePermissions } from '../hooks/usePermissions';
+import { TAB_REQUIRED_PERMISSIONS } from '../constants';
+
+
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -44,7 +47,7 @@ interface LayoutProps {
   mode: AppMode;
   setMode: (mode: AppMode) => void;
   killSwitchActive: boolean;
-  userRole: UserRole;
+  userRole: any; // Legacy prop, we use hook now
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -53,11 +56,20 @@ const Layout: React.FC<LayoutProps> = ({
   setActiveTab,
   mode,
   setMode,
-  killSwitchActive,
-  userRole
+  killSwitchActive
 }) => {
+  const { hasAnyPermission, role } = usePermissions();
+
   const isAllowed = (tab: string) => {
-    return TAB_PERMISSIONS[tab]?.includes(userRole) ?? false;
+    // If global admin, allow everything (fail-safe)
+    if (role === 'GLOBAL_ADMIN') return true;
+
+    const required = TAB_REQUIRED_PERMISSIONS[tab];
+    // If no specific permissions required (and not explicitly restricted), allow or deny?
+    // Let's say if list is empty [] it is public.
+    if (!required || required.length === 0) return true;
+
+    return hasAnyPermission(required);
   };
   return (
     <div className="flex h-screen bg-slate-950 text-slate-200 overflow-hidden">

@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { ChatMessage, RegulatoryRule, DocumentMetadata, Matter, PrivilegeStatus } from '../types';
 import { LexGeminiService } from '../services/geminiService';
+import { usePermissions } from '../hooks/usePermissions';
 
 interface LegalChatProps {
   killSwitchActive: boolean;
@@ -59,6 +60,23 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const gemini = new LexGeminiService();
+  const { hasPermission } = usePermissions();
+
+  // Enforce Access Control
+  // 1. Must have basic chat access
+  // 2. If 'public' user, restricted mode
+  const canChat = hasPermission('ai_chat_execute'); // Basic permission to use AI
+  const isPublic = !hasPermission('view_confidential');
+
+  useEffect(() => {
+    if (!canChat) {
+      setMessages([{
+        role: 'assistant',
+        content: 'ACCESS DENIED: Your role does not have permission to access the Legal Intelligence System.',
+        verifiedBy: 'RBAC-Gatekeeper'
+      }]);
+    }
+  }, [canChat]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -350,12 +368,12 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
                 disabled={killSwitchActive}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={useGlobalSearch ? "Ask a legal research question..." : selectedMatter ? `Analyze ${selectedMatter.name} context...` : "Query the Global Sovereign Vault..."}
+                placeholder={!canChat ? "Access Restricted" : useGlobalSearch ? "Ask a legal research question..." : selectedMatter ? `Analyze ${selectedMatter.name} context...` : "Query the Global Sovereign Vault..."}
                 className="flex-1 bg-slate-800 border border-slate-700 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all text-slate-100 placeholder:text-slate-600 disabled:opacity-50"
               />
               <button
                 onClick={handleSend}
-                disabled={!input.trim() || isTyping || killSwitchActive}
+                disabled={!input.trim() || isTyping || killSwitchActive || !canChat}
                 aria-label="Send message"
                 className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white p-4 rounded-2xl transition-all shadow-2xl shadow-blue-900/50 active:scale-95 flex items-center justify-center"
               >
