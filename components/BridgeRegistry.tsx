@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Plug,
   ShieldCheck,
@@ -82,8 +82,8 @@ const BridgeRegistry: React.FC = () => {
               key={cat}
               onClick={() => { setFilter(cat); setSelectedId(null); }}
               className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${filter === cat
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
-                  : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+                : 'text-slate-500 hover:text-slate-300'
                 }`}
             >
               {cat}
@@ -100,8 +100,8 @@ const BridgeRegistry: React.FC = () => {
               key={bridge.id}
               onClick={() => setSelectedId(bridge.id)}
               className={`p-6 rounded-[2.5rem] border-2 text-left transition-all duration-500 group relative overflow-hidden h-full flex flex-col justify-between ${selectedId === bridge.id
-                  ? 'bg-emerald-600/10 border-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.15)] scale-[1.02]'
-                  : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                ? 'bg-emerald-600/10 border-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.15)] scale-[1.02]'
+                : 'bg-slate-900 border-slate-800 hover:border-slate-700'
                 } ${bridge.status === IntegrationStatus.ISOLATED ? 'opacity-70 grayscale border-dashed' : ''}`}
             >
               <div className="flex items-start justify-between mb-6 relative z-10">
@@ -116,8 +116,8 @@ const BridgeRegistry: React.FC = () => {
                   </div>
                 </div>
                 <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase border ${bridge.priority === 'P0' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                    bridge.priority === 'P1' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                      'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  bridge.priority === 'P1' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                    'bg-blue-500/10 text-blue-400 border-blue-500/20'
                   }`}>
                   {bridge.priority}
                 </div>
@@ -127,8 +127,8 @@ const BridgeRegistry: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`w-1.5 h-1.5 rounded-full ${bridge.status === IntegrationStatus.NOMINAL ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' :
-                        bridge.status === IntegrationStatus.SYNCING ? 'bg-blue-500 animate-pulse' :
-                          bridge.status === IntegrationStatus.ISOLATED ? 'bg-slate-600' : 'bg-red-500'
+                      bridge.status === IntegrationStatus.SYNCING ? 'bg-blue-500 animate-pulse' :
+                        bridge.status === IntegrationStatus.ISOLATED ? 'bg-slate-600' : 'bg-red-500'
                       }`}></div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{bridge.status}</span>
                   </div>
@@ -166,7 +166,11 @@ const BridgeRegistry: React.FC = () => {
                   <h4 className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em]">Adapter Intelligence</h4>
                   <p className="text-2xl font-bold text-white tracking-tight">{selectedBridge.name}</p>
                 </div>
-                <button className="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-400 transition-colors">
+                <button
+                  className="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-400 transition-colors"
+                  title="Configure Bridge"
+                  aria-label="Configure Bridge"
+                >
                   <Settings2 size={18} />
                 </button>
               </div>
@@ -203,8 +207,8 @@ const BridgeRegistry: React.FC = () => {
                   <button
                     onClick={() => toggleIsolation(selectedBridge.id)}
                     className={`flex-1 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-xl ${selectedBridge.status === IntegrationStatus.ISOLATED
-                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                        : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20'
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                      : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20'
                       }`}
                   >
                     {selectedBridge.status === IntegrationStatus.ISOLATED ? <Link2 size={18} /> : <Lock size={18} />}
