@@ -98,11 +98,8 @@ const AppContent: React.FC = () => {
         if (role) {
           setRole(role);
 
-          let activePermissions = permissions;
-          // Self-Healing: If session has no permissions (stale cache), hydrate from defaults
-          if (!activePermissions || activePermissions.length === 0) {
-            activePermissions = ROLE_DEFAULT_PERMISSIONS[role] || [];
-          }
+          // Force hydration from constants to ensure latest RBAC rules apply immediately (fix stale cache)
+          const activePermissions = ROLE_DEFAULT_PERMISSIONS[role] || permissions || [];
 
           setPermissions(activePermissions);
 
