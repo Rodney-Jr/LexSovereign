@@ -11,6 +11,16 @@ const assertions = [
         expected: true
     },
     {
+        name: "Tenant Admin cannot access Backlog",
+        check: () => !TAB_PERMISSIONS['backlog'].includes(UserRole.TENANT_ADMIN),
+        expected: true
+    },
+    {
+        name: "Tenant Admin cannot access Roadmap/Status",
+        check: () => !TAB_PERMISSIONS['status'].includes(UserRole.TENANT_ADMIN),
+        expected: true
+    },
+    {
         name: "Global Admin CAN access Global Plane",
         check: () => TAB_PERMISSIONS['platform-ops'].includes(UserRole.GLOBAL_ADMIN),
         expected: true

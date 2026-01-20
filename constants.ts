@@ -51,7 +51,7 @@ export const TAB_PERMISSIONS: Record<string, UserRole[]> = {
   // Public / Common
   'dashboard': Object.values(UserRole),
   'settings': Object.values(UserRole),
-  'status': Object.values(UserRole),
+  'status': [UserRole.GLOBAL_ADMIN],
 
   // Platform Level (Global Admin Only)
   'platform-ops': [UserRole.GLOBAL_ADMIN],
@@ -67,7 +67,8 @@ export const TAB_PERMISSIONS: Record<string, UserRole[]> = {
   'growth': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.FINANCE_BILLING],
 
   // Legal Operations
-  'backlog': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.LEGAL_OPS],
+  // Legal Operations
+  'backlog': [UserRole.GLOBAL_ADMIN],
   'conflict-check': [UserRole.GLOBAL_ADMIN, UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL],
   'reviews': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL],
   'workflow': [UserRole.TENANT_ADMIN, UserRole.DEPUTY_GC, UserRole.INTERNAL_COUNSEL, UserRole.LEGAL_OPS],
