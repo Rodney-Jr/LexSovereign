@@ -120,10 +120,20 @@ const AppContent: React.FC = () => {
   }, []);
 
   // Fetch matters on mount... (keep existing)
+  // Fetch matters on mount if token exists
   useEffect(() => {
     const fetchMatters = async () => {
       try {
-        const res = await fetch('/api/matters');
+        const saved = localStorage.getItem('lexSovereign_session') || sessionStorage.getItem('lexSovereign_session');
+        if (!saved) return;
+
+        const { token } = JSON.parse(saved);
+        if (!token) return; // Skip if no real token (Simulation Mode)
+
+        const res = await fetch('/api/matters', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -131,11 +141,11 @@ const AppContent: React.FC = () => {
           }
         }
       } catch (e) {
-        console.log("Using local matters (API offline)");
+        // Silent fail for simulation mode or offline
       }
     };
     fetchMatters();
-  }, []);
+  }, [isAuthenticated]); // Re-run when authenticated
 
   const handleAuthenticated = (roleName: string, permissions: string[]) => {
     let finalPermissions = permissions;
