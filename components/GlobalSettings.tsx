@@ -28,6 +28,7 @@ const GlobalSettings: React.FC = () => {
                                     <label className="text-[10px] font-bold text-slate-500 uppercase">OIDC Discovery URL</label>
                                     <input
                                         type="text"
+                                        title="OIDC Discovery URL"
                                         readOnly
                                         value="https://idp.accrapartners.gh/.well-known/openid-configuration"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400"

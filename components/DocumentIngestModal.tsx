@@ -64,7 +64,7 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
               <p className="text-xs text-slate-400 font-mono">DAS PROXY STATUS: ACTIVE</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-500 transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-500 transition-colors" aria-label="Close modal" title="Close">
             <X size={20} />
           </button>
         </div>
@@ -104,8 +104,10 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
                   <MetadataInput label="Jurisdiction" value={suggestions.jurisdiction!} onChange={v => setSuggestions({ ...suggestions, jurisdiction: v })} />
 
                   <div className="space-y-2 col-span-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Regional Pinning</label>
+                    <label htmlFor="region-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Regional Pinning</label>
                     <select
+                      id="region-select"
+                      title="Regional Pinning"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       value={suggestions.region}
                       onChange={e => setSuggestions({ ...suggestions, region: e.target.value as Region })}
@@ -115,8 +117,10 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
                   </div>
 
                   <div className="space-y-2 col-span-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Privilege Status</label>
+                    <label htmlFor="privilege-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Privilege Status</label>
                     <select
+                      id="privilege-select"
+                      title="Privilege Status"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       value={suggestions.privilege}
                       onChange={e => setSuggestions({ ...suggestions, privilege: e.target.value as PrivilegeStatus })}

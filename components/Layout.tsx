@@ -271,6 +271,7 @@ const Layout: React.FC<LayoutProps> = ({
               value={mode}
               onChange={(e) => setMode(e.target.value as AppMode)}
               className="bg-transparent text-sm focus:outline-none w-full cursor-pointer font-medium"
+              aria-label="Select App Mode"
             >
               <option value={AppMode.LAW_FIRM}>Law Firm Mode</option>
               <option value={AppMode.ENTERPRISE}>Enterprise Mode</option>
