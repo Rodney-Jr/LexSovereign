@@ -46,17 +46,17 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
 
 // Default Permissions for Roles (Fallback/Mock)
 export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  'TENANT_ADMIN': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow'],
-  'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
-  'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits'],
-  'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits'], // Just in case
+  'Tenant Admin': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow'],
+  'Legal Counsel': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
+  'Legal Ops': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits'],
+  'Global Admin': ['manage_platform', 'manage_tenant', 'read_all_audits'], // Just in case
   'Sovereign LegalTech Architect': ['manage_platform', 'manage_tenant', 'read_all_audits', 'create_matter', 'read_billing', 'manage_users', 'design_workflow', 'configure_bridge', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
-  'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles'],
-  'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter'],
-  'CLIENT': ['read_assigned_matter', 'client_portal_access'],
-  'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing'],
-  'COMPLIANCE': ['read_all_audits', 'manage_tenant'],
-  'FINANCE_BILLING': ['read_billing']
+  'Deputy GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles'],
+  'External Counsel': ['read_assigned_matter', 'upload_document', 'create_matter'],
+  'Client': ['read_assigned_matter', 'client_portal_access'],
+  'Executive / Board': ['read_all_audits', 'read_billing'],
+  'Compliance Officer': ['read_all_audits', 'manage_tenant'],
+  'Finance / Billing': ['read_billing']
 };
 
 export const TAB_PERMISSIONS: Record<string, UserRole[]> = {}; // Deprecated, keeping temporarily to avoid breakages if any imports remain
