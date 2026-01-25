@@ -10,7 +10,9 @@ In a standard app, everything sits on the PaaS. In LexSovereign, we split the pl
 
 ## 2. Security Enforcement
 To run safely on Railway, the following environment variables must be configured:
-*   `API_KEY`: Your Gemini Pro API Key.
+*   `DATABASE_URL`: Connection string for a PostgreSQL database (Add PostgreSQL Plugin).
+*   `JWT_SECRET`: A strong random string for session security.
+*   `GEMINI_API_KEY`: Your Gemini Pro API Key.
 *   `DAS_SCRUBBING_LEVEL`: Set to `3` (Aggressive) for PaaS deployments to ensure no PII reaches Railway logs.
 *   `SOVEREIGN_REGION_PIN`: Hardcoded to your primary silo (e.g., `GH-ACC-1`).
 
