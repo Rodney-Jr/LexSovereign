@@ -33,16 +33,22 @@ router.post('/register', async (req, res) => {
                 region: region || 'GH_ACC_1',
                 tenantId: tenantId || null // Should come from invite or request
             },
-            include: { role: { include: { permissions: true } } }
+            include: {
+                role: { include: { permissions: true } },
+                tenant: true
+            }
         });
 
         const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+
         const token = jwt.sign({
             id: user.id,
             email: user.email,
             role: (user as any).role?.name,
             permissions,
-            tenantId: user.tenantId
+            tenantId: user.tenantId,
+            appMode
         }, JWT_SECRET, { expiresIn: '8h' });
 
         res.json({
@@ -53,7 +59,8 @@ router.post('/register', async (req, res) => {
                 name: user.name,
                 role: user.role?.name,
                 tenantId: user.tenantId,
-                permissions
+                permissions,
+                mode: appMode
             }
         });
     } catch (error: any) {
@@ -68,7 +75,10 @@ router.post('/login', async (req, res) => {
         const { email, password } = req.body;
         const user = await prisma.user.findUnique({
             where: { email },
-            include: { role: { include: { permissions: true } } }
+            include: {
+                role: { include: { permissions: true } },
+                tenant: true
+            }
         });
 
         if (!user || !await bcrypt.compare(password, user.passwordHash)) {
@@ -77,13 +87,15 @@ router.post('/login', async (req, res) => {
         }
 
         const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
 
         const token = jwt.sign({
             id: user.id,
             email: user.email,
             role: (user as any)?.role?.name || 'UNKNOWN',
             permissions,
-            tenantId: user.tenantId
+            tenantId: user.tenantId,
+            appMode
         }, JWT_SECRET, { expiresIn: '8h' });
 
         res.json({
@@ -94,7 +106,8 @@ router.post('/login', async (req, res) => {
                 name: user.name,
                 role: user.role?.name,
                 tenantId: user.tenantId,
-                permissions
+                permissions,
+                mode: appMode
             }
         });
     } catch (error: any) {
@@ -113,19 +126,25 @@ router.get('/me', async (req, res) => {
 
         const user = await prisma.user.findUnique({
             where: { id: decoded.id },
-            include: { role: { include: { permissions: true } } }
+            include: {
+                role: { include: { permissions: true } },
+                tenant: true
+            }
         });
 
         if (!user) { res.sendStatus(404); return; }
 
         const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+
         res.json({
             id: user.id,
             email: user.email,
             name: user.name,
             role: (user as any).role?.name,
             tenantId: user.tenantId,
-            permissions
+            permissions,
+            mode: appMode
         });
 
     } catch (e) {

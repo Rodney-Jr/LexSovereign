@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact } from "../types";
+import { prisma } from "../db";
 
 export class LexGeminiService {
     private getAI() {
@@ -48,10 +49,35 @@ export class LexGeminiService {
             config.tools = [{ googleSearch: {} }];
         }
 
+        // Search Ghana Legal Knowledge Base
+        let legalKnowledge = "";
+        try {
+            // Naive search: Find docs containing the user query or key terms
+            // In production, use pgvector. Here we use basic text matching.
+            const artifacts = await prisma.knowledgeArtifact.findMany({
+                where: {
+                    OR: [
+                        { title: { contains: input, mode: 'insensitive' } },
+                        { content: { contains: input, mode: 'insensitive' } }
+                    ]
+                },
+                take: 3
+            });
+
+            if (artifacts.length > 0) {
+                legalKnowledge = "GHANA LEGAL ARCHIVES (OFFICIAL):\n" +
+                    artifacts.map(a => `[Source: ${a.title} (${a.category})]\n${a.content.substring(0, 2000)}...`).join('\n\n');
+            }
+        } catch (e) {
+            console.warn("Knowledge Base Search Failed:", e);
+        }
+
+        const prompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${input}`;
+
         try {
             const response = await ai.models.generateContent({
                 model: model,
-                contents: `CONTEXT_DOCUMENTS:\n${contextStr}\n\nUSER_QUERY: ${input}`,
+                contents: prompt,
                 config: config
             });
 
