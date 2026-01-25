@@ -40,7 +40,7 @@ const TenantGovernance: React.FC = () => {
             <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20">
               <Globe className="text-blue-400" size={28} />
             </div>
-            Global Governance Matrix
+            Global Governance Console
           </h3>
           <p className="text-slate-400 text-sm">Centralized administration for cross-regional silos and multi-tenant enclaves.</p>
         </div>
@@ -117,7 +117,7 @@ const TenantGovernance: React.FC = () => {
                 <div className="space-y-1">
                   <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Plan Tier</p>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border inline-block ${tenant.plan === SaaSPlan.ENCLAVE_EXCLUSIVE ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                      tenant.plan === SaaSPlan.SOVEREIGN ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'
+                    tenant.plan === SaaSPlan.SOVEREIGN ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'
                     }`}>
                     {tenant.plan}
                   </span>

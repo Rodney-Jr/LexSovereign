@@ -1,29 +1,177 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LexSovereign | Sovereign LegalTech Architect</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: #0f172a;
-        color: #f1f5f9;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LexSovereign | Sovereign LegalTech Architect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --brand-bg: #020617;
+      --brand-sidebar: rgba(15, 23, 42, 0.5);
+      --brand-border: #1e293b;
+      --brand-primary: #10b981;
+      --brand-secondary: #3b82f6;
+      --brand-text: #f1f5f9;
+      --brand-muted: #64748b;
+    }
+
+    .theme-gold {
+      --brand-bg: #1a1614;
+      --brand-sidebar: rgba(33, 28, 25, 0.6);
+      --brand-border: #3d322d;
+      --brand-primary: #d4af37;
+      --brand-secondary: #c5a028;
+      --brand-text: #faf7f5;
+      --brand-muted: #8b7367;
+    }
+
+    .theme-cyber {
+      --brand-bg: #050505;
+      --brand-sidebar: rgba(10, 10, 15, 0.7);
+      --brand-border: #1a1a2e;
+      --brand-primary: #00f2ff;
+      --brand-secondary: #bc13fe;
+      --brand-text: #ffffff;
+      --brand-muted: #4a4a6a;
+    }
+
+    .theme-light {
+      --brand-bg: #f8fafc;
+      --brand-sidebar: rgba(241, 245, 249, 0.8);
+      --brand-border: #e2e8f0;
+      --brand-primary: #0f172a;
+      --brand-secondary: #334155;
+      --brand-text: #0f172a;
+      --brand-muted: #64748b;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--brand-bg);
+      color: var(--brand-text);
+      transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--brand-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--brand-border);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--brand-muted);
+    }
+
+    /* Animation Tokens */
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      .mono { font-family: 'JetBrains Mono', monospace; }
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: #1e293b; }
-      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-      ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    </style>
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-5px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .stagger-1 {
+      animation-delay: 100ms;
+    }
+
+    .stagger-2 {
+      animation-delay: 200ms;
+    }
+
+    .stagger-3 {
+      animation-delay: 300ms;
+    }
+
+    .stagger-4 {
+      animation-delay: 400ms;
+    }
+
+    .glass {
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      background: var(--brand-sidebar);
+    }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: 'var(--brand-bg)',
+              sidebar: 'var(--brand-sidebar)',
+              border: 'var(--brand-border)',
+              primary: 'var(--brand-primary)',
+              secondary: 'var(--brand-secondary)',
+              text: 'var(--brand-text)',
+              muted: 'var(--brand-muted)',
+            }
+          }
+        }
+      }
+    }
+  </script>
 
 
 </head>
-  <body>
-    <div id="root"></div>
+
+<body>
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

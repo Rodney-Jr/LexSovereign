@@ -185,35 +185,35 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
     <div className="flex flex-col h-full max-w-5xl mx-auto animate-in zoom-in-95 duration-300 relative">
 
       {/* Searchable Context Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-t-[2.5rem] p-5 flex items-center justify-between gap-6 relative z-30">
+      <div className="bg-brand-sidebar border border-brand-border rounded-t-[2.5rem] p-5 flex items-center justify-between gap-6 relative z-30 transition-all duration-500">
         <div className="flex items-center gap-4 flex-1">
-          <div className="p-2.5 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-400">
+          <div className="p-2.5 bg-brand-secondary/10 rounded-2xl border border-brand-secondary/20 text-brand-secondary">
             <Briefcase size={20} />
           </div>
 
           <div className="flex-1 relative">
             <div
               onClick={() => setShowMatterList(!showMatterList)}
-              className="bg-slate-950 border border-slate-800 rounded-2xl px-5 py-2.5 flex items-center justify-between cursor-pointer hover:border-blue-500/30 transition-all"
+              className="bg-brand-bg border border-brand-border rounded-2xl px-5 py-2.5 flex items-center justify-between cursor-pointer hover:border-brand-secondary/30 transition-all transition-all duration-500"
             >
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Active Matter Context</span>
-                <span className="text-sm font-bold text-white">
+                <span className="text-[9px] font-bold text-brand-muted uppercase tracking-widest">Active Matter Context</span>
+                <span className="text-sm font-bold text-brand-text">
                   {selectedMatter ? `${selectedMatter.name} (${selectedMatter.id})` : 'Global Sovereign Enclave'}
                 </span>
               </div>
-              <ChevronDown size={16} className={`text-slate-500 transition-transform ${showMatterList ? 'rotate-180' : ''}`} />
+              <ChevronDown size={16} className={`text-brand-muted transition-transform ${showMatterList ? 'rotate-180' : ''}`} />
             </div>
 
             {showMatterList && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
-                <div className="p-3 border-b border-slate-800 bg-slate-950/50 flex items-center gap-3">
-                  <Search size={14} className="text-slate-500" />
+              <div className="absolute top-full left-0 right-0 mt-2 bg-brand-sidebar border border-brand-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50 transition-all duration-500">
+                <div className="p-3 border-b border-brand-border bg-brand-bg flex items-center gap-3">
+                  <Search size={14} className="text-brand-muted" />
                   <input
                     type="text"
                     autoFocus
                     placeholder="Search matters by ID or Name..."
-                    className="bg-transparent text-xs w-full focus:outline-none"
+                    className="bg-transparent text-xs w-full focus:outline-none text-brand-text placeholder:text-brand-muted/40"
                     value={matterSearchTerm}
                     onChange={(e) => setMatterSearchTerm(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
@@ -222,7 +222,7 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
                 <div className="max-h-60 overflow-y-auto scrollbar-hide">
                   <button
                     onClick={() => { setSelectedMatterId(null); setShowMatterList(false); }}
-                    className={`w-full text-left px-5 py-3 text-xs hover:bg-slate-800 transition-all border-b border-slate-800/50 ${!selectedMatterId ? 'text-blue-400 font-bold bg-blue-500/5' : 'text-slate-400'}`}
+                    className={`w-full text-left px-5 py-3 text-xs hover:bg-brand-primary/10 transition-all border-b border-brand-border last:border-0 ${!selectedMatterId ? 'text-brand-secondary font-bold bg-brand-secondary/5' : 'text-brand-muted'}`}
                   >
                     All Global Artifacts
                   </button>
@@ -230,10 +230,10 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
                     <button
                       key={m.id}
                       onClick={() => { setSelectedMatterId(m.id); setShowMatterList(false); }}
-                      className={`w-full text-left px-5 py-3 text-xs hover:bg-slate-800 transition-all flex flex-col gap-0.5 border-b border-slate-800/50 last:border-0 ${selectedMatterId === m.id ? 'bg-blue-500/5' : ''}`}
+                      className={`w-full text-left px-5 py-3 text-xs hover:bg-brand-primary/10 transition-all flex flex-col gap-0.5 border-b border-brand-border last:border-0 ${selectedMatterId === m.id ? 'bg-brand-secondary/5' : ''}`}
                     >
-                      <span className={`font-bold ${selectedMatterId === m.id ? 'text-blue-400' : 'text-slate-100'}`}>{m.name}</span>
-                      <span className="text-[10px] text-slate-500 font-mono">{m.id} • {m.client}</span>
+                      <span className={`font-bold ${selectedMatterId === m.id ? 'text-brand-secondary' : 'text-brand-text'}`}>{m.name}</span>
+                      <span className="text-[10px] text-brand-muted font-mono">{m.id} • {m.client}</span>
                     </button>
                   ))}
                 </div>
@@ -245,9 +245,9 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
         <div className="flex items-center gap-2">
           <button
             onClick={() => setUseGlobalSearch(!useGlobalSearch)}
-            className={`p-2.5 rounded-2xl transition-all flex items-center gap-2 border ${useGlobalSearch
-              ? 'bg-blue-500/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
-              : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-white'
+            className={`p-2.5 rounded-2xl transition-all flex items-center gap-2 border transition-all duration-500 ${useGlobalSearch
+              ? 'bg-brand-secondary/20 border-brand-secondary text-brand-secondary shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+              : 'bg-brand-bg border-brand-border text-brand-muted hover:text-brand-text'
               }`}
             title="Toggle Global Legal Research"
           >
@@ -257,9 +257,9 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
 
           <button
             onClick={() => setShowContextInspector(!showContextInspector)}
-            className={`p-2.5 rounded-2xl transition-all flex items-center gap-2 border ${showContextInspector
-              ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+            className={`p-2.5 rounded-2xl transition-all flex items-center gap-2 border transition-all duration-500 ${showContextInspector
+              ? 'bg-brand-primary/20 border-brand-primary text-brand-primary shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+              : 'bg-brand-bg border-brand-border text-brand-muted hover:text-brand-text'
               }`}
           >
             <Layers size={18} />
@@ -273,12 +273,12 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
         <div className="flex-1 flex flex-col overflow-hidden">
           <div
             ref={scrollRef}
-            className={`flex-1 overflow-y-auto p-8 space-y-10 bg-slate-900/40 border-x border-slate-800 transition-all ${killSwitchActive ? 'opacity-60 grayscale' : ''}`}
+            className={`flex-1 overflow-y-auto p-8 space-y-10 bg-brand-sidebar border-x border-brand-border transition-all duration-500 ${killSwitchActive ? 'opacity-60 grayscale' : ''}`}
           >
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`flex gap-5 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center shadow-2xl transition-transform hover:rotate-6 ${m.role === 'user' ? 'bg-blue-600' : m.isUPLTriggered ? 'bg-red-600' : 'bg-emerald-600'}`}>
+                  <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center shadow-2xl transition-transform hover:rotate-6 ${m.role === 'user' ? 'bg-brand-secondary' : m.isUPLTriggered ? 'bg-red-600' : 'bg-brand-primary'}`}>
                     {m.role === 'user' ? <User size={20} /> : <Bot size={20} />}
                   </div>
                   <div className="space-y-3">

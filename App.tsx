@@ -71,6 +71,25 @@ const AppContent: React.FC = () => {
   const [isOnboarding, setIsOnboarding] = useState(false);
   const [isUserInvitation, setIsUserInvitation] = useState(false);
   const [showMatterModal, setShowMatterModal] = useState(false);
+  const [theme, setTheme] = useState<'midnight' | 'gold' | 'cyber' | 'light'>('midnight');
+
+  useEffect(() => {
+    // Remove existing theme classes
+    document.body.classList.remove('theme-midnight', 'theme-gold', 'theme-cyber', 'theme-light');
+    // Add current theme class
+    document.body.classList.add(`theme-${theme}`);
+
+    // Save to local storage
+    localStorage.setItem('lexSovereign_theme', theme);
+  }, [theme]);
+
+  // Load saved theme
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('lexSovereign_theme');
+    if (savedTheme) {
+      setTheme(savedTheme as any);
+    }
+  }, []);
 
   // RBAC Gatekeeper
   const isAllowed = (tab: string) => {
@@ -94,19 +113,21 @@ const AppContent: React.FC = () => {
     const saved = localStorage.getItem('lexSovereign_session') || sessionStorage.getItem('lexSovereign_session');
     if (saved) {
       try {
-        const { role, userId: savedUserId, tenantId: savedTenantId, permissions } = JSON.parse(saved);
+        const { role, userId: savedUserId, tenantId: savedTenantId, permissions, mode: savedMode } = JSON.parse(saved);
         if (role) {
-          setRole(role);
+          const normalizedRole = role.toUpperCase();
+          setRole(normalizedRole);
 
           // Force hydration from constants to ensure latest RBAC rules apply immediately (fix stale cache)
-          const activePermissions = ROLE_DEFAULT_PERMISSIONS[role] || permissions || [];
+          const activePermissions = ROLE_DEFAULT_PERMISSIONS[normalizedRole] || permissions || [];
 
           setPermissions(activePermissions);
 
           if (savedUserId) setUserId(savedUserId);
           if (savedTenantId) setTenantId(savedTenantId);
+          if (savedMode) setMode(savedMode);
           setIsAuthenticated(true);
-          if (role === 'GLOBAL_ADMIN') {
+          if (normalizedRole === 'GLOBAL_ADMIN') {
             setActiveTab('platform-ops');
           }
         }
@@ -145,26 +166,29 @@ const AppContent: React.FC = () => {
   }, [isAuthenticated]); // Re-run when authenticated
 
   const handleAuthenticated = (roleName: string, permissions: string[]) => {
+    // Normalizing role name to uppercase for permission lookup
+    const normalizedRole = roleName.toUpperCase();
+
     let finalPermissions = permissions;
-    // Fallback: If no permissions provided (e.g. from simplistic onboarding), use defaults
+    // Hybrid: Always try to get latest from constants for stability, fall back to provided perms
     if (!finalPermissions || finalPermissions.length === 0) {
-      finalPermissions = ROLE_DEFAULT_PERMISSIONS[roleName] || [];
+      finalPermissions = ROLE_DEFAULT_PERMISSIONS[normalizedRole] || [];
     }
 
-    setRole(roleName);
+    setRole(normalizedRole);
     setPermissions(finalPermissions);
     setIsAuthenticated(true);
 
     // Persist session immediately to avoid refresh issues
     const sessionData = JSON.stringify({
-      role: roleName,
+      role: normalizedRole,
       userId,
       tenantId,
       permissions: finalPermissions
     });
     localStorage.setItem('lexSovereign_session', sessionData);
 
-    if (roleName === 'GLOBAL_ADMIN') {
+    if (normalizedRole === 'GLOBAL_ADMIN') {
       setActiveTab('platform-ops');
     }
   };
@@ -208,8 +232,7 @@ const AppContent: React.FC = () => {
   }
 
   if (isUserInvitation) {
-    return <TenantUserOnboarding mode={mode} onComplete={(role) => handleAuthenticated(role, [])} />;
-    // TODO: Update TenantUserOnboarding signature later
+    return <TenantUserOnboarding mode={mode} userId={userId} tenantId={tenantId} onComplete={(role) => handleAuthenticated(role, [])} />;
   }
 
   if (!isAuthenticated) {
@@ -220,82 +243,93 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab} mode={mode} setMode={setMode} killSwitchActive={killSwitchActive} userRole={contextRole as any}>
+    <Layout
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      mode={mode}
+      setMode={setMode}
+      killSwitchActive={killSwitchActive}
+      userRole={contextRole as any}
+      theme={theme}
+      setTheme={setTheme}
+    >
       {/* userRole cast as any temporary until Layout updated */}
-      {activeTab === 'dashboard' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-[2rem] flex-1 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-emerald-500/20 rounded-2xl"><Rocket className="text-emerald-400" /></div>
-                <div>
-                  <h4 className="font-bold text-white tracking-tight">Sovereign Enclave Pulse</h4>
-                  <p className="text-xs text-slate-400">Verified as <span className="text-emerald-400 font-bold">{contextRole}</span> • GH-ACC-1</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={handleLogout} aria-label="Logout" title="Logout" className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
-                  <LogOut size={18} />
-                </button>
-              </div>
-            </div>
-            {contextRole !== 'GLOBAL_ADMIN' && (
-              <div onClick={() => setShowMatterModal(true)} className="bg-blue-500/10 border border-blue-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-blue-500/20 transition-all flex items-center gap-4">
-                <div className="p-3 bg-blue-500/20 rounded-2xl"><Briefcase className="text-blue-400" /></div>
-                <div>
-                  <h4 className="font-bold text-white">Incept Matter</h4>
-                  <p className="text-xs text-slate-400">New Global Instance</p>
-                </div>
-              </div>
-            )}
-          </div>
-          <Dashboard mode={mode} />
-        </div>
-      )}
-
-      {activeTab === 'platform-ops' && <GlobalControlPlane />}
-      {activeTab === 'org-blueprint' && <OrgChart />}
-      {activeTab === 'integration-bridge' && <BridgeRegistry />}
-      {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
-      {activeTab === 'reviews' && <ReviewHub userRole={contextRole as any} />}
-      {activeTab === 'governance' && <TenantGovernance />}
-      {activeTab === 'tenant-admin' && <TenantAdministration />}
-      {activeTab === 'growth' && <MonetizationStrategy />}
-      {activeTab === 'backlog' && <EngineeringBacklog />}
-      {activeTab === 'client' && <ClientPortal />}
-      {activeTab === 'predictive' && <PredictiveOps mode={mode} />}
-      {activeTab === 'workflow' && <MatterWorkflow />}
-      {activeTab === 'conflict-check' && <ZkConflictSearch />}
-
-      {activeTab === 'vault' && (
-        selectedMatter ? (
-          <MatterIntelligence mode={mode} onBack={() => setSelectedMatter(null)} documents={documents} />
-        ) : (
-          <div className="space-y-8">
-            <DocumentVault documents={documents} onAddDocument={handleAddDocument} onRemoveDocument={handleRemoveDocument} />
-            <div className="h-[1px] bg-slate-800 w-full my-4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {matters.map(matter => (
-                <div key={matter.id} onClick={() => setSelectedMatter(matter.id)} className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-emerald-500/30 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-colors"><Scale size={20} className="text-emerald-400" /></div>
-                    <div>
-                      <h4 className="font-bold text-white">{matter.name}</h4>
-                      <p className="text-[10px] text-slate-500 font-mono">{matter.id} • {matter.client}</p>
-                    </div>
+      <div className="animate-fade-in-up">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] flex-1 flex items-center justify-between shadow-lg shadow-brand-primary/5">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-brand-primary/20 rounded-2xl animate-float"><Rocket className="text-brand-primary" /></div>
+                  <div>
+                    <h4 className="font-bold text-brand-text tracking-tight">System Operational Pulse</h4>
+                    <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{contextRole}</span> • GH-ACC-1</p>
                   </div>
-                  <ChevronRight className="text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                 </div>
-              ))}
+                <div className="flex gap-3">
+                  <button onClick={handleLogout} aria-label="Logout" title="Logout" className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
+                    <LogOut size={18} />
+                  </button>
+                </div>
+              </div>
+              {contextRole !== 'GLOBAL_ADMIN' && (
+                <div onClick={() => setShowMatterModal(true)} className="bg-brand-secondary/10 border border-brand-secondary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-secondary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-secondary/5">
+                  <div className="p-3 bg-brand-secondary/20 rounded-2xl"><Briefcase className="text-brand-secondary" /></div>
+                  <div>
+                    <h4 className="font-bold text-brand-text">Incept Matter</h4>
+                    <p className="text-xs text-brand-muted">New Global Instance</p>
+                  </div>
+                </div>
+              )}
             </div>
+            <Dashboard mode={mode} />
           </div>
-        )
-      )}
+        )}
 
-      {activeTab === 'chat' && <LegalChat killSwitchActive={killSwitchActive} rules={rules} documents={documents} matters={matters} />}
-      {activeTab === 'status' && <ProjectStatus />}
-      {activeTab === 'tenant-settings' && <TenantSettings mode={mode} killSwitchActive={killSwitchActive} setKillSwitchActive={setKillSwitchActive} />}
-      {activeTab === 'system-settings' && <GlobalSettings />}
+        {activeTab === 'platform-ops' && <GlobalControlPlane />}
+        {activeTab === 'org-blueprint' && <OrgChart />}
+        {activeTab === 'integration-bridge' && <BridgeRegistry />}
+        {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
+        {activeTab === 'reviews' && <ReviewHub userRole={contextRole as any} />}
+        {activeTab === 'governance' && <TenantGovernance />}
+        {activeTab === 'tenant-admin' && <TenantAdministration />}
+        {activeTab === 'growth' && <MonetizationStrategy />}
+        {activeTab === 'backlog' && <EngineeringBacklog />}
+        {activeTab === 'client' && <ClientPortal />}
+        {activeTab === 'predictive' && <PredictiveOps mode={mode} />}
+        {activeTab === 'workflow' && <MatterWorkflow />}
+        {activeTab === 'conflict-check' && <ZkConflictSearch />}
+
+        {activeTab === 'vault' && (
+          selectedMatter ? (
+            <MatterIntelligence mode={mode} onBack={() => setSelectedMatter(null)} documents={documents} />
+          ) : (
+            <div className="space-y-8">
+              <DocumentVault documents={documents} onAddDocument={handleAddDocument} onRemoveDocument={handleRemoveDocument} />
+              <div className="h-[1px] bg-brand-border w-full my-4"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {matters.map(matter => (
+                  <div key={matter.id} onClick={() => setSelectedMatter(matter.id)} className="bg-brand-sidebar border border-brand-border p-6 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-brand-primary/30 transition-all hover:bg-brand-sidebar/80">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-brand-primary/10 rounded-xl group-hover:bg-brand-primary/20 transition-colors"><Scale size={20} className="text-brand-primary" /></div>
+                      <div>
+                        <h4 className="font-bold text-brand-text">{matter.name}</h4>
+                        <p className="text-[10px] text-brand-muted font-mono">{matter.id} • {matter.client}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="text-brand-muted group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        )}
+
+        {activeTab === 'chat' && <LegalChat killSwitchActive={killSwitchActive} rules={rules} documents={documents} matters={matters} />}
+        {activeTab === 'status' && <ProjectStatus />}
+        {activeTab === 'tenant-settings' && <TenantSettings mode={mode} killSwitchActive={killSwitchActive} setKillSwitchActive={setKillSwitchActive} />}
+        {activeTab === 'system-settings' && <GlobalSettings />}
+      </div>
 
       {showMatterModal && <MatterCreationModal mode={mode} userId={userId} tenantId={tenantId} onClose={() => setShowMatterModal(false)} onCreated={handleCreateMatter} />}
     </Layout>

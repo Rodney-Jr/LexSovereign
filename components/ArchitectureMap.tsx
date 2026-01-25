@@ -5,16 +5,16 @@ import { Layers, Database, Cpu, ShieldCheck, ArrowRight, Lock, Cloud, HardDrive,
 const ArchitectureMap: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-8 backdrop-blur-sm relative overflow-hidden">
+      <div className="bg-brand-sidebar/50 border border-brand-border rounded-3xl p-8 backdrop-blur-sm relative overflow-hidden transition-all duration-500">
         <div className="absolute top-0 right-0 p-4">
-           <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">MVP: Hybrid Egress</span>
+          <span className="bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">MVP: Hybrid Egress</span>
         </div>
-        
-        <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-          <Layers className="text-emerald-400" />
+
+        <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-brand-text">
+          <Layers className="text-brand-primary" />
           Sovereign Logical Topology (Railway + Regional Silo)
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">MVP Control Plane (Railway)</h4>
@@ -36,29 +36,29 @@ const ArchitectureMap: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-slate-950 rounded-2xl p-6 border border-slate-800 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
+          <div className="bg-brand-bg rounded-2xl p-6 border border-brand-border relative overflow-hidden transition-all duration-500">
+            <div className="absolute top-0 right-0 p-4 opacity-10 text-brand-primary">
               <ShieldCheck size={120} />
             </div>
-            <h4 className="text-xs font-bold uppercase text-slate-500 mb-6">Regional Silo (Ghana/EU)</h4>
+            <h4 className="text-xs font-bold uppercase text-brand-muted mb-6">Regional Silo (Ghana/EU)</h4>
             <div className="space-y-6 relative z-10">
               <div className="flex items-center gap-4 justify-between">
                 <div className="flex flex-col items-center">
-                  <HardDrive size={24} className="text-emerald-400 mb-2" />
-                  <span className="text-[10px] mono">Pinned Storage</span>
+                  <HardDrive size={24} className="text-brand-primary mb-2" />
+                  <span className="text-[10px] font-mono text-brand-text">Pinned Storage</span>
                 </div>
                 <div className="flex-1 flex flex-col items-center px-4">
-                   <div className="w-full h-[1px] bg-slate-800 relative">
-                      <div className="absolute top-1/2 left-0 w-2 h-2 bg-blue-500 rounded-full -translate-y-1/2 animate-[ping_2s_infinite]"></div>
-                   </div>
-                   <span className="text-[8px] font-bold text-blue-500 uppercase mt-2">mTLS Tunnel</span>
+                  <div className="w-full h-[1px] bg-brand-border relative">
+                    <div className="absolute top-1/2 left-0 w-2 h-2 bg-brand-secondary rounded-full -translate-y-1/2 animate-[ping_2s_infinite]"></div>
+                  </div>
+                  <span className="text-[8px] font-bold text-brand-secondary uppercase mt-2">mTLS Tunnel</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <Database size={24} className="text-slate-400 mb-2" />
-                  <span className="text-[10px] mono">Local Vault</span>
+                  <Database size={24} className="text-brand-muted mb-2" />
+                  <span className="text-[10px] font-mono text-brand-text">Local Vault</span>
                 </div>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed italic border-l-2 border-emerald-500/50 pl-3">
+              <p className="text-xs text-brand-muted leading-relaxed italic border-l-2 border-brand-primary/50 pl-3">
                 "The Railway MVP uses a Split-Plane approach. Intelligence (Gemini) executes in the cloud, but the 'Legal Weight' (Documents) remains regional."
               </p>
             </div>

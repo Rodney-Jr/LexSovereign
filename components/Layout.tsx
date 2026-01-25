@@ -40,6 +40,8 @@ import { TAB_REQUIRED_PERMISSIONS } from '../constants';
 
 
 
+import CommandPalette from './CommandPalette';
+
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
@@ -48,6 +50,8 @@ interface LayoutProps {
   setMode: (mode: AppMode) => void;
   killSwitchActive: boolean;
   userRole: any; // Legacy prop, we use hook now
+  theme: 'midnight' | 'gold' | 'cyber' | 'light';
+  setTheme: (theme: any) => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -56,9 +60,23 @@ const Layout: React.FC<LayoutProps> = ({
   setActiveTab,
   mode,
   setMode,
-  killSwitchActive
+  killSwitchActive,
+  theme,
+  setTheme
 }) => {
   const { hasAnyPermission, role } = usePermissions();
+  const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, []);
 
   const isAllowed = (tab: string) => {
     // If global admin, allow everything (fail-safe)
@@ -72,9 +90,9 @@ const Layout: React.FC<LayoutProps> = ({
     return hasAnyPermission(required);
   };
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-200 overflow-hidden">
+    <div className="flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-900/50 flex flex-col shadow-2xl">
+      <aside className="w-64 border-r border-brand-border bg-brand-sidebar flex flex-col shadow-2xl transition-all duration-500">
         <div className="p-6 flex items-center gap-3">
           <div className="bg-emerald-500/20 p-2 rounded-lg">
             <ShieldCheck className="text-emerald-400 w-6 h-6" />
@@ -96,13 +114,13 @@ const Layout: React.FC<LayoutProps> = ({
           {/* Platform Owner Section */}
           {(isAllowed('platform-ops') || isAllowed('governance')) && (
             <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Platform Owner</span>
-              <Monitor size={10} className="text-cyan-500" />
+              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Platform Owner</span>
+              <Monitor size={10} className="text-brand-secondary" />
             </div>
           )}
           {isAllowed('platform-ops') && (
             <NavItem
-              icon={<Globe size={18} className="text-cyan-400" />}
+              icon={<Globe size={18} className="text-brand-secondary" />}
               label="Global Plane"
               isActive={activeTab === 'platform-ops'}
               onClick={() => setActiveTab('platform-ops')}
@@ -111,7 +129,7 @@ const Layout: React.FC<LayoutProps> = ({
           {isAllowed('governance') && (
             <NavItem
               icon={<LayoutGrid size={18} />}
-              label="Tenant Governance"
+              label="Global Governance"
               isActive={activeTab === 'governance'}
               onClick={() => setActiveTab('governance')}
             />
@@ -120,12 +138,12 @@ const Layout: React.FC<LayoutProps> = ({
           {/* Management Section */}
           {(isAllowed('org-blueprint') || isAllowed('integration-bridge') || isAllowed('tenant-admin') || isAllowed('identity') || isAllowed('backlog')) && (
             <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Management</span>
+              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Management</span>
             </div>
           )}
           {isAllowed('org-blueprint') && (
             <NavItem
-              icon={<GitBranch size={18} className="text-blue-400" />}
+              icon={<GitBranch size={18} className="text-brand-secondary" />}
               label="Firm Blueprint"
               isActive={activeTab === 'org-blueprint'}
               onClick={() => setActiveTab('org-blueprint')}
@@ -133,7 +151,7 @@ const Layout: React.FC<LayoutProps> = ({
           )}
           {isAllowed('integration-bridge') && (
             <NavItem
-              icon={<Plug size={18} className="text-emerald-400" />}
+              icon={<Plug size={18} className="text-brand-primary" />}
               label="Bridge Registry"
               isActive={activeTab === 'integration-bridge'}
               onClick={() => setActiveTab('integration-bridge')}
@@ -142,7 +160,7 @@ const Layout: React.FC<LayoutProps> = ({
           {isAllowed('tenant-admin') && (
             <NavItem
               icon={<Building2 size={18} />}
-              label="Tenant Admin"
+              label="Organization Admin"
               isActive={activeTab === 'tenant-admin'}
               onClick={() => setActiveTab('tenant-admin')}
             />
@@ -167,12 +185,12 @@ const Layout: React.FC<LayoutProps> = ({
           {/* Operations Section */}
           {(isAllowed('conflict-check') || isAllowed('reviews') || isAllowed('workflow') || isAllowed('vault') || isAllowed('chat')) && (
             <div className="pt-4 pb-2 px-4">
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Operations</span>
+              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Operations</span>
             </div>
           )}
           {isAllowed('conflict-check') && (
             <NavItem
-              icon={<Search size={18} className="text-blue-400" />}
+              icon={<Search size={18} className="text-brand-secondary" />}
               label="ZK Conflict Check"
               isActive={activeTab === 'conflict-check'}
               onClick={() => setActiveTab('conflict-check')}
@@ -214,18 +232,9 @@ const Layout: React.FC<LayoutProps> = ({
           {/* Enterprise Tier Section */}
           {(isAllowed('enclave') || isAllowed('growth') || isAllowed('audit')) && (
             <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Enterprise Tier</span>
-              <Lock size={10} className="text-slate-700" />
+              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Enterprise Tier</span>
+              <Lock size={10} className="text-brand-muted" />
             </div>
-          )}
-          {isAllowed('enclave') && (
-            <NavItem
-              icon={<Box size={18} />}
-              label="Physical Enclave"
-              isActive={activeTab === 'enclave'}
-              disabled={true}
-              onClick={() => setActiveTab('enclave')}
-            />
           )}
           {isAllowed('growth') && (
             <NavItem
@@ -247,7 +256,7 @@ const Layout: React.FC<LayoutProps> = ({
           {/* System Section */}
           {(isAllowed('status') || isAllowed('system-settings') || isAllowed('tenant-settings')) && (
             <div className="pt-4 pb-2 px-4">
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">System</span>
+              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">System</span>
             </div>
           )}
           {isAllowed('status') && (
@@ -260,7 +269,7 @@ const Layout: React.FC<LayoutProps> = ({
           )}
           {isAllowed('system-settings') && (
             <NavItem
-              icon={<Globe size={18} className="text-blue-400" />}
+              icon={<Globe size={18} className="text-brand-secondary" />}
               label="Infrastructure Plane"
               isActive={activeTab === 'system-settings'}
               onClick={() => setActiveTab('system-settings')}
@@ -276,19 +285,43 @@ const Layout: React.FC<LayoutProps> = ({
           )}
         </nav>
 
-        <div className="p-4 border-t border-slate-800 space-y-4">
-          <div className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
-            {mode === AppMode.LAW_FIRM ? <Scale className="text-blue-400" size={18} /> : <Building2 className="text-purple-400" size={18} />}
-            <select
-              value={mode}
-              onChange={(e) => setMode(e.target.value as AppMode)}
-              className="bg-transparent text-sm focus:outline-none w-full cursor-pointer font-medium"
-              aria-label="Select App Mode"
-            >
-              <option value={AppMode.LAW_FIRM}>Law Firm Mode</option>
-              <option value={AppMode.ENTERPRISE}>Enterprise Mode</option>
-            </select>
+        <div className="p-4 border-t border-brand-border space-y-4">
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em] ml-1">Appearance</span>
+            <div className="flex flex-wrap gap-2 p-1 bg-brand-bg/50 rounded-xl border border-brand-border">
+              {['midnight', 'gold', 'cyber', 'light'].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTheme(t as any)}
+                  title={`${t.charAt(0).toUpperCase() + t.slice(1)} Theme`}
+                  className={`w-8 h-8 rounded-lg border-2 transition-all theme-swatch-${t} ${theme === t ? 'border-brand-primary scale-110 shadow-lg shadow-brand-primary/20' : 'border-transparent opacity-50 hover:opacity-100'
+                    }`}
+                />
+              ))}
+            </div>
           </div>
+
+          {role === 'GLOBAL_ADMIN' ? (
+            <div className="flex items-center gap-2 p-2 bg-brand-bg/50 rounded-lg border border-brand-border">
+              {mode === AppMode.LAW_FIRM ? <Scale className="text-brand-secondary" size={18} /> : <Building2 className="text-purple-400" size={18} />}
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as AppMode)}
+                className="bg-transparent text-sm focus:outline-none w-full cursor-pointer font-medium text-brand-text"
+                aria-label="Select App Mode"
+              >
+                <option value={AppMode.LAW_FIRM} className="bg-brand-bg">Law Firm Mode</option>
+                <option value={AppMode.ENTERPRISE} className="bg-brand-bg">Enterprise Mode</option>
+              </select>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 p-3 bg-brand-bg/30 rounded-xl border border-brand-border/50 opacity-60">
+              {mode === AppMode.LAW_FIRM ? <Scale size={16} className="text-brand-secondary" /> : <Building2 size={16} className="text-purple-400" />}
+              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-text">
+                {mode === AppMode.LAW_FIRM ? 'Law Firm Instance' : 'Enterprise Instance'}
+              </span>
+            </div>
+          )}
 
           {killSwitchActive && (
             <div className="flex items-center gap-2 p-2 bg-red-500/10 text-red-400 rounded-lg animate-pulse border border-red-500/20">
@@ -301,30 +334,40 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-16 border-b border-slate-800 bg-slate-900/30 flex items-center justify-between px-8 backdrop-blur-md sticky top-0 z-20">
+        <header className="h-16 border-b border-brand-border bg-brand-sidebar flex items-center justify-between px-8 backdrop-blur-md sticky top-0 z-20 transition-all duration-500">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold text-slate-100 capitalize">{activeTab.replace('-', ' ')}</h2>
-            <div className="h-4 w-[1px] bg-slate-700"></div>
-            <div className="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-              <Cloud size={14} className="text-blue-400" />
+            <h2 className="text-lg font-semibold text-brand-text capitalize">{activeTab.replace('-', ' ')}</h2>
+            <div className="h-4 w-[1px] bg-brand-border"></div>
+            <div className="flex items-center gap-2 text-[10px] text-brand-muted uppercase tracking-widest font-bold">
+              <Cloud size={14} className="text-brand-secondary" />
               <span>Orchestrator: Railway Hybrid</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">
-              <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">MVP Phase 1</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-brand-secondary/10 rounded-full border border-brand-secondary/20">
+              <span className="text-[10px] font-bold text-brand-secondary uppercase tracking-widest">v1.0.0 Stable</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-              <UserCheck size={14} className="text-emerald-400" />
-              <span className="text-[10px] font-medium text-emerald-400 uppercase tracking-widest">Counsel Verified</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
+              <ShieldCheck size={14} className="text-brand-primary" />
+              <span className="text-[10px] font-medium text-brand-primary uppercase tracking-widest">Protocol Secured</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto bg-slate-950 p-8 scroll-smooth">
+        <div className="flex-1 overflow-y-auto bg-brand-bg p-8 scroll-smooth transition-colors duration-500">
           {children}
         </div>
       </main>
+
+      {isPaletteOpen && (
+        <CommandPalette
+          onClose={() => setIsPaletteOpen(false)}
+          onNavigate={(tab) => {
+            setActiveTab(tab);
+            setIsPaletteOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -334,8 +377,8 @@ const NavItem = ({ icon, label, isActive, onClick, disabled }: { icon: any, labe
     onClick={onClick}
     disabled={disabled}
     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${isActive
-      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_12px_-4px_rgba(16,185,129,0.4)]'
-      : 'text-slate-500 hover:bg-slate-800/50 hover:text-slate-100'
+      ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-[0_0_12px_-4px_rgba(16,185,129,0.4)]'
+      : 'text-brand-muted hover:bg-brand-sidebar hover:text-brand-text'
       } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
   >
     {icon}

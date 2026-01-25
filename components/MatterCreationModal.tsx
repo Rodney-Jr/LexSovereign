@@ -85,11 +85,23 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         // region: formData.region  // Region is not on Matter schema yet, likely inferred from Tenant or User
       };
 
+      // Retrieve token from localStorage
+      const savedSession = localStorage.getItem('lexSovereign_session');
+      let token = '';
+      if (savedSession) {
+        try {
+          const session = JSON.parse(savedSession);
+          token = session.token || '';
+        } catch (e) {
+          console.error("Error parsing session for token", e);
+        }
+      }
+
       const response = await fetch('/api/matters', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${token}` // TODO: Add Auth token
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
