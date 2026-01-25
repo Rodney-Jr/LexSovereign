@@ -1,4 +1,5 @@
 import express from 'express';
+console.log("Starting Sovereign Proxy process...");
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
