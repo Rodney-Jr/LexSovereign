@@ -93,8 +93,16 @@ async function main() {
     }
 
     // Tenant
-    const tenant = await prisma.tenant.create({
-        data: { name: 'LexSovereign Demo', plan: 'ENTERPRISE', primaryRegion: 'GH_ACC_1' }
+    const tenant = await prisma.tenant.upsert({
+        where: { id: 'default-demo-tenant-id' }, // Use a stable ID for seeding
+        update: {},
+        create: {
+            id: 'default-demo-tenant-id',
+            name: 'LexSovereign Demo',
+            plan: 'ENTERPRISE',
+            appMode: 'LAW_FIRM',
+            primaryRegion: 'GH_ACC_1'
+        }
     });
 
     const passwordHash = await bcrypt.hash('password123', 10);
@@ -104,20 +112,24 @@ async function main() {
     const seniorCounselRole = await prisma.role.findUnique({ where: { name: 'SENIOR_COUNSEL' } });
 
     // Users
-    const admin = await prisma.user.create({
-        data: {
+    const admin = await prisma.user.upsert({
+        where: { email: 'admin@lexsovereign.com' },
+        update: {},
+        create: {
             email: 'admin@lexsovereign.com',
             passwordHash,
             name: 'Sovereign Admin',
             roleId: globalAdminRole?.id,
-            roleString: 'GLOBAL_ADMIN', // Keep legacy for middleware compat until migrated
+            roleString: 'GLOBAL_ADMIN',
             region: 'GH_ACC_1',
             tenantId: tenant.id
         }
     });
 
-    const counsel = await prisma.user.create({
-        data: {
+    const counsel = await prisma.user.upsert({
+        where: { email: 'counsel@lexsovereign.com' },
+        update: {},
+        create: {
             email: 'counsel@lexsovereign.com',
             passwordHash,
             name: 'Internal Counsel',
@@ -131,8 +143,10 @@ async function main() {
     console.log(`✅ Seeded Users: ${admin.email}, ${counsel.email}`);
 
     // Matters
-    const matter1 = await prisma.matter.create({
-        data: {
+    const matter1 = await prisma.matter.upsert({
+        where: { id: 'MT-772' },
+        update: {},
+        create: {
             id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH',
             tenantId: tenant.id, internalCounselId: counsel.id
         }
