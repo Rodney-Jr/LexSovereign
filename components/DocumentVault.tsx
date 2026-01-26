@@ -15,10 +15,13 @@ import {
   X,
   SlidersHorizontal,
   ChevronDown,
-  Briefcase
+  Briefcase,
+  Sparkles
 } from 'lucide-react';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
+import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
+import DraftingStudio from './DraftingStudio';
 
 interface DocumentVaultProps {
   documents: DocumentMetadata[];
@@ -34,6 +37,10 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
   const [filterPrivilege, setFilterPrivilege] = useState<string>('All');
   const [filterClassification, setFilterClassification] = useState<string>('All');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Marketplace & Studio State
+  const [showMarketplace, setShowMarketplace] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   // Derive unique matter IDs from current document set for the filter dropdown
   const uniqueMatterIds = Array.from(new Set(documents.map(doc => doc.matterId))).sort();
@@ -99,6 +106,13 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
               <X size={14} /> Clear All
             </button>
           )}
+          <button
+            onClick={() => setShowMarketplace(true)}
+            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-brand-primary rounded-2xl font-bold transition-all flex items-center gap-2 border border-brand-primary/20 hover:border-brand-primary/40 active:scale-95"
+          >
+            <Sparkles size={20} className="animate-pulse" />
+            Draft from Template
+          </button>
           <button
             onClick={() => setShowIngest(true)}
             className="bg-brand-primary hover:opacity-90 text-brand-bg px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 shadow-xl shadow-brand-primary/20 active:scale-95"
@@ -343,6 +357,39 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
           onIngest={(doc) => {
             onAddDocument(doc);
             setShowIngest(false);
+          }}
+        />
+      )}
+
+      <DocumentTemplateMarketplace
+        isOpen={showMarketplace}
+        onClose={() => setShowMarketplace(false)}
+        onSelect={(id) => {
+          setSelectedTemplateId(id);
+          setShowMarketplace(false);
+        }}
+      />
+
+      {selectedTemplateId && (
+        <DraftingStudio
+          templateId={selectedTemplateId}
+          matterId={filterMatterId !== 'All' ? filterMatterId : null}
+          onClose={() => setSelectedTemplateId(null)}
+          onSave={(name, content) => {
+            onAddDocument({
+              id: `DOC-GEN-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+              name,
+              type: 'Draft',
+              size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
+              uploadedBy: 'Sovereign AI',
+              uploadedAt: new Date().toLocaleTimeString(),
+              region: filterRegion !== 'All' ? (filterRegion as Region) : Region.GHANA,
+              matterId: filterMatterId !== 'All' ? filterMatterId : 'UNCATEGORIZED',
+              privilege: PrivilegeStatus.PRIVILEGED,
+              classification: 'Confidential',
+              encryption: 'DAS'
+            });
+            setSelectedTemplateId(null);
           }}
         />
       )}

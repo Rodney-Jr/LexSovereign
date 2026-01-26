@@ -172,7 +172,50 @@ async function main() {
             create: rule
         });
     }
-    console.log(`✅ Seeded ${rules.length} Regulatory Rules`);
+    // Document Templates
+    const docTemplates = [
+        {
+            id: 'TPL-NDA-001',
+            name: 'Standard Mutual NDA',
+            description: 'Mutual non-disclosure agreement for early-stage partnership discussions.',
+            category: 'CORPORATE',
+            jurisdiction: 'GLOBAL',
+            content: '# MUTUAL NON-DISCLOSURE AGREEMENT\n\nThis Agreement is entered into between **{{PARTY_A}}** and **{{PARTY_B}}** on this date **{{EFFECTIVE_DATE}}**.\n\n1. **Purpose**: The parties wish to explore a potential business relationship relating to **{{PROJECT_NAME}}**.\n2. **Confidential Information**: Means any data, reports, or trade secrets disclosed during the term...\n3. **Term**: This agreement shall remain in effect for **{{TERM_YEARS}}** years.',
+            placeholders: ['PARTY_A', 'PARTY_B', 'EFFECTIVE_DATE', 'PROJECT_NAME', 'TERM_YEARS'],
+            version: '1.0.0'
+        },
+        {
+            id: 'TPL-DEED-GH-001',
+            name: 'Deed of Assignment (Land)',
+            description: 'Standard conveyance document for the transfer of land interests in Ghana.',
+            category: 'REAL_ESTATE',
+            jurisdiction: 'GH_ACC_1',
+            content: '# DEED OF ASSIGNMENT\n\n**THIS DEED** is made the day of **{{DAY}}** of **{{MONTH}}**, **{{YEAR}}**.\n\n**BETWEEN**: **{{ASSIGNOR_NAME}}** (hereinafter called the "Assignor") and **{{ASSIGNEE_NAME}}** (hereinafter called the "Assignee").\n\n**WHEREAS**: The Assignor is the beneficial owner of the land described as **{{PROPERTY_DESCRIPTION}}** located at **{{LOCATION}}**.\n\n**CONSIDERATION**: In consideration of the sum of **{{CURRENCY}} {{AMOUNT}}**...',
+            placeholders: ['DAY', 'MONTH', 'YEAR', 'ASSIGNOR_NAME', 'ASSIGNEE_NAME', 'PROPERTY_DESCRIPTION', 'LOCATION', 'CURRENCY', 'AMOUNT'],
+            version: '1.1.0'
+        },
+        {
+            id: 'TPL-SPA-001',
+            name: 'Share Purchase Agreement (Simplified)',
+            description: 'Short-form SPA for private company share transfers.',
+            category: 'CORPORATE',
+            jurisdiction: 'GLOBAL',
+            content: '# SHARE PURCHASE AGREEMENT\n\n**SELLER**: {{SELLER_NAME}}\n**BUYER**: {{BUYER_NAME}}\n**COMPANY**: {{COMPANY_NAME}}\n\n1. **Sale and Purchase**: The Seller agrees to sell and the Buyer agrees to purchase **{{SHARE_COUNT}}** Ordinary Shares in the capital of the Company for the price of {{PRICE}}.',
+            placeholders: ['SELLER_NAME', 'BUYER_NAME', 'COMPANY_NAME', 'SHARE_COUNT', 'PRICE'],
+            version: '1.0.0'
+        }
+    ];
+
+    console.log('🌱 Seeding Document Templates...');
+    for (const tpl of docTemplates) {
+        await prisma.documentTemplate.upsert({
+            where: { id: tpl.id },
+            update: {},
+            create: tpl
+        });
+    }
+
+    console.log(`✅ Seeded ${docTemplates.length} Document Templates`);
 }
 
 main()

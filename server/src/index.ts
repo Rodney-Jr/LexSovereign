@@ -11,6 +11,7 @@ import bridgesRouter from './routes/bridges';
 import rolesRouter from './routes/roles';
 import webhooksRouter from './routes/webhooks';
 import platformRouter from './routes/platform';
+import documentTemplatesRouter from './routes/documentTemplates';
 import { sovereignGuard } from './middleware/sovereignGuard';
 
 // Load environment variables
@@ -54,6 +55,7 @@ app.use('/api/bridges', bridgesRouter);
 app.use('/api/roles', rolesRouter);
 app.use('/api/webhooks', webhooksRouter);
 app.use('/api/platform', platformRouter);
+app.use('/api/document-templates', documentTemplatesRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));
