@@ -52,6 +52,8 @@ const INITIAL_MATTERS: Matter[] = [
 ];
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
+import { useInactivityLogout } from './hooks/useInactivityLogout';
+import { useWorkPersistence } from './hooks/useWorkPersistence';
 
 // ... (keep existing imports)
 
@@ -69,9 +71,14 @@ const AppContent: React.FC = () => {
   const [matters, setMatters] = useState<Matter[]>(INITIAL_MATTERS);
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
   const [isOnboarding, setIsOnboarding] = useState(false);
-  const [isUserInvitation, setIsUserInvitation] = useState(false);
-  const [showMatterModal, setShowMatterModal] = useState(false);
   const [theme, setTheme] = useState<'midnight' | 'gold' | 'cyber' | 'light'>('midnight');
+
+  // Security Hooks
+  const { recoverWork, clearWork } = useWorkPersistence({ activeTab, selectedMatterId: selectedMatter });
+
+  useInactivityLogout(() => {
+    if (isAuthenticated) handleLogout();
+  }, 300000); // 5 Minutes
 
   useEffect(() => {
     // Remove existing theme classes
@@ -191,6 +198,14 @@ const AppContent: React.FC = () => {
     if (normalizedRole === 'GLOBAL_ADMIN') {
       setActiveTab('platform-ops');
     }
+
+    // Recover previous work context after login
+    const savedWork = recoverWork();
+    if (savedWork) {
+      console.log("[Persistence] Recovering work session:", savedWork.activeTab);
+      setActiveTab(savedWork.activeTab);
+      if (savedWork.selectedMatterId) setSelectedMatter(savedWork.selectedMatterId);
+    }
   };
 
   const handleLogout = () => {
@@ -202,6 +217,7 @@ const AppContent: React.FC = () => {
     setIsOnboarding(false);
     localStorage.removeItem('lexSovereign_session');
     sessionStorage.removeItem('lexSovereign_session');
+    // Note: We do NOT clearWork() here to allow recovery if logout was forced by inactivity
     setRole('');
     setPermissions([]);
   };
