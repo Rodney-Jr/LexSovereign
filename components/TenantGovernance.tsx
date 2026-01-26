@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ProvisionTenantModal from './ProvisionTenantModal';
 import {
   Globe,
   ShieldCheck,
@@ -19,17 +20,37 @@ import {
 import { TenantMetadata, Region, SaaSPlan } from '../types';
 
 const TenantGovernance: React.FC = () => {
-  const [tenants, setTenants] = useState<TenantMetadata[]>([
-    { id: 'T-001', name: 'Accra Partners Ltd', plan: SaaSPlan.SOVEREIGN, primaryRegion: Region.GHANA, sovereignCredits: 4200, activeMatters: 12, dataGravity: '4.2 TB' },
-    { id: 'T-002', name: 'Frankfurt Finance Enclave', plan: SaaSPlan.ENCLAVE_EXCLUSIVE, primaryRegion: Region.GERMANY, sovereignCredits: 8500, activeMatters: 4, dataGravity: '12.8 TB' },
-    { id: 'T-003', name: 'Standard US Corp', plan: SaaSPlan.STANDARD, primaryRegion: Region.USA, sovereignCredits: 1200, activeMatters: 45, dataGravity: '0.8 TB' }
-  ]);
-
+  const [tenants, setTenants] = useState<TenantMetadata[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const handleSync = () => {
+  const fetchTenants = async () => {
+    try {
+      const saved = localStorage.getItem('lexSovereign_session');
+      const { token } = JSON.parse(saved || '{}');
+      const res = await fetch('/api/platform/tenants', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTenants(data);
+      }
+    } catch (e) {
+      console.error("Failed to load tenants", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTenants();
+  }, []);
+
+  const handleSync = async () => {
     setIsSyncing(true);
-    setTimeout(() => setIsSyncing(false), 2000);
+    await fetchTenants();
+    setTimeout(() => setIsSyncing(false), 800);
   };
 
   return (
@@ -53,11 +74,20 @@ const TenantGovernance: React.FC = () => {
           >
             <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
           </button>
-          <button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-blue-900/20 transition-all">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-blue-900/20 transition-all"
+          >
             <Plus size={18} /> Provision Tenant
           </button>
         </div>
       </div>
+
+      <ProvisionTenantModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchTenants}
+      />
 
       {/* Infrastructure Heatmap */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

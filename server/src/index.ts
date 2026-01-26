@@ -9,8 +9,8 @@ import authRouter from './routes/auth';
 import mattersRouter from './routes/matters';
 import bridgesRouter from './routes/bridges';
 import rolesRouter from './routes/roles';
-import auditRouter from './routes/audit';
 import webhooksRouter from './routes/webhooks';
+import platformRouter from './routes/platform';
 import { sovereignGuard } from './middleware/sovereignGuard';
 
 // Load environment variables
@@ -53,6 +53,7 @@ app.use('/api/matters', mattersRouter);
 app.use('/api/bridges', bridgesRouter);
 app.use('/api/roles', rolesRouter);
 app.use('/api/webhooks', webhooksRouter);
+app.use('/api/platform', platformRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));
