@@ -41,4 +41,4 @@ ENV NODE_ENV=production
 
 
 # Start the server directly (bypassing npm to avoid script caching issues)
-CMD ["node", "dist/index.js"]
+CMD ["npm", "start"]
