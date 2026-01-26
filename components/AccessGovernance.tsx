@@ -25,6 +25,7 @@ import {
 import { UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
 import RoleTemplateMarketplace from './RoleTemplateMarketplace';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface Permission {
   id: string;
@@ -70,24 +71,20 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
   }, []);
 
   const fetchData = async () => {
+    const session = getSavedSession();
+    if (!session?.token) return;
+
     try {
       setIsLoading(true);
-      const saved = localStorage.getItem('lexSovereign_session');
-      const { token } = JSON.parse(saved || '{}');
-
-      const [rolesRes, permsRes] = await Promise.all([
-        fetch('/api/roles', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('/api/roles/permissions', { headers: { 'Authorization': `Bearer ${token}` } })
+      const [rolesData, permsData] = await Promise.all([
+        authorizedFetch('/api/roles', { token: session.token }),
+        authorizedFetch('/api/roles/permissions', { token: session.token })
       ]);
 
-      if (rolesRes.ok && permsRes.ok) {
-        const rolesData = await rolesRes.json();
-        const permsData = await permsRes.json();
-        setRoles(rolesData);
-        setAllPermissions(permsData);
-        if (rolesData.length > 0 && !selectedRole) {
-          setSelectedRole(rolesData[0]);
-        }
+      setRoles(rolesData);
+      setAllPermissions(permsData);
+      if (rolesData.length > 0 && !selectedRole) {
+        setSelectedRole(rolesData[0]);
       }
     } catch (error) {
       console.error('Failed to fetch roles', error);
@@ -106,14 +103,14 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
 
   const handleCreate = async () => {
     if (!editName) return;
+    const session = getSavedSession();
+    if (!session?.token) return;
+
     setIsSaving(true);
     try {
-      const res = await fetch('/api/roles', {
+      await authorizedFetch('/api/roles', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}`
-        },
+        token: session.token,
         body: JSON.stringify({
           name: editName,
           description: editDesc,
@@ -121,13 +118,12 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
         })
       });
 
-      if (res.ok) {
-        await fetchData();
-        setShowCreateModal(false);
-        resetForm();
-      }
-    } catch (e) {
+      await fetchData();
+      setShowCreateModal(false);
+      resetForm();
+    } catch (e: any) {
       console.error(e);
+      alert(e.message || "Failed to create role.");
     } finally {
       setIsSaving(false);
     }

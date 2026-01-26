@@ -18,6 +18,7 @@ import {
   Search
 } from 'lucide-react';
 import { TenantMetadata, Region, SaaSPlan } from '../types';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 const TenantGovernance: React.FC = () => {
   const [tenants, setTenants] = useState<TenantMetadata[]>([]);
@@ -26,16 +27,13 @@ const TenantGovernance: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const fetchTenants = async () => {
+    const session = getSavedSession();
+    if (!session?.token) return;
+
     try {
-      const saved = localStorage.getItem('lexSovereign_session');
-      const { token } = JSON.parse(saved || '{}');
-      const res = await fetch('/api/platform/tenants', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTenants(data);
-      }
+      setLoading(true);
+      const data = await authorizedFetch('/api/platform/tenants', { token: session.token });
+      setTenants(data);
     } catch (e) {
       console.error("Failed to load tenants", e);
     } finally {
