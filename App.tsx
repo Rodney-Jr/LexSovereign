@@ -71,6 +71,8 @@ const AppContent: React.FC = () => {
   const [matters, setMatters] = useState<Matter[]>(INITIAL_MATTERS);
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
   const [isOnboarding, setIsOnboarding] = useState(false);
+  const [isUserInvitation, setIsUserInvitation] = useState(false);
+  const [showMatterModal, setShowMatterModal] = useState(false);
   const [theme, setTheme] = useState<'midnight' | 'gold' | 'cyber' | 'light'>('midnight');
 
   // Security Hooks
