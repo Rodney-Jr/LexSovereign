@@ -18,7 +18,8 @@ import {
   X,
   Copy,
   Info,
-  Loader2
+  Loader2,
+  Zap
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
