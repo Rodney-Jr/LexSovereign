@@ -1,5 +1,5 @@
 import express from 'express';
-console.log("[VERSION CHECK] v2 - Sovereign Proxy Starting...");
+console.log("[VERSION CHECK] v3 - FULL PRODUCTION MODE Starting...");
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
