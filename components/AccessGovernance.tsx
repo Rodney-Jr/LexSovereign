@@ -303,7 +303,11 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
                   <div>
                     <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                       {selectedRole.name}
-                      {selectedRole.isSystem && <ShieldLock size={16} className="text-slate-500" title="System Role (Read Only)" />}
+                      {selectedRole.isSystem && (
+                        <span title="System Role (Read Only)">
+                          <ShieldLock size={16} className="text-slate-500" />
+                        </span>
+                      )}
                     </h2>
                     <p className="text-slate-400 mt-2 text-sm">{selectedRole.description}</p>
                   </div>
