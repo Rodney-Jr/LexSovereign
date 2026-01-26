@@ -70,7 +70,18 @@ router.post('/onboard-silo', async (req, res) => {
         });
 
     } catch (error: any) {
-        console.error(error);
+        console.error(`[Auth] Onboarding Failed: ${error.message}`);
+
+        // Handle Prisma Unique Constraint Violation
+        if (error.code === 'P2002') {
+            const target = error.meta?.target || ['email'];
+            res.status(400).json({
+                error: `An account with this ${target.includes('email') ? 'email' : 'name'} already exists.`,
+                code: 'CONFLICT'
+            });
+            return;
+        }
+
         res.status(400).json({ error: error.message || 'Onboarding failed.' });
     }
 });

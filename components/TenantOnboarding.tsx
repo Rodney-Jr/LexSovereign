@@ -96,11 +96,17 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
       if (!res.ok) {
         const text = await res.text();
         let errorMessage = 'Provisioning failed';
+        let isConflict = false;
         try {
           const json = JSON.parse(text);
           errorMessage = json.error || errorMessage;
+          isConflict = json.code === 'CONFLICT';
         } catch (e) {
           errorMessage = text || errorMessage;
+        }
+
+        if (isConflict) {
+          throw new Error("IDENTITY CONFLICT: This email is already registered in a LexSovereign Enclave.");
         }
         throw new Error(errorMessage);
       }
