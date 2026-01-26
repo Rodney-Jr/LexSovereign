@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
+import RoleTemplateMarketplace from './RoleTemplateMarketplace';
 
 interface Permission {
   id: string;
@@ -58,6 +59,7 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
   const [editDesc, setEditDesc] = useState('');
   const [editPerms, setEditPerms] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showMarketplace, setShowMarketplace] = useState(false);
 
   const canManageRoles = hasAnyPermission(['manage_roles']) || contextRole === 'GLOBAL_ADMIN';
 
@@ -68,9 +70,12 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
+      const saved = localStorage.getItem('lexSovereign_session');
+      const { token } = JSON.parse(saved || '{}');
+
       const [rolesRes, permsRes] = await Promise.all([
-        fetch('/api/roles', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-        fetch('/api/roles/permissions', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+        fetch('/api/roles', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/roles/permissions', { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
       if (rolesRes.ok && permsRes.ok) {
@@ -105,7 +110,7 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}`
         },
         body: JSON.stringify({
           name: editName,
@@ -134,7 +139,7 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}`
         },
         body: JSON.stringify({
           name: editName,
@@ -161,7 +166,7 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
     try {
       const res = await fetch(`/api/roles/${selectedRole.id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
       });
 
       if (res.ok) {
@@ -177,7 +182,7 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
     try {
       const res = await fetch(`/api/roles/templates/${type}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
       });
       if (res.ok) {
         await fetchData();
@@ -216,16 +221,12 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
         </div>
         {canManageRoles && (
           <div className="flex gap-3">
-            <div className="group relative">
-              <button className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-slate-700 transition-colors flex items-center gap-2">
-                <Copy size={14} /> Templates
-              </button>
-              <div className="absolute right-0 top-full mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl p-2 hidden group-hover:block z-50">
-                <button onClick={() => applyTemplate('LAW_FIRM')} className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg">Law Firm Standard</button>
-                <button onClick={() => applyTemplate('BANKING')} className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg">Banking / Fintech</button>
-                <button onClick={() => applyTemplate('INSURANCE')} className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg">Insurance Carrier</button>
-              </div>
-            </div>
+            <button
+              onClick={() => setShowMarketplace(true)}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-2 border border-blue-500/20"
+            >
+              <Zap size={14} /> Browse Blueprints
+            </button>
             <button
               onClick={() => { setShowCreateModal(true); resetForm(); }}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2"
@@ -236,6 +237,12 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
         )}
       </div>
 
+      <RoleTemplateMarketplace
+        isOpen={showMarketplace}
+        onClose={() => setShowMarketplace(false)}
+        onApplySuccess={fetchData}
+      />
+
       <div className="grid grid-cols-12 gap-8">
         {/* Roles List */}
         <div className="col-span-4 space-y-3">
@@ -245,8 +252,8 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
               key={role.id}
               onClick={() => handleRoleSelect(role)}
               className={`w-full p-4 rounded-xl border text-left transition-all group relative ${selectedRole?.id === role.id
-                  ? 'bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-900/10'
-                  : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
+                ? 'bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-900/10'
+                : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
                 }`}
             >
               <div className="flex items-start justify-between">
@@ -341,12 +348,12 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
                           const isActive = isEditing ? editPerms.includes(perm.id) : selectedRole.permissions.some(p => p.id === perm.id);
                           return (
                             <label key={perm.id} className={`flex items-start gap-3 p-3 rounded-lg border text-xs cursor-pointer transition-all ${isActive
-                                ? 'bg-emerald-500/5 border-emerald-500/30'
-                                : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
+                              ? 'bg-emerald-500/5 border-emerald-500/30'
+                              : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
                               }`}>
                               <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-colors ${isActive
-                                  ? 'bg-emerald-500 border-emerald-500'
-                                  : 'bg-slate-950 border-slate-700'
+                                ? 'bg-emerald-500 border-emerald-500'
+                                : 'bg-slate-950 border-slate-700'
                                 }`}>
                                 {isActive && <CheckCircle2 size={10} className="text-white" />}
                               </div>

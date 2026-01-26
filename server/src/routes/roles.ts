@@ -74,6 +74,25 @@ router.post('/', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_
 
 import { INDUSTRY_TEMPLATES } from '../config/templates';
 
+// Get available templates (Discovery)
+router.get('/templates', authenticateToken as any, async (req, res) => {
+    try {
+        const list = Object.keys(INDUSTRY_TEMPLATES).map(key => ({
+            id: key,
+            name: key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            roleCount: INDUSTRY_TEMPLATES[key].length,
+            roles: INDUSTRY_TEMPLATES[key].map(r => ({
+                name: r.name,
+                description: r.description,
+                permissionCount: r.permissions.length
+            }))
+        }));
+        res.json(list);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Apply Industry Template
 router.post('/templates/:type', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
     try {
