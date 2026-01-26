@@ -23,7 +23,12 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
-            res.sendStatus(403); // Forbidden
+            console.error(`[Auth] JWT Verification failed: ${err.message}`);
+            res.status(403).json({
+                error: 'Invalid session token',
+                code: 'FORBIDDEN',
+                reason: err.message === 'jwt expired' ? 'expired' : 'invalid'
+            });
             return;
         }
 

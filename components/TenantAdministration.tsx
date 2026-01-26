@@ -46,9 +46,19 @@ const TenantAdministration: React.FC = () => {
    const [availableRoles, setAvailableRoles] = useState<any[]>([]);
 
    React.useEffect(() => {
-      fetch('/api/roles', {
-         headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
-      }).then(res => res.json()).then(setAvailableRoles);
+      const fetchWithAuth = async (url: string) => {
+         const res = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
+         });
+         if (res.status === 403) {
+            console.warn("Session invalid or unauthorized. Forcing refresh check.");
+            // Optional: handle logout if token expired
+         }
+         if (!res.ok) return [];
+         return res.json();
+      };
+
+      fetchWithAuth('/api/roles').then(setAvailableRoles).catch(() => setAvailableRoles([]));
    }, []);
 
    const generateInvite = async () => {

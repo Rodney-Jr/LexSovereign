@@ -1,9 +1,12 @@
-import express from 'express';
-console.log("[VERSION CHECK] v4 - PROVISIONING ENCLAVE LIVE...");
-import cors from 'cors';
-import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
+// Load environment variables immediately
+dotenv.config({ path: path.join(__dirname, '../.env.local') });
+
+import express from 'express';
+console.log("[VERSION CHECK] v5 - AUTH DIAGNOSTICS ENHANCED...");
+import cors from 'cors';
+import helmet from 'helmet';
 import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 import mattersRouter from './routes/matters';
@@ -13,9 +16,6 @@ import webhooksRouter from './routes/webhooks';
 import platformRouter from './routes/platform';
 import documentTemplatesRouter from './routes/documentTemplates';
 import { sovereignGuard } from './middleware/sovereignGuard';
-
-// Load environment variables
-dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
 const app = express();
 // Force reload for env var update (Key Rotation 2)
