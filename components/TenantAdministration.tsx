@@ -29,6 +29,7 @@ import {
 import { TenantUser, UserRole } from '../types';
 import SovereignBilling from './SovereignBilling';
 import ChatbotStudio from './ChatbotStudio';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 const TenantAdministration: React.FC = () => {
    const [users, setUsers] = useState<TenantUser[]>([
@@ -62,22 +63,22 @@ const TenantAdministration: React.FC = () => {
    }, []);
 
    const generateInvite = async () => {
+      const session = getSavedSession();
+      if (!session?.token) return;
+
       setIsGenerating(true);
       try {
-         const res = await fetch('/api/auth/invite', {
+         const data = await authorizedFetch('/api/auth/invite', {
             method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}`
-            },
+            token: session.token,
             body: JSON.stringify(inviteForm)
          });
-         const data = await res.json();
          if (data.token) {
             setGeneratedLink(`https://lexsovereign.gh/join?token=${data.token}`);
          }
-      } catch (e) {
+      } catch (e: any) {
          console.error(e);
+         alert(e.message || "Invitation failed. Verify your administrative session.");
       } finally {
          setIsGenerating(false);
       }
