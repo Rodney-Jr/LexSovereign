@@ -4,10 +4,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
 import { v4 as uuidv4 } from 'uuid';
+import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = express.Router();
 
-// 1. Atomic Onboard (New Silo + Admin)
+// 1. Atomic Onboard (New Silo + Admin) - PUBLIC
 router.post('/onboard-silo', async (req, res) => {
     const { name, plan, appMode, region, adminEmail, adminPassword } = req.body;
 
@@ -74,7 +75,7 @@ router.post('/onboard-silo', async (req, res) => {
     }
 });
 
-// 2. Resolve Invite Token
+// 2. Resolve Invite Token - PUBLIC
 router.post('/resolve-invite', async (req, res) => {
     try {
         const { token } = req.body;
@@ -99,7 +100,7 @@ router.post('/resolve-invite', async (req, res) => {
     }
 });
 
-// 3. Join Silo (Practitioner Completion)
+// 3. Join Silo (Practitioner Completion) - PUBLIC
 router.post('/join-silo', async (req, res) => {
     const { token, name, password } = req.body;
 
@@ -168,15 +169,43 @@ router.post('/join-silo', async (req, res) => {
     }
 });
 
-const router = express.Router();
+// 4. Generate Invitation - PROTECTED
+router.post('/invite', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+    try {
+        const { email, roleName } = req.body;
+        const tenantId = (req as any).user.tenantId;
 
-// Register
+        if (!tenantId) {
+            res.status(400).json({ error: 'Tenant context missing' });
+            return;
+        }
+
+        const token = `SOV-INV-${uuidv4().split('-')[0].toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+
+        const invitation = await prisma.invitation.create({
+            data: {
+                token,
+                email,
+                roleName: roleName || 'INTERNAL_COUNSEL',
+                tenantId,
+                expiresAt
+            }
+        });
+
+        res.json({ token, expiresAt: invitation.expiresAt });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Register - Standard
 router.post('/register', async (req, res) => {
     try {
         const { email, password, name, roleName, region, tenantId } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Find Role ID
         const role = await prisma.role.findFirst({
             where: { name: roleName || 'INTERNAL_COUNSEL', OR: [{ isSystem: true }, { tenantId }] }
         });
@@ -192,9 +221,9 @@ router.post('/register', async (req, res) => {
                 passwordHash: hashedPassword,
                 name,
                 roleId: role.id,
-                roleString: role.name, // Legacy
+                roleString: role.name,
                 region: region || 'GH_ACC_1',
-                tenantId: tenantId || null // Should come from invite or request
+                tenantId: tenantId || null
             },
             include: {
                 role: { include: { permissions: true } },
@@ -227,7 +256,6 @@ router.post('/register', async (req, res) => {
             }
         });
     } catch (error: any) {
-        console.error(error);
         res.status(400).json({ error: 'User already exists or invalid data' });
     }
 });
@@ -278,7 +306,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Get Me (Refresh Context)
+// Get Me
 router.get('/me', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
