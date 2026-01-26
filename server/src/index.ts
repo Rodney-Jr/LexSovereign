@@ -10,6 +10,8 @@ import mattersRouter from './routes/matters';
 import bridgesRouter from './routes/bridges';
 import rolesRouter from './routes/roles';
 import auditRouter from './routes/audit';
+import webhooksRouter from './routes/webhooks';
+import { sovereignGuard } from './middleware/sovereignGuard';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
@@ -50,6 +52,7 @@ app.use('/api', apiRouter);
 app.use('/api/matters', mattersRouter);
 app.use('/api/bridges', bridgesRouter);
 app.use('/api/roles', rolesRouter);
+app.use('/api/webhooks', webhooksRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));

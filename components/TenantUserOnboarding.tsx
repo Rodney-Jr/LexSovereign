@@ -22,7 +22,7 @@ interface TenantUserOnboardingProps {
    mode: AppMode;
    userId: string;
    tenantId: string;
-   onComplete: (role: UserRole) => void;
+   onComplete: (role: UserRole, token?: string) => void;
 }
 
 const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userId, tenantId, onComplete }) => {
@@ -124,8 +124,8 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                         <div
                            onClick={!isProcessing ? handleEnrollHardware : undefined}
                            className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center border-4 cursor-pointer transition-all duration-700 relative group ${mfaEnrolled ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.3)]' :
-                                 isProcessing ? 'bg-blue-500/20 border-blue-500 text-blue-400 animate-pulse' :
-                                    'bg-slate-800/50 border-slate-700 text-slate-500 hover:border-emerald-500/50'
+                              isProcessing ? 'bg-blue-500/20 border-blue-500 text-blue-400 animate-pulse' :
+                                 'bg-slate-800/50 border-slate-700 text-slate-500 hover:border-emerald-500/50'
                               }`}
                         >
                            {isProcessing && (
@@ -193,7 +193,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                      </div>
 
                      <button
-                        onClick={() => onComplete(targetRole)}
+                        onClick={() => onComplete(targetRole, `sov-live-${Math.random().toString(36).substring(7)}`)}
                         disabled={!affidavitSigned}
                         className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white py-5 rounded-3xl font-bold transition-all shadow-xl shadow-emerald-900/20 flex items-center justify-center gap-3"
                      >

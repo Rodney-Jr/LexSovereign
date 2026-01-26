@@ -1,6 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact } from "../types";
 import { prisma } from "../db";
+import { PiiService } from "./piiService";
+import { AuditorService } from "./auditorService";
 
 export class LexGeminiService {
     private getAI() {
@@ -49,6 +51,9 @@ export class LexGeminiService {
             config.tools = [{ googleSearch: {} }];
         }
 
+        // 1. PII Sanitization (DAS Engine)
+        const { sanitized, entityMap } = PiiService.sanitize(input);
+
         // Search Ghana Legal Knowledge Base
         let legalKnowledge = "";
         try {
@@ -57,8 +62,8 @@ export class LexGeminiService {
             const artifacts = await prisma.knowledgeArtifact.findMany({
                 where: {
                     OR: [
-                        { title: { contains: input, mode: 'insensitive' } },
-                        { content: { contains: input, mode: 'insensitive' } }
+                        { title: { contains: sanitized, mode: 'insensitive' } },
+                        { content: { contains: sanitized, mode: 'insensitive' } }
                     ]
                 },
                 take: 3
@@ -72,7 +77,7 @@ export class LexGeminiService {
             console.warn("Knowledge Base Search Failed:", e);
         }
 
-        const prompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${input}`;
+        const prompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${sanitized}`;
 
         try {
             const response = await ai.models.generateContent({
@@ -99,9 +104,21 @@ export class LexGeminiService {
                 result = { text: response.text, confidence: 0.9, references: [] };
             }
 
+            // 2. Auditor Check (Red Team)
+            const audit = await AuditorService.scan(result.text || "");
+            let finalText = result.text;
+
+            if (audit.flagged) {
+                finalText = `[AUDIT BLOCK] Content Redacted by Sovereign Governance Layer.\nReason: ${audit.reason}\nRisk Score: ${audit.riskScore}`;
+            } else {
+                // Restore PII for display if safe (optional, usually we keep it redacted or allow strictly mapped restoration)
+                // For MVP, strictly returning redacted text to prove it works.
+                // finalText = PiiService.desanitize(finalText, entityMap);
+            }
+
             return {
-                text: result.text || "I am analyzing the sovereign research stream...",
-                confidence: result.confidence || 0.85,
+                text: finalText || "I am analyzing the sovereign research stream...",
+                confidence: audit.flagged ? 0.0 : (result.confidence || 0.85),
                 provider: "Gemini 2.0 Flash (Sovereign Proxy)",
                 references: result.references,
                 groundingSources: groundingSources.length > 0 ? groundingSources : undefined
