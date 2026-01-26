@@ -19,8 +19,8 @@ import TenantGovernance from './components/TenantGovernance';
 import TenantAdministration from './components/TenantAdministration';
 import ClientPortal from './components/ClientPortal';
 import MatterWorkflow from './components/MatterWorkflow';
-import TenantOnboarding from './components/TenantOnboarding';
-import TenantUserOnboarding from './components/TenantUserOnboarding';
+const TenantOnboarding = React.lazy(() => import('./components/TenantOnboarding'));
+const TenantUserOnboarding = React.lazy(() => import('./components/TenantUserOnboarding'));
 import ReviewHub from './components/ReviewHub';
 import DecisionTraceLedger from './components/DecisionTraceLedger';
 import AccessGovernance from './components/AccessGovernance';
@@ -227,8 +227,23 @@ const AppContent: React.FC = () => {
   const handleInceptionComplete = (selectedMode: AppMode) => {
     setMode(selectedMode);
     setIsOnboarding(false);
-    // Automatically login as Tenant Admin with full permissions
-    handleAuthenticated('TENANT_ADMIN', []);
+
+    // If a session was established during onboarding, use it
+    const pending = (window as any)._pendingSession;
+    if (pending) {
+      localStorage.setItem('lexSovereign_session', JSON.stringify({
+        role: pending.user.role,
+        token: pending.token,
+        userId: pending.user.id,
+        tenantId: pending.user.tenantId,
+        permissions: pending.user.permissions || []
+      }));
+      handleAuthenticated(pending.user.role, pending.user.permissions || []);
+      delete (window as any)._pendingSession;
+    } else {
+      // Fallback (should not happen with new flow)
+      handleAuthenticated('TENANT_ADMIN', []);
+    }
   };
 
   // ... (keep document handlers)

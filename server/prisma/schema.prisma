@@ -193,6 +193,18 @@ model KnowledgeArtifact {
   updatedAt   DateTime @updatedAt
 }
 
+model Invitation {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  email       String
+  roleName    String
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  isUsed      Boolean  @default(false)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+}
+
 model DocumentTemplate {
   id              String   @id @default(uuid())
   name            String
