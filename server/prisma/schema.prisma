@@ -96,6 +96,7 @@ model Tenant {
   roles             Role[]
   matters           Matter[]
   policies          Policy[]
+  invitations       Invitation[]
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
