@@ -90,7 +90,7 @@ const AppContent: React.FC = () => {
 
   useInactivityLogout(() => {
     if (isAuthenticated) handleLogout();
-  }, 300000); // 5 Minutes
+  }, 300000, !isOnboarding && !isUserInvitation); // 5 Minutes
 
   useEffect(() => {
     // Remove existing theme classes
