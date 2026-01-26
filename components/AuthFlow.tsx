@@ -50,7 +50,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
          : { email, password, name, roleName: UserRole.TENANT_ADMIN };
 
       try {
-         const response = await fetch(`http://localhost:3001${endpoint}`, {
+         const response = await fetch(`${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

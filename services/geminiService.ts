@@ -2,7 +2,7 @@
 import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact } from "../types";
 
 export class LexGeminiService {
-  private baseUrl = 'http://localhost:3001/api';
+  private baseUrl = '/api';
 
   async chat(
     input: string,
