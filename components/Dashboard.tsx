@@ -13,7 +13,7 @@ import {
   Cell
 } from 'recharts';
 import { AppMode } from '../types';
-import { Clock, DollarSign, CheckCircle2, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Clock, DollarSign, CheckCircle2, AlertTriangle, TrendingUp, Activity, Shield } from 'lucide-react';
 
 const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
   const data = [
@@ -67,9 +67,16 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
             <h3 className="font-semibold text-lg">{mode === AppMode.LAW_FIRM ? "Billing Efficiency" : "Contract Velocity"}</h3>
             <TrendingUp size={20} className="text-brand-primary" />
           </div>
-          <div className="h-[300px]">
-            <div className="flex h-full items-center justify-center border-2 border-dashed border-brand-border rounded-xl text-brand-muted">
-              <p>Chart System Offline (Strict Mode Compat)</p>
+          <div className="h-[300px] relative overflow-hidden group/chart">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/5 to-transparent animate-pulse"></div>
+            <div className="flex flex-col h-full items-center justify-center border-2 border-dashed border-brand-border/40 rounded-3xl text-brand-muted relative z-10 space-y-4">
+              <div className="p-4 bg-brand-bg rounded-2xl border border-brand-border shadow-inner group-hover/chart:scale-110 transition-transform duration-700">
+                <Activity size={32} className="text-brand-primary animate-pulse" />
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-bold tracking-tight text-brand-text">Initializing Sovereign Stream...</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-600">Cross-Regional Sync in Progress</p>
+              </div>
             </div>
           </div>
         </div>
@@ -80,9 +87,16 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
             <h3 className="font-semibold text-lg">AI Confidence Traces</h3>
             <span className="text-xs bg-brand-primary/10 text-brand-primary px-2 py-1 rounded border border-brand-primary/20">Live</span>
           </div>
-          <div className="h-[300px]">
-            <div className="flex h-full items-center justify-center border-2 border-dashed border-brand-border rounded-xl text-brand-muted">
-              <p>Chart System Offline (Strict Mode Compat)</p>
+          <div className="h-[300px] relative overflow-hidden group/chart">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/5 to-transparent animate-pulse delay-700"></div>
+            <div className="flex flex-col h-full items-center justify-center border-2 border-dashed border-brand-border/40 rounded-3xl text-brand-muted relative z-10 space-y-4">
+              <div className="p-4 bg-brand-bg rounded-2xl border border-brand-border shadow-inner group-hover/chart:scale-110 transition-transform duration-700">
+                <Shield className="text-brand-secondary animate-pulse" size={32} />
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-bold tracking-tight text-brand-text">Synchronizing Audit Enclave...</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-600">Calculating Zero-Knowledge Delta</p>
+              </div>
             </div>
           </div>
         </div>

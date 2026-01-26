@@ -4,6 +4,16 @@ import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry,
 export class LexGeminiService {
   private baseUrl = '/api';
 
+  private getHeaders() {
+    const saved = localStorage.getItem('lexSovereign_session');
+    const { token } = JSON.parse(saved || '{}');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'x-sov-pin': 'GH-ACC-1'
+    };
+  }
+
   async chat(
     input: string,
     matterId: string | null,
@@ -16,7 +26,7 @@ export class LexGeminiService {
 
     const response = await fetch(`${this.baseUrl}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify({ input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch })
     });
 
@@ -27,7 +37,7 @@ export class LexGeminiService {
   async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
     const response = await fetch(`${this.baseUrl}/briefing`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify({ matterId, documents })
     });
     const data = await response.json();
@@ -41,7 +51,7 @@ export class LexGeminiService {
   ): Promise<{ content: string; scrubbedEntities: number }> {
     const response = await fetch(`${this.baseUrl}/scrub`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify({ content: rawContent, role, privilege })
     });
     return response.json();
@@ -51,7 +61,7 @@ export class LexGeminiService {
   async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]) {
     const response = await fetch(`${this.baseUrl}/public-chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify({ input, config, knowledge })
     });
     return response.json();
@@ -60,7 +70,7 @@ export class LexGeminiService {
   async generateBillingDescription(rawNotes: string) {
     const response = await fetch(`${this.baseUrl}/billing-description`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify({ rawNotes })
     });
     const data = await response.json();
@@ -72,7 +82,7 @@ export class LexGeminiService {
   async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
     const response = await fetch(`${this.baseUrl}/evaluate-rre`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify({ text, rules })
     });
     return response.json();

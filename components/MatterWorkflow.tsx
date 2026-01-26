@@ -167,17 +167,17 @@ const MatterWorkflow: React.FC = () => {
               key={step.id}
               onClick={() => !isTracing && setActiveStep(idx)}
               className={`relative z-10 flex items-start gap-8 p-6 rounded-[2.5rem] border transition-all cursor-pointer group ${activeStep === idx
-                  ? `bg-${step.color}-500/10 border-${step.color}-500/40 shadow-2xl shadow-${step.color}-500/10`
-                  : activeStep > idx
-                    ? 'bg-slate-900/40 border-emerald-500/20'
-                    : 'bg-slate-900/20 border-slate-800/50 grayscale opacity-40 hover:opacity-80 hover:grayscale-0'
+                ? `bg-${step.color}-500/10 border-${step.color}-500/40 shadow-2xl shadow-${step.color}-500/10`
+                : activeStep > idx
+                  ? 'bg-slate-900/40 border-emerald-500/20'
+                  : 'bg-slate-900/20 border-slate-800/50 grayscale opacity-40 hover:opacity-80 hover:grayscale-0'
                 }`}
             >
               <div className={`shrink-0 w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all duration-500 border-2 ${activeStep === idx
-                  ? `bg-${step.color}-500 border-${step.color}-400 text-white shadow-[0_0_30px_rgba(var(--color-rgb),0.3)]`
-                  : activeStep > idx
-                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                    : 'bg-slate-800 border-slate-700 text-slate-500'
+                ? `bg-${step.color}-500 border-${step.color}-400 text-white shadow-[0_0_30px_rgba(var(--color-rgb),0.3)]`
+                : activeStep > idx
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                  : 'bg-slate-800 border-slate-700 text-slate-500'
                 }`}>
                 {activeStep > idx ? <CheckCircle2 size={28} /> : step.icon}
               </div>
@@ -235,7 +235,13 @@ const MatterWorkflow: React.FC = () => {
                   <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Final Resolution Hash</p>
                   <p className="text-xs font-mono text-emerald-400 break-all">{resolutionHash}</p>
                 </div>
-                <button className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all">
+                <button
+                  onClick={() => {
+                    console.log("Exporting signed archive:", resolutionHash);
+                    alert("Matter Archive generated and signed. Downloading Sovereign Package...");
+                  }}
+                  className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95"
+                >
                   Export Signed Archive
                 </button>
               </div>

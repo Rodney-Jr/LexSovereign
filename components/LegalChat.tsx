@@ -138,7 +138,7 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
       if (aiResult.confidence < 0.7) {
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: "DETERMINISTIC FALLBACK: Intelligence confidence below threshold for legal grounding. Routing to human review.",
+          content: "SOVEREIGN ENCLAVE INTERCEPT: Confidence threshold below legal grounding limit. Routing to senior human counsel for verification.",
           isUPLTriggered: true,
           verifiedBy: 'Kill-Switch-Engine'
         }]);
@@ -167,7 +167,7 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
 
     } catch (e: any) {
       const errorMsg = e.message === "KILL_SWITCH_ACTIVE"
-        ? "SYSTEM LOCK: Deterministic fallback engaged."
+        ? "SYSTEM ENCLAVE LOCK: Deterministic safety protocols engaged."
         : "Communication error across secure tunnel.";
 
       setMessages(prev => [...prev, {

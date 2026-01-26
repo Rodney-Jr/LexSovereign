@@ -47,10 +47,23 @@ const TenantGovernance: React.FC = () => {
     fetchTenants();
   }, []);
 
+  const [filter, setFilter] = useState('');
+
+  const filteredTenants = tenants.filter(t =>
+    t.name.toLowerCase().includes(filter.toLowerCase()) ||
+    t.id.toLowerCase().includes(filter.toLowerCase())
+  );
+
   const handleSync = async () => {
     setIsSyncing(true);
     await fetchTenants();
     setTimeout(() => setIsSyncing(false), 800);
+  };
+
+  const handleManageSilo = (tenantId: string) => {
+    // For now, redirect to identity or show a toast
+    console.log(`Navigating to management console for silo: ${tenantId}`);
+    // Assuming we might have a specific silo management tab or use identity
   };
 
   return (
@@ -108,7 +121,9 @@ const TenantGovernance: React.FC = () => {
               <input
                 type="text"
                 placeholder="Filter tenants..."
-                className="bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500/50 w-64"
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
+                className="bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500/50 w-64 transition-all"
               />
             </div>
           </div>
@@ -119,7 +134,7 @@ const TenantGovernance: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {tenants.map(tenant => (
+          {filteredTenants.map(tenant => (
             <div key={tenant.id} className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 space-y-6 shadow-2xl hover:border-blue-500/40 transition-all group relative overflow-hidden">
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-all">
                 <Box size={100} />
@@ -169,7 +184,10 @@ const TenantGovernance: React.FC = () => {
                   <TrendingUp size={14} className="text-emerald-500" />
                   {tenant.activeMatters} Active Matters
                 </div>
-                <button className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-blue-300 transition-colors flex items-center gap-1 group/btn">
+                <button
+                  onClick={() => handleManageSilo(tenant.id)}
+                  className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-blue-300 transition-colors flex items-center gap-1 group/btn"
+                >
                   Manage Silo <TrendingUp size={12} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
