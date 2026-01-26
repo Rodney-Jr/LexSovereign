@@ -67,7 +67,7 @@ const TenantAdministration: React.FC = () => {
                <TabButton label="Users & RBAC" active={activeTab === 'users'} icon={<Users size={16} />} onClick={() => setActiveTab('users')} />
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
                <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
-               <TabButton label="Identity Bridge" active={activeTab === 'oidc'} icon={<Key size={16} />} onClick={() => setActiveTab('oidc')} />
+               <TabButton label="Sovereign Credentials" active={activeTab === 'oidc'} icon={<Key size={16} />} onClick={() => setActiveTab('oidc')} />
                <TabButton label="Templates" active={activeTab === 'templates'} icon={<Database size={16} />} onClick={() => setActiveTab('templates')} />
             </div>
          </div>
@@ -162,51 +162,39 @@ const TenantAdministration: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                            <h4 className="text-lg font-bold text-white flex items-center gap-3">
-                              <Key className="text-blue-400" /> Organization Identity Bridge
+                              <Key className="text-emerald-400" /> Unified Credential Protocol
                            </h4>
-                           <p className="text-sm text-slate-400">Configure Federated Authentication (OIDC) for your organization's legal enclaves.</p>
+                           <p className="text-sm text-slate-400">Managing organization-wide login security and practitioner authentication.</p>
                         </div>
 
-                        <div className="space-y-6">
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                              <div className="space-y-2.5">
-                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Discovery Endpoint (Well-Known)</label>
-                                 <input
-                                    type="text"
-                                    value="https://idp.accrapartners.gh/.well-known/openid-configuration"
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3 text-xs font-mono text-blue-400 focus:outline-none"
-                                    readOnly
-                                 />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                           <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                              <div className="flex items-center gap-3">
+                                 <ShieldCheck className="text-emerald-500" size={20} />
+                                 <h5 className="text-sm font-bold text-white">Direct Credential Logic</h5>
                               </div>
-                              <div className="space-y-2.5">
-                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Client Identifier</label>
-                                 <input
-                                    type="text"
-                                    value="SOV-ACCRA-PRTNRS-991A"
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3 text-xs font-mono text-slate-300 focus:outline-none"
-                                    readOnly
-                                 />
-                              </div>
+                              <p className="text-xs text-slate-500 leading-relaxed">LexSovereign manages cryptographic salts and hashes locally within your regional silo. OIDC handshakes have been disabled for direct accountability.</p>
                            </div>
-
-                           <div className="p-6 bg-emerald-500/5 border border-emerald-500/10 rounded-3xl flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                 <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-                                    <ShieldCheck className="text-emerald-400" size={24} />
-                                 </div>
-                                 <div>
-                                    <p className="text-sm font-bold text-white">Trust Chain Verified</p>
-                                    <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">GBA-ROOT-CA-01 certificate pinned</p>
-                                 </div>
+                           <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
+                              <div className="flex items-center gap-3">
+                                 <Fingerprint className="text-purple-500" size={20} />
+                                 <h5 className="text-sm font-bold text-white">Silo-Master Binding</h5>
                               </div>
-                              <button className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] hover:underline">Re-verify Handshake</button>
+                              <p className="text-xs text-slate-500 leading-relaxed">Admin and Practitioner passwords are bound to the Silo's HSM Master Key. Password recovery requires Counsel-level verification.</p>
                            </div>
                         </div>
 
-                        <div className="pt-8 border-t border-slate-800 flex justify-end">
-                           <button className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-blue-900/20 transition-all">
-                              Update Identity Config
-                           </button>
+                        <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-3xl flex items-center justify-between">
+                           <div className="flex items-center gap-4">
+                              <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20">
+                                 <CheckCircle2 className="text-blue-400" size={24} />
+                              </div>
+                              <div>
+                                 <p className="text-sm font-bold text-white">Protocol: "Sovereign-Direct"</p>
+                                 <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Master Key: GH-ACC-V2-RSA4096-LIVE</p>
+                              </div>
+                           </div>
+                           <button className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] hover:underline">Download Security Audit</button>
                         </div>
                      </div>
                   </div>
