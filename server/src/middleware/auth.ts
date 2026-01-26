@@ -40,7 +40,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     });
 };
 
-export const requireRole = (allowedRoles: string[]) => {
+export const authorizeRole = (allowedRoles: string[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
         if (!req.user) {
             res.sendStatus(401);
