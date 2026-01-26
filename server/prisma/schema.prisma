@@ -206,16 +206,3 @@ model RegulatoryRule {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
-
-model RegulatoryRule {
-  id              String  @id
-  name            String
-  description     String
-  region          String
-  isActive        Boolean
-  authority       String
-  triggerKeywords String[]
-  blockThreshold  Float
-
-  updatedAt       DateTime @updatedAt
-}
