@@ -94,8 +94,15 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || 'Provisioning failed');
+        const text = await res.text();
+        let errorMessage = 'Provisioning failed';
+        try {
+          const json = JSON.parse(text);
+          errorMessage = json.error || errorMessage;
+        } catch (e) {
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const session = await res.json();
@@ -132,7 +139,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
           <React.Fragment key={s.id}>
             <div className={`flex flex-col items-center gap-2 transition-all ${step >= s.id ? 'text-emerald-400' : 'text-slate-600'}`}>
               <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border-2 font-bold text-sm transition-all duration-500 ${step === s.id ? 'bg-emerald-500/20 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] rotate-3' :
-                  step > s.id ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-900 border-slate-800'
+                step > s.id ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-900 border-slate-800'
                 }`}>
                 {step > s.id ? <CheckCircle2 size={18} /> : s.icon}
               </div>

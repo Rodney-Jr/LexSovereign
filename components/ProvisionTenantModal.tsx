@@ -43,11 +43,19 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.error || 'Provisioning failed');
+                const text = await response.text();
+                let errorMessage = 'Provisioning failed';
+                try {
+                    const json = JSON.parse(text);
+                    errorMessage = json.error || errorMessage;
+                } catch (e) {
+                    errorMessage = text || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
+
+            const data = await response.json();
 
             setSuccessMessage(`Tenant "${formData.name}" successfully created.`);
             setTimeout(() => {
