@@ -345,7 +345,7 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-brand-secondary/10 rounded-full border border-brand-secondary/20">
-              <span className="text-[10px] font-bold text-brand-secondary uppercase tracking-widest">v1.0.0 Stable</span>
+              <span className="text-[10px] font-bold text-brand-secondary uppercase tracking-widest">v1.1.0 Stable</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
               <ShieldCheck size={14} className="text-brand-primary" />

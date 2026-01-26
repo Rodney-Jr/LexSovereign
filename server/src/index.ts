@@ -1,5 +1,5 @@
 import express from 'express';
-console.log("[VERSION CHECK] v3 - FULL PRODUCTION MODE Starting...");
+console.log("[VERSION CHECK] v4 - PROVISIONING ENCLAVE LIVE...");
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
