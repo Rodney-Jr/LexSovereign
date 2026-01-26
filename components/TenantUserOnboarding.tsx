@@ -46,7 +46,19 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: inviteToken })
          });
-         if (!res.ok) throw new Error('Invitation not found');
+
+         if (!res.ok) {
+            const text = await res.text();
+            let errorMessage = 'Invitation not found';
+            try {
+               const json = JSON.parse(text);
+               errorMessage = json.error || errorMessage;
+            } catch (e) {
+               errorMessage = text || errorMessage;
+            }
+            throw new Error(errorMessage);
+         }
+
          const data = await res.json();
          setInviteContext(data);
          setStep(1.5);
@@ -74,7 +86,19 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: inviteToken, name, password })
          });
-         if (!res.ok) throw new Error('Join failed');
+
+         if (!res.ok) {
+            const text = await res.text();
+            let errorMessage = 'Join failed';
+            try {
+               const json = JSON.parse(text);
+               errorMessage = json.error || errorMessage;
+            } catch (e) {
+               errorMessage = text || errorMessage;
+            }
+            throw new Error(errorMessage);
+         }
+
          const data = await res.json();
          localStorage.setItem('lexSovereign_session', JSON.stringify({
             role: data.user.role,
