@@ -194,6 +194,20 @@ model KnowledgeArtifact {
 }
 
 model RegulatoryRule {
+  id              String   @id @default(uuid())
+  name            String
+  authority       String
+  triggerKeywords String[]
+  blockThreshold  Float
+  description     String
+  isActive        Boolean  @default(true)
+  region          String? 
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model RegulatoryRule {
   id              String  @id
   name            String
   description     String
