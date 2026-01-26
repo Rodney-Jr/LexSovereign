@@ -56,3 +56,5 @@ export const authorizeRole = (allowedRoles: string[]) => {
         next();
     };
 };
+
+export const requireRole = authorizeRole; // Alias for compatibility
