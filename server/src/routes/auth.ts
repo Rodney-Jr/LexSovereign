@@ -3,7 +3,7 @@ import { prisma } from '../db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = express.Router();
@@ -180,7 +180,7 @@ router.post('/invite', authenticateToken as any, requireRole(['TENANT_ADMIN', 'G
             return;
         }
 
-        const token = `SOV-INV-${uuidv4().split('-')[0].toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+        const token = `SOV-INV-${crypto.randomUUID().split('-')[0].toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
