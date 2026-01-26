@@ -42,13 +42,35 @@ const TenantAdministration: React.FC = () => {
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
+   const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'INTERNAL_COUNSEL' });
+   const [availableRoles, setAvailableRoles] = useState<any[]>([]);
 
-   const generateInvite = () => {
+   React.useEffect(() => {
+      fetch('/api/roles', {
+         headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
+      }).then(res => res.json()).then(setAvailableRoles);
+   }, []);
+
+   const generateInvite = async () => {
       setIsGenerating(true);
-      setTimeout(() => {
-         setGeneratedLink(`https://lexsovereign.gh/join?token=SOV-INV-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
+      try {
+         const res = await fetch('/api/auth/invite', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}`
+            },
+            body: JSON.stringify(inviteForm)
+         });
+         const data = await res.json();
+         if (data.token) {
+            setGeneratedLink(`https://lexsovereign.gh/join?token=${data.token}`);
+         }
+      } catch (e) {
+         console.error(e);
+      } finally {
          setIsGenerating(false);
-      }, 1200);
+      }
    };
 
    return (
@@ -295,14 +317,24 @@ const TenantAdministration: React.FC = () => {
                         <div className="space-y-6">
                            <div className="space-y-2">
                               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
-                              <input type="email" placeholder="practitioner@firm.gh" className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                              <input
+                                 type="email"
+                                 placeholder="practitioner@firm.gh"
+                                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                 value={inviteForm.email}
+                                 onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}
+                              />
                            </div>
                            <div className="space-y-2">
                               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Enclave Role</label>
-                              <select className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none">
-                                 <option>Associate Counsel</option>
-                                 <option>External Expert</option>
-                                 <option>Legal Analyst</option>
+                              <select
+                                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none text-slate-300"
+                                 value={inviteForm.roleName}
+                                 onChange={e => setInviteForm({ ...inviteForm, roleName: e.target.value })}
+                              >
+                                 {availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').map(role => (
+                                    <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>
+                                 ))}
                               </select>
                            </div>
                            <button
