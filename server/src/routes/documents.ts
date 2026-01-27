@@ -7,6 +7,11 @@ const router = express.Router();
 // Get all documents (scoped by tenant)
 router.get('/', authenticateToken, async (req, res) => {
     try {
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const documents = await prisma.document.findMany({
             where: {
                 matter: {
@@ -45,6 +50,12 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/matter/:matterId', authenticateToken, async (req, res) => {
     try {
         const { matterId } = req.params;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const documents = await prisma.document.findMany({
             where: {
                 matterId,

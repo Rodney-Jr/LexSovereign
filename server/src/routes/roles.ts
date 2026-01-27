@@ -7,6 +7,11 @@ const router = express.Router();
 // Get all roles (System + Tenant Specific)
 router.get('/', authenticateToken, async (req, res) => {
     try {
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const roles = await prisma.role.findMany({
             where: {
                 OR: [
@@ -38,6 +43,12 @@ router.get('/permissions', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { name, description, permissionIds } = req.body;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const tenantId = req.user.tenantId;
 
         // Check uniqueness
@@ -97,6 +108,12 @@ router.get('/templates', authenticateToken, async (req, res) => {
 router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { type } = req.params;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const tenantId = req.user.tenantId;
 
         const template = INDUSTRY_TEMPLATES[type.toUpperCase()];
@@ -154,6 +171,12 @@ router.put('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN
     try {
         const { id } = req.params;
         const { name, description, permissionIds } = req.body;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const tenantId = req.user.tenantId;
 
         // Verify ownership and system status
@@ -193,6 +216,12 @@ router.put('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN
 router.delete('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { id } = req.params;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const tenantId = req.user.tenantId;
 
         const role = await prisma.role.findFirst({

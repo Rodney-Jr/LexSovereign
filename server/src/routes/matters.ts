@@ -63,8 +63,13 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { riskLevel, status, ...rest } = req.body;
+        const { name, client, type, internalCounsel, region, status, riskLevel, description } = req.body;
         const user = req.user;
+
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
 
         // 1. Fetch current matter state
         const currentMatter = await prisma.matter.findUnique({ where: { id } });
@@ -110,9 +115,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
         const updated = await prisma.matter.update({
             where: { id },
             data: {
-                riskLevel,
+                name,
+                client,
+                type,
+                internalCounsel,
+                region,
                 status,
-                ...rest
+                riskLevel,
+                description
             }
         });
 

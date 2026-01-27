@@ -184,6 +184,12 @@ router.post('/join-silo', async (req, res) => {
 router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { email, roleName } = req.body;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const tenantId = req.user.tenantId;
 
         if (!tenantId) {
