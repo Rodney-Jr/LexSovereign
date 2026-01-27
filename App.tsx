@@ -17,6 +17,7 @@ import TenantSettings from './components/TenantSettings';
 import GlobalSettings from './components/GlobalSettings';
 import ProjectStatus from './components/ProjectStatus';
 import MatterIntelligence from './components/MatterIntelligence';
+import TenantGovernance from './components/TenantGovernance';
 import TenantAdministration from './components/TenantAdministration';
 import MatterWorkflow from './components/MatterWorkflow';
 import ReviewHub from './components/ReviewHub';
@@ -176,6 +177,7 @@ const AppContent: React.FC = () => {
         )}
 
         {activeTab === 'platform-ops' && <GlobalControlPlane />}
+        {activeTab === 'governance' && <TenantGovernance />}
         {activeTab === 'org-blueprint' && <OrgChart />}
         {activeTab === 'integration-bridge' && <BridgeRegistry />}
         {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
