@@ -19,6 +19,7 @@ import {
     Home,
     Landmark
 } from 'lucide-react';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface RolePreview {
     name: string;
@@ -51,40 +52,41 @@ const RoleTemplateMarketplace: React.FC<RoleTemplateMarketplaceProps> = ({ isOpe
     }, [isOpen]);
 
     const fetchTemplates = async () => {
+        const session = getSavedSession();
+        if (!session?.token) return;
+
         try {
             setIsLoading(true);
-            const res = await fetch('/api/roles/templates', {
-                headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setTemplates(data);
-            }
-        } catch (e) {
+            const data = await authorizedFetch('/api/roles/templates', { token: session.token });
+            setTemplates(data);
+        } catch (e: any) {
             console.error(e);
+            alert(`Marketplace Sync Failed: ${e.message}`);
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleApply = async (type: string) => {
+        const session = getSavedSession();
+        if (!session?.token) return;
+
         setIsApplying(true);
         try {
-            const res = await fetch(`/api/roles/templates/${type}`, {
+            await authorizedFetch(`/api/roles/templates/${type}`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
+                token: session.token
             });
-            if (res.ok) {
-                setSuccess(true);
-                setTimeout(() => {
-                    onApplySuccess();
-                    onClose();
-                    setSuccess(false);
-                    setSelectedTemplate(null);
-                }, 2000);
-            }
-        } catch (e) {
+            setSuccess(true);
+            setTimeout(() => {
+                onApplySuccess();
+                onClose();
+                setSuccess(false);
+                setSelectedTemplate(null);
+            }, 2000);
+        } catch (e: any) {
             console.error(e);
+            alert(`Blueprint Application Failed: ${e.message}`);
         } finally {
             setIsApplying(false);
         }

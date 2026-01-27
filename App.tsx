@@ -39,7 +39,15 @@ import { useTheme } from './hooks/useTheme';
 import { useSovereignData } from './hooks/useSovereignData';
 
 const AppContent: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  // Persist Active Tab
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('lexSovereign_activeTab') || 'dashboard';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('lexSovereign_activeTab', activeTab);
+  }, [activeTab]);
+
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
   const [isPlatformMode, setIsPlatformMode] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
