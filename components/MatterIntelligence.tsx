@@ -42,6 +42,10 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
   const [isBriefing, setIsBriefing] = useState(false);
   const [briefingText, setBriefingText] = useState<string | null>(null);
 
+  // State for Submission
+  const [isSubmittingSilo, setIsSubmittingSilo] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   // State for Collaboration
   const [noteInput, setNoteInput] = useState('');
 
@@ -139,6 +143,21 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
     setRawTimeNotes('');
   };
 
+  const handleSubmitToSilo = async () => {
+    setIsSubmittingSilo(true);
+    try {
+      // Simulate Sovereign Silo Handshake
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsSubmitted(true);
+      // Optional: Auto-back or show success
+      setTimeout(() => onBack(), 1500);
+    } catch (e) {
+      console.error("Silo submission failed", e);
+    } finally {
+      setIsSubmittingSilo(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-24">
       {/* Header Section */}
@@ -165,8 +184,20 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
             {isBriefing ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
             Autonomous Briefing
           </button>
-          <button className="px-6 py-2.5 bg-brand-primary hover:opacity-90 rounded-2xl text-xs font-bold text-brand-bg shadow-lg shadow-brand-primary/20 transition-all flex items-center gap-2">
-            <FileSignature size={16} /> Submit to Silo
+          <button
+            onClick={handleSubmitToSilo}
+            disabled={isSubmittingSilo || isSubmitted}
+            className={`px-6 py-2.5 rounded-2xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 ${isSubmitted ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/20' : 'bg-brand-primary hover:opacity-90 text-brand-bg shadow-brand-primary/20'
+              }`}
+          >
+            {isSubmittingSilo ? (
+              <RefreshCw size={16} className="animate-spin" />
+            ) : isSubmitted ? (
+              <ShieldCheck size={16} />
+            ) : (
+              <FileSignature size={16} />
+            )}
+            {isSubmittingSilo ? 'Submitting...' : isSubmitted ? 'Silo Secured' : 'Submit to Silo'}
           </button>
         </div>
       </div>
