@@ -51,11 +51,11 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
 
     // Initial session recovery
     useEffect(() => {
-        const saved = localStorage.getItem('lexSovereign_session') || sessionStorage.getItem('lexSovereign_session');
+        const saved = localStorage.getItem('lexSovereign_session');
         if (saved) {
             try {
                 const session = JSON.parse(saved) as SessionData;
-                if (session.role) {
+                if (session.role && session.token) {
                     handleAuthenticated(session);
                 }
             } catch (e) {

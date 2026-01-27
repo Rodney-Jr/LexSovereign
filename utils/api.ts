@@ -70,7 +70,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
  */
 export function getSavedSession() {
     try {
-        const saved = localStorage.getItem('lexSovereign_session') || sessionStorage.getItem('lexSovereign_session');
+        const saved = localStorage.getItem('lexSovereign_session');
         return saved ? JSON.parse(saved) : null;
     } catch (e) {
         return null;
