@@ -47,6 +47,7 @@ const TenantAdministration: React.FC = () => {
    const [isEmailing, setIsEmailing] = useState(false);
    const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL' });
    const [availableRoles, setAvailableRoles] = useState<{ id: string, name: string, isSystem: boolean }[]>([]);
+   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
 
    React.useEffect(() => {
       const fetchInitialData = async () => {
@@ -55,6 +56,7 @@ const TenantAdministration: React.FC = () => {
 
          // Fetch Roles
          try {
+            setIsLoadingRoles(true);
             const data = await authorizedFetch('/api/roles', { token: session.token });
             setAvailableRoles(data);
             const filtered = data.filter((r: any) => !r.isSystem || r.name !== 'GLOBAL_ADMIN');
@@ -63,6 +65,8 @@ const TenantAdministration: React.FC = () => {
             }
          } catch (e) {
             console.error("[TenantAdmin] Role discovery failed:", e);
+         } finally {
+            setIsLoadingRoles(false);
          }
 
          // Fetch Users
@@ -383,8 +387,10 @@ const TenantAdministration: React.FC = () => {
                                  value={inviteForm.roleName}
                                  onChange={e => setInviteForm({ ...inviteForm, roleName: e.target.value })}
                               >
-                                 {availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').length === 0 ? (
-                                    <option disabled>Loading roles...</option>
+                                 {isLoadingRoles ? (
+                                    <option disabled>Loading system roles...</option>
+                                 ) : availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').length === 0 ? (
+                                    <option disabled>No roles available</option>
                                  ) : (
                                     availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').map(role => (
                                        <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>

@@ -71,11 +71,15 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
   }, []);
 
   const fetchData = async () => {
+    setIsLoading(true);
     const session = getSavedSession();
-    if (!session?.token) return;
+    if (!session?.token) {
+      console.warn('[AccessGovernance] No session found.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      setIsLoading(true);
       const [rolesData, permsData] = await Promise.all([
         authorizedFetch('/api/roles', { token: session.token }),
         authorizedFetch('/api/roles/permissions', { token: session.token })
@@ -131,14 +135,14 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
 
   const handleUpdate = async () => {
     if (!selectedRole) return;
+    const session = getSavedSession();
+    if (!session?.token) return;
+
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/roles/${selectedRole.id}`, {
+      await authorizedFetch(`/api/roles/${selectedRole.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}`
-        },
+        token: session.token,
         body: JSON.stringify({
           name: editName,
           description: editDesc,
@@ -146,12 +150,11 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
         })
       });
 
-      if (res.ok) {
-        await fetchData();
-        setIsEditing(false);
-      }
-    } catch (e) {
+      await fetchData();
+      setIsEditing(false);
+    } catch (e: any) {
       console.error(e);
+      alert(e.message || "Failed to update role.");
     } finally {
       setIsSaving(false);
     }
@@ -161,18 +164,20 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
     if (!selectedRole || selectedRole.isSystem) return;
     if (!confirm('Are you sure you want to delete this role?')) return;
 
+    const session = getSavedSession();
+    if (!session?.token) return;
+
     try {
-      const res = await fetch(`/api/roles/${selectedRole.id}`, {
+      await authorizedFetch(`/api/roles/${selectedRole.id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
+        token: session.token
       });
 
-      if (res.ok) {
-        setSelectedRole(null);
-        await fetchData();
-      }
-    } catch (e) {
+      setSelectedRole(null);
+      await fetchData();
+    } catch (e: any) {
       console.error(e);
+      alert(e.message || "Failed to delete role.");
     }
   };
 
