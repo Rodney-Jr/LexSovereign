@@ -38,6 +38,12 @@ router.post('/scrub', authenticateToken, async (req: Request, res) => {
 router.post('/evaluate-rre', authenticateToken, async (req: Request, res) => {
     try {
         const { text, rules } = req.body;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const tenantId = req.user.tenantId;
         const result = await geminiService.evaluateRRE(text, rules);
         res.json(result);
@@ -59,6 +65,12 @@ router.post('/public-chat', async (req, res) => {
 router.post('/billing-description', authenticateToken, async (req: Request, res) => {
     try {
         const { rawNotes } = req.body;
+
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const user = req.user;
         const result = await geminiService.generateBillingDescription(rawNotes);
         res.json({ description: result });
