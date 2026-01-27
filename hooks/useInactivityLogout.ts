@@ -32,6 +32,3 @@ export const useInactivityLogout = (onLogout: () => void, timeoutMs: number = 30
 
     return { resetTimer };
 };
-
-return { resetTimer };
-};
