@@ -165,8 +165,8 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
         references: aiResult.references
       }]);
 
-    } catch (e: any) {
-      const errorMsg = e.message === "KILL_SWITCH_ACTIVE"
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error && e.message === "KILL_SWITCH_ACTIVE"
         ? "SYSTEM ENCLAVE LOCK: Deterministic safety protocols engaged."
         : "Communication error across secure tunnel.";
 

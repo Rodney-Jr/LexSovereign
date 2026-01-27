@@ -52,14 +52,23 @@ export enum UserRole {
   TENANT_ADMIN = 'TENANT_ADMIN',
   PARTNER = 'PARTNER',
   SENIOR_COUNSEL = 'SENIOR_COUNSEL',
-  INTERNAL_COUNSEL = 'SENIOR_COUNSEL', // Map to database role
+  INTERNAL_COUNSEL = 'INTERNAL_COUNSEL',
   JUNIOR_ASSOCIATE = 'JUNIOR_ASSOCIATE',
   EXTERNAL_COUNSEL = 'EXTERNAL_COUNSEL',
-  LEGAL_OPS = 'LEGAL_OPS_MANAGER',
-  COMPLIANCE = 'COMPLIANCE_OFFICER',
+  LEGAL_OPS = 'LEGAL_OPS',
+  COMPLIANCE = 'COMPLIANCE',
   FINANCE_BILLING = 'FINANCE_BILLING',
   CLIENT = 'CLIENT',
   EXECUTIVE_BOARD = 'EXECUTIVE_BOARD'
+}
+
+export interface SessionData {
+  role: string;
+  userId: string;
+  tenantId: string;
+  permissions: string[];
+  mode?: AppMode;
+  token?: string;
 }
 
 export interface ChatbotConfig {

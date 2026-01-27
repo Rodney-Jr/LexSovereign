@@ -5,13 +5,13 @@ import { authenticateToken, requireRole } from '../middleware/auth';
 const router = express.Router();
 
 // Get all roles (System + Tenant Specific)
-router.get('/', authenticateToken as any, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const roles = await prisma.role.findMany({
             where: {
                 OR: [
                     { isSystem: true },
-                    { tenantId: (req as any).user.tenantId }
+                    { tenantId: req.user.tenantId }
                 ]
             },
             include: {
@@ -25,7 +25,7 @@ router.get('/', authenticateToken as any, async (req, res) => {
 });
 
 // Get all available permissions (Reference Data)
-router.get('/permissions', authenticateToken as any, async (req, res) => {
+router.get('/permissions', authenticateToken, async (req, res) => {
     try {
         const permissions = await prisma.permission.findMany();
         res.json(permissions);
@@ -35,10 +35,10 @@ router.get('/permissions', authenticateToken as any, async (req, res) => {
 });
 
 // Create a custom role
-router.post('/', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+router.post('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { name, description, permissionIds } = req.body;
-        const tenantId = (req as any).user.tenantId;
+        const tenantId = req.user.tenantId;
 
         // Check uniqueness
         const existing = await prisma.role.findFirst({
@@ -75,7 +75,7 @@ router.post('/', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_
 import { INDUSTRY_TEMPLATES } from '../config/templates';
 
 // Get available templates (Discovery)
-router.get('/templates', authenticateToken as any, async (req, res) => {
+router.get('/templates', authenticateToken, async (req, res) => {
     try {
         const list = Object.keys(INDUSTRY_TEMPLATES).map(key => ({
             id: key,
@@ -94,10 +94,10 @@ router.get('/templates', authenticateToken as any, async (req, res) => {
 });
 
 // Apply Industry Template
-router.post('/templates/:type', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { type } = req.params;
-        const tenantId = (req as any).user.tenantId;
+        const tenantId = req.user.tenantId;
 
         const template = INDUSTRY_TEMPLATES[type.toUpperCase()];
         if (!template) {
@@ -150,11 +150,11 @@ router.post('/templates/:type', authenticateToken as any, requireRole(['TENANT_A
 });
 
 // Update a role
-router.put('/:id', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+router.put('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, permissionIds } = req.body;
-        const tenantId = (req as any).user.tenantId;
+        const tenantId = req.user.tenantId;
 
         // Verify ownership and system status
         const role = await prisma.role.findFirst({
@@ -190,10 +190,10 @@ router.put('/:id', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBA
 });
 
 // Delete a role
-router.delete('/:id', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+router.delete('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { id } = req.params;
-        const tenantId = (req as any).user.tenantId;
+        const tenantId = req.user.tenantId;
 
         const role = await prisma.role.findFirst({
             where: { id, tenantId }

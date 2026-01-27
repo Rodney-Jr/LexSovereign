@@ -15,7 +15,7 @@ import {
 import { UserRole } from '../types';
 
 interface AuthFlowProps {
-   onAuthenticated: (role: string, permissions: string[]) => void;
+   onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string) => void;
    onStartOnboarding: () => void;
    onSecretTrigger?: () => void;
 }
@@ -72,9 +72,9 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
          });
 
          localStorage.setItem('lexSovereign_session', sessionData);
-         onAuthenticated(data.user.role, data.user.permissions || []);
-      } catch (err: any) {
-         setError(err.message);
+         onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId);
+      } catch (err: unknown) {
+         setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
          setIsProcessing(false);
       }

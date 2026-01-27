@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 // Load environment variables immediately
-dotenv.config({ path: path.join(__dirname, '../.env.local') });
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 import express from 'express';
 console.log("[VERSION CHECK] v5 - AUTH DIAGNOSTICS ENHANCED...");
@@ -15,13 +15,22 @@ import rolesRouter from './routes/roles';
 import webhooksRouter from './routes/webhooks';
 import platformRouter from './routes/platform';
 import documentTemplatesRouter from './routes/documentTemplates';
+import documentsRouter from './routes/documents';
+import rulesRouter from './routes/rules';
 import { sovereignGuard } from './middleware/sovereignGuard';
+import { authenticateToken } from './middleware/auth';
 
 const app = express();
 // Force reload for env var update (Key Rotation 2)
 const port = process.env.PORT || 3001;
 
-// Middleware
+// 1. Initial Logger (Pre-Parsing)
+app.use((req, res, next) => {
+    console.log(`[Audit] Incoming ${req.method} request to ${req.url}`);
+    next();
+});
+
+// 2. Security & Parsing
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -37,25 +46,21 @@ app.use(helmet({
 app.use(cors());
 app.use(express.json());
 
-// Request logging
-app.use((req, res, next) => {
-    console.log(`[Request] ${req.method} ${req.url}`);
-    next();
-});
-
 // Routes
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'LexSovereign Control Plane' });
 });
 
 app.use('/api/auth', authRouter);
-app.use('/api', apiRouter);
-app.use('/api/matters', mattersRouter);
+app.use('/api', sovereignGuard, apiRouter);
+app.use('/api/matters', authenticateToken, mattersRouter);
 app.use('/api/bridges', bridgesRouter);
 app.use('/api/roles', rolesRouter);
 app.use('/api/webhooks', webhooksRouter);
 app.use('/api/platform', platformRouter);
 app.use('/api/document-templates', documentTemplatesRouter);
+app.use('/api/documents', documentsRouter);
+app.use('/api/rules', rulesRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));

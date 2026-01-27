@@ -15,13 +15,18 @@ import {
 import { AppMode } from '../types';
 import { Clock, DollarSign, CheckCircle2, AlertTriangle, TrendingUp, Activity, Shield } from 'lucide-react';
 
-const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
+const Dashboard: React.FC<{
+  mode: AppMode;
+  mattersCount: number;
+  docsCount: number;
+  rulesCount: number;
+}> = ({ mode, mattersCount, docsCount, rulesCount }) => {
   const data = [
     { name: 'Jan', value: 400 },
     { name: 'Feb', value: 300 },
     { name: 'Mar', value: 600 },
-    { name: 'Apr', value: 800 },
-    { name: 'May', value: 500 },
+    { name: 'Apr', value: mattersCount * 10 || 800 },
+    { name: 'May', value: mattersCount * 12 || 500 },
   ];
 
   const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
@@ -31,24 +36,24 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
       {/* KPI Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KpiCard
-          label={mode === AppMode.LAW_FIRM ? "WIP Revenue" : "Legal Spend (YTD)"}
-          value={mode === AppMode.LAW_FIRM ? "$248k" : "$1.2M"}
+          label={mode === AppMode.LAW_FIRM ? "Active Matters" : "Total Matters (YTD)"}
+          value={mattersCount.toString()}
           icon={<DollarSign className="text-brand-secondary" />}
-          trend="+12% vs last month"
+          trend={`${mattersCount > 0 ? '+1' : '0'} since launch`}
           trendUp={true}
         />
         <KpiCard
-          label={mode === AppMode.LAW_FIRM ? "Time-to-Filing (Avg)" : "Cycle-to-Sign (Avg)"}
-          value={mode === AppMode.LAW_FIRM ? "4.2 Days" : "18.5 Days"}
+          label={mode === AppMode.LAW_FIRM ? "Vaulted Documents" : "Enclave Assets"}
+          value={docsCount.toString()}
           icon={<Clock className="text-brand-primary" />}
-          trend="-0.5 days since Q1"
+          trend={`${docsCount} verified items`}
           trendUp={true}
         />
         <KpiCard
-          label="Risk-Intercepted Docs"
-          value="14"
+          label="Active Safety Rules"
+          value={rulesCount.toString()}
           icon={<AlertTriangle className="text-amber-400" />}
-          trend="7 flagged for Ghana KYC"
+          trend="GH_ACC_1 Stack Native"
           trendUp={false}
         />
         <KpiCard
@@ -105,7 +110,15 @@ const Dashboard: React.FC<{ mode: AppMode }> = ({ mode }) => {
   );
 };
 
-const KpiCard = ({ label, value, icon, trend, trendUp }: any) => (
+interface KpiCardProps {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+  trend: string;
+  trendUp?: boolean;
+}
+
+const KpiCard: React.FC<KpiCardProps> = ({ label, value, icon, trend, trendUp }) => (
   <div className="bg-brand-sidebar border border-brand-border p-6 rounded-2xl hover:border-brand-primary/50 transition-all duration-500 group">
     <div className="flex items-center justify-between mb-4">
       <div className="p-2 bg-brand-bg rounded-xl group-hover:scale-110 transition-transform">

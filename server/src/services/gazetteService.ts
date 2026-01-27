@@ -70,8 +70,21 @@ export class GazetteService {
     }
 
     private static mockVerify(payload: any, signature: string): boolean {
-        // Mock verification logic
-        // Allow if signature starts with "valid_sig_"
-        return signature.startsWith('valid_sig_') || process.env.NODE_ENV === 'development';
+        try {
+            // In development, allow the mock prefix or skip if explicitly told
+            if (process.env.NODE_ENV === 'development' && signature.startsWith('valid_sig_')) {
+                return true;
+            }
+
+            // Real Cryptographic Verification
+            const verify = crypto.createVerify('SHA256');
+            verify.update(JSON.stringify(payload));
+            verify.end();
+
+            return verify.verify(DPC_PUBLIC_KEY, signature, 'base64');
+        } catch (error) {
+            console.error('[Gazette] Cryptographic Verification Failed:', error);
+            return false;
+        }
     }
 }

@@ -49,9 +49,9 @@ interface LayoutProps {
   mode: AppMode;
   setMode: (mode: AppMode) => void;
   killSwitchActive: boolean;
-  userRole: any; // Legacy prop, we use hook now
+  userRole: UserRole;
   theme: 'midnight' | 'gold' | 'cyber' | 'light';
-  setTheme: (theme: any) => void;
+  setTheme: (theme: 'midnight' | 'gold' | 'cyber' | 'light') => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -372,7 +372,7 @@ const Layout: React.FC<LayoutProps> = ({
   );
 };
 
-const NavItem = ({ icon, label, isActive, onClick, disabled }: { icon: any, label: string, isActive: boolean, onClick: () => void, disabled?: boolean }) => (
+const NavItem = ({ icon, label, isActive, onClick, disabled }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void, disabled?: boolean }) => (
   <button
     onClick={onClick}
     disabled={disabled}

@@ -12,7 +12,7 @@ const BRIDGES = [
     { id: 'b3', name: 'Sovereign Vault (Storage)', category: 'Storage', provider: 'Local/NAS', status: 'Nominal', encapsulation: 'HSM Tunnel', priority: 'P0', lastActivity: '45s ago' },
 ];
 
-router.get('/', authenticateToken as any, requireRole(['Global Admin', 'Tenant Admin']) as any, async (req, res) => {
+router.get('/', authenticateToken, requireRole(['GLOBAL_ADMIN', 'TENANT_ADMIN']), async (req, res) => {
     // 1. Check Storage Adapter Health
     const storageAdapter = StorageFactory.getAdapter(StorageType.LOCAL);
     let storageStatus = 'Nominal';

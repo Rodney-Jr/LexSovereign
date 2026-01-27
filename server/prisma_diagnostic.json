@@ -1,0 +1,13 @@
+{
+  "tenantKeys": [
+    "id",
+    "name",
+    "plan",
+    "appMode",
+    "primaryRegion",
+    "createdAt",
+    "updatedAt"
+  ],
+  "invitationDelegate": true,
+  "invitationsDelegate": false
+}

@@ -400,7 +400,14 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
   );
 };
 
-const InfoCard = ({ icon, title, desc, color }: any) => {
+interface InfoCardProps {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  color: 'emerald' | 'blue' | 'purple';
+}
+
+const InfoCard: React.FC<InfoCardProps> = ({ icon, title, desc, color }) => {
   const brandColor = color === 'emerald' ? 'brand-primary' : color === 'blue' ? 'brand-secondary' : 'brand-muted';
   return (
     <div className={`bg-brand-primary/5 border border-brand-primary/10 p-6 rounded-3xl group hover:border-brand-primary/30 transition-all duration-500`}>

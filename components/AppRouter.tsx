@@ -1,0 +1,126 @@
+import React, { Suspense } from 'react';
+import { AppMode, UserRole, SessionData } from '../types';
+import Layout from './Layout';
+import AuthFlow from './AuthFlow';
+import PlatformGateway from './PlatformGateway';
+import { ThemeMode } from '../hooks/useTheme';
+
+const TenantOnboarding = React.lazy(() => import('./TenantOnboarding'));
+const TenantUserOnboarding = React.lazy(() => import('./TenantUserOnboarding'));
+
+interface AppRouterProps {
+    isAuthenticated: boolean;
+    isOnboarding: boolean;
+    isUserInvitation: boolean;
+    isPlatformMode: boolean;
+    mode: AppMode;
+    userId: string | null;
+    tenantId: string | null;
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+    setMode: (mode: AppMode) => void;
+    contextRole: string;
+    theme: ThemeMode;
+    setTheme: (theme: ThemeMode) => void;
+    killSwitchActive: boolean;
+    setKillSwitchActive: (active: boolean) => void;
+    handleAuthenticated: (session: SessionData) => void;
+    handleInceptionComplete: (mode: AppMode) => void;
+    setIsPlatformMode: (active: boolean) => void;
+    setIsOnboarding: (active: boolean) => void;
+    children: React.ReactNode;
+}
+
+const AppRouter: React.FC<AppRouterProps> = ({
+    isAuthenticated,
+    isOnboarding,
+    isUserInvitation,
+    isPlatformMode,
+    mode,
+    userId,
+    tenantId,
+    activeTab,
+    setActiveTab,
+    setMode,
+    contextRole,
+    theme,
+    setTheme,
+    killSwitchActive,
+    setKillSwitchActive,
+    handleAuthenticated,
+    handleInceptionComplete,
+    setIsPlatformMode,
+    setIsOnboarding,
+    children
+}) => {
+    if (isOnboarding) {
+        return (
+            <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+                <TenantOnboarding onComplete={handleInceptionComplete} />
+            </Suspense>
+        );
+    }
+
+    if (isUserInvitation) {
+        return (
+            <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+                <TenantUserOnboarding
+                    mode={mode}
+                    userId={userId || ''}
+                    tenantId={tenantId || ''}
+                    onComplete={(role: UserRole) => handleAuthenticated({
+                        role,
+                        userId: userId || 'invited-user',
+                        tenantId: tenantId || 'invited-tenant',
+                        permissions: []
+                    })}
+                />
+            </Suspense>
+        );
+    }
+
+    if (!isAuthenticated) {
+        if (isPlatformMode) {
+            return (
+                <PlatformGateway
+                    onAuthenticated={(role: string) => handleAuthenticated({
+                        role,
+                        userId: 'PLATFORM_OWNER',
+                        tenantId: 'GLOBAL',
+                        permissions: []
+                    })}
+                    onBackToTenant={() => setIsPlatformMode(false)}
+                />
+            );
+        }
+        return (
+            <AuthFlow
+                onAuthenticated={(role: string, perms: string[], uId?: string, tId?: string) => handleAuthenticated({
+                    role,
+                    permissions: perms,
+                    userId: uId || 'legacy-uid',
+                    tenantId: tId || 'legacy-tid'
+                })}
+                onStartOnboarding={() => setIsOnboarding(true)}
+                onSecretTrigger={() => setIsPlatformMode(true)}
+            />
+        );
+    }
+
+    return (
+        <Layout
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            mode={mode}
+            setMode={setMode}
+            killSwitchActive={killSwitchActive}
+            userRole={contextRole as UserRole}
+            theme={theme}
+            setTheme={setTheme}
+        >
+            {children}
+        </Layout>
+    );
+};
+
+export default AppRouter;

@@ -6,9 +6,10 @@ import {
   ShieldAlert, Scale, Settings, LayoutGrid, Fingerprint,
   Sliders, ShieldCheck, Database
 } from 'lucide-react';
-import { Region, Matter, AppMode, UserRole } from '../types';
+import { Region, Matter, AppMode } from '../types';
 import { GoogleGenAI, Type } from "@google/genai";
 import FileUploader, { UploadedFile } from './FileUploader';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface MatterCreationModalProps {
   mode: AppMode;
@@ -18,14 +19,24 @@ interface MatterCreationModalProps {
   onCreated: (matter: Matter) => void;
 }
 
+interface RbacRoleConfig {
+  viewPrivileged: boolean;
+  exportSovereign: boolean;
+  overrideAI: boolean;
+}
+
+interface RbacMatrix {
+  lead: RbacRoleConfig;
+  associate: RbacRoleConfig;
+  external: RbacRoleConfig;
+}
+
 const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId, tenantId, onClose, onCreated }) => {
   const [step, setStep] = useState(1);
   const [isProfiling, setIsProfiling] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<UploadedFile[]>([]);
   const isFirm = mode === AppMode.LAW_FIRM;
-
-  // ... (existing state)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -35,20 +46,15 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
     region: Region.GHANA,
     description: '',
     riskLevel: 'Medium' as 'Low' | 'Medium' | 'High',
-    dasLevel: 2, // 1: Standard, 2: Strict, 3: Aggressive Redaction
+    dasLevel: 2,
     rbac: {
       lead: { viewPrivileged: true, exportSovereign: true, overrideAI: true },
       associate: { viewPrivileged: true, exportSovereign: false, overrideAI: true },
       external: { viewPrivileged: false, exportSovereign: false, overrideAI: false }
-    }
+    } as RbacMatrix
   });
 
-  // ... (AI Profiling code)
-
-  // ... (useEffect)
-
   const handleFilesAdded = (files: FileList) => {
-    // ... (existing code, unchanged logic but included for context if needed, but since relying on previous context, I'll only replace the parts changed)
     const newFiles = Array.from(files).map((f: File) => {
       const id = `file-${Math.random().toString(36).substr(2, 9)}`;
       setTimeout(() => {
@@ -73,53 +79,36 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Direct API Call with mock IDs if necessary
       const payload = {
         name: formData.name,
         client: formData.client,
         type: formData.type,
         description: formData.description,
-        internalCounselId: userId, // Using current user as counsel for now
+        internalCounselId: userId,
         tenantId: tenantId,
         riskLevel: formData.riskLevel,
-        // region: formData.region  // Region is not on Matter schema yet, likely inferred from Tenant or User
       };
 
-      // Retrieve token from localStorage
-      const savedSession = localStorage.getItem('lexSovereign_session');
-      let token = '';
-      if (savedSession) {
-        try {
-          const session = JSON.parse(savedSession);
-          token = session.token || '';
-        } catch (e) {
-          console.error("Error parsing session for token", e);
-        }
+      const session = getSavedSession();
+      if (!session?.token) {
+        throw new Error('Authentication required');
       }
 
-      const response = await fetch('/api/matters', {
+      const newMatter = await authorizedFetch('/api/matters', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        token: session.token,
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create matter');
-      }
-
-      const newMatter = await response.json();
       onCreated(newMatter);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to create matter, implementing fallback for demo...", e);
       // Fallback for demo if API fails (e.g. no DB connection)
       const fallbackMatter: Matter = {
         ...formData,
         id: `MT-${Math.floor(Math.random() * 900 + 100)}`,
         status: 'Open',
-        attachedFiles: attachedFiles.map(f => f.name) as string[],
+        internalCounsel: 'Current User', // Placeholder for display
         createdAt: new Date().toISOString().split('T')[0] ?? new Date().toISOString()
       };
       onCreated(fallbackMatter);
@@ -342,7 +331,14 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   );
 };
 
-const MetadataInput = ({ label, placeholder, value, onChange }: any) => (
+interface MetadataInputProps {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const MetadataInput: React.FC<MetadataInputProps> = ({ label, placeholder, value, onChange }) => (
   <div className="space-y-2.5">
     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
     <input
@@ -354,7 +350,14 @@ const MetadataInput = ({ label, placeholder, value, onChange }: any) => (
   </div>
 );
 
-const RbacRoleCard = ({ role, icon, config, onChange }: any) => (
+interface RbacRoleCardProps {
+  role: string;
+  icon: React.ReactNode;
+  config: RbacRoleConfig;
+  onChange: (config: RbacRoleConfig) => void;
+}
+
+const RbacRoleCard: React.FC<RbacRoleCardProps> = ({ role, icon, config, onChange }) => (
   <div className="p-6 bg-slate-950 border border-slate-800 rounded-3xl flex items-center gap-8 group hover:border-blue-500/30 transition-all">
     <div className="p-4 bg-slate-900 rounded-2xl text-slate-500 group-hover:text-blue-400 transition-colors">{icon}</div>
     <div className="flex-1 space-y-1">
@@ -369,7 +372,13 @@ const RbacRoleCard = ({ role, icon, config, onChange }: any) => (
   </div>
 );
 
-const PermissionToggle = ({ active, label, onClick }: any) => (
+interface PermissionToggleProps {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}
+
+const PermissionToggle: React.FC<PermissionToggleProps> = ({ active, label, onClick }) => (
   <button
     onClick={onClick}
     className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all border ${active ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400' : 'bg-slate-900 border-slate-800 text-slate-600 hover:text-slate-400'}`}
@@ -378,7 +387,13 @@ const PermissionToggle = ({ active, label, onClick }: any) => (
   </button>
 );
 
-const PolicyToggle = ({ active, label, desc }: any) => (
+interface PolicyToggleProps {
+  active: boolean;
+  label: string;
+  desc: string;
+}
+
+const PolicyToggle: React.FC<PolicyToggleProps> = ({ active, label, desc }) => (
   <div className={`p-4 rounded-2xl border transition-all ${active ? 'bg-purple-500/5 border-purple-500/20' : 'bg-slate-900/50 border-slate-800 opacity-40'}`}>
     <div className="flex items-center gap-2 mb-1">
       <div className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-purple-400' : 'bg-slate-600'}`}></div>
@@ -388,7 +403,13 @@ const PolicyToggle = ({ active, label, desc }: any) => (
   </div>
 );
 
-const InterceptorCard = ({ active, label, desc }: any) => (
+interface InterceptorCardProps {
+  active: boolean;
+  label: string;
+  desc: string;
+}
+
+const InterceptorCard: React.FC<InterceptorCardProps> = ({ active, label, desc }) => (
   <div className="p-5 bg-slate-950 border border-slate-800 rounded-[1.5rem] flex items-center justify-between group hover:border-amber-500/30 transition-all">
     <div className="flex items-center gap-5">
       <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center border border-slate-800 text-slate-500 group-hover:text-amber-400 transition-colors">

@@ -6,7 +6,7 @@ import { PolicyEngine } from '../services/policyEngine';
 const router = express.Router();
 
 // Get all matters
-router.get('/', authenticateToken as any, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const matters = await prisma.matter.findMany({
             include: {
@@ -24,7 +24,7 @@ router.get('/', authenticateToken as any, async (req, res) => {
 });
 
 // Create a new matter
-router.post('/', authenticateToken as any, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const { name, client, type, region, internalCounselId, tenantId, description } = req.body;
 
@@ -60,11 +60,11 @@ router.post('/', authenticateToken as any, async (req, res) => {
 
 
 // Update a matter (With Policy Check)
-router.put('/:id', authenticateToken as any, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { riskLevel, status, ...rest } = req.body;
-        const user = (req as any).user;
+        const user = req.user;
 
         // 1. Fetch current matter state
         const currentMatter = await prisma.matter.findUnique({ where: { id } });
@@ -75,7 +75,7 @@ router.put('/:id', authenticateToken as any, async (req, res) => {
         // 2. Policy Check: High Risk Updates
         if (riskLevel === 'HIGH' || currentMatter.riskLevel === 'HIGH') {
             const policyResult = await PolicyEngine.evaluate(
-                user.userId,
+                user.id,
                 user.attributes || {},
                 'MATTER',
                 { ...currentMatter, riskLevel },
@@ -95,7 +95,7 @@ router.put('/:id', authenticateToken as any, async (req, res) => {
             // Example: Require User Role to be 'TENANT_ADMIN' or 'DEPUTY_GC' explicitly?
             // Or rely on PolicyEngine 'CLOSE_MATTER' action.
             const closePolicy = await PolicyEngine.evaluate(
-                user.userId,
+                user.id,
                 user.attributes || {},
                 'MATTER',
                 currentMatter,

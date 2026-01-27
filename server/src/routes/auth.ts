@@ -181,10 +181,10 @@ router.post('/join-silo', async (req, res) => {
 });
 
 // 4. Generate Invitation - PROTECTED
-router.post('/invite', authenticateToken as any, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']) as any, async (req, res) => {
+router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { email, roleName } = req.body;
-        const tenantId = (req as any).user.tenantId;
+        const tenantId = req.user.tenantId;
 
         if (!tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
@@ -242,13 +242,13 @@ router.post('/register', async (req, res) => {
             }
         });
 
-        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
-        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+        const permissions = user.role?.permissions.map((p: any) => p.id) || [];
+        const appMode = user.tenant?.appMode || 'LAW_FIRM';
 
         const token = jwt.sign({
             id: user.id,
             email: user.email,
-            role: (user as any).role?.name,
+            role: user.role?.name,
             permissions,
             tenantId: user.tenantId,
             appMode
@@ -273,8 +273,10 @@ router.post('/register', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
+    console.log(`[AuthFlow] Attempting login for: ${req.body?.email}`);
     try {
         const { email, password } = req.body;
+        console.log('[AuthFlow] Querying database for user...');
         const user = await prisma.user.findUnique({
             where: { email },
             include: {

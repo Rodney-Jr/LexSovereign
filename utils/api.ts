@@ -19,6 +19,12 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     if (token) {
         headers.set('Authorization', `Bearer ${token}`);
     }
+
+    const sovPin = (process.env as any).SOVEREIGN_PIN;
+    if (sovPin) {
+        headers.set('x-sov-pin', sovPin);
+    }
+
     if (!headers.has('Content-Type') && fetchOptions.body) {
         headers.set('Content-Type', 'application/json');
     }

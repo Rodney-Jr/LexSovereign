@@ -4,12 +4,10 @@ import { JWT_SECRET } from '../jwtConfig';
 import { requestContext } from '../db';
 import { CONFIG } from '../config';
 
+import { AuthUser } from '../types';
+
 export interface AuthRequest extends Request {
-    user?: {
-        id: string;
-        email: string;
-        role: string;
-    };
+    user: AuthUser;
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {

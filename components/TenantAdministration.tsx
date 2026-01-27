@@ -44,7 +44,7 @@ const TenantAdministration: React.FC = () => {
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
    const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL' });
-   const [availableRoles, setAvailableRoles] = useState<any[]>([]);
+   const [availableRoles, setAvailableRoles] = useState<{ id: string, name: string, isSystem: boolean }[]>([]);
 
    React.useEffect(() => {
       const fetchRoles = async () => {
@@ -81,9 +81,10 @@ const TenantAdministration: React.FC = () => {
          if (data.token) {
             setGeneratedLink(`https://lexsovereign.gh/join?token=${data.token}`);
          }
-      } catch (e: any) {
+      } catch (e: unknown) {
          console.error(e);
-         alert(e.message || "Invitation failed. Verify your administrative session.");
+         const msg = e instanceof Error ? e.message : "Invitation failed. Verify your administrative session.";
+         alert(msg);
       } finally {
          setIsGenerating(false);
       }
@@ -383,7 +384,14 @@ const TenantAdministration: React.FC = () => {
    );
 };
 
-const TabButton = ({ label, active, icon, onClick }: any) => (
+interface TabButtonProps {
+   label: string;
+   active: boolean;
+   icon: React.ReactNode;
+   onClick: () => void;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ label, active, icon, onClick }) => (
    <button
       onClick={onClick}
       className={`px-5 py-2.5 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border ${active ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'

@@ -73,15 +73,15 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
   ]);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (timerActive) {
       interval = setInterval(() => {
         setTimeInSeconds(s => s + 1);
       }, 1000);
-    } else {
-      clearInterval(interval);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [timerActive]);
 
   const handleGenerateBrief = async () => {
@@ -146,6 +146,7 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
+            title="Go Back"
             className="p-2 hover:bg-brand-sidebar rounded-lg text-brand-muted transition-colors"
           >
             <History size={20} className="rotate-180" />
@@ -182,7 +183,11 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
               </div>
               <h4 className="text-sm font-bold text-brand-text uppercase tracking-widest">Sovereign Executive Briefing</h4>
             </div>
-            <button onClick={() => setBriefingText(null)} className="text-brand-muted hover:text-brand-text transition-colors">
+            <button
+              title="Dismiss Briefing"
+              onClick={() => setBriefingText(null)}
+              className="text-brand-muted hover:text-brand-text transition-colors"
+            >
               <X size={18} />
             </button>
           </div>
@@ -205,7 +210,7 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
               <h4 className="text-xs font-bold uppercase tracking-widest text-brand-muted flex items-center gap-2">
                 <UserPlus size={16} className="text-brand-secondary" /> Legal Team
               </h4>
-              <button className="p-1.5 hover:bg-brand-bg rounded-lg text-brand-muted">
+              <button title="Add Team Member" className="p-1.5 hover:bg-brand-bg rounded-lg text-brand-muted">
                 <PlusCircle size={16} />
               </button>
             </div>
@@ -337,7 +342,7 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
                 placeholder="Matter update..."
                 className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-brand-secondary transition-all resize-none h-20 placeholder:text-brand-muted/40 text-brand-text"
               />
-              <button className="absolute bottom-3 right-3 p-1.5 bg-brand-secondary hover:opacity-90 rounded-lg text-brand-bg transition-all shadow-lg active:scale-95">
+              <button title="Send Message" className="absolute bottom-3 right-3 p-1.5 bg-brand-secondary hover:opacity-90 rounded-lg text-brand-bg transition-all shadow-lg active:scale-95">
                 <Send size={14} />
               </button>
             </div>
@@ -348,7 +353,13 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
   );
 };
 
-const Note = ({ author, time, text }: any) => (
+interface NoteProps {
+  author: string;
+  time: string;
+  text: string;
+}
+
+const Note: React.FC<NoteProps> = ({ author, time, text }) => (
   <div className="p-3 bg-slate-800/30 border border-slate-800 rounded-2xl space-y-1 hover:border-slate-700 transition-colors">
     <div className="flex items-center justify-between">
       <span className="text-[10px] font-bold text-slate-200">{author}</span>
@@ -358,7 +369,12 @@ const Note = ({ author, time, text }: any) => (
   </div>
 );
 
-const X = ({ size, className }: any) => (
+interface XProps {
+  size: number;
+  className?: string;
+}
+
+const X: React.FC<XProps> = ({ size, className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
 );
 

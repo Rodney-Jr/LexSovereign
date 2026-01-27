@@ -1,3 +1,21 @@
+import { Request } from 'express';
+
+export interface AuthUser {
+    id: string;
+    email: string;
+    role: string;
+    tenantId: string;
+    permissions: string[];
+    attributes?: Record<string, any>;
+}
+
+declare global {
+    namespace Express {
+        interface Request {
+            user: AuthUser;
+        }
+    }
+}
 
 export enum IntegrationStatus {
     NOMINAL = 'Nominal',

@@ -1,84 +1,77 @@
-
 import React, { useState, useEffect } from 'react';
-import Layout from './components/Layout.tsx';
+import { AppMode, DocumentMetadata, UserRole, Matter } from './types';
+import { TAB_REQUIRED_PERMISSIONS } from './constants';
+import {
+  Scale,
+  ChevronRight,
+  Rocket,
+  Briefcase,
+  LogOut,
+  ShieldAlert
+} from 'lucide-react';
+
 import Dashboard from './components/Dashboard';
 import DocumentVault from './components/DocumentVault';
 import LegalChat from './components/LegalChat';
-import ArchitectureMap from './components/ArchitectureMap';
-import OmnichannelPreview from './components/OmnichannelPreview';
 import TenantSettings from './components/TenantSettings';
 import GlobalSettings from './components/GlobalSettings';
 import ProjectStatus from './components/ProjectStatus';
-import ValidationHub from './components/ValidationHub';
 import MatterIntelligence from './components/MatterIntelligence';
-import ComplianceExport from './components/ComplianceExport';
-import IdentityHub from './components/IdentityHub';
-import EnclaveCommandCenter from './components/EnclaveCommandCenter';
-import PredictiveOps from './components/PredictiveOps';
-import TenantGovernance from './components/TenantGovernance';
 import TenantAdministration from './components/TenantAdministration';
-const TenantOnboarding = React.lazy(() => import('./components/TenantOnboarding'));
-const TenantUserOnboarding = React.lazy(() => import('./components/TenantUserOnboarding'));
-import ClientPortal from './components/ClientPortal';
 import MatterWorkflow from './components/MatterWorkflow';
 import ReviewHub from './components/ReviewHub';
-import DecisionTraceLedger from './components/DecisionTraceLedger';
 import AccessGovernance from './components/AccessGovernance';
 import MatterCreationModal from './components/MatterCreationModal';
-import MonetizationStrategy from './components/MonetizationStrategy';
-import EngineeringBacklog from './components/EngineeringBacklog';
 import GlobalControlPlane from './components/GlobalControlPlane';
 import OrgChart from './components/OrgChart';
 import BridgeRegistry from './components/BridgeRegistry';
-import AuthFlow from './components/AuthFlow';
-import PlatformGateway from './components/PlatformGateway';
 import ZkConflictSearch from './components/ZkConflictSearch';
-import { AppMode, RegulatoryRule, AuditLogEntry, DocumentMetadata, UserRole, Matter, Region } from './types';
-import { INITIAL_RULES, INITIAL_DOCS, TAB_REQUIRED_PERMISSIONS, ROLE_DEFAULT_PERMISSIONS } from './constants';
-import { Scale, ChevronRight, Plus, Rocket, ShieldCheck, Briefcase, LogOut, UserPlus, ShieldAlert } from 'lucide-react';
+import ChatbotStudio from './components/ChatbotStudio';
+import SovereignBilling from './components/SovereignBilling';
+import AppRouter from './components/AppRouter';
+import PredictiveOps from './components/PredictiveOps';
 
-const INITIAL_MATTERS: Matter[] = [
-  {
-    id: 'MT-772',
-    name: 'Shareholder Restructuring',
-    client: 'Accra Global Partners',
-    type: 'Litigation',
-    internalCounsel: 'Jane Doe',
-    region: Region.GHANA,
-    status: 'Open',
-    riskLevel: 'Medium',
-    createdAt: '2024-05-01'
-  }
-];
-
-import { authorizedFetch, getSavedSession } from './utils/api';
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
-import { useWorkPersistence } from './hooks/useWorkPersistence';
-
-// ... (keep existing imports)
+import { useAuth } from './hooks/useAuth';
+import { useTheme } from './hooks/useTheme';
+import { useSovereignData } from './hooks/useSovereignData';
 
 const AppContent: React.FC = () => {
-  const { setPermissions, setRole, role: contextRole, hasAnyPermission } = usePermissions();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isPlatformMode, setIsPlatformMode] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [mode, setMode] = useState<AppMode>(AppMode.LAW_FIRM);
-  const [userId, setUserId] = useState<string>('11111111-1111-1111-1111-111111111111');
-  const [tenantId, setTenantId] = useState<string>('22222222-2222-2222-2222-222222222222');
-  const [killSwitchActive, setKillSwitchActive] = useState(false);
-  const [rules, setRules] = useState<RegulatoryRule[]>(INITIAL_RULES);
-  const [documents, setDocuments] = useState<DocumentMetadata[]>(INITIAL_DOCS);
-  const [matters, setMatters] = useState<Matter[]>(INITIAL_MATTERS);
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
+  const [isPlatformMode, setIsPlatformMode] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
-  const [isUserInvitation, setIsUserInvitation] = useState(false);
   const [showMatterModal, setShowMatterModal] = useState(false);
-  const [theme, setTheme] = useState<'midnight' | 'gold' | 'cyber' | 'light'>('midnight');
 
-  // Security Hooks
-  const { recoverWork, clearWork } = useWorkPersistence({ activeTab, selectedMatterId: selectedMatter });
+  // Modularized Hooks
+  const {
+    isAuthenticated,
+    userId,
+    tenantId,
+    mode,
+    setMode,
+    contextRole,
+    handleAuthenticated,
+    handleLogout,
+    recoverWork
+  } = useAuth(activeTab, selectedMatter);
 
+  const { theme, setTheme } = useTheme();
+  const {
+    documents,
+    matters,
+    rules,
+    addDocument,
+    removeDocument,
+    addMatter
+  } = useSovereignData(isAuthenticated);
+
+  const { hasAnyPermission } = usePermissions();
+
+  const [killSwitchActive, setKillSwitchActive] = useState(false);
+
+  // API Sentinel
   useEffect(() => {
     const handleAuthFailure = () => {
       console.warn("[App] Session revoked via API signal. Forced logout.");
@@ -86,208 +79,65 @@ const AppContent: React.FC = () => {
     };
     window.addEventListener('lex-sovereign-auth-failed', handleAuthFailure);
     return () => window.removeEventListener('lex-sovereign-auth-failed', handleAuthFailure);
-  }, []);
+  }, [handleLogout]);
 
-  useInactivityLogout(() => {
-    if (isAuthenticated) handleLogout();
-  }, 300000, !isOnboarding && !isUserInvitation); // 5 Minutes
+  // Security Policy
+  useInactivityLogout(handleLogout, 300000, isAuthenticated && !isOnboarding);
 
+  // RBAC Sentinel
   useEffect(() => {
-    // Remove existing theme classes
-    document.body.classList.remove('theme-midnight', 'theme-gold', 'theme-cyber', 'theme-light');
-    // Add current theme class
-    document.body.classList.add(`theme-${theme}`);
+    if (isAuthenticated) {
+      const isAllowed = (tab: string) => {
+        if (contextRole === 'GLOBAL_ADMIN') return true;
+        const required = TAB_REQUIRED_PERMISSIONS[tab];
+        return !required || required.length === 0 || hasAnyPermission(required);
+      };
 
-    // Save to local storage
-    localStorage.setItem('lexSovereign_theme', theme);
-  }, [theme]);
-
-  // Load saved theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('lexSovereign_theme');
-    if (savedTheme) {
-      setTheme(savedTheme as any);
-    }
-  }, []);
-
-  // RBAC Gatekeeper
-  const isAllowed = (tab: string) => {
-    if (contextRole === 'GLOBAL_ADMIN') return true;
-    const required = TAB_REQUIRED_PERMISSIONS[tab];
-    if (!required || required.length === 0) return true;
-    return hasAnyPermission(required);
-  };
-
-  useEffect(() => {
-    if (isAuthenticated && !isAllowed(activeTab)) {
-      if (isAllowed('dashboard')) {
+      if (!isAllowed(activeTab)) {
         setActiveTab('dashboard');
-      } else {
-        console.warn('Redirecting unauthorized access');
       }
     }
   }, [activeTab, contextRole, isAuthenticated, hasAnyPermission]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('lexSovereign_session') || sessionStorage.getItem('lexSovereign_session');
-    if (saved) {
-      try {
-        const { role, userId: savedUserId, tenantId: savedTenantId, permissions, mode: savedMode } = JSON.parse(saved);
-        if (role) {
-          const normalizedRole = role.toUpperCase();
-          setRole(normalizedRole);
-
-          // Force hydration from constants to ensure latest RBAC rules apply immediately (fix stale cache)
-          const activePermissions = ROLE_DEFAULT_PERMISSIONS[normalizedRole] || permissions || [];
-
-          setPermissions(activePermissions);
-
-          if (savedUserId) setUserId(savedUserId);
-          if (savedTenantId) setTenantId(savedTenantId);
-          if (savedMode) setMode(savedMode);
-          setIsAuthenticated(true);
-          if (normalizedRole === 'GLOBAL_ADMIN') {
-            setActiveTab('platform-ops');
-          }
-        }
-      } catch (e) {
-        localStorage.removeItem('lexSovereign_session');
-      }
-    }
-  }, []);
-
-  // Fetch matters on mount... (keep existing)
-  // Fetch matters on mount if token exists
-  useEffect(() => {
-    const fetchMatters = async () => {
-      const session = getSavedSession();
-      if (!session || !session.token) return;
-
-      try {
-        const data = await authorizedFetch('/api/matters', { token: session.token });
-        if (Array.isArray(data) && data.length > 0) {
-          setMatters(data);
-        }
-      } catch (e) {
-        // authorizedFetch handles the 403 signal
-      }
-    };
-    if (isAuthenticated) fetchMatters();
-  }, [isAuthenticated]);
-
-  const handleAuthenticated = (roleName: string, permissions: string[]) => {
-    // Normalizing role name to uppercase for permission lookup
-    const normalizedRole = roleName.toUpperCase();
-
-    let finalPermissions = permissions;
-    // Hybrid: Always try to get latest from constants for stability, fall back to provided perms
-    if (!finalPermissions || finalPermissions.length === 0) {
-      finalPermissions = ROLE_DEFAULT_PERMISSIONS[normalizedRole] || [];
-    }
-
-    setRole(normalizedRole);
-    setPermissions(finalPermissions);
-    setIsAuthenticated(true);
-
-    // Persist session immediately to avoid refresh issues
-    const sessionData = JSON.stringify({
-      role: normalizedRole,
-      userId,
-      tenantId,
-      permissions: finalPermissions
-    });
-    localStorage.setItem('lexSovereign_session', sessionData);
-
-    if (normalizedRole === 'GLOBAL_ADMIN') {
-      setActiveTab('platform-ops');
-    }
-
-    // Recover previous work context after login
-    const savedWork = recoverWork();
-    if (savedWork) {
-      console.log("[Persistence] Recovering work session:", savedWork.activeTab);
-      setActiveTab(savedWork.activeTab);
-      if (savedWork.selectedMatterId) setSelectedMatter(savedWork.selectedMatterId);
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setIsPlatformMode(false);
-    setActiveTab('dashboard');
-    setSelectedMatter(null);
-    setIsUserInvitation(false);
-    setIsOnboarding(false);
-    localStorage.removeItem('lexSovereign_session');
-    sessionStorage.removeItem('lexSovereign_session');
-    // Note: We do NOT clearWork() here to allow recovery if logout was forced by inactivity
-    setRole('');
-    setPermissions([]);
-  };
-
   const handleInceptionComplete = (selectedMode: AppMode) => {
     setMode(selectedMode);
     setIsOnboarding(false);
-
-    // If a session was established during onboarding, use it
     const pending = (window as any)._pendingSession;
     if (pending) {
-      localStorage.setItem('lexSovereign_session', JSON.stringify({
+      handleAuthenticated({
         role: pending.user.role,
         token: pending.token,
         userId: pending.user.id,
         tenantId: pending.user.tenantId,
-        permissions: pending.user.permissions || []
-      }));
-      handleAuthenticated(pending.user.role, pending.user.permissions || []);
+        permissions: pending.user.permissions || [],
+        mode: selectedMode
+      });
       delete (window as any)._pendingSession;
-    } else {
-      // Fallback (should not happen with new flow)
-      handleAuthenticated('TENANT_ADMIN', []);
     }
   };
-
-  // ... (keep document handlers)
-  const handleAddDocument = (doc: DocumentMetadata) => {
-    setDocuments(prev => [...prev, doc]);
-  };
-
-  const handleRemoveDocument = (id: string) => {
-    setDocuments(prev => prev.filter(d => d.id !== id));
-  };
-
-  const handleCreateMatter = (matter: Matter) => {
-    setMatters(prev => [...prev, matter]);
-    setShowMatterModal(false);
-  };
-
-  if (isOnboarding) {
-    return <TenantOnboarding onComplete={(selectedMode: AppMode) => handleInceptionComplete(selectedMode)} />;
-  }
-
-  if (isUserInvitation) {
-    return <TenantUserOnboarding mode={mode} userId={userId} tenantId={tenantId} onComplete={(role: UserRole) => handleAuthenticated(role, [])} />;
-  }
-
-  if (!isAuthenticated) {
-    if (isPlatformMode) {
-      return <PlatformGateway onAuthenticated={(role: string) => handleAuthenticated(role, [])} onBackToTenant={() => setIsPlatformMode(false)} />;
-    }
-    return <AuthFlow onAuthenticated={(role: string, perms: string[]) => handleAuthenticated(role, perms)} onStartOnboarding={() => setIsOnboarding(true)} onSecretTrigger={() => setIsPlatformMode(true)} />;
-  }
 
   return (
-    <Layout
+    <AppRouter
+      isAuthenticated={isAuthenticated}
+      isOnboarding={isOnboarding}
+      isUserInvitation={false} // Currently handled by state in App.tsx but could be refined
+      isPlatformMode={isPlatformMode}
+      mode={mode}
+      userId={userId}
+      tenantId={tenantId}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
-      mode={mode}
       setMode={setMode}
-      killSwitchActive={killSwitchActive}
-      userRole={contextRole as any}
+      contextRole={contextRole || ''}
       theme={theme}
       setTheme={setTheme}
+      killSwitchActive={killSwitchActive}
+      setKillSwitchActive={setKillSwitchActive}
+      handleAuthenticated={handleAuthenticated}
+      handleInceptionComplete={handleInceptionComplete}
+      setIsPlatformMode={setIsPlatformMode}
+      setIsOnboarding={setIsOnboarding}
     >
-      {/* userRole cast as any temporary until Layout updated */}
       <div className="animate-fade-in-up">
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
@@ -301,7 +151,7 @@ const AppContent: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={handleLogout} aria-label="Logout" title="Logout" className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
+                  <button onClick={handleLogout} title="Logout" className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
                     <LogOut size={18} />
                   </button>
                 </div>
@@ -316,7 +166,12 @@ const AppContent: React.FC = () => {
                 </div>
               )}
             </div>
-            <Dashboard mode={mode} />
+            <Dashboard
+              mode={mode}
+              mattersCount={matters.length}
+              docsCount={documents.length}
+              rulesCount={rules.length}
+            />
           </div>
         )}
 
@@ -325,11 +180,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'integration-bridge' && <BridgeRegistry />}
         {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
         {activeTab === 'reviews' && <ReviewHub userRole={contextRole as any} />}
-        {activeTab === 'governance' && <TenantGovernance />}
         {activeTab === 'tenant-admin' && <TenantAdministration />}
-        {activeTab === 'growth' && <MonetizationStrategy />}
-        {activeTab === 'backlog' && <EngineeringBacklog />}
-        {activeTab === 'client' && <ClientPortal />}
         {activeTab === 'predictive' && <PredictiveOps mode={mode} />}
         {activeTab === 'workflow' && <MatterWorkflow />}
         {activeTab === 'conflict-check' && <ZkConflictSearch />}
@@ -339,7 +190,7 @@ const AppContent: React.FC = () => {
             <MatterIntelligence mode={mode} onBack={() => setSelectedMatter(null)} documents={documents} />
           ) : (
             <div className="space-y-8">
-              <DocumentVault documents={documents} onAddDocument={handleAddDocument} onRemoveDocument={handleRemoveDocument} />
+              <DocumentVault documents={documents} onAddDocument={addDocument} onRemoveDocument={removeDocument} />
               <div className="h-[1px] bg-brand-border w-full my-4"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {matters.map(matter => (
@@ -365,52 +216,26 @@ const AppContent: React.FC = () => {
         {activeTab === 'system-settings' && <GlobalSettings />}
       </div>
 
-      {showMatterModal && <MatterCreationModal mode={mode} userId={userId} tenantId={tenantId} onClose={() => setShowMatterModal(false)} onCreated={handleCreateMatter} />}
-    </Layout>
+      {showMatterModal && <MatterCreationModal mode={mode} userId={userId || ''} tenantId={tenantId || ''} onClose={() => setShowMatterModal(false)} onCreated={addMatter} />}
+    </AppRouter>
   );
 };
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error: any;
-}
-
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false, error: null };
-
-  static getDerivedStateFromError(error: any): ErrorBoundaryState {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: any, errorInfo: any) {
-    console.error("Uncaught error:", error, errorInfo);
-  }
-
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  state = { hasError: false, error: null };
+  static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
+  componentDidCatch(error: any, errorInfo: any) { console.error("Uncaught error:", error, errorInfo); }
   render() {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-white text-center">
           <ShieldAlert className="text-red-500 w-16 h-16 mb-6" />
           <h1 className="text-3xl font-bold mb-4">Sovereign Protocol Halted</h1>
-          <p className="text-slate-400 max-w-lg mx-auto mb-8">
-            An unrecoverable error occurred in the enclave governance layer.
-            This has been logged to the forensic ledger.
-          </p>
+          <p className="text-slate-400 max-w-lg mx-auto mb-8">An unrecoverable error occurred in the enclave governance layer.</p>
           <div className="bg-slate-900 p-6 rounded-xl border border-red-500/20 text-left w-full max-w-2xl overflow-auto max-h-64">
-            <p className="text-red-400 font-mono text-xs whitespace-pre-wrap">
-              {this.state.error?.toString()}
-            </p>
+            <p className="text-red-400 font-mono text-xs whitespace-pre-wrap">{(this.state.error as any)?.toString()}</p>
           </div>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="mt-8 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-bold transition-all border border-red-500/20"
-          >
-            Re-Initialize Session
-          </button>
+          <button onClick={() => window.location.href = '/'} className="mt-8 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-bold transition-all border border-red-500/20">Re-Initialize Session</button>
         </div>
       );
     }

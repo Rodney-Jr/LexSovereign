@@ -59,3 +59,17 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   'FINANCE_BILLING': ['read_billing']
 };
 
+
+export const INITIAL_MATTERS: Matter[] = [
+  {
+    id: 'MT-772',
+    name: 'Shareholder Restructuring',
+    client: 'Accra Global Partners',
+    type: 'Litigation',
+    internalCounsel: 'Jane Doe',
+    region: Region.GHANA,
+    status: 'Open',
+    riskLevel: 'Medium',
+    createdAt: '2024-05-01'
+  }
+];
