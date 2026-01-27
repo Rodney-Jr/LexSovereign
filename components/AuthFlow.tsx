@@ -18,7 +18,7 @@ import { UserRole } from '../types';
 declare const __SOVEREIGN_PIN__: string;
 
 interface AuthFlowProps {
-   onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string, token: string) => void;
+   onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string, token: string) => Promise<void> | void;
    onStartOnboarding: () => void;
    onSecretTrigger?: () => void;
 }
@@ -69,7 +69,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             throw new Error(data.error || 'Authentication failed');
          }
 
-         onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId, data.token);
+         await onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId, data.token);
       } catch (err: unknown) {
          setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {

@@ -23,8 +23,8 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
-    // Add Sovereign Pin if available (from Vite define)
-    const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+    // Add Sovereign Pin if available (Prioritize dynamic handshake, fallback to build-time)
+    const sovPin = localStorage.getItem('lexSovereign_pin') || (typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '');
     if (sovPin) {
         headers.set('x-sov-pin', sovPin);
     }

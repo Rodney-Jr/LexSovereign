@@ -15,26 +15,45 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const [mode, setMode] = useState<AppMode>(AppMode.LAW_FIRM);
     const { recoverWork } = useWorkPersistence({ activeTab, selectedMatterId: selectedMatter });
 
-    const handleAuthenticated = useCallback((session: SessionData) => {
+    const handleAuthenticated = useCallback(async (session: SessionData) => {
         const normalizedRole = session.role.toUpperCase();
 
         // Hydrate permissions from constants or session
         const activePermissions = ROLE_DEFAULT_PERMISSIONS[normalizedRole] || session.permissions || [];
 
-        setRole(normalizedRole);
-        setPermissions(activePermissions);
-        setUserId(session.userId);
-        setTenantId(session.tenantId);
-        if (session.mode) setMode(session.mode);
-        setIsAuthenticated(true);
-
-        // Persist session
+        // 1. Persist session first (so subsequent fetches have the token)
         const sessionToSave = {
             ...session,
             role: normalizedRole,
             permissions: activePermissions
         };
         localStorage.setItem('lexSovereign_session', JSON.stringify(sessionToSave));
+
+        // 2. Immediate Pin Handshake (Crucial for Railway enclave access)
+        try {
+            const response = await fetch('/api/auth/pin', {
+                headers: {
+                    'Authorization': `Bearer ${session.token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.pin) {
+                    localStorage.setItem('lexSovereign_pin', data.pin);
+                    console.log("[Auth] Sovereign Pin Handshake Successful");
+                }
+            }
+        } catch (e) {
+            console.error("[Auth] Pin Handshake Failed during login", e);
+        }
+
+        // 3. Update state
+        setRole(normalizedRole);
+        setPermissions(activePermissions);
+        setUserId(session.userId);
+        setTenantId(session.tenantId);
+        if (session.mode) setMode(session.mode);
+        setIsAuthenticated(true);
 
         return normalizedRole;
     }, [setRole, setPermissions]);
@@ -46,6 +65,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         setRole('');
         setPermissions([]);
         localStorage.removeItem('lexSovereign_session');
+        localStorage.removeItem('lexSovereign_pin');
         sessionStorage.removeItem('lexSovereign_session');
     }, [setRole, setPermissions]);
 

@@ -24,7 +24,7 @@ interface AppRouterProps {
     setTheme: (theme: ThemeMode) => void;
     killSwitchActive: boolean;
     setKillSwitchActive: (active: boolean) => void;
-    handleAuthenticated: (session: SessionData) => void;
+    handleAuthenticated: (session: SessionData) => Promise<any> | void;
     handleInceptionComplete: (mode: AppMode) => void;
     setIsPlatformMode: (active: boolean) => void;
     setIsOnboarding: (active: boolean) => void;

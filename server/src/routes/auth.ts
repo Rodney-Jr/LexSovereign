@@ -384,4 +384,9 @@ router.get('/me', async (req, res) => {
     }
 });
 
+// 6. Get Sovereign Pin - PROTECTED
+router.get('/pin', authenticateToken, (req, res) => {
+    res.json({ pin: process.env.SOVEREIGN_PIN || "" });
+});
+
 export default router;
