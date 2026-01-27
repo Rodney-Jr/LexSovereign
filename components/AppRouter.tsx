@@ -95,11 +95,12 @@ const AppRouter: React.FC<AppRouterProps> = ({
         }
         return (
             <AuthFlow
-                onAuthenticated={(role: string, perms: string[], uId?: string, tId?: string) => handleAuthenticated({
+                onAuthenticated={(role: string, perms: string[], uId?: string, tId?: string, token?: string) => handleAuthenticated({
                     role,
                     permissions: perms,
                     userId: uId || 'legacy-uid',
-                    tenantId: tId || 'legacy-tid'
+                    tenantId: tId || 'legacy-tid',
+                    token
                 })}
                 onStartOnboarding={() => setIsOnboarding(true)}
                 onSecretTrigger={() => setIsPlatformMode(true)}

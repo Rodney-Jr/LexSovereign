@@ -15,7 +15,7 @@ import {
 import { UserRole } from '../types';
 
 interface AuthFlowProps {
-   onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string) => void;
+   onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string, token: string) => void;
    onStartOnboarding: () => void;
    onSecretTrigger?: () => void;
 }
@@ -62,17 +62,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             throw new Error(data.error || 'Authentication failed');
          }
 
-         // Store session
-         const sessionData = JSON.stringify({
-            role: data.user.role,
-            token: data.token,
-            userId: data.user.id,
-            tenantId: data.user.tenantId,
-            permissions: data.user.permissions || []
-         });
-
-         localStorage.setItem('lexSovereign_session', sessionData);
-         onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId);
+         onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId, data.token);
       } catch (err: unknown) {
          setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {

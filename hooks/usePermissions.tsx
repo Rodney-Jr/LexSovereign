@@ -19,9 +19,9 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     const [permissions, setPermissions] = useState<string[]>([]);
     const [role, setRole] = useState<string | null>(null);
 
-    // Load from session storage on mount if available (for persistence across refreshes)
+    // Load from local storage on mount if available (for persistence across refreshes)
     useEffect(() => {
-        const saved = sessionStorage.getItem('lexSovereign_session');
+        const saved = localStorage.getItem('lexSovereign_session');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
