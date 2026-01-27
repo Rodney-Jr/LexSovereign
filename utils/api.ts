@@ -12,6 +12,9 @@ export interface FetchOptions extends RequestInit {
  * Perform an authenticated request with robust error handling
  * Handles 403 Forbidden strings and JSON error objects gracefully
  */
+// Declare the global constant injected by Vite
+declare const __SOVEREIGN_PIN__: string;
+
 export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     const { token, ...fetchOptions } = options;
 
@@ -20,8 +23,8 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
-    // Add Sovereign Pin if available (from Vite env or process define)
-    const sovPin = import.meta.env.VITE_SOVEREIGN_PIN || process.env.SOVEREIGN_PIN;
+    // Add Sovereign Pin if available (from Vite define)
+    const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
     if (sovPin) {
         headers.set('x-sov-pin', sovPin);
     }

@@ -21,7 +21,8 @@ export default defineConfig(({ mode }) => {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.SOVEREIGN_PIN': JSON.stringify(env.SOVEREIGN_PIN),
-      'import.meta.env.VITE_SOVEREIGN_PIN': JSON.stringify(env.SOVEREIGN_PIN)
+      'import.meta.env.VITE_SOVEREIGN_PIN': JSON.stringify(env.SOVEREIGN_PIN),
+      '__SOVEREIGN_PIN__': JSON.stringify(env.SOVEREIGN_PIN || "")
     },
     resolve: {
       alias: {

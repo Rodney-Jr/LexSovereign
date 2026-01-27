@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { UserRole } from '../types';
 
+// Declare the global constant injected by Vite
+declare const __SOVEREIGN_PIN__: string;
+
 interface AuthFlowProps {
    onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string, token: string) => void;
    onStartOnboarding: () => void;
@@ -50,7 +53,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
          : { email, password, name, roleName: UserRole.TENANT_ADMIN };
 
       try {
-         const sovPin = import.meta.env.VITE_SOVEREIGN_PIN || process.env.SOVEREIGN_PIN;
+         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
          const response = await fetch(`${endpoint}`, {
             method: 'POST',
             headers: {
