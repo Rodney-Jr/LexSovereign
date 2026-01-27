@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request } from 'express';
 import { LexGeminiService } from '../services/LexGeminiService';
-import { authenticateToken, AuthRequest, requireRole } from '../middleware/auth';
+import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = express.Router();
 const geminiService = new LexGeminiService();
 
-router.post('/chat', authenticateToken, async (req: AuthRequest, res) => {
+router.post('/chat', authenticateToken, async (req: Request, res) => {
     try {
         const { input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch } = req.body;
         const result = await geminiService.chat(input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch);
@@ -15,7 +15,7 @@ router.post('/chat', authenticateToken, async (req: AuthRequest, res) => {
     }
 });
 
-router.post('/briefing', authenticateToken, async (req: AuthRequest, res) => {
+router.post('/briefing', authenticateToken, async (req: Request, res) => {
     try {
         const { matterId, documents } = req.body;
         const result = await geminiService.generateExecutiveBriefing(matterId, documents);
@@ -25,7 +25,7 @@ router.post('/briefing', authenticateToken, async (req: AuthRequest, res) => {
     }
 });
 
-router.post('/scrub', authenticateToken, async (req: AuthRequest, res) => {
+router.post('/scrub', authenticateToken, async (req: Request, res) => {
     try {
         const { content, role, privilege } = req.body;
         const result = await geminiService.getScrubbedContent(content, role, privilege);
@@ -35,7 +35,7 @@ router.post('/scrub', authenticateToken, async (req: AuthRequest, res) => {
     }
 });
 
-router.post('/evaluate-rre', authenticateToken, async (req: AuthRequest, res) => {
+router.post('/evaluate-rre', authenticateToken, async (req: Request, res) => {
     try {
         const { text, rules } = req.body;
         const tenantId = req.user.tenantId;
@@ -56,7 +56,7 @@ router.post('/public-chat', async (req, res) => {
     }
 });
 
-router.post('/billing-description', authenticateToken, async (req: AuthRequest, res) => {
+router.post('/billing-description', authenticateToken, async (req: Request, res) => {
     try {
         const { rawNotes } = req.body;
         const user = req.user;

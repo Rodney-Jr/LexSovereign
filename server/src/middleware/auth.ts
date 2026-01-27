@@ -6,11 +6,8 @@ import { CONFIG } from '../config';
 
 import { AuthUser } from '../types';
 
-export interface AuthRequest extends Request {
-    user: AuthUser;
-}
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -44,7 +41,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 };
 
 export const authorizeRole = (allowedRoles: string[]) => {
-    return (req: AuthRequest, res: Response, next: NextFunction) => {
+    return (req: Request, res: Response, next: NextFunction) => {
         if (!req.user) {
             res.sendStatus(401);
             return;
