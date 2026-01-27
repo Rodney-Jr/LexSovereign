@@ -91,5 +91,68 @@ export const INDUSTRY_TEMPLATES: Record<string, { name: string, description: str
             description: 'Focuses on commercial agreement lifecycles.',
             permissions: ['draft_document', 'edit_document', 'upload_document']
         }
+    ],
+    'INTELLECTUAL_PROPERTY': [
+        {
+            name: 'PATENT_ATTORNEY',
+            description: 'Specialist in patent prosecution and lifecycle.',
+            permissions: ['manage_patent_portfolio', 'sign_document', 'conduct_prior_art_research', 'create_matter']
+        },
+        {
+            name: 'TRADEMARK_COUNSEL',
+            description: 'Focuses on brand protection and enforcement.',
+            permissions: ['check_conflicts', 'draft_document', 'edit_document', 'sign_document']
+        },
+        {
+            name: 'IP_DOCKET_CLERK',
+            description: 'Manages filings and deadline tracking.',
+            permissions: ['upload_document', 'organize_files', 'create_matter']
+        }
+    ],
+    'MARITIME_LAW': [
+        {
+            name: 'ADMIRALTY_COUNSEL',
+            description: 'Specialist in maritime liens and vessel arrests.',
+            permissions: ['manage_admiralty_claims', 'verify_vessel_registry', 'sign_document', 'create_matter']
+        },
+        {
+            name: 'LOGISTICS_ADVISOR',
+            description: 'Regulatory support for shipping and trade.',
+            permissions: ['edit_document', 'execute_research', 'draft_document']
+        }
+    ],
+    'REAL_ESTATE': [
+        {
+            name: 'CONVEYANCING_PARTNER',
+            description: 'Leads property transfer and land administration.',
+            permissions: ['manage_conveyancing', 'verify_title_deeds', 'sign_document', 'approve_spend']
+        },
+        {
+            name: 'LEASING_SOLICITOR',
+            description: 'Specialist in commercial and residential leases.',
+            permissions: ['draft_document', 'edit_document', 'sign_document']
+        },
+        {
+            name: 'TITLE_SEARCHER',
+            description: 'Performs due diligence on land registry.',
+            permissions: ['verify_title_deeds', 'execute_research', 'upload_document']
+        }
+    ],
+    'PUBLIC_SECTOR': [
+        {
+            name: 'ATTORNEY_GENERAL',
+            description: 'Top legal authority for the jurisdiction.',
+            permissions: ['manage_platform', 'manage_tenant', 'approve_matter_high_risk', 'read_all_audits', 'sign_document']
+        },
+        {
+            name: 'LEGISLATIVE_DRAFTIER',
+            description: 'Specialist in crafting statutory instruments.',
+            permissions: ['draft_legislation', 'edit_document', 'design_workflow']
+        },
+        {
+            name: 'PUBLIC_PROSECUTOR',
+            description: 'Legal authority for criminal and state litigation.',
+            permissions: ['create_matter', 'draft_document', 'edit_document', 'review_work']
+        }
     ]
 };

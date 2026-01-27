@@ -13,7 +13,11 @@ import {
     Loader2,
     ArrowLeft,
     Briefcase,
-    Lock
+    Lock,
+    Lightbulb,
+    Anchor,
+    Home,
+    Landmark
 } from 'lucide-react';
 
 interface RolePreview {
@@ -93,6 +97,10 @@ const RoleTemplateMarketplace: React.FC<RoleTemplateMarketplaceProps> = ({ isOpe
             case 'LAW_FIRM': return <Scale size={24} className="text-blue-400" />;
             case 'BANKING': return <Building2 size={24} className="text-emerald-400" />;
             case 'INSURANCE': return <ShieldCheck size={24} className="text-purple-400" />;
+            case 'INTELLECTUAL_PROPERTY': return <Lightbulb size={24} className="text-amber-400" />;
+            case 'MARITIME_LAW': return <Anchor size={24} className="text-cyan-400" />;
+            case 'REAL_ESTATE': return <Home size={24} className="text-orange-400" />;
+            case 'PUBLIC_SECTOR': return <Landmark size={24} className="text-indigo-400" />;
             default: return <Briefcase size={24} className="text-slate-400" />;
         }
     };

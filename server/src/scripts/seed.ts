@@ -51,6 +51,22 @@ const PERMISSIONS = [
     { id: 'organize_files', description: 'Organize file systems', resource: 'FILE', action: 'ORGANIZE' },
     { id: 'execute_research', description: 'Execute legal research', resource: 'RESEARCH', action: 'EXECUTE' },
     { id: 'check_conflicts', description: 'Perform conflict checks', resource: 'CONFLICT', action: 'CHECK' },
+
+    // Intellectual Property
+    { id: 'manage_patent_portfolio', description: 'Manage patent application cycles', resource: 'IP', action: 'MANAGE' },
+    { id: 'conduct_prior_art_research', description: 'Perform technical prior art research', resource: 'RESEARCH', action: 'PRIOR_ART' },
+
+    // Maritime Law
+    { id: 'verify_vessel_registry', description: 'Verify vessel ownership and registration', resource: 'MARITIME', action: 'VERIFY' },
+    { id: 'manage_admiralty_claims', description: 'Process maritime liens and arrests', resource: 'CLAIM', action: 'ADMIRALTY' },
+
+    // Real Estate
+    { id: 'manage_conveyancing', description: 'Manage land transfer workflows', resource: 'PROPERTY', action: 'CONVEYANCE' },
+    { id: 'verify_title_deeds', description: 'Verify land registry documentation', resource: 'PROPERTY', action: 'VERIFY' },
+
+    // Public Sector
+    { id: 'draft_legislation', description: 'Draft legislative instruments', resource: 'LEGAL', action: 'DRAFT_LAW' },
+    { id: 'manage_public_disclosure', description: 'Manage FOI and public disclosure requests', resource: 'GOVERNANCE', action: 'DISCLOSE' },
 ];
 
 const ROLES = [

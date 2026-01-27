@@ -118,7 +118,7 @@ router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 
 
         const template = INDUSTRY_TEMPLATES[type.toUpperCase()];
         if (!template) {
-            res.status(400).json({ error: 'Invalid template type. Available: LAW_FIRM, BANKING, INSURANCE, SME_LEGAL' });
+            res.status(400).json({ error: `Invalid template type. Available: ${Object.keys(INDUSTRY_TEMPLATES).join(', ')}` });
             return;
         }
 
