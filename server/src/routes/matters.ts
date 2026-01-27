@@ -63,7 +63,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, client, type, internalCounsel, region, status, riskLevel, description } = req.body;
+        const { name, client, type, internalCounsel, status, riskLevel, description } = req.body;
         const user = req.user;
 
         if (!user) {
@@ -118,8 +118,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 name,
                 client,
                 type,
-                internalCounsel,
-                region,
+                internalCounselId: internalCounsel,
                 status,
                 riskLevel,
                 description
