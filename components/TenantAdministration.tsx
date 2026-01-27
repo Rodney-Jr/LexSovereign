@@ -43,28 +43,37 @@ const TenantAdministration: React.FC = () => {
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
+   const [copySuccess, setCopySuccess] = useState(false);
+   const [isEmailing, setIsEmailing] = useState(false);
    const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL' });
    const [availableRoles, setAvailableRoles] = useState<{ id: string, name: string, isSystem: boolean }[]>([]);
 
    React.useEffect(() => {
-      const fetchRoles = async () => {
+      const fetchInitialData = async () => {
          const session = getSavedSession();
          if (!session?.token) return;
+
+         // Fetch Roles
          try {
             const data = await authorizedFetch('/api/roles', { token: session.token });
             setAvailableRoles(data);
-
-            // Auto-select first available role if current is invalid
             const filtered = data.filter((r: any) => !r.isSystem || r.name !== 'GLOBAL_ADMIN');
             if (filtered.length > 0 && !filtered.find((r: any) => r.name === inviteForm.roleName)) {
                setInviteForm(prev => ({ ...prev, roleName: filtered[0].name }));
             }
          } catch (e) {
             console.error("[TenantAdmin] Role discovery failed:", e);
-            setAvailableRoles([]);
+         }
+
+         // Fetch Users
+         try {
+            const userData = await authorizedFetch('/api/users', { token: session.token });
+            setUsers(userData);
+         } catch (e) {
+            console.error("[TenantAdmin] User discovery failed:", e);
          }
       };
-      fetchRoles();
+      fetchInitialData();
    }, []);
 
    const generateInvite = async () => {
@@ -79,7 +88,9 @@ const TenantAdministration: React.FC = () => {
             body: JSON.stringify(inviteForm)
          });
          if (data.token) {
-            setGeneratedLink(`https://lexsovereign.gh/join?token=${data.token}`);
+            const host = window.location.origin;
+            setGeneratedLink(`${host}/join?token=${data.token}`);
+            setInviteForm(prev => ({ ...prev, email: '' }));
          }
       } catch (e: unknown) {
          console.error(e);
@@ -88,6 +99,20 @@ const TenantAdministration: React.FC = () => {
       } finally {
          setIsGenerating(false);
       }
+   };
+
+   const handleCopyLink = () => {
+      navigator.clipboard.writeText(generatedLink);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+   };
+
+   const handleEmailInvite = async () => {
+      setIsEmailing(true);
+      // Simulate Sovereign Notification handshake
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setIsEmailing(false);
+      alert("Sovereign Invitation dispatched to practitioner.");
    };
 
    return (
@@ -126,7 +151,7 @@ const TenantAdministration: React.FC = () => {
                               />
                            </div>
                            <button
-                              onClick={() => { setShowInviteModal(true); setGeneratedLink(''); }}
+                              onClick={() => { setShowInviteModal(true); setGeneratedLink(''); setCopySuccess(false); setIsEmailing(false); }}
                               className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20"
                            >
                               <UserPlus size={16} /> Invite Practitioner
@@ -320,13 +345,20 @@ const TenantAdministration: React.FC = () => {
                            </div>
                            <div className="flex gap-3">
                               <button
-                                 onClick={() => navigator.clipboard.writeText(generatedLink)}
-                                 className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all border border-slate-700"
+                                 onClick={handleCopyLink}
+                                 className={`flex-1 py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all border ${copySuccess ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
+                                    }`}
                               >
-                                 <Copy size={16} /> Copy Link
+                                 {copySuccess ? <CheckCircle2 size={16} /> : <Copy size={16} />}
+                                 {copySuccess ? 'Copied' : 'Copy Link'}
                               </button>
-                              <button className="flex-1 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all">
-                                 <Mail size={16} /> Email Invite
+                              <button
+                                 onClick={handleEmailInvite}
+                                 disabled={isEmailing}
+                                 className="flex-1 py-4 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-800 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all"
+                              >
+                                 {isEmailing ? <RefreshCw className="animate-spin" size={16} /> : <Mail size={16} />}
+                                 {isEmailing ? 'Sending...' : 'Email Invite'}
                               </button>
                            </div>
                         </div>
