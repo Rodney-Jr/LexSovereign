@@ -20,7 +20,8 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const sovPin = (process.env as any).SOVEREIGN_PIN;
+    // Add Sovereign Pin if available (from Vite env)
+    const sovPin = import.meta.env.VITE_SOVEREIGN_PIN;
     if (sovPin) {
         headers.set('x-sov-pin', sovPin);
     }
