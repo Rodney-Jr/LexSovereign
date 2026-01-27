@@ -50,9 +50,13 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
          : { email, password, name, roleName: UserRole.TENANT_ADMIN };
 
       try {
+         const sovPin = (import.meta as any).env?.VITE_SOVEREIGN_PIN || (process.env as any).SOVEREIGN_PIN;
          const response = await fetch(`${endpoint}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+               'Content-Type': 'application/json',
+               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
+            },
             body: JSON.stringify(payload)
          });
 
