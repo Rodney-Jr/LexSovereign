@@ -1,4 +1,5 @@
 
+// [RE-BUILD TRIGGER] - Corrected Prisma model reference from regulation to regulatoryRule
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken } from '../middleware/auth';
