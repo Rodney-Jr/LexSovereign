@@ -74,10 +74,12 @@ const ROLES = [
     { name: 'TENANT_ADMIN', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'approve_spend', 'create_matter'] },
     { name: 'PARTNER', permissions: ['sign_document', 'close_matter', 'create_matter', 'edit_document', 'override_ai', 'approve_spend'] },
     { name: 'SENIOR_COUNSEL', permissions: ['create_matter', 'edit_document', 'override_ai', 'draft_document'] },
+    { name: 'INTERNAL_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'] },
     { name: 'JUNIOR_ASSOCIATE', permissions: ['draft_document', 'upload_document'] },
-    { name: 'LEGAL_OPS_MANAGER', permissions: ['design_workflow', 'manage_users'] },
-    { name: 'COMPLIANCE_OFFICER', permissions: ['configure_rre', 'read_all_audits'] },
-    { name: 'EXTERNAL_COUNSEL', permissions: ['upload_document', 'draft_document'] } // Reduced scope
+    { name: 'LEGAL_OPS', permissions: ['design_workflow', 'manage_users', 'read_billing', 'read_all_audits'] },
+    { name: 'COMPLIANCE', permissions: ['read_all_audits', 'manage_tenant'] },
+    { name: 'FINANCE_BILLING', permissions: ['read_billing'] },
+    { name: 'EXTERNAL_COUNSEL', permissions: ['upload_document', 'draft_document'] }
 ];
 
 async function main() {

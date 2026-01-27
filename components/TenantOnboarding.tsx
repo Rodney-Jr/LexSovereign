@@ -93,7 +93,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
       // Play logs while waiting for API, but ensure at least some logs show
       for (let i = 0; i < sequence.length; i++) {
         await new Promise(r => setTimeout(r, 600));
-        addLog(sequence[i]);
+        addLog(sequence[i]!);
       }
 
       // Await the real result
@@ -395,12 +395,12 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
 
         {/* Action Bar */}
         <div className="mt-12 flex items-center justify-between pt-8 border-t border-slate-800 relative z-10">
-          <button onClick={prev} disabled={step === 1 || step === 4} className="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-slate-400 font-bold hover:text-white disabled:opacity-0 transition-all group">
+          <button onClick={prev} disabled={(step === 1) || (step === 4 && isProvisioning)} className="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-slate-400 font-bold hover:text-white disabled:opacity-0 transition-all group">
             <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> Back
           </button>
           <button
             onClick={step === 6 ? () => onComplete(entityType!) : next}
-            disabled={(step === 1 && !isStep1Valid) || (step === 4) || (step === 6 && !affidavitSigned)}
+            disabled={(step === 1 && !isStep1Valid) || (step === 4 && isProvisioning) || (step === 6 && !affidavitSigned)}
             className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white px-12 py-3.5 rounded-2xl font-bold flex items-center gap-3 transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
           >
             {step === 6 ? 'Launch Legal Silo' : 'Initialize Phase'}

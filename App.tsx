@@ -126,12 +126,10 @@ const AppContent: React.FC = () => {
     }
   }, [activeTab, contextRole, isAuthenticated, hasAnyPermission]);
 
-  const handleInceptionComplete = (selectedMode: AppMode) => {
-    setMode(selectedMode);
-    setIsOnboarding(false);
+  const handleInceptionComplete = async (selectedMode: AppMode) => {
     const pending = (window as any)._pendingSession;
     if (pending) {
-      handleAuthenticated({
+      await handleAuthenticated({
         role: pending.user.role,
         token: pending.token,
         userId: pending.user.id,
@@ -141,6 +139,8 @@ const AppContent: React.FC = () => {
       });
       delete (window as any)._pendingSession;
     }
+    setMode(selectedMode);
+    setIsOnboarding(false);
   };
 
   return (
