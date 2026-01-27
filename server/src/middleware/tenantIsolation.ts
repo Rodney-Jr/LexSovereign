@@ -5,7 +5,7 @@ export function tenantIsolationMiddleware(currentTenantIdProvider: () => string 
         const tenantId = currentTenantIdProvider();
 
         // Models that require isolation
-        const ISOLATED_MODELS = ['Matter', 'Document', 'TimeEntry', 'PredictiveRisk', 'AuditLog'];
+        const ISOLATED_MODELS = ['Matter', 'User', 'Role', 'Policy'];
 
         if (params.model && ISOLATED_MODELS.includes(params.model) && tenantId) {
             if (params.action === 'findUnique' || params.action === 'findFirst' || params.action === 'findMany') {

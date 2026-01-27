@@ -16,8 +16,8 @@ router.get('/metrics', authenticateToken, async (req, res) => {
 
         const [mattersCount, docsCount, rulesCount] = await Promise.all([
             prisma.matter.count({ where: { tenantId } }),
-            prisma.document.count({ where: { tenantId } }), // Assuming Document model represents vaulted docs
-            prisma.regulation.count({ where: { tenantId } }) // Assuming Regulation/Rule model
+            prisma.document.count({ where: { matter: { tenantId } } }),
+            prisma.regulatoryRule.count()
         ]);
 
         // "AI Validation Score" is likely a calculated metric. 
