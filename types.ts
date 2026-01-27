@@ -48,16 +48,18 @@ export enum SaaSPlan {
 }
 
 export enum UserRole {
-  GLOBAL_ADMIN = 'Global Admin',
-  TENANT_ADMIN = 'Tenant Admin', // GC
-  DEPUTY_GC = 'Deputy GC',
-  INTERNAL_COUNSEL = 'Legal Counsel',
-  EXTERNAL_COUNSEL = 'External Counsel',
-  LEGAL_OPS = 'Legal Ops',
-  CLIENT = 'Client',
-  EXECUTIVE_BOARD = 'Executive / Board',
-  COMPLIANCE = 'Compliance Officer',
-  FINANCE_BILLING = 'Finance / Billing'
+  GLOBAL_ADMIN = 'GLOBAL_ADMIN',
+  TENANT_ADMIN = 'TENANT_ADMIN',
+  PARTNER = 'PARTNER',
+  SENIOR_COUNSEL = 'SENIOR_COUNSEL',
+  INTERNAL_COUNSEL = 'SENIOR_COUNSEL', // Map to database role
+  JUNIOR_ASSOCIATE = 'JUNIOR_ASSOCIATE',
+  EXTERNAL_COUNSEL = 'EXTERNAL_COUNSEL',
+  LEGAL_OPS = 'LEGAL_OPS_MANAGER',
+  COMPLIANCE = 'COMPLIANCE_OFFICER',
+  FINANCE_BILLING = 'FINANCE_BILLING',
+  CLIENT = 'CLIENT',
+  EXECUTIVE_BOARD = 'EXECUTIVE_BOARD'
 }
 
 export interface ChatbotConfig {
@@ -154,7 +156,7 @@ export interface DocumentMetadata {
   jurisdiction?: string; // made optional
   privilege?: PrivilegeStatus; // made optional
   region?: Region; // made optional
-  encryption?: 'BYOK' | 'SYSTEM'; // made optional
+  encryption?: 'BYOK' | 'SYSTEM' | 'DAS'; // made optional
   classification: 'Confidential' | 'Highly Sensitive' | 'Public' | 'Internal' | 'Privileged'; // added Internal/Privileged to allow constants usage, or fix constants
   lastReviewed?: string; // made optional
   attributes?: Record<string, any>;

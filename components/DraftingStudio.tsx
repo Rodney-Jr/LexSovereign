@@ -109,7 +109,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             {/* Top Bar */}
             <header className="h-20 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-8">
                 <div className="flex items-center gap-6">
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
+                    <button onClick={onClose} title="Back" className="p-2 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
                         <ArrowLeft size={20} />
                     </button>
                     <div>

@@ -43,7 +43,7 @@ const TenantAdministration: React.FC = () => {
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
-   const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'INTERNAL_COUNSEL' });
+   const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL' });
    const [availableRoles, setAvailableRoles] = useState<any[]>([]);
 
    React.useEffect(() => {
@@ -53,6 +53,12 @@ const TenantAdministration: React.FC = () => {
          try {
             const data = await authorizedFetch('/api/roles', { token: session.token });
             setAvailableRoles(data);
+
+            // Auto-select first available role if current is invalid
+            const filtered = data.filter((r: any) => !r.isSystem || r.name !== 'GLOBAL_ADMIN');
+            if (filtered.length > 0 && !filtered.find((r: any) => r.name === inviteForm.roleName)) {
+               setInviteForm(prev => ({ ...prev, roleName: filtered[0].name }));
+            }
          } catch (e) {
             console.error("[TenantAdmin] Role discovery failed:", e);
             setAvailableRoles([]);
@@ -226,7 +232,7 @@ const TenantAdministration: React.FC = () => {
                                  <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Master Key: GH-ACC-V2-RSA4096-LIVE</p>
                               </div>
                            </div>
-                           <button className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] hover:underline">Download Security Audit</button>
+                           <button title="Download Security Audit" className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] hover:underline">Download Security Audit</button>
                         </div>
                      </div>
                   </div>
@@ -251,7 +257,7 @@ const TenantAdministration: React.FC = () => {
                                     <span className="text-xs font-mono text-slate-500">4-Digits (0001)</span>
                                  </div>
                                  <div className="pt-4 border-t border-slate-800 flex justify-end">
-                                    <button className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Edit Logic</button>
+                                    <button title="Edit Logic" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Edit Logic</button>
                                  </div>
                               </div>
                            </div>
@@ -268,7 +274,7 @@ const TenantAdministration: React.FC = () => {
                                     <span className="text-[9px] bg-slate-800 text-slate-500 px-2 py-0.5 rounded uppercase font-bold">Optional</span>
                                  </div>
                                  <div className="pt-4 border-t border-slate-800 flex justify-end">
-                                    <button className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Configure Fields</button>
+                                    <button title="Configure Fields" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Configure Fields</button>
                                  </div>
                               </div>
                            </div>
@@ -295,7 +301,7 @@ const TenantAdministration: React.FC = () => {
                            <p className="text-xs text-slate-500">Generating cryptographically-signed link.</p>
                         </div>
                      </div>
-                     <button onClick={() => setShowInviteModal(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-500 transition-colors">
+                     <button onClick={() => setShowInviteModal(false)} title="Close Modal" className="p-2 hover:bg-slate-800 rounded-full text-slate-500 transition-colors">
                         <X size={20} />
                      </button>
                   </div>
@@ -336,15 +342,21 @@ const TenantAdministration: React.FC = () => {
                               />
                            </div>
                            <div className="space-y-2">
-                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Enclave Role</label>
+                              <label htmlFor="enclave-role" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Enclave Role</label>
                               <select
+                                 id="enclave-role"
+                                 title="Enclave Role"
                                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none text-slate-300"
                                  value={inviteForm.roleName}
                                  onChange={e => setInviteForm({ ...inviteForm, roleName: e.target.value })}
                               >
-                                 {availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').map(role => (
-                                    <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>
-                                 ))}
+                                 {availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').length === 0 ? (
+                                    <option disabled>Loading roles...</option>
+                                 ) : (
+                                    availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').map(role => (
+                                       <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>
+                                    ))
+                                 )}
                               </select>
                            </div>
                            <button

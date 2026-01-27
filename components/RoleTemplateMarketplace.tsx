@@ -110,6 +110,7 @@ const RoleTemplateMarketplace: React.FC<RoleTemplateMarketplaceProps> = ({ isOpe
                         {selectedTemplate ? (
                             <button
                                 onClick={() => setSelectedTemplate(null)}
+                                title="Back to Marketplace"
                                 className="p-3 bg-slate-800 hover:bg-slate-700 rounded-2xl text-slate-400 hover:text-white transition-all"
                             >
                                 <ArrowLeft size={20} />
@@ -128,7 +129,7 @@ const RoleTemplateMarketplace: React.FC<RoleTemplateMarketplaceProps> = ({ isOpe
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                    <button onClick={onClose} title="Close Marketplace" className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
                         <X size={24} />
                     </button>
                 </div>

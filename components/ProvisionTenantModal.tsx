@@ -94,7 +94,7 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">White-Glove Onboarding</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                    <button onClick={onClose} title="Close Modal" className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
                         <X size={20} />
                     </button>
                 </div>
@@ -135,6 +135,7 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                                 <div className="relative">
                                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                                     <select
+                                        title="Deployment Region"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none appearance-none"
                                         value={formData.primaryRegion}
                                         onChange={e => setFormData({ ...formData, primaryRegion: e.target.value as Region })}
@@ -170,10 +171,12 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                         {/* Admin Details */}
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Root Admin Email</label>
+                                <label htmlFor="root-admin-email" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Root Admin Email</label>
                                 <div className="relative">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                                     <input
+                                        id="root-admin-email"
+                                        title="Root Admin Email"
                                         required
                                         type="email"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-800"
@@ -185,10 +188,12 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Initial Password</label>
+                                <label htmlFor="initial-password" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Initial Password</label>
                                 <div className="relative">
                                     <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                                     <input
+                                        id="initial-password"
+                                        title="Initial Password"
                                         required
                                         type="text"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all font-mono"
@@ -201,6 +206,7 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Service Tier</label>
                                 <select
+                                    title="Service Tier"
                                     className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-3 text-sm text-slate-200 focus:outline-none appearance-none"
                                     value={formData.plan}
                                     onChange={e => setFormData({ ...formData, plan: e.target.value as SaaSPlan })}

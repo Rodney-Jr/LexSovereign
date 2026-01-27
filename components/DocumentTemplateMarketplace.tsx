@@ -107,7 +107,7 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
                                 onChange={e => setFilter(e.target.value)}
                             />
                         </div>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                        <button onClick={onClose} title="Close Marketplace" className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
                             <X size={24} />
                         </button>
                     </div>

@@ -47,7 +47,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
 
   const filteredDocs = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(search.toLowerCase()) ||
-      doc.matterId.toLowerCase().includes(search.toLowerCase());
+      (doc.matterId?.toLowerCase().includes(search.toLowerCase()) ?? false);
     const matchesRegion = filterRegion === 'All' || doc.region === filterRegion;
     const matchesMatter = filterMatterId === 'All' || doc.matterId === filterMatterId;
     const matchesPrivilege = filterPrivilege === 'All' || doc.privilege === filterPrivilege;
@@ -141,6 +141,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
             <div className="flex items-center gap-2 px-4 py-3 bg-brand-bg border border-brand-border rounded-2xl transition-all hover:border-brand-secondary/30">
               <Briefcase size={16} className="text-brand-secondary" />
               <select
+                title="Matter ID Filter"
                 className="bg-transparent text-xs font-bold text-brand-text focus:outline-none cursor-pointer appearance-none pr-6 relative"
                 value={filterMatterId}
                 onChange={e => setFilterMatterId(e.target.value)}
@@ -154,6 +155,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
             <div className="flex items-center gap-2 px-4 py-3 bg-brand-bg border border-brand-border rounded-2xl transition-all hover:border-brand-secondary/30">
               <MapPin size={16} className="text-brand-primary" />
               <select
+                title="Region Filter"
                 className="bg-transparent text-xs font-bold text-brand-text focus:outline-none cursor-pointer appearance-none pr-6 relative"
                 value={filterRegion}
                 onChange={e => setFilterRegion(e.target.value)}
@@ -246,7 +248,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
                           {highlightText(doc.name, search)}
                         </div>
                         <div className="text-[10px] text-slate-500 mono tracking-tighter uppercase">
-                          {highlightText(doc.matterId, search)}
+                          {highlightText(doc.matterId || 'UNCATEGORIZED', search)}
                         </div>
                       </div>
                     </div>
@@ -283,13 +285,14 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                      <button className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                      <button title="View Document" className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
                         <Eye size={18} />
                       </button>
-                      <button className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                      <button title="Seal Document" className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
                         <Lock size={18} />
                       </button>
                       <button
+                        title="Delete Document"
                         onClick={() => onRemoveDocument(doc.id)}
                         className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-600 hover:text-red-400 transition-all"
                       >
