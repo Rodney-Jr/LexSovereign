@@ -31,6 +31,9 @@ import ChatbotStudio from './components/ChatbotStudio';
 import SovereignBilling from './components/SovereignBilling';
 import AppRouter from './components/AppRouter';
 import PredictiveOps from './components/PredictiveOps';
+import EngineeringBacklog from './components/EngineeringBacklog';
+import MonetizationStrategy from './components/MonetizationStrategy';
+import DecisionTraceLedger from './components/DecisionTraceLedger';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -210,6 +213,9 @@ const AppContent: React.FC = () => {
         {activeTab === 'predictive' && <PredictiveOps mode={mode} />}
         {activeTab === 'workflow' && <MatterWorkflow />}
         {activeTab === 'conflict-check' && <ZkConflictSearch />}
+        {activeTab === 'growth' && <MonetizationStrategy />}
+        {activeTab === 'audit' && <DecisionTraceLedger />}
+        {activeTab === 'backlog' && <EngineeringBacklog />}
 
         {activeTab === 'vault' && (
           selectedMatter ? (
