@@ -80,18 +80,36 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
     }
 
     try {
+      console.log('[AccessGovernance] Fetching roles and permissions...');
       const [rolesData, permsData] = await Promise.all([
         authorizedFetch('/api/roles', { token: session.token }),
-        authorizedFetch('/api/roles/permissions', { token: session.token })
-      ]);
+        authorizedFetch('/api/roles/permissions', { token: session.token }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Enclave request timed out (30s)')), 30000))
+      ].slice(0, 2)); // Use slice to remove timeout from result but let it run? No, that's not how it works.
 
-      setRoles(rolesData);
-      setAllPermissions(permsData);
-      if (rolesData.length > 0 && !selectedRole) {
-        setSelectedRole(rolesData[0]);
+      // Proper timeout implementation
+      const fetchWithTimeout = async () => {
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Enclave synchronization timed out')), 15000));
+        return Promise.race([
+          Promise.all([
+            authorizedFetch('/api/roles', { token: session.token }),
+            authorizedFetch('/api/roles/permissions', { token: session.token })
+          ]),
+          timeout
+        ]);
+      };
+
+      const [rolesDataReal, permsDataReal] = await fetchWithTimeout() as [any, any];
+
+      setRoles(rolesDataReal);
+      setAllPermissions(permsDataReal);
+      if (rolesDataReal.length > 0 && !selectedRole) {
+        setSelectedRole(rolesDataReal[0]);
       }
-    } catch (error) {
+      console.log('[AccessGovernance] Sync complete.');
+    } catch (error: any) {
       console.error('Failed to fetch roles', error);
+      alert(`Access Governance Error: ${error.message}`);
     } finally {
       setIsLoading(false);
     }

@@ -8,6 +8,9 @@ export function tenantIsolationMiddleware(currentTenantIdProvider: () => string 
         const ISOLATED_MODELS = ['Matter', 'User', 'Role', 'Policy'];
 
         if (params.model && ISOLATED_MODELS.includes(params.model) && tenantId) {
+            // Ensure args exists
+            if (!params.args) params.args = {};
+
             // Role and Policy models allow system-wide records OR tenant-specific ones
             const isSharedModel = ['Role', 'Permission', 'Policy'].includes(params.model);
 
