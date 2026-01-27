@@ -25,8 +25,9 @@ export class LexGeminiService {
         }
 
         const ai = this.getAI();
-        // Use flash for everything in MVP unless specific model access is granted
-        const model = usePrivateModel ? 'gemini-2.0-flash' : 'gemini-2.0-flash';
+        // Use environmental config for model
+        const modelName = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+        const model = usePrivateModel ? modelName : modelName;
         const contextDocs = matterId
             ? documents.filter(d => d.matterId === matterId)
             : documents;
@@ -118,8 +119,8 @@ export class LexGeminiService {
 
             return {
                 text: finalText || "I am analyzing the sovereign research stream...",
-                confidence: audit.flagged ? 0.0 : (result.confidence || 0.85),
-                provider: "Gemini 2.0 Flash (Sovereign Proxy)",
+                confidence: audit.flagged ? 0.0 : (result.confidence || 0), // No fake confidence
+                provider: `Gemini (${model})`,
                 references: result.references,
                 groundingSources: groundingSources.length > 0 ? groundingSources : undefined
             };
@@ -240,8 +241,8 @@ export class LexGeminiService {
                 config: { temperature: 0.2 }
             });
             return response.text || rawNotes;
-        } catch (error) {
-            return "Legal services rendered regarding matter analysis [Offline Generated]";
+        } catch (error: any) {
+            throw new Error(`Billing Generation Failed: ${error.message}`);
         }
 
     }

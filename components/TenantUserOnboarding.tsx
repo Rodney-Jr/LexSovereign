@@ -69,13 +69,23 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
       }
    };
 
-   const handleEnrollHardware = () => {
+   const handleEnrollHardware = async () => {
       setIsProcessing(true);
-      setTimeout(() => {
-         setIsProcessing(false);
+      try {
+         // Call backend to simulate hardware handshake validation
+         const res = await fetch('/api/auth/enroll-mfa', { method: 'POST' });
+         if (!res.ok) throw new Error("Hardware Binding Failed");
+
+         await res.json(); // Consume response
+
          setMfaEnrolled(true);
          setTimeout(() => setStep(3), 800);
-      }, 2000);
+      } catch (e) {
+         console.error(e);
+         alert("Enclave Connection Failed. Please retry.");
+      } finally {
+         setIsProcessing(false);
+      }
    };
 
    const handleFinalJoin = async () => {

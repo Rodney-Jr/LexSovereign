@@ -25,7 +25,7 @@ import DraftingStudio from './DraftingStudio';
 
 interface DocumentVaultProps {
   documents: DocumentMetadata[];
-  onAddDocument: (doc: DocumentMetadata) => void;
+  onAddDocument: (doc: DocumentMetadata) => Promise<any> | void;
   onRemoveDocument: (id: string) => void;
 }
 

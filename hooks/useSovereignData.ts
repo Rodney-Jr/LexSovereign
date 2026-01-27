@@ -37,12 +37,31 @@ export const useSovereignData = (isAuthenticated: boolean) => {
     const removeDocument = (id: string) => setDocuments(prev => prev.filter(d => d.id !== id));
     const addMatter = (matter: Matter) => setMatters(prev => [...prev, matter]);
 
+    const createDocument = async (docData: Partial<DocumentMetadata>) => {
+        const session = getSavedSession();
+        if (!session?.token) throw new Error("No active session");
+
+        try {
+            const newDoc = await authorizedFetch('/api/documents', {
+                token: session.token,
+                method: 'POST',
+                body: JSON.stringify(docData)
+            });
+            setDocuments(prev => [newDoc, ...prev]);
+            return newDoc;
+        } catch (e) {
+            console.error("[Data] Failed to create document", e);
+            throw e;
+        }
+    };
+
     return {
         documents,
         matters,
         rules,
         addDocument,
         removeDocument,
-        addMatter
+        addMatter,
+        createDocument
     };
 };

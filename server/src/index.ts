@@ -17,6 +17,7 @@ import platformRouter from './routes/platform';
 import documentTemplatesRouter from './routes/documentTemplates';
 import documentsRouter from './routes/documents';
 import rulesRouter from './routes/rules';
+import analyticsRouter from './routes/analytics';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 
@@ -61,6 +62,7 @@ app.use('/api/platform', platformRouter);
 app.use('/api/document-templates', documentTemplatesRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api/rules', rulesRouter);
+app.use('/api/analytics', authenticateToken, analyticsRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));

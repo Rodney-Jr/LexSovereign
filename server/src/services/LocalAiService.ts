@@ -35,12 +35,13 @@ export class LocalAiService {
 
             // Local models usually don't return a schema-validated confidence, so we assign a baseline
             return {
-                text: data.response || "No response from local model.",
+                text: data.response || "No response derived from local inference.",
                 confidence: 0.82
             };
         } catch (error: any) {
-            console.error("[LocalAI] Fallback Failed:", error.message);
-            throw error;
+            console.error("[LocalAI] Connection Failed:", error.message);
+            // Fail gracefully but truthfully - do not return fake data
+            throw new Error(`Local AI Service Unavailable: ${error.message}`);
         }
     }
 }

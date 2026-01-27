@@ -1,0 +1,9 @@
+﻿Loading .env from: C:\Users\LENOVO\Desktop\LexSovereign\server\.env
+---------------------------------------------------
+Verifying Ghana Legal Integration (Direct DB Check)
+---------------------------------------------------
+Verifying AI Service Integration...
+[DAS Engine] Sanitized 0 unique PII entities.
+Query: qualifications of president
+Provider: LexSovereign Local (Offline)
+Response Preview: API QUOTA/ERROR FALLBACK: I am operating in offline mode. Legal context suggests proceeding with standard governance checks.

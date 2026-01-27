@@ -67,6 +67,21 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
     setProvisionLogs([]);
 
     try {
+      // Start the API call immediately
+      const apiCall = fetch('/api/auth/onboard-silo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          plan: formData.plan,
+          appMode: entityType || AppMode.LAW_FIRM,
+          region: formData.region,
+          adminEmail: formData.adminEmail,
+          adminPassword: formData.adminPassword
+        })
+      });
+
+      // Visual sequence
       const sequence = [
         `Initializing ${formData.plan} Instance...`,
         "Software-Defined Silo: GH-ACC-1 allocated.",
@@ -75,23 +90,14 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         "Sovereign Trust Chain pinned. HSM Handshake Complete."
       ];
 
+      // Play logs while waiting for API, but ensure at least some logs show
       for (let i = 0; i < sequence.length; i++) {
         await new Promise(r => setTimeout(r, 600));
         addLog(sequence[i]);
       }
 
-      const res = await fetch('/api/auth/onboard-silo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          plan: formData.plan,
-          appMode: entityType,
-          region: formData.region,
-          adminEmail: formData.adminEmail,
-          adminPassword: formData.adminPassword
-        })
-      });
+      // Await the real result
+      const res = await apiCall;
 
       if (!res.ok) {
         const text = await res.text();
@@ -112,16 +118,23 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
       }
 
       const session = await res.json();
+
+      // Add success log and wait a tiny bit
+      addLog("Silo Activation: CONFIRMED.");
+      await new Promise(r => setTimeout(r, 400));
+
       setTimeout(() => {
         setIsProvisioning(false);
         setStep(5);
         // Store for final launch
         (window as any)._pendingSession = session;
-      }, 800);
+      }, 500);
 
     } catch (e: any) {
       addLog(`CRITICAL ERROR: ${e.message}`);
-      setIsProvisioning(false);
+      // Do not disable provisioning state immediately so user sees the error? 
+      // Or just revert state.
+      setTimeout(() => setIsProvisioning(false), 2000);
     }
   };
 

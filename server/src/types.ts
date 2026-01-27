@@ -3,6 +3,7 @@ import { Request } from 'express';
 export interface AuthUser {
     id: string;
     email: string;
+    name: string; // Added for UI display
     role: string;
     tenantId: string;
     permissions: string[];
