@@ -219,7 +219,18 @@ const AppContent: React.FC = () => {
         {activeTab === 'system-settings' && <GlobalSettings />}
       </div>
 
-      {showMatterModal && <MatterCreationModal mode={mode} userId={userId || ''} tenantId={tenantId || ''} onClose={() => setShowMatterModal(false)} onCreated={addMatter} />}
+      {showMatterModal && (
+        <MatterCreationModal
+          mode={mode}
+          userId={userId || ''}
+          tenantId={tenantId || ''}
+          onClose={() => setShowMatterModal(false)}
+          onCreated={(m) => {
+            addMatter(m);
+            setShowMatterModal(false);
+          }}
+        />
+      )}
     </AppRouter>
   );
 };

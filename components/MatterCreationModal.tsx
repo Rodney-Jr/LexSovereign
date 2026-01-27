@@ -318,11 +318,15 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
             <button onClick={onClose} className="px-8 py-3.5 text-slate-400 font-bold text-sm hover:text-white transition-all hover:bg-slate-900 rounded-2xl">Cancel</button>
             <button
               onClick={() => step < 5 ? setStep(step + 1) : handleSubmit()}
-              disabled={step === 1 && !isStep1Valid}
+              disabled={(step === 1 && !isStep1Valid) || isSubmitting}
               className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white px-10 py-3.5 rounded-2xl font-bold text-sm shadow-2xl shadow-blue-900/40 transition-all flex items-center gap-3 active:scale-95 group"
             >
-              {step === 5 ? 'Incept Global Matter' : 'Continue to ' + ['', 'Pinning', 'RBAC', 'DAS', 'Rules'][step]}
-              <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+              {isSubmitting ? 'Incepting...' : step === 5 ? 'Incept Global Matter' : 'Continue to ' + ['', 'Pinning', 'RBAC', 'DAS', 'Rules'][step]}
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+              )}
             </button>
           </div>
         </div>
