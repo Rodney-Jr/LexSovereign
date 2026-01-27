@@ -21,7 +21,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     }
 
     // Add Sovereign Pin if available (from Vite env or process define)
-    const sovPin = import.meta.env.VITE_SOVEREIGN_PIN || (window as any).process?.env?.SOVEREIGN_PIN || (typeof process !== 'undefined' ? process.env?.SOVEREIGN_PIN : undefined);
+    const sovPin = import.meta.env.VITE_SOVEREIGN_PIN || process.env.SOVEREIGN_PIN;
     if (sovPin) {
         headers.set('x-sov-pin', sovPin);
     }
