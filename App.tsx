@@ -51,7 +51,21 @@ const AppContent: React.FC = () => {
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
   const [isPlatformMode, setIsPlatformMode] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
+  const [isUserInvitation, setIsUserInvitation] = useState(false);
+  const [initialToken, setInitialToken] = useState('');
   const [showMatterModal, setShowMatterModal] = useState(false);
+
+  // URL Invitation Discovery
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      setInitialToken(token);
+      setIsUserInvitation(true);
+    } else if (window.location.pathname === '/join') {
+      setIsUserInvitation(true);
+    }
+  }, []);
 
   // Modularized Hooks
   const {
@@ -130,7 +144,7 @@ const AppContent: React.FC = () => {
     <AppRouter
       isAuthenticated={isAuthenticated}
       isOnboarding={isOnboarding}
-      isUserInvitation={false} // Currently handled by state in App.tsx but could be refined
+      isUserInvitation={isUserInvitation}
       isPlatformMode={isPlatformMode}
       mode={mode}
       userId={userId}
@@ -147,6 +161,7 @@ const AppContent: React.FC = () => {
       handleInceptionComplete={handleInceptionComplete}
       setIsPlatformMode={setIsPlatformMode}
       setIsOnboarding={setIsOnboarding}
+      setIsUserInvitation={setIsUserInvitation}
     >
       <div className="animate-fade-in-up">
         {activeTab === 'dashboard' && (

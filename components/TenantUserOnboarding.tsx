@@ -8,8 +8,6 @@ import {
    CheckCircle2,
    ChevronRight,
    ShieldAlert,
-   Cpu,
-   Globe,
    Building2,
    Lock,
    ArrowRight,
@@ -22,14 +20,15 @@ interface TenantUserOnboardingProps {
    mode: AppMode;
    userId: string;
    tenantId: string;
+   initialToken?: string;
+   onBack?: () => void;
    onComplete: (role: UserRole, token?: string) => void;
 }
 
-const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userId, tenantId, onComplete }) => {
-   const [step, setStep] = useState(1); // 1, 1.5, 2, 3
-   const [inviteToken, setInviteToken] = useState('');
+const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userId, tenantId, initialToken, onBack, onComplete }) => {
+   const [step, setStep] = useState(1); // 1, 1.5, 3
+   const [inviteToken, setInviteToken] = useState(initialToken || '');
    const [isProcessing, setIsProcessing] = useState(false);
-   const [mfaEnrolled, setMfaEnrolled] = useState(false);
    const [affidavitSigned, setAffidavitSigned] = useState(false);
 
    const [inviteContext, setInviteContext] = useState<{ email: string, roleName: string, tenantName: string, tenantMode: string } | null>(null);
@@ -69,24 +68,6 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
       }
    };
 
-   const handleEnrollHardware = async () => {
-      setIsProcessing(true);
-      try {
-         // Call backend to simulate hardware handshake validation
-         const res = await fetch('/api/auth/enroll-mfa', { method: 'POST' });
-         if (!res.ok) throw new Error("Hardware Binding Failed");
-
-         await res.json(); // Consume response
-
-         setMfaEnrolled(true);
-         setTimeout(() => setStep(3), 800);
-      } catch (e) {
-         console.error(e);
-         alert("Enclave Connection Failed. Please retry.");
-      } finally {
-         setIsProcessing(false);
-      }
-   };
 
    const handleFinalJoin = async () => {
       setIsProcessing(true);
@@ -138,6 +119,14 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                   <span className="font-bold text-2xl tracking-tight text-white">Practitioner Onboarding</span>
                </div>
                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]">Sovereign Silo Enrollment: GH-ACC-1</p>
+               {onBack && step === 1 && (
+                  <button
+                     onClick={onBack}
+                     className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline mt-2"
+                  >
+                     ← Back to Login
+                  </button>
+               )}
             </div>
 
             <div className="bg-slate-900/50 border border-slate-800 rounded-[3.5rem] p-10 shadow-[0_0_80px_rgba(0,0,0,0.5)] backdrop-blur-xl relative overflow-hidden">
@@ -221,45 +210,16 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                            />
                         </div>
                         <button
-                           onClick={() => setStep(2)}
+                           onClick={() => setStep(3)}
                            disabled={!name || password.length < 6}
                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20"
                         >
-                           Confirm Identity & Bind <ChevronRight size={20} />
+                           Confirm Identity & Proceed <ChevronRight size={20} />
                         </button>
                      </div>
                   </div>
                )}
 
-               {step === 2 && (
-                  <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 text-center">
-                     <div className="space-y-2">
-                        <h3 className="text-2xl font-bold text-white">Hardware Key Binding</h3>
-                        <p className="text-slate-400 text-sm">Binding your local device enclave to the Sovereign Silo HSM.</p>
-                     </div>
-                     <div className="py-10 flex justify-center">
-                        <div
-                           onClick={!isProcessing ? handleEnrollHardware : undefined}
-                           className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center border-4 cursor-pointer transition-all duration-700 relative group ${mfaEnrolled ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.3)]' :
-                              isProcessing ? 'bg-blue-500/20 border-blue-500 text-blue-400 animate-pulse' :
-                                 'bg-slate-800/50 border-slate-700 text-slate-500 hover:border-emerald-500/50'}`}
-                        >
-                           {isProcessing && <div className="absolute inset-0 border-2 border-blue-400 rounded-[2.3rem] animate-ping opacity-20"></div>}
-                           {mfaEnrolled ? <ShieldCheck size={56} /> : <Fingerprint size={56} className="group-hover:scale-110 transition-transform" />}
-                        </div>
-                     </div>
-                     <div className="space-y-4">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
-                           {mfaEnrolled ? 'Identity Fragment Generated' : isProcessing ? 'Generating Zero-Knowledge Proof...' : 'Touch Sensor to Enroll Hardware'}
-                        </p>
-                        <div className="flex items-center justify-center gap-6 opacity-40">
-                           <div className="flex items-center gap-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest"><Cpu size={12} /> TEE Active</div>
-                           <div className="w-[1px] h-3 bg-slate-800"></div>
-                           <div className="flex items-center gap-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest"><Globe size={12} /> Regional Lock</div>
-                        </div>
-                     </div>
-                  </div>
-               )}
 
                {step === 3 && (
                   <div className="space-y-8 animate-in zoom-in-95 duration-500">

@@ -28,6 +28,8 @@ interface AppRouterProps {
     handleInceptionComplete: (mode: AppMode) => void;
     setIsPlatformMode: (active: boolean) => void;
     setIsOnboarding: (active: boolean) => void;
+    setIsUserInvitation: (active: boolean) => void;
+    initialToken?: string;
     children: React.ReactNode;
 }
 
@@ -51,6 +53,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
     handleInceptionComplete,
     setIsPlatformMode,
     setIsOnboarding,
+    setIsUserInvitation,
+    initialToken,
     children
 }) => {
     if (isOnboarding) {
@@ -68,6 +72,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
                     mode={mode}
                     userId={userId || ''}
                     tenantId={tenantId || ''}
+                    initialToken={initialToken}
+                    onBack={() => setIsUserInvitation(false)}
                     onComplete={(role: UserRole) => handleAuthenticated({
                         role,
                         userId: userId || 'invited-user',
@@ -103,6 +109,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
                     token
                 })}
                 onStartOnboarding={() => setIsOnboarding(true)}
+                onStartInvitation={() => setIsUserInvitation(true)}
                 onSecretTrigger={() => setIsPlatformMode(true)}
             />
         );

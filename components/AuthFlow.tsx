@@ -10,7 +10,8 @@ import {
    User,
    Eye,
    EyeOff,
-   AlertCircle
+   AlertCircle,
+   Link
 } from 'lucide-react';
 import { UserRole } from '../types';
 
@@ -20,10 +21,11 @@ declare const __SOVEREIGN_PIN__: string;
 interface AuthFlowProps {
    onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string, token: string) => Promise<void> | void;
    onStartOnboarding: () => void;
+   onStartInvitation: () => void;
    onSecretTrigger?: () => void;
 }
 
-const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding, onSecretTrigger }) => {
+const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding, onStartInvitation, onSecretTrigger }) => {
    const [isLogin, setIsLogin] = useState(true);
    const [email, setEmail] = useState('');
    const [password, setPassword] = useState('');
@@ -186,10 +188,25 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                         <p className="text-[10px] text-slate-600">Start the Sovereign Inception Protocol.</p>
                      </div>
                      <button
+                        type="button"
                         onClick={onStartOnboarding}
                         className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2"
                      >
                         <Rocket size={14} /> Provision New Silo
+                     </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                     <div className="space-y-1 text-left">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Invited Internally?</p>
+                        <p className="text-[10px] text-slate-600">Join an existing Sovereign Silo.</p>
+                     </div>
+                     <button
+                        type="button"
+                        onClick={onStartInvitation}
+                        className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2"
+                     >
+                        <Link size={14} /> Join with Invite
                      </button>
                   </div>
                </div>
