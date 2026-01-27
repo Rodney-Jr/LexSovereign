@@ -65,7 +65,8 @@ const AppContent: React.FC = () => {
     rules,
     addDocument,
     removeDocument,
-    addMatter
+    addMatter,
+    createDocument
   } = useSovereignData(isAuthenticated);
 
   const { hasAnyPermission } = usePermissions();
@@ -192,7 +193,7 @@ const AppContent: React.FC = () => {
             <MatterIntelligence mode={mode} onBack={() => setSelectedMatter(null)} documents={documents} />
           ) : (
             <div className="space-y-8">
-              <DocumentVault documents={documents} onAddDocument={addDocument} onRemoveDocument={removeDocument} />
+              <DocumentVault documents={documents} onAddDocument={createDocument} onRemoveDocument={removeDocument} />
               <div className="h-[1px] bg-brand-border w-full my-4"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {matters.map(matter => (
