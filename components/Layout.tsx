@@ -32,7 +32,8 @@ import {
   Plug,
   Search,
   // Added missing Cloud icon
-  Cloud
+  Cloud,
+  Sparkles
 } from 'lucide-react';
 import { AppMode, UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
@@ -218,6 +219,14 @@ const Layout: React.FC<LayoutProps> = ({
               label="Workflow Engine"
               isActive={activeTab === 'workflow'}
               onClick={() => setActiveTab('workflow')}
+            />
+          )}
+          {isAllowed('drafting') && (
+            <NavItem
+              icon={<Sparkles size={18} className="text-brand-secondary" />}
+              label="Legal Drafting"
+              isActive={activeTab === 'drafting'}
+              onClick={() => setActiveTab('drafting')}
             />
           )}
           {isAllowed('vault') && (

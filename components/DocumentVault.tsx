@@ -108,10 +108,10 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
           )}
           <button
             onClick={() => setShowMarketplace(true)}
-            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-brand-primary rounded-2xl font-bold transition-all flex items-center gap-2 border border-brand-primary/20 hover:border-brand-primary/40 active:scale-95"
+            className="px-6 py-3 bg-brand-secondary/10 hover:bg-brand-secondary/20 text-brand-secondary rounded-2xl font-bold transition-all flex items-center gap-2 border border-brand-secondary/20 hover:border-brand-secondary/40 active:scale-95 shadow-lg shadow-brand-secondary/5"
           >
-            <Sparkles size={20} className="animate-pulse" />
-            Draft from Template
+            <Sparkles size={20} className="animate-pulse text-brand-secondary" />
+            New Sovereign Draft
           </button>
           <button
             onClick={() => setShowIngest(true)}

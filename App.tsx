@@ -7,7 +7,8 @@ import {
   Rocket,
   Briefcase,
   LogOut,
-  ShieldAlert
+  ShieldAlert,
+  Sparkles
 } from 'lucide-react';
 
 import Dashboard from './components/Dashboard';
@@ -35,6 +36,7 @@ import EngineeringBacklog from './components/EngineeringBacklog';
 import MonetizationStrategy from './components/MonetizationStrategy';
 import DecisionTraceLedger from './components/DecisionTraceLedger';
 import { PricingGovernance } from './components/PricingGovernance';
+import LegalDrafting from './components/LegalDrafting';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -186,13 +188,23 @@ const AppContent: React.FC = () => {
                 </div>
               </div>
               {contextRole !== 'GLOBAL_ADMIN' && (
-                <div onClick={() => setShowMatterModal(true)} className="bg-brand-secondary/10 border border-brand-secondary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-secondary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-secondary/5">
-                  <div className="p-3 bg-brand-secondary/20 rounded-2xl"><Briefcase className="text-brand-secondary" /></div>
-                  <div>
-                    <h4 className="font-bold text-brand-text">Incept Matter</h4>
-                    <p className="text-xs text-brand-muted">New Global Instance</p>
+                <>
+                  <div onClick={() => setActiveTab('drafting')} className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-primary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-primary/5">
+                    <div className="p-3 bg-brand-primary/20 rounded-2xl animate-pulse"><Sparkles className="text-brand-primary" size={24} /></div>
+                    <div>
+                      <h4 className="font-bold text-brand-text">Quick Draft</h4>
+                      <p className="text-xs text-brand-muted">New Legal Artifact</p>
+                    </div>
                   </div>
-                </div>
+
+                  <div onClick={() => setShowMatterModal(true)} className="bg-brand-secondary/10 border border-brand-secondary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-secondary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-secondary/5">
+                    <div className="p-3 bg-brand-secondary/20 rounded-2xl"><Briefcase className="text-brand-secondary" /></div>
+                    <div>
+                      <h4 className="font-bold text-brand-text">Incept Matter</h4>
+                      <p className="text-xs text-brand-muted">New Global Instance</p>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
             <Dashboard
@@ -218,6 +230,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'pricing-calib' && <PricingGovernance />}
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
+        {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} />}
 
         {activeTab === 'vault' && (
           selectedMatter ? (

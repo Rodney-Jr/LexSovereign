@@ -35,6 +35,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'reviews': ['review_work'],
   'workflow': ['design_workflow'],
   'vault': ['upload_document', 'read_assigned_matter'],
+  'drafting': ['upload_document'],
   'chat': ['create_matter', 'read_assigned_matter'],
 
   // Finance/Growth
