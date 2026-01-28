@@ -101,6 +101,9 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
 
    const handleFinalJoin = async () => {
       setIsProcessing(true);
+      console.log('[Client] Attempting to join silo with token:', inviteToken);
+      console.log('[Client] Name:', name, 'Password length:', password?.length);
+
       try {
          const res = await fetch('/api/auth/join-silo', {
             method: 'POST',
@@ -108,8 +111,11 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
             body: JSON.stringify({ token: inviteToken, name, password })
          });
 
+         console.log('[Client] Join response status:', res.status);
+
          if (!res.ok) {
             const text = await res.text();
+            console.error('[Client] Join failed. Response:', text);
             let errorMessage = 'Join failed';
             try {
                const json = JSON.parse(text);
@@ -121,6 +127,8 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
          }
 
          const data = await res.json();
+         console.log('[Client] Join successful! User ID:', data.user.id);
+
          localStorage.setItem('lexSovereign_session', JSON.stringify({
             role: data.user.role,
             token: data.token,
@@ -130,6 +138,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
          }));
          onComplete();
       } catch (e: any) {
+         console.error('[Client] Join error:', e);
          alert(e.message);
       } finally {
          setIsProcessing(false);
