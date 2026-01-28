@@ -15,20 +15,24 @@ import {
     ArrowRight,
     Star
 } from 'lucide-react';
-import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
+import { DocumentMetadata, Region, PrivilegeStatus, UserRole } from '../types';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import RoleTemplateMarketplace from './RoleTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
 
 interface SovereignMarketplaceProps {
     onAddDocument: (doc: DocumentMetadata) => Promise<any> | void;
+    userRole: UserRole;
 }
 
-const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocument }) => {
+const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocument, userRole }) => {
     const [category, setCategory] = useState<'DOCUMENTS' | 'IDENTITY'>('DOCUMENTS');
     const [showDocMarketplace, setShowDocMarketplace] = useState(false);
     const [showRoleMarketplace, setShowRoleMarketplace] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
+    const isTenantAdmin = userRole === UserRole.TENANT_ADMIN;
+
 
     return (
         <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24">
@@ -49,20 +53,22 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                         <p className="text-slate-400 text-lg leading-relaxed">
                             Acquire jurisdictional legal logic, cryptographically-hardened role sets, and regional compliance blueprints instantly.
                         </p>
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => setCategory('DOCUMENTS')}
-                                className={`px-8 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 ${category === 'DOCUMENTS' ? 'bg-brand-primary text-brand-bg shadow-xl shadow-brand-primary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
-                            >
-                                <FileText size={18} /> Legal Artifacts
-                            </button>
-                            <button
-                                onClick={() => setCategory('IDENTITY')}
-                                className={`px-8 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 ${category === 'IDENTITY' ? 'bg-brand-secondary text-brand-bg shadow-xl shadow-brand-secondary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
-                            >
-                                <Zap size={18} /> Identity Blueprints
-                            </button>
-                        </div>
+                        {isTenantAdmin && (
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setCategory('DOCUMENTS')}
+                                    className={`px-8 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 ${category === 'DOCUMENTS' ? 'bg-brand-primary text-brand-bg shadow-xl shadow-brand-primary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
+                                >
+                                    <FileText size={18} /> Legal Artifacts
+                                </button>
+                                <button
+                                    onClick={() => setCategory('IDENTITY')}
+                                    className={`px-8 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 ${category === 'IDENTITY' ? 'bg-brand-secondary text-brand-bg shadow-xl shadow-brand-secondary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
+                                >
+                                    <Zap size={18} /> Identity Blueprints
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="hidden lg:grid grid-cols-2 gap-4">

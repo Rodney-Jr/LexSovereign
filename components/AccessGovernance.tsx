@@ -240,7 +240,7 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
           </h3>
           <p className="text-slate-400 text-sm mt-1">Manage tenant permissions and enforce least-privilege access.</p>
         </div>
-        {canManageRoles && (
+        {userRole === UserRole.TENANT_ADMIN && (
           <div className="flex gap-3">
             <button
               onClick={() => setShowMarketplace(true)}

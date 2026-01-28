@@ -232,7 +232,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
         {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} />}
-        {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} />}
+        {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
 
         {activeTab === 'vault' && (
           selectedMatter ? (
