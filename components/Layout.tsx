@@ -66,6 +66,15 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const { hasAnyPermission, role } = usePermissions();
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
+  const [showAdvanced, setShowAdvanced] = React.useState(() => {
+    return localStorage.getItem('lexSovereign_advancedMode') === 'true';
+  });
+
+  const toggleAdvanced = () => {
+    const newState = !showAdvanced;
+    setShowAdvanced(newState);
+    localStorage.setItem('lexSovereign_advancedMode', newState.toString());
+  };
 
   React.useEffect(() => {
     const handleGlobalKey = (e: KeyboardEvent) => {
@@ -115,7 +124,6 @@ const Layout: React.FC<LayoutProps> = ({
           {(isAllowed('platform-ops') || isAllowed('governance')) && (
             <div className="pt-4 pb-2 px-4 flex items-center justify-between">
               <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Platform Owner</span>
-              <Monitor size={10} className="text-brand-secondary" />
             </div>
           )}
           {isAllowed('platform-ops') && (
@@ -136,7 +144,7 @@ const Layout: React.FC<LayoutProps> = ({
           )}
 
           {/* Management Section */}
-          {(isAllowed('org-blueprint') || isAllowed('integration-bridge') || isAllowed('tenant-admin') || isAllowed('identity') || isAllowed('backlog')) && (
+          {(isAllowed('org-blueprint') || (isAllowed('integration-bridge') && showAdvanced) || isAllowed('tenant-admin') || isAllowed('identity') || (isAllowed('backlog') && showAdvanced)) && (
             <div className="pt-4 pb-2 px-4 flex items-center justify-between">
               <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Management</span>
             </div>
@@ -149,7 +157,7 @@ const Layout: React.FC<LayoutProps> = ({
               onClick={() => setActiveTab('org-blueprint')}
             />
           )}
-          {isAllowed('integration-bridge') && (
+          {isAllowed('integration-bridge') && showAdvanced && (
             <NavItem
               icon={<Plug size={18} className="text-brand-primary" />}
               label="Bridge Registry"
@@ -173,7 +181,7 @@ const Layout: React.FC<LayoutProps> = ({
               onClick={() => setActiveTab('identity')}
             />
           )}
-          {isAllowed('backlog') && (
+          {isAllowed('backlog') && showAdvanced && (
             <NavItem
               icon={<ClipboardList size={18} />}
               label="Eng Backlog"
@@ -204,7 +212,7 @@ const Layout: React.FC<LayoutProps> = ({
               onClick={() => setActiveTab('reviews')}
             />
           )}
-          {isAllowed('workflow') && (
+          {isAllowed('workflow') && showAdvanced && (
             <NavItem
               icon={<Zap size={18} />}
               label="Workflow Engine"
@@ -230,10 +238,9 @@ const Layout: React.FC<LayoutProps> = ({
           )}
 
           {/* Enterprise Tier Section */}
-          {(isAllowed('enclave') || isAllowed('growth') || isAllowed('audit')) && (
+          {(isAllowed('enclave') || isAllowed('growth') || (isAllowed('audit') && showAdvanced)) && (
             <div className="pt-4 pb-2 px-4 flex items-center justify-between">
               <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Enterprise Tier</span>
-              <Lock size={10} className="text-brand-muted" />
             </div>
           )}
           {isAllowed('growth') && (
@@ -244,7 +251,7 @@ const Layout: React.FC<LayoutProps> = ({
               onClick={() => setActiveTab('growth')}
             />
           )}
-          {isAllowed('audit') && (
+          {isAllowed('audit') && showAdvanced && (
             <NavItem
               icon={<Activity size={18} />}
               label="Forensic Traces"
@@ -323,6 +330,16 @@ const Layout: React.FC<LayoutProps> = ({
             </div>
           )}
 
+          <div className="flex items-center justify-between p-2 bg-brand-bg/50 rounded-lg border border-brand-border cursor-pointer hover:bg-brand-bg/80 transition-all" onClick={toggleAdvanced}>
+            <div className="flex items-center gap-2">
+              <Fingerprint size={16} className={showAdvanced ? "text-brand-primary" : "text-brand-muted"} />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-muted">Advanced Mode</span>
+            </div>
+            <div className={`w-8 h-4 rounded-full relative transition-colors ${showAdvanced ? 'bg-brand-primary/40' : 'bg-brand-muted/20'}`}>
+              <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${showAdvanced ? 'left-5 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'left-1'}`} />
+            </div>
+          </div>
+
           {killSwitchActive && (
             <div className="flex items-center gap-2 p-2 bg-red-500/10 text-red-400 rounded-lg animate-pulse border border-red-500/20">
               <Lock size={18} />
@@ -337,19 +354,11 @@ const Layout: React.FC<LayoutProps> = ({
         <header className="h-16 border-b border-brand-border bg-brand-sidebar flex items-center justify-between px-8 backdrop-blur-md sticky top-0 z-20 transition-all duration-500">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-semibold text-brand-text capitalize">{activeTab.replace('-', ' ')}</h2>
-            <div className="h-4 w-[1px] bg-brand-border"></div>
-            <div className="flex items-center gap-2 text-[10px] text-brand-muted uppercase tracking-widest font-bold">
-              <Cloud size={14} className="text-brand-secondary" />
-              <span>Orchestrator: Railway Hybrid</span>
-            </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-brand-secondary/10 rounded-full border border-brand-secondary/20">
-              <span className="text-[10px] font-bold text-brand-secondary uppercase tracking-widest">v1.1.0 Stable</span>
-            </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
               <ShieldCheck size={14} className="text-brand-primary" />
-              <span className="text-[10px] font-medium text-brand-primary uppercase tracking-widest">Protocol Secured</span>
+              <span className="text-[10px] font-bold text-brand-primary uppercase tracking-widest">Protocol Secured</span>
             </div>
           </div>
         </header>

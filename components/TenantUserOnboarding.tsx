@@ -284,29 +284,29 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
 
                {step === 3 && (
                   <div className="space-y-8 animate-in zoom-in-95 duration-500">
-                     <div className="space-y-2">
-                        <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-                           <FileSignature className="text-emerald-400" size={24} />
-                           Practitioner Oath
+                     <div className="space-y-2 text-center">
+                        <h3 className="text-2xl font-bold text-white flex items-center justify-center gap-3">
+                           <ShieldCheck className="text-emerald-400" size={28} />
+                           Professional Standards
                         </h3>
-                        <p className="text-slate-400 text-sm">Finalize your enrollment with a jurisdictional ethical oath.</p>
+                        <p className="text-slate-400 text-sm">Review and acknowledge the jurisdictional ethical standards for this silo.</p>
                      </div>
                      <div className="bg-slate-950 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-inner">
-                        <div className="space-y-4">
-                           <div className="flex items-center justify-between">
-                              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">{isFirm ? 'GBA Ethical Use Affidavit' : 'Corporate Compliance Briefing'}</h4>
-                              <span className="text-[10px] font-mono text-emerald-500">VERSION 2.4</span>
-                           </div>
-                           <div className="max-h-40 overflow-y-auto pr-4 scrollbar-hide text-xs text-slate-400 leading-relaxed font-serif italic border-l-2 border-slate-800 pl-6">
-                              {isFirm ? "I acknowledge the GBA Code of Ethics..." : "I acknowledge corporate AML/KYC guidelines..."}
-                           </div>
+                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+                           <p className="text-xs text-slate-300 leading-relaxed italic text-center">
+                              "I hereby acknowledge and agree to abide by the jurisdictional professional standards and ethical obligations required for access to this Sovereign Silo."
+                           </p>
                         </div>
+
                         <label className="flex items-center gap-4 cursor-pointer group p-4 bg-slate-900 border border-slate-800 rounded-2xl transition-all hover:border-emerald-500/30">
                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${affidavitSigned ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-950 border-slate-700 group-hover:border-emerald-500'}`}>
                               {affidavitSigned && <CheckCircle2 size={16} className="text-slate-950" />}
                            </div>
                            <input type="checkbox" className="hidden" checked={affidavitSigned} onChange={() => setAffidavitSigned(!affidavitSigned)} />
-                           <span className="text-xs font-bold text-slate-300">I electronically sign this {isFirm ? 'Affidavit' : 'Briefing'}.</span>
+                           <div className="flex-1">
+                              <p className="text-xs font-bold text-slate-300">I Agree to the {isFirm ? 'Ethical Use Affidavit' : 'Compliance Standards'}</p>
+                              <p className="text-[10px] text-slate-500">Electronically signing version 2.4.1</p>
+                           </div>
                         </label>
                      </div>
                      <button
