@@ -90,16 +90,28 @@ router.post('/onboard-silo', async (req, res) => {
 router.post('/resolve-invite', async (req, res) => {
     try {
         const { token } = req.body;
+        console.log(`[Invite] Resolving token: ${token}`);
+
         const invitation = await prisma.invitation.findUnique({
             where: { token, isUsed: false },
             include: { tenant: true }
         });
 
-        if (!invitation || invitation.expiresAt < new Date()) {
-            res.status(404).json({ error: 'Invalid or expired invitation' });
+        if (!invitation) {
+            console.log(`[Invite] Token not found or already used: ${token}`);
+            res.status(404).json({ error: 'Invalid invitation token' });
             return;
         }
 
+        console.log(`[Invite] Found invitation. Expires at: ${invitation.expiresAt}, Current time: ${new Date()}`);
+
+        if (invitation.expiresAt < new Date()) {
+            console.log(`[Invite] Token expired: ${token}`);
+            res.status(404).json({ error: 'Invitation has expired' });
+            return;
+        }
+
+        console.log(`[Invite] Token valid. Tenant: ${invitation.tenant.name}`);
         res.json({
             email: invitation.email,
             roleName: invitation.roleName,
@@ -107,6 +119,7 @@ router.post('/resolve-invite', async (req, res) => {
             tenantMode: invitation.tenant.appMode
         });
     } catch (error: any) {
+        console.error(`[Invite] Error resolving token:`, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -201,6 +214,9 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
+        console.log(`[Invite] Creating invitation for ${email} in tenant ${tenantId}`);
+        console.log(`[Invite] Token: ${token}, Expires: ${expiresAt}`);
+
         const invitation = await prisma.invitation.create({
             data: {
                 token,
@@ -211,8 +227,10 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             }
         });
 
+        console.log(`[Invite] Invitation created successfully. ID: ${invitation.id}`);
         res.json({ token, expiresAt: invitation.expiresAt });
     } catch (error: any) {
+        console.error(`[Invite] Error creating invitation:`, error);
         res.status(500).json({ error: error.message });
     }
 });
