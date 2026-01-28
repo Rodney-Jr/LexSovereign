@@ -273,7 +273,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                                              <p className={`text-[10px] font-bold uppercase ${admin.status === 'Active' ? 'text-emerald-400' : 'text-red-400'}`}>{admin.status}</p>
                                              <p className="text-[8px] text-slate-600 font-mono">{admin.lastHandshake}</p>
                                           </div>
-                                          <button className="p-2 hover:bg-slate-800 rounded-xl text-slate-600 transition-all">
+                                          <button className="p-2 hover:bg-slate-800 rounded-xl text-slate-600 transition-all" aria-label="Admin options">
                                              <MoreVertical size={16} />
                                           </button>
                                        </div>
