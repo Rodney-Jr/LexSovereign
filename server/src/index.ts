@@ -55,6 +55,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/pricing', pricingRouter); // Public endpoint for onboarding
 app.use('/api', sovereignGuard, apiRouter);
 app.use('/api/matters', authenticateToken, mattersRouter);
 app.use('/api/bridges', bridgesRouter);
@@ -65,7 +66,6 @@ app.use('/api/document-templates', documentTemplatesRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api/rules', rulesRouter);
 app.use('/api/users', usersRouter);
-app.use('/api/pricing', pricingRouter);
 app.use('/api/analytics', authenticateToken, analyticsRouter);
 
 // Serve static files from the React app
