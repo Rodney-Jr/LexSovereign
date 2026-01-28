@@ -27,6 +27,14 @@ import {
 } from 'lucide-react';
 import { Region, SaaSPlan, AppMode } from '../types';
 
+interface PricingConfig {
+  id: string;
+  basePrice: number;
+  pricePerUser: number;
+  creditsIncluded: number;
+  features: string[];
+}
+
 interface InceptionStep {
   id: number;
   label: string;
@@ -57,6 +65,30 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
     adminEmail: '',
     adminPassword: ''
   });
+
+  const [pricingConfigs, setPricingConfigs] = useState<PricingConfig[]>([]);
+  const [pricingLoading, setPricingLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const res = await fetch('/api/pricing');
+        if (res.ok) {
+          const data = await res.json();
+          setPricingConfigs(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch pricing:', err);
+      } finally {
+        setPricingLoading(false);
+      }
+    };
+    fetchPricing();
+  }, []);
+
+  const getPricingForPlan = (plan: SaaSPlan): PricingConfig | undefined => {
+    return pricingConfigs.find(p => p.id === plan);
+  };
 
   const addLog = (msg: string) => {
     setProvisionLogs(prev => [`> ${msg}`, ...prev.slice(0, 5)]);
@@ -285,26 +317,23 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                   plan={SaaSPlan.STANDARD}
                   active={formData.plan === SaaSPlan.STANDARD}
                   onClick={() => setFormData({ ...formData, plan: SaaSPlan.STANDARD })}
-                  price="$99"
-                  desc="Shared logical silo. System-managed encryption."
-                  features={['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits']}
+                  pricing={getPricingForPlan(SaaSPlan.STANDARD)}
+                  loading={pricingLoading}
                 />
                 <PlanCard
                   plan={SaaSPlan.SOVEREIGN}
                   active={formData.plan === SaaSPlan.SOVEREIGN}
                   onClick={() => setFormData({ ...formData, plan: SaaSPlan.SOVEREIGN })}
-                  price="$499"
-                  desc="Dedicated logical silo. BYOK support enabled."
-                  features={['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready']}
+                  pricing={getPricingForPlan(SaaSPlan.SOVEREIGN)}
+                  loading={pricingLoading}
                   highlight={true}
                 />
                 <PlanCard
                   plan={SaaSPlan.ENCLAVE_EXCLUSIVE}
                   active={formData.plan === SaaSPlan.ENCLAVE_EXCLUSIVE}
                   onClick={() => setFormData({ ...formData, plan: SaaSPlan.ENCLAVE_EXCLUSIVE })}
-                  price="Custom"
-                  desc="Air-Gap support and Private Local LLM nodes."
-                  features={['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits']}
+                  pricing={getPricingForPlan(SaaSPlan.ENCLAVE_EXCLUSIVE)}
+                  loading={pricingLoading}
                 />
               </div>
             </div>
@@ -412,32 +441,47 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
   );
 };
 
-const PlanCard = ({ plan, active, onClick, price, desc, features, highlight }: any) => (
-  <button
-    onClick={onClick}
-    className={`p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col relative ${active ? 'bg-emerald-500/10 border-emerald-500 shadow-2xl shadow-emerald-500/10' : 'bg-slate-950 border-slate-800 hover:border-slate-700'
-      } ${highlight && !active ? 'border-dashed border-emerald-500/30' : ''}`}
-  >
-    {highlight && (
-      <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[8px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-widest">Recommended</div>
-    )}
-    <div className="space-y-1 mb-4">
-      <h4 className={`text-xs font-bold uppercase tracking-widest ${active ? 'text-emerald-400' : 'text-slate-500'}`}>{plan}</h4>
-      <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-bold text-white">{price}</span>
-        <span className="text-[10px] text-slate-500">/mo</span>
+const PlanCard = ({ plan, active, onClick, pricing, loading, highlight }: any) => {
+  if (loading) {
+    return (
+      <div className="p-6 rounded-[2rem] border-2 border-slate-800 bg-slate-950 animate-pulse">
+        <div className="h-20 bg-slate-800 rounded mb-4"></div>
+        <div className="h-12 bg-slate-800 rounded"></div>
       </div>
-    </div>
-    <p className="text-[10px] text-slate-400 leading-relaxed mb-4 flex-1">{desc}</p>
-    <div className="space-y-2">
-      {features.map((f: string, i: number) => (
-        <div key={i} className="flex items-center gap-2 text-[9px] text-slate-300">
-          <Sparkles size={10} className="text-emerald-500 shrink-0" /> {f}
+    );
+  }
+
+  const basePrice = pricing?.basePrice || 0;
+  const perUserPrice = pricing?.pricePerUser || 0;
+  const features = pricing?.features || [];
+
+  return (
+    <button
+      onClick={onClick}
+      className={`p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col relative ${active ? 'bg-emerald-500/10 border-emerald-500 shadow-2xl shadow-emerald-500/10' : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+        } ${highlight && !active ? 'border-dashed border-emerald-500/30' : ''}`}
+    >
+      {highlight && (
+        <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[8px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-widest">Recommended</div>
+      )}
+      <div className="space-y-1 mb-4">
+        <h4 className={`text-xs font-bold uppercase tracking-widest ${active ? 'text-emerald-400' : 'text-slate-500'}`}>{plan}</h4>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-bold text-white">${basePrice}</span>
+          <span className="text-[10px] text-slate-500">/mo</span>
         </div>
-      ))}
-    </div>
-  </button>
-);
+        <p className="text-[9px] text-slate-500 font-mono">+ ${perUserPrice}/user</p>
+      </div>
+      <div className="space-y-2 flex-1">
+        {features.map((f: string, i: number) => (
+          <div key={i} className="flex items-center gap-2 text-[9px] text-slate-300">
+            <Sparkles size={10} className="text-emerald-500 shrink-0" /> {f}
+          </div>
+        ))}
+      </div>
+    </button>
+  );
+};
 
 const RouteCard = ({ active, onClick, icon, title, desc, color, sub }: any) => (
   <button
