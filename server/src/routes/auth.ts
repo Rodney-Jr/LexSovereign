@@ -128,6 +128,9 @@ router.post('/resolve-invite', async (req, res) => {
 router.post('/join-silo', async (req, res) => {
     const { token, name, password } = req.body;
 
+    console.log(`[Join] Attempting to join with token: ${token}`);
+    console.log(`[Join] Name: ${name}, Password length: ${password?.length}`);
+
     try {
         const result = await prisma.$transaction(async (tx) => {
             const invitation = await tx.invitation.findUnique({
@@ -135,13 +138,37 @@ router.post('/join-silo', async (req, res) => {
                 include: { tenant: true }
             });
 
-            if (!invitation) throw new Error("Invite resolution failed.");
+            if (!invitation) {
+                // Check if invitation exists at all
+                const anyInvitation = await tx.invitation.findUnique({
+                    where: { token },
+                    include: { tenant: true }
+                });
+
+                if (!anyInvitation) {
+                    console.log(`[Join] ERROR: Invitation not found in database: ${token}`);
+                    throw new Error("Invitation not found.");
+                } else if (anyInvitation.isUsed) {
+                    console.log(`[Join] ERROR: Invitation already used: ${token}`);
+                    throw new Error("This invitation has already been used.");
+                } else {
+                    console.log(`[Join] ERROR: Invitation exists but query failed: ${token}`);
+                    throw new Error("Invite resolution failed.");
+                }
+            }
+
+            console.log(`[Join] Found invitation for ${invitation.email}, tenant: ${invitation.tenant.name}`);
 
             const role = await tx.role.findFirst({
                 where: { name: invitation.roleName, OR: [{ isSystem: true }, { tenantId: invitation.tenantId }] }
             });
 
-            if (!role) throw new Error("Target role not found.");
+            if (!role) {
+                console.log(`[Join] ERROR: Role not found: ${invitation.roleName}`);
+                throw new Error("Target role not found.");
+            }
+
+            console.log(`[Join] Found role: ${role.name} (ID: ${role.id})`);
 
             const hashedPassword = await bcrypt.hash(password, 10);
             const user = await tx.user.create({
@@ -157,10 +184,14 @@ router.post('/join-silo', async (req, res) => {
                 include: { role: { include: { permissions: true } }, tenant: true }
             });
 
+            console.log(`[Join] Created user: ${user.email} (ID: ${user.id})`);
+
             await tx.invitation.update({
                 where: { id: invitation.id },
                 data: { isUsed: true }
             });
+
+            console.log(`[Join] Marked invitation as used`);
 
             return { user, tenant: invitation.tenant };
         });
@@ -175,6 +206,7 @@ router.post('/join-silo', async (req, res) => {
             appMode: result.tenant.appMode
         }, JWT_SECRET, { expiresIn: '8h' });
 
+        console.log(`[Join] SUCCESS: User joined successfully`);
         res.json({
             token: jwtToken,
             user: {
