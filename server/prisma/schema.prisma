@@ -233,3 +233,11 @@ model RegulatoryRule {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+model PricingConfig {
+  id              String   @id // e.g. "STANDARD", "SOVEREIGN", "ENCLAVE"
+  basePrice       Float
+  pricePerUser    Float
+  creditsIncluded Int      @default(0)
+  features        Json     // Array of strings
+  updatedAt       DateTime @updatedAt
+}

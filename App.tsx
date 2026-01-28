@@ -34,6 +34,7 @@ import PredictiveOps from './components/PredictiveOps';
 import EngineeringBacklog from './components/EngineeringBacklog';
 import MonetizationStrategy from './components/MonetizationStrategy';
 import DecisionTraceLedger from './components/DecisionTraceLedger';
+import { PricingGovernance } from './components/PricingGovernance';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -203,7 +204,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'platform-ops' && <GlobalControlPlane />}
+        {activeTab === 'platform-ops' && <GlobalControlPlane onNavigate={setActiveTab} />}
         {activeTab === 'governance' && <TenantGovernance />}
         {activeTab === 'org-blueprint' && <OrgChart />}
         {activeTab === 'integration-bridge' && <BridgeRegistry />}
@@ -214,6 +215,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'workflow' && <MatterWorkflow />}
         {activeTab === 'conflict-check' && <ZkConflictSearch />}
         {activeTab === 'growth' && <MonetizationStrategy />}
+        {activeTab === 'pricing-calib' && <PricingGovernance />}
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
 

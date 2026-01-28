@@ -18,6 +18,7 @@ export const INITIAL_DOCS: DocumentMetadata[] = [
 export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'dashboard': [], // Public
   'platform-ops': ['manage_platform'],
+  'pricing-calib': ['manage_platform'], // Global Admin Pricing
   'enclave': ['manage_platform'], // Restricted
   'audit': ['read_all_audits'],
 

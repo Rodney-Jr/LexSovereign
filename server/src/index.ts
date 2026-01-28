@@ -19,6 +19,7 @@ import documentsRouter from './routes/documents';
 import rulesRouter from './routes/rules';
 import analyticsRouter from './routes/analytics';
 import usersRouter from './routes/users';
+import pricingRouter from './routes/pricing';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 
@@ -64,6 +65,7 @@ app.use('/api/document-templates', documentTemplatesRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api/rules', rulesRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/pricing', pricingRouter);
 app.use('/api/analytics', authenticateToken, analyticsRouter);
 
 // Serve static files from the React app

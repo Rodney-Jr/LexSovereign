@@ -172,6 +172,39 @@ async function main() {
 
     console.log('✅ Seeded Matter 1');
 
+    console.log('🌱 Seeding Pricing Configurations...');
+    const pricingConfigs = [
+        {
+            id: 'Standard',
+            basePrice: 99,
+            pricePerUser: 10,
+            creditsIncluded: 500,
+            features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits']
+        },
+        {
+            id: 'Sovereign',
+            basePrice: 499,
+            pricePerUser: 15,
+            creditsIncluded: 10000,
+            features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready']
+        },
+        {
+            id: 'Enclave Exclusive',
+            basePrice: 1999,
+            pricePerUser: 25,
+            creditsIncluded: 0, // Unlimited or specific
+            features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits']
+        }
+    ];
+
+    for (const config of pricingConfigs) {
+        await prisma.pricingConfig.upsert({
+            where: { id: config.id },
+            update: {},
+            create: config
+        });
+    }
+
     // Regulatory Rules
     const rules = [
         { id: 'REG-001', name: 'GDPR Data Sovereignty', description: 'Ensure EU user data remains within EU enclaves.', region: 'EU', isActive: true, authority: 'EU Commission', triggerKeywords: ['personal data', 'eu citizen'], blockThreshold: 0.8 },
