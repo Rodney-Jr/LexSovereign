@@ -22,7 +22,7 @@ interface TenantUserOnboardingProps {
    tenantId: string;
    initialToken?: string;
    onBack?: () => void;
-   onComplete: (role: UserRole, token?: string) => void;
+   onComplete: () => void;
 }
 
 const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userId, tenantId, initialToken, onBack, onComplete }) => {
@@ -34,8 +34,31 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
    const [inviteContext, setInviteContext] = useState<{ email: string, roleName: string, tenantName: string, tenantMode: string } | null>(null);
    const [name, setName] = useState('');
    const [password, setPassword] = useState('');
+   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
    const isFirm = mode === AppMode.LAW_FIRM;
+
+   // Auto-populate token from URL
+   React.useEffect(() => {
+      if (initialToken && !inviteToken) {
+         setInviteToken(initialToken);
+      }
+   }, [initialToken, inviteToken]);
+
+   // Password validation
+   const validatePassword = (pwd: string): string[] => {
+      const errors: string[] = [];
+      if (pwd.length < 8) errors.push('Minimum 8 characters');
+      if (!/[A-Z]/.test(pwd)) errors.push('At least one uppercase letter');
+      if (!/[a-z]/.test(pwd)) errors.push('At least one lowercase letter');
+      if (!/[0-9]/.test(pwd)) errors.push('At least one number');
+      return errors;
+   };
+
+   const handlePasswordChange = (pwd: string) => {
+      setPassword(pwd);
+      setPasswordErrors(validatePassword(pwd));
+   };
 
    const handleResolveLink = async () => {
       setIsProcessing(true);
@@ -62,7 +85,14 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
          setInviteContext(data);
          setStep(1.5);
       } catch (e: any) {
-         alert(e.message);
+         // Improved error handling with specific messages
+         if (e.message.includes('expired')) {
+            alert('⏰ This invitation has expired.\n\nPlease contact your administrator for a new invite link.');
+         } else if (e.message.includes('Invalid')) {
+            alert('❌ Invalid invitation token.\n\nPlease check the token and try again, or contact your administrator.');
+         } else {
+            alert(e.message);
+         }
       } finally {
          setIsProcessing(false);
       }
@@ -98,7 +128,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
             tenantId: data.user.tenantId,
             permissions: data.user.permissions || []
          }));
-         onComplete(data.user.role as UserRole, data.token);
+         onComplete();
       } catch (e: any) {
          alert(e.message);
       } finally {
@@ -139,6 +169,9 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                         </h3>
                         <p className="text-slate-400 text-sm leading-relaxed">
                            Paste your cryptographically-signed invitation link or token provided by your Chambers Administrator.
+                        </p>
+                        <p className="text-slate-500 text-xs italic">
+                           💡 You can paste the full URL or just the token (e.g., SOV-INV-XXXX-XXXX)
                         </p>
                      </div>
 
@@ -187,6 +220,12 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                               <span className="text-[9px] bg-slate-800 px-2 py-0.5 rounded-lg text-slate-400 font-bold uppercase">{inviteContext.roleName}</span>
                            </div>
                         </div>
+                        <button
+                           onClick={() => { setStep(1); setInviteContext(null); }}
+                           className="text-xs text-slate-500 hover:text-blue-400 font-bold uppercase tracking-widest transition-colors mt-2"
+                        >
+                           ← Use Different Token
+                        </button>
                      </div>
 
                      <div className="space-y-4">
@@ -204,15 +243,28 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                            <input
                               type="password"
                               value={password}
-                              onChange={e => setPassword(e.target.value)}
+                              onChange={e => handlePasswordChange(e.target.value)}
                               className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium"
                               placeholder="••••••••"
                            />
+                           {password.length > 0 && passwordErrors.length > 0 && (
+                              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 space-y-1">
+                                 <p className="text-xs font-bold text-red-400">Password Requirements:</p>
+                                 {passwordErrors.map((error, idx) => (
+                                    <p key={idx} className="text-xs text-red-300">• {error}</p>
+                                 ))}
+                              </div>
+                           )}
+                           {password.length > 0 && passwordErrors.length === 0 && (
+                              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2">
+                                 <p className="text-xs font-bold text-emerald-400">✓ Password meets all requirements</p>
+                              </div>
+                           )}
                         </div>
                         <button
                            onClick={() => setStep(3)}
-                           disabled={!name || password.length < 6}
-                           className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20"
+                           disabled={!name || passwordErrors.length > 0 || password.length === 0}
+                           className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20"
                         >
                            Confirm Identity & Proceed <ChevronRight size={20} />
                         </button>

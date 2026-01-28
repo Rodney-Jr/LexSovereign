@@ -74,12 +74,21 @@ const AppRouter: React.FC<AppRouterProps> = ({
                     tenantId={tenantId || ''}
                     initialToken={initialToken}
                     onBack={() => setIsUserInvitation(false)}
-                    onComplete={(role: UserRole) => handleAuthenticated({
-                        role,
-                        userId: userId || 'invited-user',
-                        tenantId: tenantId || 'invited-tenant',
-                        permissions: []
-                    })}
+                    onComplete={() => {
+                        // TenantUserOnboarding already saved the session to localStorage
+                        // Read it back to get the correct user data
+                        const sessionStr = localStorage.getItem('lexSovereign_session');
+                        if (sessionStr) {
+                            const session = JSON.parse(sessionStr);
+                            handleAuthenticated({
+                                role: session.role,
+                                userId: session.userId,
+                                tenantId: session.tenantId,
+                                permissions: session.permissions || [],
+                                token: session.token
+                            });
+                        }
+                    }}
                 />
             </Suspense>
         );
