@@ -221,6 +221,7 @@ router.post('/join-silo', async (req, res) => {
         });
 
     } catch (error: any) {
+        console.error(`[Join] ERROR: ${error.message}`, error);
         res.status(400).json({ error: error.message });
     }
 });
