@@ -33,7 +33,8 @@ import {
   Search,
   // Added missing Cloud icon
   Cloud,
-  Sparkles
+  Sparkles,
+  ShoppingBag
 } from 'lucide-react';
 import { AppMode, UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
@@ -211,6 +212,14 @@ const Layout: React.FC<LayoutProps> = ({
               label="Review Hub"
               isActive={activeTab === 'reviews'}
               onClick={() => setActiveTab('reviews')}
+            />
+          )}
+          {isAllowed('marketplace') && (
+            <NavItem
+              icon={<ShoppingBag size={18} className="text-brand-primary" />}
+              label="Sovereign Marketplace"
+              isActive={activeTab === 'marketplace'}
+              onClick={() => setActiveTab('marketplace')}
             />
           )}
           {isAllowed('workflow') && showAdvanced && (

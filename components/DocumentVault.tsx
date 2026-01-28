@@ -333,26 +333,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-        <InfoCard
-          icon={<Shield className="text-emerald-400" size={20} />}
-          title="DAS Blind-fold Active"
-          desc="PII entities are stripped in RAM before reaching any AI indexing or external Counsel viewing layers."
-          color="emerald"
-        />
-        <InfoCard
-          icon={<Lock className="text-blue-400" size={20} />}
-          title="FIPS 140-2 Compliance"
-          desc="Customer-managed keys (CMK) remain isolated in HSM enclaves. AI only receives decrypted transients."
-          color="blue"
-        />
-        <InfoCard
-          icon={<ShieldAlert className="text-purple-400" size={20} />}
-          title="Regional Integrity"
-          desc="Data remains pinned to its regional silo. Cross-border transit requires explicit Counsel-level override."
-          color="purple"
-        />
-      </div>
+
 
       {showIngest && (
         <DocumentIngestModal

@@ -68,12 +68,12 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
         // Simulated AI extraction from Matter context
         setTimeout(() => {
             const newValues = { ...values };
-            if (values.hasOwnProperty('PARTY_A')) newValues['PARTY_A'] = 'LexSovereign Ltd';
+            if (values.hasOwnProperty('PARTY_A')) newValues['PARTY_A'] = '';
             if (values.hasOwnProperty('EFFECTIVE_DATE')) newValues['EFFECTIVE_DATE'] = new Date().toLocaleDateString();
-            if (values.hasOwnProperty('PROJECT_NAME')) newValues['PROJECT_NAME'] = 'Matter-772 Integration';
-            if (values.hasOwnProperty('ASSIGNOR_NAME')) newValues['ASSIGNOR_NAME'] = 'Kofi Mensah';
-            if (values.hasOwnProperty('CURRENCY')) newValues['CURRENCY'] = 'GHS';
-            if (values.hasOwnProperty('AMOUNT')) newValues['AMOUNT'] = '150,000';
+            if (values.hasOwnProperty('PROJECT_NAME')) newValues['PROJECT_NAME'] = '';
+            if (values.hasOwnProperty('ASSIGNOR_NAME')) newValues['ASSIGNOR_NAME'] = '';
+            if (values.hasOwnProperty('CURRENCY')) newValues['CURRENCY'] = '';
+            if (values.hasOwnProperty('AMOUNT')) newValues['AMOUNT'] = '';
             setValues(newValues);
             updatePreview(newValues);
             setIsHydrating(false);
@@ -114,7 +114,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                     </button>
                     <div>
                         <h3 className="text-xl font-bold text-white tracking-tight">{template.name}</h3>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Drafting Studio v2.0</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Drafting Studio</p>
                     </div>
                 </div>
 

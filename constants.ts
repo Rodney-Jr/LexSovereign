@@ -36,6 +36,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'workflow': ['design_workflow'],
   'vault': ['upload_document', 'read_assigned_matter'],
   'drafting': ['upload_document'],
+  'marketplace': ['read_assigned_matter'],
   'chat': ['create_matter', 'read_assigned_matter'],
 
   // Finance/Growth

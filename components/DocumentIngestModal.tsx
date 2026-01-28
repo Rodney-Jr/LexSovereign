@@ -54,14 +54,13 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-md">
       <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-8 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-              <Upload className="text-emerald-400" size={24} />
+            <div className="p-2.5 bg-brand-primary/10 rounded-xl border border-brand-primary/20">
+              <Upload className="text-brand-primary" size={20} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Sovereign Ingestion</h3>
-              <p className="text-xs text-slate-400 font-mono">DAS PROXY STATUS: ACTIVE</p>
+              <h3 className="text-lg font-bold text-white tracking-tight">Sovereign Ingestion</h3>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-500 transition-colors" aria-label="Close modal" title="Close">
@@ -77,7 +76,6 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
                 <Upload className="text-slate-500 group-hover:text-emerald-400" size={32} />
               </div>
               <p className="text-sm font-bold text-slate-300">Drop legal artifact or click to browse</p>
-              <p className="text-[10px] text-slate-500 mt-2 uppercase tracking-widest font-mono">Encrypted Tunnel: ACCRA-GH-1</p>
             </label>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
@@ -156,12 +154,8 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
           )}
         </div>
 
-        <div className="p-8 bg-slate-950/50 border-t border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Lock className="text-emerald-500" size={14} />
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Encrypted Tunnel Active</span>
-          </div>
-          <div className="flex gap-4">
+        <div className="p-6 bg-slate-950/50 border-t border-slate-800 flex items-center justify-end">
+          <div className="flex gap-3">
             <button onClick={onClose} className="px-6 py-2.5 text-slate-400 font-bold text-sm hover:text-white transition-colors">Cancel</button>
             <button
               disabled={!suggestions || isAnalyzing}

@@ -91,7 +91,7 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
                             <FileText className="text-emerald-400" size={24} />
                         </div>
                         <div>
-                            <h3 className="text-2xl font-bold text-white tracking-tight">Template Marketplace</h3>
+                            <h3 className="text-2xl font-bold text-white tracking-tight">Template Library</h3>
                             <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">Standard Industry Blueprints</p>
                         </div>
                     </div>
@@ -107,7 +107,7 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
                                 onChange={e => setFilter(e.target.value)}
                             />
                         </div>
-                        <button onClick={onClose} title="Close Marketplace" className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                        <button onClick={onClose} title="Close Library" className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
                             <X size={24} />
                         </button>
                     </div>

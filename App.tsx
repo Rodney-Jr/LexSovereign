@@ -37,6 +37,7 @@ import MonetizationStrategy from './components/MonetizationStrategy';
 import DecisionTraceLedger from './components/DecisionTraceLedger';
 import { PricingGovernance } from './components/PricingGovernance';
 import LegalDrafting from './components/LegalDrafting';
+import SovereignMarketplace from './components/SovereignMarketplace';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -231,6 +232,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
         {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} />}
+        {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} />}
 
         {activeTab === 'vault' && (
           selectedMatter ? (
