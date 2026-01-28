@@ -93,6 +93,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
                                 token: session.token
                             });
                             console.log('[AppRouter] handleAuthenticated called');
+                            console.log('[AppRouter] Setting isUserInvitation to false to trigger navigation');
+                            setIsUserInvitation(false);
                         } else {
                             console.error('[AppRouter] No session found in localStorage!');
                         }
