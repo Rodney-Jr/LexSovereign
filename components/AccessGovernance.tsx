@@ -201,14 +201,17 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
 
   const applyTemplate = async (type: string) => {
     try {
-      const res = await fetch(`/api/roles/templates/${type}`, {
+      const session = getSavedSession();
+      if (!session?.token) return;
+
+      await authorizedFetch(`/api/roles/templates/${type}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
+        token: session.token
       });
-      if (res.ok) {
-        await fetchData();
-      }
-    } catch (e) { console.error(e); }
+      await fetchData();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const resetForm = () => {

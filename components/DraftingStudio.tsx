@@ -14,6 +14,7 @@ import {
     Terminal,
     Eraser
 } from 'lucide-react';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface Template {
     id: string;
@@ -43,18 +44,18 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     const fetchTemplate = async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`/api/document-templates/${templateId}`, {
-                headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
+            const session = getSavedSession();
+            if (!session?.token) return;
+
+            const data = await authorizedFetch(`/api/document-templates/${templateId}`, {
+                token: session.token
             });
-            if (res.ok) {
-                const data = await res.json();
-                setTemplate(data);
-                // Initialize placeholders
-                const initial: Record<string, string> = {};
-                data.placeholders.forEach((p: string) => initial[p] = '');
-                setValues(initial);
-                setPreviewContent(data.content);
-            }
+            setTemplate(data);
+            // Initialize placeholders
+            const initial: Record<string, string> = {};
+            data.placeholders.forEach((p: string) => initial[p] = '');
+            setValues(initial);
+            setPreviewContent(data.content);
         } catch (e) {
             console.error(e);
         } finally {

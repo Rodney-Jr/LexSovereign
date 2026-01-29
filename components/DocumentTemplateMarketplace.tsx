@@ -17,6 +17,7 @@ import {
     CheckCircle2,
     FileEdit
 } from 'lucide-react';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface Template {
     id: string;
@@ -47,12 +48,13 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
     const fetchTemplates = async () => {
         try {
             setIsLoading(true);
-            const res = await fetch('/api/document-templates', {
-                headers: { 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('lexSovereign_session') || '{}').token}` }
+            const session = getSavedSession();
+            if (!session?.token) return;
+
+            const data = await authorizedFetch('/api/document-templates', {
+                token: session.token
             });
-            if (res.ok) {
-                setTemplates(await res.json());
-            }
+            setTemplates(data);
         } catch (e) {
             console.error(e);
         } finally {
