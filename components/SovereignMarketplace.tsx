@@ -112,26 +112,26 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                         <BlueprintCard
                             icon={<FileText className="text-blue-400" />}
                             title="Master Service Agreement"
-                            desc="Comprehensive MSA with jurisdictional DAS proxies for W-Africa."
+                            desc="Standard MSA for cross-border service engagements."
                             region="GHANA"
                             price="Standard"
-                            onDeploy={() => setShowDocMarketplace(true)}
+                            onDeploy={() => setSelectedTemplateId('template-master-service-agreement-(msa)')}
                         />
                         <BlueprintCard
-                            icon={<Scale className="text-emerald-400" />}
-                            title="M&A Synergy Deed"
-                            desc="Cross-border acquisition template with automatic PII scrubbing."
-                            region="MULTI"
-                            price="Premium"
-                            onDeploy={() => setShowDocMarketplace(true)}
+                            icon={<FileText className="text-emerald-400" />}
+                            title="Mutual NDA"
+                            desc="Standard non-disclosure agreement for mutual exchange of information."
+                            region="GLOBAL"
+                            price="Standard"
+                            onDeploy={() => setSelectedTemplateId('template-mutual-non-disclosure-agreement')}
                         />
                         <BlueprintCard
                             icon={<ShieldCheck className="text-purple-400" />}
-                            title="Privacy Impact Audit"
-                            desc="Regulatory compliance blueprint for GDPR and GH-DPC."
-                            region="EU/GH"
+                            title="Employment Contract"
+                            desc="Comprehensive agreement for full-time staff members."
+                            region="GHANA"
                             price="Standard"
-                            onDeploy={() => setShowDocMarketplace(true)}
+                            onDeploy={() => setSelectedTemplateId('template-standard-employment-contract')}
                         />
                     </div>
                 ) : (

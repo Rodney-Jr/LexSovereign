@@ -10,7 +10,8 @@
         "start": "npx prisma migrate deploy && npx prisma db seed && node dist/index.js",
         "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
         "build": "npx prisma generate && tsc",
-        "seed": "npx prisma db seed"
+        "seed": "npx prisma db seed",
+        "seed:templates": "ts-node src/scripts/seedTemplates.ts"
     },
     "dependencies": {
         "@google/genai": "^1.37.0",
