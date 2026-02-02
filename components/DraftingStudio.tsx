@@ -137,31 +137,31 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
 
     const handleAIHydrate = async () => {
         if (!matterId) return;
-        setIsHydrating(true);
-        // Simulated AI extraction from Matter context
-        setTimeout(() => {
-            const newFields = { ...fieldValues };
+        try {
+            setIsHydrating(true);
+            const session = getSavedSession();
+            if (!session?.token) return;
 
-            // Heuristic matching for demo. In real systems, LLM would map this.
-            const heuristics: Record<string, string> = {
-                'party_a_name': 'Acme Corp',
-                'party_b_name': 'Beta Ltd',
-                'effective_date': new Date().toLocaleDateString(),
-                'start_date': new Date().toLocaleDateString(),
-                'company_name': 'Sovereign Solutions',
-                'governing_law': 'Ghana',
-                'salary_amount': '120,000',
-                'currency': 'USD'
-            };
-
-            Object.keys(newFields).forEach(key => {
-                if (heuristics[key]) newFields[key] = heuristics[key];
+            const response = await fetch(`${process.env.VITE_API_URL || '/api'}/document-templates/${templateId}/hydrate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.token}`
+                },
+                body: JSON.stringify({ matterId })
             });
 
+            if (!response.ok) throw new Error("Hydration Failed");
+            const aiFields = await response.json();
+
+            const newFields = { ...fieldValues, ...aiFields };
             setFieldValues(newFields);
             setPreviewContent(compileTemplate(template?.content || '', newFields, sectionValues));
+        } catch (e) {
+            console.error(e);
+        } finally {
             setIsHydrating(false);
-        }, 1500);
+        }
     };
 
     const handleFieldChange = (key: string, val: string) => {

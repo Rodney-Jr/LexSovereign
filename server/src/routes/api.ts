@@ -121,4 +121,47 @@ router.get('/document-templates', authenticateToken, async (req: Request, res) =
     }
 });
 
+router.get('/document-templates/:id', authenticateToken, async (req: Request, res) => {
+    try {
+        const template = await prisma.documentTemplate.findUnique({
+            where: { id: req.params.id }
+        });
+        if (!template) {
+            res.status(404).json({ error: 'Template not found' });
+            return;
+        }
+        res.json(template);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/document-templates/:id/hydrate', authenticateToken, async (req: Request, res) => {
+    try {
+        const { matterId } = req.body;
+        const template = await prisma.documentTemplate.findUnique({
+            where: { id: req.params.id }
+        });
+        if (!template) {
+            res.status(404).json({ error: 'Template not found' });
+            return;
+        }
+
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            include: { documents: true }
+        });
+
+        if (!matter) {
+            res.status(404).json({ error: 'Matter not found' });
+            return;
+        }
+
+        const result = await geminiService.hydrateTemplate(template, matter);
+        res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

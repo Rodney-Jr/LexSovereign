@@ -321,6 +321,45 @@ export class LexGeminiService {
         } catch (error: any) {
             throw new Error(`Billing Generation Failed: ${error.message}`);
         }
+    }
 
+    async hydrateTemplate(template: any, matter: any): Promise<any> {
+        const ai = this.getAI();
+        try {
+            const context = JSON.stringify({
+                matter: {
+                    name: matter.name,
+                    client: matter.client,
+                    type: matter.type,
+                    description: matter.description
+                },
+                documents: matter.documents.map((d: any) => ({ name: d.name, content: d.content?.substring(0, 2000) }))
+            });
+
+            const prompt = `
+            TASK: Fill in the variable fields for a document template based on the provided matter context.
+            TEMPLATE_NAME: ${template.name}
+            FIELDS_TO_FILL: ${JSON.stringify(template.structure.fields || template.structure)}
+            
+            MATTER_CONTEXT: ${context}
+            
+            RULE: Return a JSON object mapping each field key to the extracted value. If information is missing, use an empty string. Be accurate.
+            OUTPUT: JSON map of field keys to values.
+            `;
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    temperature: 0.1
+                }
+            });
+
+            return JSON.parse(response.text || '{}');
+        } catch (error: any) {
+            console.error("Gemini API Error (HydrateTemplate):", error.message);
+            return {};
+        }
     }
 }
