@@ -631,19 +631,19 @@ Human Resources
             version: '1.0.0',
             structure: {
                 fields: [
-                    { key: 'effective_date', label: 'Effective Date', type: 'date', required: true },
-                    { key: 'disclosing_party_name', label: 'Disclosing Party Name', type: 'text', required: true },
-                    { key: 'disclosing_party_address', label: 'Disclosing Party Address', type: 'text', multiline: true, required: true },
-                    { key: 'receiving_party_name', label: 'Receiving Party Name', type: 'text', required: true },
-                    { key: 'receiving_party_address', label: 'Receiving Party Address', type: 'text', multiline: true, required: true },
-                    { key: 'business_purpose', label: 'Business Purpose', type: 'text', multiline: true, required: true },
-                    { key: 'term_years', label: 'Term in Years', type: 'number', default: 2, required: true },
-                    { key: 'survival_years', label: 'Survival Period in Years', type: 'number', default: 5, required: true },
-                    { key: 'governing_jurisdiction', label: 'Governing Jurisdiction', type: 'text', default: 'New York', required: true },
-                    { key: 'disclosing_party_signer_name', label: 'Disclosing Party Signer Name', type: 'text', required: true },
-                    { key: 'disclosing_party_signer_title', label: 'Disclosing Party Signer Title', type: 'text', required: true },
-                    { key: 'receiving_party_signer_name', label: 'Receiving Party Signer Name', type: 'text', required: true },
-                    { key: 'receiving_party_signer_title', label: 'Receiving Party Signer Title', type: 'text', required: true }
+                    { key: 'effective_date', label: 'Effective Date', type: 'date', required: true, placeholder: 'Select the date the agreement becomes active' },
+                    { key: 'disclosing_party_name', label: 'Disclosing Party Name', type: 'text', required: true, placeholder: 'Full legal name of the entity disclosing information' },
+                    { key: 'disclosing_party_address', label: 'Disclosing Party Address', type: 'text', multiline: true, required: true, placeholder: 'Full registered address including city and country' },
+                    { key: 'receiving_party_name', label: 'Receiving Party Name', type: 'text', required: true, placeholder: 'Full legal name of the entity receiving information' },
+                    { key: 'receiving_party_address', label: 'Receiving Party Address', type: 'text', multiline: true, required: true, placeholder: 'Full registered address including city and country' },
+                    { key: 'business_purpose', label: 'Business Purpose', type: 'text', multiline: true, required: true, placeholder: 'Brief description of why information is being shared' },
+                    { key: 'term_years', label: 'Term (Years)', type: 'number', default: 2, required: true, placeholder: 'Number of years the agreement remains active' },
+                    { key: 'survival_years', label: 'Survival Period (Years)', type: 'number', default: 5, required: true, placeholder: 'Years confidentiality lasts after agreement ends' },
+                    { key: 'governing_jurisdiction', label: 'Governing Jurisdiction', type: 'text', default: 'New York', required: true, placeholder: 'State or Country law that governs the agreement' },
+                    { key: 'disclosing_party_signer_name', label: 'Disclosing Party Signer', type: 'text', required: true, placeholder: 'Name of person signing for Disclosing Party' },
+                    { key: 'disclosing_party_signer_title', label: 'Disclosing Party Title', type: 'text', required: true, placeholder: 'Check signer has authority (e.g. Director, CEO)' },
+                    { key: 'receiving_party_signer_name', label: 'Receiving Party Signer', type: 'text', required: true, placeholder: 'Name of person signing for Receiving Party' },
+                    { key: 'receiving_party_signer_title', label: 'Receiving Party Title', type: 'text', required: true, placeholder: 'Check signer has authority (e.g. Director, CEO)' }
                 ],
                 sections: [
                     { key: 'include_non_solicitation', label: 'Include Non-Solicitation Clause?', default: false }
