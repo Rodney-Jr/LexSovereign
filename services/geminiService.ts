@@ -56,6 +56,16 @@ export class LexGeminiService {
     return data.message;
   }
 
+  async validateDocumentExport(content: string): Promise<{ status: 'PASS' | 'FAIL', issues: string[] }> {
+    const response = await fetch(`${this.baseUrl}/documents/validate-export`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ content })
+    });
+    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
+    return await response.json();
+  }
+
   async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
     const response = await fetch(`${this.baseUrl}/briefing`, {
       method: 'POST',

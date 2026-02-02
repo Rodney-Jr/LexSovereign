@@ -91,4 +91,14 @@ router.post('/audit/generate', authenticateToken, async (req: Request, res) => {
     }
 });
 
+router.post('/documents/validate-export', authenticateToken, async (req: Request, res) => {
+    try {
+        const { content } = req.body;
+        const result = await geminiService.validateDocumentExport(content);
+        res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
