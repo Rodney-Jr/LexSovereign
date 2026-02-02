@@ -241,8 +241,8 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                     key={section.key}
                                     onClick={() => handleSectionToggle(section.key)}
                                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
-                                            ? 'bg-emerald-500/10 border-emerald-500/30'
-                                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                        ? 'bg-emerald-500/10 border-emerald-500/30'
+                                        : 'bg-slate-950 border-slate-800 hover:border-slate-700'
                                         }`}
                                 >
                                     <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
@@ -314,6 +314,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                             {key.replace('_', ' ')}
                                         </label>
                                         <input
+                                            aria-label={key}
                                             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200"
                                             value={fieldValues[key]}
                                             onChange={e => handleFieldChange(key, e.target.value)}
