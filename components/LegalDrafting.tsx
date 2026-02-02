@@ -80,7 +80,8 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
                             matterId: 'UNCATEGORIZED',
                             privilege: PrivilegeStatus.PRIVILEGED,
                             classification: 'Confidential',
-                            encryption: 'DAS'
+                            encryption: 'DAS',
+                            content: content
                         });
                         setSelectedTemplateId(null);
                     }}

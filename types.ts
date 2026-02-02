@@ -175,6 +175,7 @@ export interface DocumentMetadata {
   size?: string;
   uploadedBy?: string;
   uploadedAt?: string;
+  content?: string; // Optional content for creation/preview
 
 }
 

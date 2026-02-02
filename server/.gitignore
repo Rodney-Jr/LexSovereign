@@ -4,3 +4,4 @@ node_modules
 
 /src/generated/prisma
 law_knowlege_base/
+uploads/

@@ -95,10 +95,19 @@ router.post('/', authenticateToken, async (req, res) => {
         }
 
         // 2. Create Document Record
+        let uri = `silo://${tenantId}/${matterId}/${name.replace(/\s+/g, '_')}`; // Default Mock URI
+
+        // If content is provided, save it to disk
+        if (req.body.content) {
+            const { saveDocumentContent } = await import('../utils/fileStorage');
+            const relativePath = await saveDocumentContent(tenantId, matterId, `${name}.md`, req.body.content);
+            uri = `file://${relativePath}`;
+        }
+
         const doc = await prisma.document.create({
             data: {
                 name,
-                uri: `silo://${tenantId}/${matterId}/${name.replace(/\s+/g, '_')}`, // Mock URI for MVP
+                uri,
                 jurisdiction: region || 'GH_ACC_1', // Map region to jurisdiction
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
