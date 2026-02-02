@@ -45,6 +45,17 @@ export class LexGeminiService {
     return data.explanation;
   }
 
+  async generateAuditLog(context: { userId: string, firmId: string, action: string, resourceType: string, resourceId: string }): Promise<string> {
+    const response = await fetch(`${this.baseUrl}/audit/generate`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(context)
+    });
+    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
+    const data = await response.json();
+    return data.message;
+  }
+
   async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
     const response = await fetch(`${this.baseUrl}/briefing`, {
       method: 'POST',

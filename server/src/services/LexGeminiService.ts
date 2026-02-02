@@ -154,6 +154,26 @@ export class LexGeminiService {
         }
     }
 
+    async generateAuditLog(context: { userId: string, firmId: string, action: string, resourceType: string, resourceId: string }): Promise<string> {
+        const ai = this.getAI();
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `Generate an audit log for: ${JSON.stringify(context)}`,
+                config: {
+                    systemInstruction: "You are an audit logging system for a Legal Ops platform. Task: Generate a clear, immutable audit description suitable for regulators. Rules: 1. No opinions. 2. No assumptions. 3. Past tense. 4. Objective language. Output: Single sentence audit_log_message only.",
+                    temperature: 0,
+                    maxOutputTokens: 50
+                }
+            });
+            return response.text?.trim() || "Audit log generation failed.";
+        } catch (error: any) {
+            console.error("Gemini API Error (AuditLog):", error.message);
+            // Fallback to basic template if AI fails
+            return `User ${context.userId} performed ${context.action} on ${context.resourceType} ${context.resourceId}.`;
+        }
+    }
+
     async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
         const ai = this.getAI();
         const docs = documents.filter(d => d.matterId === matterId);

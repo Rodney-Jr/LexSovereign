@@ -79,4 +79,16 @@ router.post('/billing-description', authenticateToken, async (req: Request, res)
     }
 });
 
+router.post('/audit/generate', authenticateToken, async (req: Request, res) => {
+    try {
+        const { userId, firmId, action, resourceType, resourceId } = req.body;
+        // Verify user has permission to trigger audit logs (usually internal system or specific roles)
+        // For now, allow authenticated users to generate logs for their actions
+        const log = await geminiService.generateAuditLog({ userId, firmId, action, resourceType, resourceId });
+        res.json({ message: log });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
