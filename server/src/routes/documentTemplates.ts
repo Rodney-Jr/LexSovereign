@@ -15,7 +15,7 @@ router.get('/', authenticateToken as any, async (req, res) => {
                 category: true,
                 jurisdiction: true,
                 version: true,
-                placeholders: true
+                structure: true
             },
             orderBy: { category: 'asc' }
         });
