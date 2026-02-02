@@ -195,6 +195,26 @@ export class LexGeminiService {
     }
 }
 
+    async generatePricingModel(features: string[]): Promise < any > {
+    const ai = this.getAI();
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: `Create pricing tiers for these features: ${JSON.stringify(features)}`,
+            config: {
+                systemInstruction: "You are designing pricing tiers for a Legal Ops SaaS. Target: small law firms, in-house teams. Task: 1. Propose Free, Pro, and Enterprise tiers. 2. Assign features logically. 3. Avoid feature cannibalization. 4. Ensure Free tier demonstrates value but enforces limits. Output: JSON structure with 'tiers' (array of {name, price, features, limits}) and 'justification' (string).",
+                responseMimeType: "application/json",
+                temperature: 0.2
+            }
+        });
+        const result = JSON.parse(response.text || '{ "tiers": [], "justification": "Generation Failed" }');
+        return result;
+    } catch(error: any) {
+        console.error("Gemini API Error (PricingMapper):", error.message);
+        return { tiers: [], justification: "Service Unavailable" };
+    }
+}
+
     async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise < string > {
     const ai = this.getAI();
     const docs = documents.filter(d => d.matterId === matterId);

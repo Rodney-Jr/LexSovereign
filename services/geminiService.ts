@@ -66,6 +66,16 @@ export class LexGeminiService {
     return await response.json();
   }
 
+  async generatePricingModel(features: string[]): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/pricing/generate`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ features })
+    });
+    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
+    return await response.json();
+  }
+
   async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
     const response = await fetch(`${this.baseUrl}/briefing`, {
       method: 'POST',

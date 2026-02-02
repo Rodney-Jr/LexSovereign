@@ -101,4 +101,14 @@ router.post('/documents/validate-export', authenticateToken, async (req: Request
     }
 });
 
+router.post('/pricing/generate', authenticateToken, async (req: Request, res) => {
+    try {
+        const { features } = req.body;
+        const result = await geminiService.generatePricingModel(features);
+        res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
