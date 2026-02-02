@@ -59,7 +59,14 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   'CLIENT': ['read_assigned_matter', 'client_portal_access'],
   'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing'],
   'COMPLIANCE': ['read_all_audits', 'manage_tenant'],
-  'FINANCE_BILLING': ['read_billing']
+  'FINANCE_BILLING': ['read_billing'],
+
+  // Approval Workflow Permissions
+  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform'],
+  'PARTNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final'], // Partner = Owner in this context
+  'JUNIOR_ASSOCIATE': ['create_draft', 'edit_draft', 'submit_review'],
+  'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review'],
+  'AUDITOR': ['read_all_audits', 'read_assigned_matter']
 };
 
 

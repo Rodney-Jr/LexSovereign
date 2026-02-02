@@ -59,7 +59,11 @@ export enum UserRole {
   COMPLIANCE = 'COMPLIANCE',
   FINANCE_BILLING = 'FINANCE_BILLING',
   CLIENT = 'CLIENT',
-  EXECUTIVE_BOARD = 'EXECUTIVE_BOARD'
+  EXECUTIVE_BOARD = 'EXECUTIVE_BOARD',
+  // New Roles for Approval Workflow
+  OWNER = 'OWNER',
+  PARALEGAL = 'PARALEGAL',
+  AUDITOR = 'AUDITOR'
 }
 
 export interface SessionData {
@@ -176,6 +180,10 @@ export interface DocumentMetadata {
   uploadedBy?: string;
   uploadedAt?: string;
   content?: string; // Optional content for creation/preview
+
+  // Approval Workflow Fields
+  creatorId?: string;
+  approvalStatus?: 'DRAFT' | 'REVIEW' | 'APPROVED';
 
 }
 
