@@ -131,10 +131,27 @@ export class LexGeminiService {
                 confidence: 1.0,
                 provider: "LexSovereign Local (Offline)",
                 references: documents.slice(0, 1).map(d => d.id)
-            };
+            }
         }
+    }
 
-
+    async explainClause(clauseText: string): Promise<string> {
+        const ai = this.getAI();
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `Explain this legal clause to a junior lawyer: "${clauseText}"`,
+                config: {
+                    systemInstruction: "You are a legal assistant explaining a contract clause. Rules: 1. Explain intent, not legal advice. 2. No jurisdiction-specific interpretation. 3. No recommendations to change the clause. 4. Keep explanation under 120 words. 5. Output plain English explanation only.",
+                    temperature: 0.1,
+                    maxOutputTokens: 150
+                }
+            });
+            return response.text || "Unable to explain clause at this time.";
+        } catch (error: any) {
+            console.error("Gemini API Error (ExplainClause):", error.message);
+            throw new Error("Clause explanation failed.");
+        }
     }
 
     async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {

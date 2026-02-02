@@ -34,6 +34,17 @@ export class LexGeminiService {
     return response.json();
   }
 
+  async explainClause(clauseText: string): Promise<string> {
+    const response = await fetch(`${this.baseUrl}/explain-clause`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ clauseText })
+    });
+    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
+    const data = await response.json();
+    return data.explanation;
+  }
+
   async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
     const response = await fetch(`${this.baseUrl}/briefing`, {
       method: 'POST',
