@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
     X,
@@ -12,15 +11,44 @@ import {
     Copy,
     Download,
     Terminal,
-    Eraser
+    Eraser,
+    ToggleLeft,
+    ToggleRight,
+    Calendar,
+    DollarSign,
+    Type
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
+
+interface FormField {
+    key: string;
+    label: string;
+    type: 'text' | 'date' | 'number' | 'currency';
+    placeholder?: string;
+    multiline?: boolean;
+    required?: boolean;
+    default?: any;
+    currency?: string;
+}
+
+interface FormSection {
+    key: string;
+    label: string;
+    default: boolean;
+}
+
+interface TemplateStructure {
+    fields: FormField[];
+    sections: FormSection[];
+}
 
 interface Template {
     id: string;
     name: string;
     content: string;
-    placeholders: string[];
+    structure: TemplateStructure;
+    // Fallback for legacy simple templates if any
+    placeholders?: string[];
 }
 
 interface DraftingStudioProps {
@@ -32,7 +60,12 @@ interface DraftingStudioProps {
 
 const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, onClose, onSave }) => {
     const [template, setTemplate] = useState<Template | null>(null);
-    const [values, setValues] = useState<Record<string, string>>({});
+
+    // State for Variable Fields
+    const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+    // State for Optional Sections (Toggles)
+    const [sectionValues, setSectionValues] = useState<Record<string, boolean>>({});
+
     const [isLoading, setIsLoading] = useState(true);
     const [isHydrating, setIsHydrating] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
@@ -51,11 +84,30 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                 token: session.token
             });
             setTemplate(data);
-            // Initialize placeholders
-            const initial: Record<string, string> = {};
-            data.placeholders.forEach((p: string) => initial[p] = '');
-            setValues(initial);
-            setPreviewContent(data.content);
+
+            // Initialize State
+            const initialFields: Record<string, string> = {};
+            const initialSections: Record<string, boolean> = {};
+
+            if (data.structure) {
+                // New Structured Template
+                data.structure.fields.forEach((f: FormField) => {
+                    initialFields[f.key] = f.default || '';
+                });
+                data.structure.sections.forEach((s: FormSection) => {
+                    initialSections[s.key] = s.default ?? false;
+                });
+            } else if (data.placeholders) {
+                // Legacy Fallback
+                data.placeholders.forEach((p: string) => initialFields[p] = '');
+            }
+
+            setFieldValues(initialFields);
+            setSectionValues(initialSections);
+
+            // Initial Compile
+            setPreviewContent(compileTemplate(data.content, initialFields, initialSections));
+
         } catch (e) {
             console.error(e);
         } finally {
@@ -63,38 +115,65 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
         }
     };
 
+    // Mini-Template Engine
+    const compileTemplate = (content: string, fields: Record<string, string>, sections: Record<string, boolean>) => {
+        let output = content;
+
+        // 1. Handle Sections (Conditional Blocks)
+        // Matches {{#if key}} ... {{/if}} (non-nested for simplicity)
+        output = output.replace(/{{\s*#if\s+(\w+)\s*}}([\s\S]*?){{\s*\/if\s*}}/g, (match, key, innerContent) => {
+            const isVisible = sections[key];
+            return isVisible ? innerContent : '';
+        });
+
+        // 2. Handle Variables
+        // Matches {{key}}
+        output = output.replace(/{{\s*(\w+)\s*}}/g, (match, key) => {
+            return fields[key] || `[${key.toUpperCase().replace(/_/g, ' ')}]`;
+        });
+
+        return output;
+    };
+
     const handleAIHydrate = async () => {
         if (!matterId) return;
         setIsHydrating(true);
         // Simulated AI extraction from Matter context
         setTimeout(() => {
-            const newValues = { ...values };
-            if (values.hasOwnProperty('PARTY_A')) newValues['PARTY_A'] = '';
-            if (values.hasOwnProperty('EFFECTIVE_DATE')) newValues['EFFECTIVE_DATE'] = new Date().toLocaleDateString();
-            if (values.hasOwnProperty('PROJECT_NAME')) newValues['PROJECT_NAME'] = '';
-            if (values.hasOwnProperty('ASSIGNOR_NAME')) newValues['ASSIGNOR_NAME'] = '';
-            if (values.hasOwnProperty('CURRENCY')) newValues['CURRENCY'] = '';
-            if (values.hasOwnProperty('AMOUNT')) newValues['AMOUNT'] = '';
-            setValues(newValues);
-            updatePreview(newValues);
+            const newFields = { ...fieldValues };
+
+            // Heuristic matching for demo. In real systems, LLM would map this.
+            const heuristics: Record<string, string> = {
+                'party_a_name': 'Acme Corp',
+                'party_b_name': 'Beta Ltd',
+                'effective_date': new Date().toLocaleDateString(),
+                'start_date': new Date().toLocaleDateString(),
+                'company_name': 'Sovereign Solutions',
+                'governing_law': 'Ghana',
+                'salary_amount': '120,000',
+                'currency': 'USD'
+            };
+
+            Object.keys(newFields).forEach(key => {
+                if (heuristics[key]) newFields[key] = heuristics[key];
+            });
+
+            setFieldValues(newFields);
+            setPreviewContent(compileTemplate(template?.content || '', newFields, sectionValues));
             setIsHydrating(false);
         }, 1500);
     };
 
-    const updatePreview = (newValues: Record<string, string>) => {
-        if (!template) return;
-        let content = template.content;
-        Object.entries(newValues).forEach(([key, val]) => {
-            const regex = new RegExp(`{{${key}}}`, 'g');
-            content = content.replace(regex, val || `[${key}]`);
-        });
-        setPreviewContent(content);
+    const handleFieldChange = (key: string, val: string) => {
+        const updated = { ...fieldValues, [key]: val };
+        setFieldValues(updated);
+        setPreviewContent(compileTemplate(template?.content || '', updated, sectionValues));
     };
 
-    const handleInputChange = (key: string, val: string) => {
-        const updated = { ...values, [key]: val };
-        setValues(updated);
-        updatePreview(updated);
+    const handleSectionToggle = (key: string) => {
+        const updated = { ...sectionValues, [key]: !sectionValues[key] };
+        setSectionValues(updated);
+        setPreviewContent(compileTemplate(template?.content || '', fieldValues, updated));
     };
 
     if (isLoading) return (
@@ -104,6 +183,16 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     );
 
     if (!template) return null;
+
+    // Helper to get Icon for field type
+    const getFieldIcon = (type: string) => {
+        switch (type) {
+            case 'date': return <Calendar size={12} />;
+            case 'currency': return <DollarSign size={12} />;
+            case 'number': return <Terminal size={12} />;
+            default: return <Type size={12} />;
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[120] bg-slate-950 flex flex-col animate-in slide-in-from-bottom-6 duration-500">
@@ -115,7 +204,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                     </button>
                     <div>
                         <h3 className="text-xl font-bold text-white tracking-tight">{template.name}</h3>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Drafting Studio</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Structured Drafting</p>
                     </div>
                 </div>
 
@@ -141,17 +230,46 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             <div className="flex-1 flex overflow-hidden">
                 {/* Left: Input Sidebar */}
                 <aside className="w-[400px] border-r border-slate-800 bg-slate-900/30 overflow-y-auto p-8 scrollbar-hide">
+                    {/* Sections (Toggles) */}
+                    {template.structure?.sections?.length > 0 && (
+                        <div className="mb-8 space-y-4">
+                            <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
+                                <ToggleLeft size={14} /> Optional Clauses
+                            </h5>
+                            {template.structure.sections.map(section => (
+                                <div
+                                    key={section.key}
+                                    onClick={() => handleSectionToggle(section.key)}
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
+                                            ? 'bg-emerald-500/10 border-emerald-500/30'
+                                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                        }`}
+                                >
+                                    <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                        {section.label}
+                                    </span>
+                                    {sectionValues[section.key] ? (
+                                        <ToggleRight size={24} className="text-emerald-500" />
+                                    ) : (
+                                        <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Fields (Inputs) */}
                     <div className="space-y-8">
                         <div className="flex items-center justify-between">
                             <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Terminal size={14} /> Data Definitions
+                                <Terminal size={14} /> Variables
                             </h5>
                             <button
                                 onClick={() => {
-                                    const reset = { ...values };
+                                    const reset = { ...fieldValues };
                                     Object.keys(reset).forEach(k => reset[k] = '');
-                                    setValues(reset);
-                                    updatePreview(reset);
+                                    setFieldValues(reset);
+                                    setPreviewContent(compileTemplate(template?.content || '', reset, sectionValues));
                                 }}
                                 className="text-[9px] text-slate-600 hover:text-red-400 uppercase font-bold transition-colors flex items-center gap-1"
                             >
@@ -159,29 +277,59 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                             </button>
                         </div>
 
-                        <div className="space-y-6">
-                            {template.placeholders.map(key => (
-                                <div key={key} className="space-y-2 group">
-                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-500 transition-colors">
-                                        {key.replace('_', ' ')}
-                                    </label>
-                                    <input
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-slate-800"
-                                        placeholder={`e.g. [${key}]`}
-                                        value={values[key]}
-                                        onChange={e => handleInputChange(key, e.target.value)}
-                                    />
-                                </div>
-                            ))}
+                        <div className="space-y-5">
+                            {template.structure?.fields ? (
+                                template.structure.fields.map(field => (
+                                    <div key={field.key} className="space-y-2 group">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-500 transition-colors flex items-center gap-1.5">
+                                            {getFieldIcon(field.type)}
+                                            {field.label}
+                                        </label>
+
+                                        {field.multiline ? (
+                                            <textarea
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-slate-800 min-h-[80px]"
+                                                placeholder={field.placeholder || `Enter ${field.label}...`}
+                                                value={fieldValues[field.key]}
+                                                onChange={e => handleFieldChange(field.key, e.target.value)}
+                                            />
+                                        ) : (
+                                            <div className="relative">
+                                                <input
+                                                    type={field.type === 'date' ? 'date' : 'text'}
+                                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-slate-800"
+                                                    placeholder={field.placeholder || `Enter ${field.label}...`}
+                                                    value={fieldValues[field.key]}
+                                                    onChange={e => handleFieldChange(field.key, e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                // Legacy Fallback
+                                template.placeholders?.map(key => (
+                                    <div key={key} className="space-y-2 group">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+                                            {key.replace('_', ' ')}
+                                        </label>
+                                        <input
+                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200"
+                                            value={fieldValues[key]}
+                                            onChange={e => handleFieldChange(key, e.target.value)}
+                                        />
+                                    </div>
+                                ))
+                            )}
                         </div>
 
                         <div className="p-6 bg-slate-950 border border-slate-800 rounded-[2rem] space-y-4">
                             <div className="flex items-center gap-2 text-amber-500">
                                 <AlertTriangle size={14} />
-                                <span className="text-[10px] font-bold uppercase">Compliance Check</span>
+                                <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
                             </div>
                             <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                                LexSovereign AI will scan this draft for jurisdictional conflicts upon committing.
+                                Core clauses in this template are locked. Only the variables and optional sections above can be modified to ensure compliance.
                             </p>
                         </div>
                     </div>

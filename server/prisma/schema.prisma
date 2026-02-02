@@ -213,7 +213,7 @@ model DocumentTemplate {
   category        String   // e.g. "CORPORATE", "LITIGATION", "REAL_ESTATE"
   jurisdiction    String   // e.g. "GH_ACC_1", "GLOBAL"
   content         String   // The markdown/liquid skeleton content
-  placeholders    Json     // List of expected field keys
+  structure       Json     // Rich JSON schema for fields and sections
   version         String   @default("1.0.0")
   
   createdAt       DateTime @default(now())
