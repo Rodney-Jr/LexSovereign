@@ -1,6 +1,7 @@
 import express, { Request } from 'express';
 import { LexGeminiService } from '../services/LexGeminiService';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { prisma } from '../db';
 
 const router = express.Router();
 const geminiService = new LexGeminiService();
@@ -106,6 +107,15 @@ router.post('/pricing/generate', authenticateToken, async (req: Request, res) =>
         const { features } = req.body;
         const result = await geminiService.generatePricingModel(features);
         res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/document-templates', authenticateToken, async (req: Request, res) => {
+    try {
+        const templates = await prisma.documentTemplate.findMany();
+        res.json(templates);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
