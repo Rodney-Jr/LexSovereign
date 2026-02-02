@@ -1,0 +1,87 @@
+{
+    "template_name": "Standard Mutual Non-Disclosure Agreement",
+    "category": "Commercial",
+    "jurisdiction": "Universal/Neutral",
+    "risk_level": "Low",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties_and_date",
+            "clause_title": "Parties and Effective Date",
+            "clause_text": "This Non-Disclosure Agreement (the \"Agreement\") is entered into on {{effective_date}} (the \"Effective Date\") by and between {{discloser_name}}, a company organized under the laws of {{discloser_jurisdiction}}, with its principal office at {{discloser_address}} (\"Discloser\"), and {{recipient_name}}, a company organized under the laws of {{recipient_jurisdiction}}, with its principal office at {{recipient_address}} (\"Recipient\"). Discloser and Recipient may be referred to individually as a \"Party\" and collectively as the \"Parties\".",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "purpose",
+            "clause_title": "Purpose",
+            "clause_text": "The Parties wish to explore a potential business opportunity of mutual interest regarding {{business_purpose}} (the \"Purpose\"). In connection with the Purpose, Discloser may disclose to Recipient certain confidential and proprietary information.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "definition_confidential_info",
+            "clause_title": "Definition of Confidential Information",
+            "clause_text": "\"Confidential Information\" means all non-public, proprietary, or confidential information, in whatever form or medium, that is disclosed by Discloser to Recipient, whether orally, visibly, or in writing, that is designated as confidential or that, given the nature of the information or the circumstances of disclosure, reasonably should be considered confidential. Confidential Information includes, but is not limited to, business plans, customer lists, technical data, software, financial information, and trade secrets.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "exclusions",
+            "clause_title": "Exclusions from Confidential Information",
+            "clause_text": "Confidential Information does not include information that: (a) is or becomes generally available to the public other than as a result of a breach of this Agreement by Recipient; (b) was in Recipient's possession prior to disclosure by Discloser; (c) is rightfully received by Recipient from a third party without a duty of confidentiality; or (d) is independently developed by Recipient without use of or reference to the Discloser's Confidential Information.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "obligations",
+            "clause_title": "Obligations of the Receiving Party",
+            "clause_text": "Recipient agrees to: (a) hold the Confidential Information in strict confidence and take reasonable precautions to protect such Confidential Information (including, without limitation, all precautions the Recipient employs with respect to its own confidential materials); (b) not divulge any Confidential Information to any third party, except as specifically permitted below; and (c) solely use the Confidential Information for the Purpose.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "permitted_disclosures",
+            "clause_title": "Permitted Disclosures",
+            "clause_text": "Recipient may disclose Confidential Information to its employees, officers, directors, attorneys, accountants, and financial advisors (collectively, \"Representatives\") who have a need to know such information for the Purpose, provided that such Representatives are bound by written agreements or professional obligations of confidentiality at least as restrictive as those contained herein. Recipient is responsible for any breach of this Agreement by its Representatives.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "required_disclosure",
+            "clause_title": "Disclosure Required by Law",
+            "clause_text": "If Recipient is required by applicable law, regulation, or court order to disclose any Confidential Information, Recipient will (to the extent legally permitted) strictly limit the disclosure to that which is legally required and use reasonable efforts to obtain confidential treatment for any Confidential Information so disclosed.",
+            "clause_type": "optional"
+        },
+        {
+            "clause_key": "term_and_duration",
+            "clause_title": "Term and Duration",
+            "clause_text": "This Agreement commences on the Effective Date and shall continue for a period of {{term_years}} years. The obligations of confidentiality concerning Confidential Information disclosed during the term shall survive the expiration or termination of this Agreement for a period of {{survival_years}} years from the date of disclosure.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "return_or_destruction",
+            "clause_title": "Return or Destruction",
+            "clause_text": "Upon written request by Discloser, or upon termination of this Agreement, Recipient shall promptly return to Discloser, or destroy, all copies of Confidential Information in Recipient's possession or control. Recipient may retain one copy of the Confidential Information for archival or compliance purposes, subject to the continuing obligations of confidentiality herein.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "no_license",
+            "clause_title": "No License",
+            "clause_text": "Nothing in this Agreement grants any license, right, title, or interest in or to the Confidential Information, except regarding the limited right to use the Confidential Information for the Purpose.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "governing_law",
+            "clause_title": "Governing Law",
+            "clause_text": "This Agreement shall be governed by and construed in accordance with the laws of {{governing_law_jurisdiction}}, without regard to its conflict of laws principles.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "entire_agreement",
+            "clause_title": "Entire Agreement",
+            "clause_text": "This Agreement constitutes the entire agreement between the Parties concerning the subject matter hereof and supersedes all prior agreements and understandings, oral or written. This Agreement may only be amended by a written instrument signed by authorized representatives of both Parties.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "IN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date.\n\nDISCLOSER:\nName: {{discloser_signer_name}}\nTitle: {{discloser_signer_title}}\n\n\nRECIPIENT:\nName: {{recipient_signer_name}}\nTitle: {{recipient_signer_title}}",
+            "clause_type": "locked"
+        }
+    ]
+}

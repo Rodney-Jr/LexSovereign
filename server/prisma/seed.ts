@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -173,6 +175,41 @@ async function main() {
         });
     }
     console.log(`✅ Seeded ${rules.length} Regulatory Rules`);
+
+    // Document Templates
+    console.log('🌱 Seeding Document Templates...');
+    const templatesDir = path.join(__dirname, 'templates');
+    if (fs.existsSync(templatesDir)) {
+        const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
+        for (const file of files) {
+            const filePath = path.join(templatesDir, file);
+            const templateData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+            await prisma.documentTemplate.upsert({
+                where: { id: file.replace('.json', '') }, // Use filename as ID for stability
+                update: {
+                    name: templateData.template_name,
+                    description: `${templateData.category} - ${templateData.risk_level} Risk`,
+                    category: templateData.category,
+                    jurisdiction: templateData.jurisdiction,
+                    content: '', // Content is structured in 'structure' field
+                    structure: templateData.clauses,
+                    version: templateData.version
+                },
+                create: {
+                    id: file.replace('.json', ''),
+                    name: templateData.template_name,
+                    description: `${templateData.category} - ${templateData.risk_level} Risk`,
+                    category: templateData.category,
+                    jurisdiction: templateData.jurisdiction,
+                    content: '',
+                    structure: templateData.clauses,
+                    version: templateData.version
+                }
+            });
+            console.log(`   - Seeded Template: ${templateData.template_name}`);
+        }
+    }
 }
 
 main()
