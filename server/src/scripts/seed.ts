@@ -622,6 +622,88 @@ Sincerely,
 Human Resources
 **{{company_name}}**
 `
+        },
+        {
+            name: 'Standard Non-Disclosure Agreement',
+            description: 'A neutral, low-risk mutual NDA suitable for standard business transactions.',
+            category: 'Corporate',
+            jurisdiction: 'GLOBAL',
+            version: '1.0.0',
+            structure: {
+                fields: [
+                    { key: 'effective_date', label: 'Effective Date', type: 'date', required: true },
+                    { key: 'disclosing_party_name', label: 'Disclosing Party Name', type: 'text', required: true },
+                    { key: 'disclosing_party_address', label: 'Disclosing Party Address', type: 'text', multiline: true, required: true },
+                    { key: 'receiving_party_name', label: 'Receiving Party Name', type: 'text', required: true },
+                    { key: 'receiving_party_address', label: 'Receiving Party Address', type: 'text', multiline: true, required: true },
+                    { key: 'business_purpose', label: 'Business Purpose', type: 'text', multiline: true, required: true },
+                    { key: 'term_years', label: 'Term in Years', type: 'number', default: 2, required: true },
+                    { key: 'survival_years', label: 'Survival Period in Years', type: 'number', default: 5, required: true },
+                    { key: 'governing_jurisdiction', label: 'Governing Jurisdiction', type: 'text', default: 'New York', required: true },
+                    { key: 'disclosing_party_signer_name', label: 'Disclosing Party Signer Name', type: 'text', required: true },
+                    { key: 'disclosing_party_signer_title', label: 'Disclosing Party Signer Title', type: 'text', required: true },
+                    { key: 'receiving_party_signer_name', label: 'Receiving Party Signer Name', type: 'text', required: true },
+                    { key: 'receiving_party_signer_title', label: 'Receiving Party Signer Title', type: 'text', required: true }
+                ],
+                sections: [
+                    { key: 'include_non_solicitation', label: 'Include Non-Solicitation Clause?', default: false }
+                ]
+            },
+            content: `
+# NON-DISCLOSURE AGREEMENT
+
+### 1. Parties and Effective Date
+This Non-Disclosure Agreement (the "Agreement") is effective as of **{{effective_date}}** (the "Effective Date"), by and between **{{disclosing_party_name}}**, having its principal place of business at {{disclosing_party_address}} ("Disclosing Party"), and **{{receiving_party_name}}**, having its principal place of business at {{receiving_party_address}} ("Receiving Party").
+
+### 2. Purpose
+The parties wish to explore a potential business relationship regarding **{{business_purpose}}** (the "Purpose"). In connection with the Purpose, the Disclosing Party may disclose certain Confidential Information to the Receiving Party.
+
+### 3. Definition of Confidential Information
+"Confidential Information" means all non-public, confidential, or proprietary information disclosed by the Disclosing Party to the Receiving Party, whether orally or in writing, that is designated as confidential or that reasonably should be understood to be confidential given the nature of the information and the circumstances of disclosure.
+
+### 4. Exclusions
+Confidential Information does not include information that: (a) is or becomes generally available to the public other than as a result of a breach of this Agreement; (b) was in the Receiving Party’s possession prior to disclosure by the Disclosing Party; (c) is received from a third party without breach of any obligation of confidentiality; or (d) was independently developed by the Receiving Party without use of the Confidential Information.
+
+### 5. Obligations of Receiving Party
+The Receiving Party shall: (a) protect the confidentiality of the Confidential Information using the same degree of care that it uses to protect its own confidential information of like kind, but in no event less than reasonable care; (b) not use any Confidential Information for any purpose other than the Purpose; and (c) not disclose Confidential Information to any third party, except to its employees, contractors, and advisors who need to know such information for the Purpose and who are bound by confidentiality obligations at least as protective as those in this Agreement.
+
+### 6. Term and Termination
+This Agreement shall remain in effect for a period of **{{term_years}}** years from the Effective Date. The obligations of confidentiality concerning the Confidential Information shall survive the expiration or termination of this Agreement for a period of **{{survival_years}}** years.
+
+### 7. Compelled Disclosure
+If the Receiving Party is compelled by law or court order to disclose Confidential Information, it shall provide the Disclosing Party with prior notice (to the extent legally permitted) to enable the Disclosing Party to seek a protective order.
+
+### 8. Return or Destruction of Materials
+Upon request of the Disclosing Party or termination of this Agreement, the Receiving Party shall promptly return or destroy all Confidential Information and all copies thereof.
+
+### 9. No License
+Nothing in this Agreement is intended to grant any rights to the Receiving Party under any patent, copyright, or other intellectual property right of the Disclosing Party, nor shall this Agreement grant the Receiving Party any rights in or to the Confidential Information.
+
+{{#if include_non_solicitation}}
+### 10. Non-Solicitation
+During the term of this Agreement and for a period of twelve (12) months thereafter, neither party will solicit for employment any employee of the other party with whom they came into contact in connection with the Purpose.
+{{/if}}
+
+### 11. Governing Law
+This Agreement shall be governed by and construed in accordance with the laws of **{{governing_jurisdiction}}**, without regard to its conflict of law principles.
+
+### 12. Remedies
+The parties acknowledge that a breach of this Agreement may cause irreparable harm to the Disclosing Party for which monetary damages would be inadequate. Accordingly, the Disclosing Party shall be entitled to seek equitable relief, including injunction and specific performance, in addition to any other remedies available at law.
+
+### 13. Entire Agreement
+This Agreement constitutes the entire agreement between the parties relative to the subject matter hereof and supersedes all prior or contemporaneous agreements, representations, and understandings of the parties.
+
+### 14. Signatures
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the Effective Date.
+
+**Disclosing Party:** ___________________________
+Name: **{{disclosing_party_signer_name}}**
+Title: **{{disclosing_party_signer_title}}**
+
+**Receiving Party:** ___________________________
+Name: **{{receiving_party_signer_name}}**
+Title: **{{receiving_party_signer_title}}**
+`
         }
     ];
 
