@@ -173,77 +173,76 @@ export class LexGeminiService {
             return `User ${context.userId} performed ${context.action} on ${context.resourceType} ${context.resourceId}.`;
         }
     }
-}
 
-    async validateDocumentExport(documentContent: string): Promise < { status: 'PASS' | 'FAIL', issues: string[] } > {
-    const ai = this.getAI();
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: `Validate this legal document content: "${documentContent.substring(0, 10000)}..."`,
-            config: {
-                systemInstruction: "You are validating a legal document before export. Checklist: 1. All variables resolved (no {{brackets}}). 2. Clause numbering sequential. 3. No placeholder text (e.g. [INSERT DATE]). 4. Title present. 5. Footer metadata present. Output: JSON { status: 'PASS' | 'FAIL', issues: string[] }.",
-                responseMimeType: "application/json",
-                temperature: 0
-            }
-        });
-        const result = JSON.parse(response.text || '{ "status": "FAIL", "issues": ["AI Validation Failed"] }');
-        return result;
-    } catch(error: any) {
-        console.error("Gemini API Error (ExportValidator):", error.message);
-        return { status: 'FAIL', issues: ["Validation Service Unavailable"] };
-    }
-}
-
-    async generatePricingModel(features: string[]): Promise < any > {
-    const ai = this.getAI();
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: `Create pricing tiers for these features: ${JSON.stringify(features)}`,
-            config: {
-                systemInstruction: "You are designing pricing tiers for a Legal Ops SaaS. Target: small law firms, in-house teams. Task: 1. Propose Free, Pro, and Enterprise tiers. 2. Assign features logically. 3. Avoid feature cannibalization. 4. Ensure Free tier demonstrates value but enforces limits. Output: JSON structure with 'tiers' (array of {name, price, features, limits}) and 'justification' (string).",
-                responseMimeType: "application/json",
-                temperature: 0.2
-            }
-        });
-        const result = JSON.parse(response.text || '{ "tiers": [], "justification": "Generation Failed" }');
-        return result;
-    } catch(error: any) {
-        console.error("Gemini API Error (PricingMapper):", error.message);
-        return { tiers: [], justification: "Service Unavailable" };
-    }
-}
-
-    async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise < string > {
-    const ai = this.getAI();
-    const docs = documents.filter(d => d.matterId === matterId);
-    const context = docs.map(d => `${d.name} (${d.jurisdiction})`).join(', ');
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: `Generate a high-velocity executive briefing for Matter ${matterId} based on these artifacts: ${context}. Focus on: 1. Risk Heatmap 2. Key Deadlines 3. Critical Clause Anomalies.`,
-        config: {
-            systemInstruction: "You are the Chief Legal Ops AI. Summarize the status of a legal matter for a Managing Partner. Use bullet points and a professional, sovereign tone. Max 300 words.",
+    async validateDocumentExport(documentContent: string): Promise<{ status: 'PASS' | 'FAIL', issues: string[] }> {
+        const ai = this.getAI();
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `Validate this legal document content: "${documentContent.substring(0, 10000)}..."`,
+                config: {
+                    systemInstruction: "You are validating a legal document before export. Checklist: 1. All variables resolved (no {{brackets}}). 2. Clause numbering sequential. 3. No placeholder text (e.g. [INSERT DATE]). 4. Title present. 5. Footer metadata present. Output: JSON { status: 'PASS' | 'FAIL', issues: string[] }.",
+                    responseMimeType: "application/json",
+                    temperature: 0
+                }
+            });
+            const result = JSON.parse(response.text || '{ "status": "FAIL", "issues": ["AI Validation Failed"] }');
+            return result;
+        } catch (error: any) {
+            console.error("Gemini API Error (ExportValidator):", error.message);
+            return { status: 'FAIL', issues: ["Validation Service Unavailable"] };
         }
-    });
+    }
 
-    return response.text || "Matter synthesis failed at the enclave layer.";
-}
+    async generatePricingModel(features: string[]): Promise<any> {
+        const ai = this.getAI();
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `Create pricing tiers for these features: ${JSON.stringify(features)}`,
+                config: {
+                    systemInstruction: "You are designing pricing tiers for a Legal Ops SaaS. Target: small law firms, in-house teams. Task: 1. Propose Free, Pro, and Enterprise tiers. 2. Assign features logically. 3. Avoid feature cannibalization. 4. Ensure Free tier demonstrates value but enforces limits. Output: JSON structure with 'tiers' (array of {name, price, features, limits}) and 'justification' (string).",
+                    responseMimeType: "application/json",
+                    temperature: 0.2
+                }
+            });
+            const result = JSON.parse(response.text || '{ "tiers": [], "justification": "Generation Failed" }');
+            return result;
+        } catch (error: any) {
+            console.error("Gemini API Error (PricingMapper):", error.message);
+            return { tiers: [], justification: "Service Unavailable" };
+        }
+    }
+
+    async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
+        const ai = this.getAI();
+        const docs = documents.filter(d => d.matterId === matterId);
+        const context = docs.map(d => `${d.name} (${d.jurisdiction})`).join(', ');
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: `Generate a high-velocity executive briefing for Matter ${matterId} based on these artifacts: ${context}. Focus on: 1. Risk Heatmap 2. Key Deadlines 3. Critical Clause Anomalies.`,
+            config: {
+                systemInstruction: "You are the Chief Legal Ops AI. Summarize the status of a legal matter for a Managing Partner. Use bullet points and a professional, sovereign tone. Max 300 words.",
+            }
+        });
+
+        return response.text || "Matter synthesis failed at the enclave layer.";
+    }
 
     async getScrubbedContent(
-    rawContent: string,
-    role: UserRole,
-    privilege: PrivilegeStatus
-): Promise < { content: string; scrubbedEntities: number } > {
-    const isRestricted = role === UserRole.EXTERNAL_COUNSEL || role === UserRole.CLIENT;
+        rawContent: string,
+        role: UserRole,
+        privilege: PrivilegeStatus
+    ): Promise<{ content: string; scrubbedEntities: number }> {
+        const isRestricted = role === UserRole.EXTERNAL_COUNSEL || role === UserRole.CLIENT;
 
-    if(!isRestricted) {
-        return { content: rawContent, scrubbedEntities: 0 };
-    }
+        if (!isRestricted) {
+            return { content: rawContent, scrubbedEntities: 0 };
+        }
 
         const ai = this.getAI();
-    const prompt = `
+        const prompt = `
       ROLE: ${role}
       PRIVILEGE_LEVEL: ${privilege}
       TASK: Redact PII and privileged legal reasoning from the following text.
@@ -253,75 +252,75 @@ export class LexGeminiService {
       TEXT: ${rawContent}
     `;
 
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: prompt,
-            config: { temperature: 0 }
-        });
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: prompt,
+                config: { temperature: 0 }
+            });
 
-        const scrubbed = response.text || "[CONTENT REDACTED BY SOVEREIGN PROXY]";
-        const entitiesRemoved = (scrubbed.match(/\[.*?\]/g) || []).length;
-        return { content: scrubbed, scrubbedEntities: entitiesRemoved };
-    } catch(error) {
-        console.error("Scrubbing API Failed:", error);
-        // Fail Closed: Return fully redacted placeholder
-        return { content: "[SYSTEM_AUDIT: CONTENT REDACTED DUE TO ENCLAVE DISCONNECTION]", scrubbedEntities: 999 };
+            const scrubbed = response.text || "[CONTENT REDACTED BY SOVEREIGN PROXY]";
+            const entitiesRemoved = (scrubbed.match(/\[.*?\]/g) || []).length;
+            return { content: scrubbed, scrubbedEntities: entitiesRemoved };
+        } catch (error) {
+            console.error("Scrubbing API Failed:", error);
+            // Fail Closed: Return fully redacted placeholder
+            return { content: "[SYSTEM_AUDIT: CONTENT REDACTED DUE TO ENCLAVE DISCONNECTION]", scrubbedEntities: 999 };
+        }
     }
-}
-    async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise < { isBlocked: boolean; triggeredRule?: string } > {
-    const ai = this.getAI();
-    const activeRules = rules.filter(r => r.isActive).map(r => `${r.name}: ${r.description}`).join('\n');
+    async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
+        const ai = this.getAI();
+        const activeRules = rules.filter(r => r.isActive).map(r => `${r.name}: ${r.description}`).join('\n');
 
-    if(!activeRules) return { isBlocked: false };
+        if (!activeRules) return { isBlocked: false };
 
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: `RULES:\n${activeRules}\n\nTEXT_TO_EVALUATE: ${text}\n\nAssess if the text violates any rules. Return JSON: { "isBlocked": boolean, "triggeredRule": string | null }. STRICT COMPLIANCE.`,
-            config: {
-                responseMimeType: "application/json",
-                temperature: 0
-            }
-        });
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `RULES:\n${activeRules}\n\nTEXT_TO_EVALUATE: ${text}\n\nAssess if the text violates any rules. Return JSON: { "isBlocked": boolean, "triggeredRule": string | null }. STRICT COMPLIANCE.`,
+                config: {
+                    responseMimeType: "application/json",
+                    temperature: 0
+                }
+            });
 
-        const result = JSON.parse(response.text || '{ "isBlocked": false }');
-        return { isBlocked: result.isBlocked, triggeredRule: result.triggeredRule };
-    } catch(error) {
-        console.error("Gemini API Error (EvaluateRRE):", error);
-        return { isBlocked: false };
-    }
+            const result = JSON.parse(response.text || '{ "isBlocked": false }');
+            return { isBlocked: result.isBlocked, triggeredRule: result.triggeredRule };
+        } catch (error) {
+            console.error("Gemini API Error (EvaluateRRE):", error);
+            return { isBlocked: false };
+        }
 
 
-}
-
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise < { text: string; confidence: number } > {
-    if(!config.isEnabled) return { text: "Chatbot is currently disabled.", confidence: 1 };
-
-    const ai = this.getAI();
-    const knowledgeContext = knowledge.map(k => `${k.title}: ${k.content}`).join('\n\n');
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: `SYSTEM: ${config.systemInstruction}\n\nKNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}`,
-        config: { temperature: 0.3 }
-    });
-
-    return { text: response.text || "I am unable to answer that at this time.", confidence: 0.9 };
-}
-
-    async generateBillingDescription(rawNotes: string): Promise < string > {
-    const ai = this.getAI();
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: `Convert these raw notes into a professional legal billing narrative (max 1 sentence): "${rawNotes}"`,
-            config: { temperature: 0.2 }
-        });
-        return response.text || rawNotes;
-    } catch(error: any) {
-        throw new Error(`Billing Generation Failed: ${error.message}`);
     }
 
-}
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }> {
+        if (!config.isEnabled) return { text: "Chatbot is currently disabled.", confidence: 1 };
+
+        const ai = this.getAI();
+        const knowledgeContext = knowledge.map(k => `${k.title}: ${k.content}`).join('\n\n');
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: `SYSTEM: ${config.systemInstruction}\n\nKNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}`,
+            config: { temperature: 0.3 }
+        });
+
+        return { text: response.text || "I am unable to answer that at this time.", confidence: 0.9 };
+    }
+
+    async generateBillingDescription(rawNotes: string): Promise<string> {
+        const ai = this.getAI();
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: `Convert these raw notes into a professional legal billing narrative (max 1 sentence): "${rawNotes}"`,
+                config: { temperature: 0.2 }
+            });
+            return response.text || rawNotes;
+        } catch (error: any) {
+            throw new Error(`Billing Generation Failed: ${error.message}`);
+        }
+
+    }
 }
