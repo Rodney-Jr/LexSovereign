@@ -1,5 +1,6 @@
 import express, { Request } from 'express';
 import { LexGeminiService } from '../services/LexGeminiService';
+import { DocumentAssemblyService } from '../services/DocumentAssemblyService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { prisma } from '../db';
 
@@ -158,6 +159,21 @@ router.post('/document-templates/:id/hydrate', authenticateToken, async (req: Re
         }
 
         const result = await geminiService.hydrateTemplate(template, matter);
+        res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/documents/assemble', authenticateToken, async (req: Request, res) => {
+    try {
+        const { template, variables, selectedOptionalKeys, metadata } = req.body;
+        const result = DocumentAssemblyService.assemble({
+            template,
+            variables,
+            selectedOptionalKeys,
+            metadata
+        });
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
