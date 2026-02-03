@@ -125,7 +125,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         }).join('\n\n');
                     }
                 }
-                // Case 2: Structured Object (Previous Model)
+                // Case 2: Structured Object (Hybrid Model)
                 else {
                     if (structure.fields) {
                         structure.fields.forEach((f: FormField) => {
@@ -136,6 +136,36 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         structure.sections.forEach((s: FormSection) => {
                             initialSections[s.key] = s.default ?? false;
                         });
+                    }
+                    // Handle hybrid clauses within object
+                    if (structure.clauses) {
+                        structure.clauses.forEach((c: Clause) => {
+                            // Extract variables if not already defined in fields
+                            const vars = c.clause_text.match(/{{\s*(\w+)\s*}}/g);
+                            if (vars) {
+                                vars.forEach((v: string) => {
+                                    const key = v.replace(/{{\s*|\s*}}/g, '');
+                                    if (!(key in initialFields)) {
+                                        initialFields[key] = '';
+                                    }
+                                });
+                            }
+                            if (c.clause_type === 'optional') {
+                                if (!(c.clause_key in initialSections)) {
+                                    initialSections[c.clause_key] = false;
+                                }
+                            }
+                        });
+
+                        // Synthesize content if missing
+                        if (!data.content) {
+                            data.content = structure.clauses.map((c: Clause) => {
+                                if (c.clause_type === 'optional') {
+                                    return `{{#if ${c.clause_key}}}\n### ${c.clause_title}\n${c.clause_text}\n{{/if}}`;
+                                }
+                                return `### ${c.clause_title}\n${c.clause_text}`;
+                            }).join('\n\n');
+                        }
                     }
                 }
             } else if (data.placeholders) {
