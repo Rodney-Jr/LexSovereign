@@ -25,7 +25,11 @@ interface Template {
     description: string;
     category: string;
     jurisdiction: string;
-    placeholders: string[];
+    structure?: {
+        fields: any[];
+        sections: any[];
+    };
+    placeholders?: string[];
     version: string;
 }
 
@@ -197,7 +201,9 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
                                                     <Tag size={12} className="shrink-0" />
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider">{template.placeholders.length} Fields</span>
+                                                    <span className="text-[9px] font-bold uppercase tracking-wider">
+                                                        {(template.structure?.fields?.length || template.placeholders?.length || 0)} Fields
+                                                    </span>
                                                 </div>
                                             </div>
                                             <ChevronRight size={16} className="text-slate-700 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
