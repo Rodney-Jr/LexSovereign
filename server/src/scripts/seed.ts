@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -51,6 +53,7 @@ const PERMISSIONS = [
     { id: 'organize_files', description: 'Organize file systems', resource: 'FILE', action: 'ORGANIZE' },
     { id: 'execute_research', description: 'Execute legal research', resource: 'RESEARCH', action: 'EXECUTE' },
     { id: 'check_conflicts', description: 'Perform conflict checks', resource: 'CONFLICT', action: 'CHECK' },
+    { id: 'read_assigned_matter', description: 'Read matters assigned to user', resource: 'MATTER', action: 'READ' },
 
     // Intellectual Property
     { id: 'manage_patent_portfolio', description: 'Manage patent application cycles', resource: 'IP', action: 'MANAGE' },
@@ -734,6 +737,41 @@ Title: **{{receiving_party_signer_title}}**
     }
 
     console.log(`✅ Seeded ${docTemplates.length} Document Templates`);
+
+    // Dynamic Template Loading from JSON files
+    console.log('🌱 Seeding Dynamic JSON Templates...');
+    const templatesDir = path.join(process.cwd(), 'prisma', 'templates');
+    if (fs.existsSync(templatesDir)) {
+        const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
+        for (const file of files) {
+            const filePath = path.join(templatesDir, file);
+            const templateData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+            await prisma.documentTemplate.upsert({
+                where: { id: file.replace('.json', '') },
+                update: {
+                    name: templateData.template_name,
+                    description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
+                    category: templateData.category,
+                    jurisdiction: templateData.jurisdiction,
+                    content: '', // Re-purposed for structure in modern templates
+                    structure: templateData.clauses || templateData.structure,
+                    version: templateData.version
+                },
+                create: {
+                    id: file.replace('.json', ''),
+                    name: templateData.template_name,
+                    description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
+                    category: templateData.category,
+                    jurisdiction: templateData.jurisdiction,
+                    content: '',
+                    structure: templateData.clauses || templateData.structure,
+                    version: templateData.version
+                }
+            });
+            console.log(`   - Seeded Dynamic Template: ${templateData.template_name}`);
+        }
+    }
 }
 
 main()
