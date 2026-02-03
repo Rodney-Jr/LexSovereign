@@ -9,12 +9,12 @@ const router = express.Router();
 
 /**
  * POST /api/documents/:id/export
- * Body: { format: 'DOCX' | 'PDF' }
+ * Body: { format: 'DOCX' | 'PDF', brandingProfileId?: string }
  */
 router.post('/:id/export', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { format } = req.body;
+        const { format, brandingProfileId } = req.body;
         const tenantId = req.user?.tenantId;
 
         if (!format || !['DOCX', 'PDF'].includes(format)) {
@@ -31,17 +31,18 @@ router.post('/:id/export', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'Document not found' });
         }
 
-        // 2. Security/Governance Check
-        // PDF requires approved status (mocking this check for now as 'status' field might be in attributes or pending schema update)
-        if (format === 'PDF') {
-            const attributes = document.attributes as any;
-            if (attributes?.status !== 'APPROVED') {
-                // return res.status(403).json({ error: 'PDF export requires document approval.' });
-                // Note: Temporarily allowing for MVP demo purposes if not explicitly blocked
+        // 2. Fetch Branding Profile (Optional)
+        let branding = null;
+        if (brandingProfileId) {
+            branding = await prisma.brandingProfile.findUnique({
+                where: { id: brandingProfileId }
+            });
+            if (branding && branding.tenantId !== tenantId) {
+                return res.status(403).json({ error: 'Invalid Branding Profile' });
             }
         }
 
-        // 3. Retrieve Content (Assuming Markdown format in file storage)
+        // 3. Retrieve Content
         const contentMatch = document.uri.match(/file:\/\/(.+)/);
         if (!contentMatch) {
             return res.status(500).json({ error: 'Document content is not stored locally' });
@@ -49,18 +50,13 @@ router.post('/:id/export', authenticateToken, async (req, res) => {
 
         const rawContent = await readDocumentContent(contentMatch[1]);
 
-        // 4. Re-Assemble for Export
-        // Note: In a real app, we'd store the AssemblyInput or structured state. 
-        // For now, we reconstruct a simple structure from the raw content or use default assembly if content is rich.
-        // For MVP, we'll parse the Markdown back into Elements or use a simplified element mapper.
-
+        // 4. Parse Elements
         const lines = rawContent.split('\n');
         const elements = lines.map(line => {
             if (line.startsWith('# ')) return { type: 'HEADING', text: line.replace('# ', ''), level: 1 };
             if (line.match(/^\d+\. /)) return { type: 'HEADING', text: line, level: 2 };
-            if (line.startsWith('---')) return { type: 'FOOTER', text: lines[lines.length - 1] }; // Simplistic
             return { type: 'PARAGRAPH', text: line };
-        }).filter(el => el.text.trim().length > 0) as any;
+        }).filter(el => (el as any).text.trim().length > 0) as any;
 
         // 5. Generate Binary
         let buffer: Buffer;
@@ -68,11 +64,11 @@ router.post('/:id/export', authenticateToken, async (req, res) => {
         let filename: string;
 
         if (format === 'DOCX') {
-            buffer = await DocumentExportService.generateDOCX(elements);
+            buffer = await DocumentExportService.generateDOCX(elements, branding as any);
             contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
             filename = `${document.name}.docx`;
         } else {
-            buffer = await DocumentExportService.generatePDF(elements);
+            buffer = await DocumentExportService.generatePDF(elements, branding as any);
             contentType = 'application/pdf';
             filename = `${document.name}.pdf`;
         }
@@ -83,7 +79,13 @@ router.post('/:id/export', authenticateToken, async (req, res) => {
                 action: 'EXPORT',
                 resourceId: document.id,
                 userId: req.user?.id || 'SYSTEM',
-                details: JSON.stringify({ format, filename, tenantId })
+                details: JSON.stringify({
+                    format,
+                    filename,
+                    tenantId,
+                    brandingProfileId: branding?.id,
+                    brandingVersion: branding?.version
+                })
             }
         });
 

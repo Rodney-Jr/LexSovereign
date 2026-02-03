@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shield,
   Lock,
@@ -41,6 +41,26 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
   // Marketplace & Studio State
   const [showMarketplace, setShowMarketplace] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [brandingProfiles, setBrandingProfiles] = useState<any[]>([]);
+  const [selectedBrandingId, setSelectedBrandingId] = useState<string>("");
+
+  useEffect(() => {
+    const fetchBranding = async () => {
+      try {
+        const token = localStorage.getItem('lexSovereign_token');
+        const response = await fetch('/api/branding-profiles', { // Note: Assuming this route exists or will be added
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setBrandingProfiles(data);
+        }
+      } catch (err) {
+        console.warn('Could not fetch branding profiles');
+      }
+    };
+    fetchBranding();
+  }, []);
 
   const handleExport = async (id: string, format: 'DOCX' | 'PDF', name: string) => {
     try {
@@ -54,7 +74,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
           'Authorization': `Bearer ${token}`,
           ...(sovPin ? { 'x-sov-pin': sovPin } : {})
         },
-        body: JSON.stringify({ format })
+        body: JSON.stringify({ format, brandingProfileId: selectedBrandingId || undefined })
       });
 
       if (!response.ok) {
@@ -185,16 +205,16 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
               <ChevronDown size={12} className="text-brand-muted -ml-4 pointer-events-none" />
             </div>
 
-            <div className="flex items-center gap-2 px-4 py-3 bg-brand-bg border border-brand-border rounded-2xl transition-all hover:border-brand-secondary/30">
-              <MapPin size={16} className="text-brand-primary" />
+            <div className="flex items-center gap-2 px-4 py-3 bg-brand-bg border border-brand-border rounded-2xl transition-all hover:border-brand-primary/30">
+              <Shield size={16} className="text-brand-secondary" />
               <select
-                title="Region Filter"
+                title="Branding Profile"
                 className="bg-transparent text-xs font-bold text-brand-text focus:outline-none cursor-pointer appearance-none pr-6 relative"
-                value={filterRegion}
-                onChange={e => setFilterRegion(e.target.value)}
+                value={selectedBrandingId}
+                onChange={e => setSelectedBrandingId(e.target.value)}
               >
-                <option value="All" className="bg-brand-bg">All Regions</option>
-                {Object.values(Region).map(r => <option key={r} value={r} className="bg-brand-bg">{r}</option>)}
+                <option value="" className="bg-brand-bg">Default Branding</option>
+                {brandingProfiles.map(p => <option key={p.id} value={p.id} className="bg-brand-bg">{p.name}</option>)}
               </select>
               <ChevronDown size={12} className="text-brand-muted -ml-4 pointer-events-none" />
             </div>
