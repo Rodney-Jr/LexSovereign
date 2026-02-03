@@ -75,7 +75,9 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
 
     const [isLoading, setIsLoading] = useState(true);
     const [isHydrating, setIsHydrating] = useState(false);
+    const [isAssembling, setIsAssembling] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     useEffect(() => {
         fetchTemplate();
@@ -178,6 +180,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
 
             // Initial Compile
             setPreviewContent(compileTemplate(data.content, initialFields, initialSections));
+            setValidationErrors([]);
 
         } catch (e) {
             console.error(e);
@@ -247,6 +250,58 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
         setPreviewContent(compileTemplate(template?.content || '', fieldValues, updated));
     };
 
+    const handleAssembleAndSave = async () => {
+        try {
+            setIsAssembling(true);
+            setValidationErrors([]);
+            const session = getSavedSession();
+            if (!session?.token) return;
+
+            // Prepare metadata
+            const metadata = {
+                firm_name: 'Lex Sovereign Firm', // Should ideally come from context
+                draft_id: `DRFT-${Math.random().toString(16).slice(2, 8).toUpperCase()}`,
+                generation_date: new Date().toLocaleDateString()
+            };
+
+            const selectedOptionalKeys = Object.keys(sectionValues).filter(k => sectionValues[k]);
+
+            const response = await fetch(`${process.env.VITE_API_URL || '/api'}/documents/assemble`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.token}`
+                },
+                body: JSON.stringify({
+                    template: {
+                        template_name: template?.name,
+                        version: (template as any).version || '1.0.0',
+                        clauses: Array.isArray(template?.structure) ? template?.structure : []
+                    },
+                    variables: fieldValues,
+                    selectedOptionalKeys,
+                    metadata
+                })
+            });
+
+            if (!response.ok) throw new Error("Assembly Failed");
+            const result = await response.json();
+
+            if (result.status === 'FAIL') {
+                setValidationErrors(result.validation_errors);
+                return;
+            }
+
+            // If PASS, call onSave with the fully assembled document
+            onSave(`${template?.name} - Finalized`, result.assembled_document);
+        } catch (e: any) {
+            console.error(e);
+            setValidationErrors([e.message]);
+        } finally {
+            setIsAssembling(false);
+        }
+    };
+
     if (isLoading) return (
         <div className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md flex items-center justify-center">
             <Loader2 className="animate-spin text-emerald-500" size={48} />
@@ -289,10 +344,12 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         AI Auto-Hydrate
                     </button>
                     <button
-                        onClick={() => onSave(`${template.name} - Draft`, previewContent)}
-                        className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-emerald-900/20 active:scale-95 transition-all"
+                        onClick={handleAssembleAndSave}
+                        disabled={isAssembling}
+                        className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-emerald-900/20 active:scale-95 transition-all disabled:opacity-40"
                     >
-                        <Save size={14} /> Commit to Vault
+                        {isAssembling ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
+                        {isAssembling ? 'Validating...' : 'Commit to Vault'}
                     </button>
                 </div>
             </header>
@@ -432,16 +489,34 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                 ))
                             )}
                         </div>
+                    </div>
 
-                        <div className="p-6 bg-slate-950 border border-slate-800 rounded-[2rem] space-y-4">
-                            <div className="flex items-center gap-2 text-amber-500">
-                                <AlertTriangle size={14} />
-                                <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
+                    {/* Validation Errors Overlay */}
+                    {validationErrors.length > 0 && (
+                        <div className="mt-8 p-6 bg-red-500/10 border border-red-500/30 rounded-[2rem] space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                            <div className="flex items-center gap-2 text-red-400">
+                                <AlertTriangle size={16} />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">Validation Blocked</span>
                             </div>
-                            <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                                Core clauses in this template are locked. Only the variables and optional sections above can be modified to ensure compliance.
-                            </p>
+                            <ul className="space-y-1.5">
+                                {validationErrors.map((err, idx) => (
+                                    <li key={idx} className="text-[11px] text-red-300/80 flex items-start gap-2">
+                                        <span className="shrink-0 mt-1 w-1 h-1 bg-red-400 rounded-full" />
+                                        {err}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
+                    )}
+
+                    <div className="p-6 bg-slate-950 border border-slate-800 rounded-[2rem] space-y-4 shadow-inner mt-8">
+                        <div className="flex items-center gap-2 text-amber-500">
+                            <AlertTriangle size={14} />
+                            <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 leading-relaxed italic">
+                            Core clauses in this template are locked. Only the variables and optional sections above can be modified to ensure compliance.
+                        </p>
                     </div>
                 </aside>
 
