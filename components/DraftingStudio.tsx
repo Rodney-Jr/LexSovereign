@@ -31,6 +31,13 @@ interface FormField {
     currency?: string;
 }
 
+interface Clause {
+    clause_key: string;
+    clause_title: string;
+    clause_text: string;
+    clause_type: 'locked' | 'variable' | 'optional';
+}
+
 interface FormSection {
     key: string;
     label: string;
@@ -38,16 +45,16 @@ interface FormSection {
 }
 
 interface TemplateStructure {
-    fields: FormField[];
-    sections: FormSection[];
+    fields?: FormField[];
+    sections?: FormSection[];
+    clauses?: Clause[];
 }
 
 interface Template {
     id: string;
     name: string;
     content: string;
-    structure: TemplateStructure;
-    // Fallback for legacy simple templates if any
+    structure: TemplateStructure | Clause[]; // Can be object or direct array
     placeholders?: string[];
 }
 
@@ -90,13 +97,47 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             const initialSections: Record<string, boolean> = {};
 
             if (data.structure) {
-                // New Structured Template
-                data.structure.fields.forEach((f: FormField) => {
-                    initialFields[f.key] = f.default || '';
-                });
-                data.structure.sections.forEach((s: FormSection) => {
-                    initialSections[s.key] = s.default ?? false;
-                });
+                const structure = data.structure;
+
+                // Case 1: Array of Clauses (New Granular Model)
+                if (Array.isArray(structure)) {
+                    structure.forEach((c: Clause) => {
+                        // Extract variables: {{variable_name}}
+                        const vars = c.clause_text.match(/{{\s*(\w+)\s*}}/g);
+                        if (vars) {
+                            vars.forEach((v: string) => {
+                                const key = v.replace(/{{\s*|\s*}}/g, '');
+                                initialFields[key] = ''; // No default for extracted vars
+                            });
+                        }
+                        if (c.clause_type === 'optional') {
+                            initialSections[c.clause_key] = false;
+                        }
+                    });
+
+                    // Synthesize content if missing
+                    if (!data.content) {
+                        data.content = structure.map(c => {
+                            if (c.clause_type === 'optional') {
+                                return `{{#if ${c.clause_key}}}\n### ${c.clause_title}\n${c.clause_text}\n{{/if}}`;
+                            }
+                            return `### ${c.clause_title}\n${c.clause_text}`;
+                        }).join('\n\n');
+                    }
+                }
+                // Case 2: Structured Object (Previous Model)
+                else {
+                    if (structure.fields) {
+                        structure.fields.forEach((f: FormField) => {
+                            initialFields[f.key] = f.default || '';
+                        });
+                    }
+                    if (structure.sections) {
+                        structure.sections.forEach((s: FormSection) => {
+                            initialSections[s.key] = s.default ?? false;
+                        });
+                    }
+                }
             } else if (data.placeholders) {
                 // Legacy Fallback
                 data.placeholders.forEach((p: string) => initialFields[p] = '');
@@ -231,30 +272,52 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                 {/* Left: Input Sidebar */}
                 <aside className="w-[400px] border-r border-slate-800 bg-slate-900/30 overflow-y-auto p-8 scrollbar-hide">
                     {/* Sections (Toggles) */}
-                    {template.structure?.sections?.length > 0 && (
+                    {((template.structure as any).sections?.length > 0 || (Array.isArray(template.structure) && template.structure.some(c => c.clause_type === 'optional'))) && (
                         <div className="mb-8 space-y-4">
                             <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                                 <ToggleLeft size={14} /> Optional Clauses
                             </h5>
-                            {template.structure.sections.map(section => (
-                                <div
-                                    key={section.key}
-                                    onClick={() => handleSectionToggle(section.key)}
-                                    className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
-                                        ? 'bg-emerald-500/10 border-emerald-500/30'
-                                        : 'bg-slate-950 border-slate-800 hover:border-slate-700'
-                                        }`}
-                                >
-                                    <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                        {section.label}
-                                    </span>
-                                    {sectionValues[section.key] ? (
-                                        <ToggleRight size={24} className="text-emerald-500" />
-                                    ) : (
-                                        <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
-                                    )}
-                                </div>
-                            ))}
+                            {Array.isArray(template.structure) ? (
+                                template.structure.filter(c => c.clause_type === 'optional').map(clause => (
+                                    <div
+                                        key={clause.clause_key}
+                                        onClick={() => handleSectionToggle(clause.clause_key)}
+                                        className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[clause.clause_key]
+                                            ? 'bg-emerald-500/10 border-emerald-500/30'
+                                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                            }`}
+                                    >
+                                        <span className={`text-xs font-bold transition-colors ${sectionValues[clause.clause_key] ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                            {clause.clause_title}
+                                        </span>
+                                        {sectionValues[clause.clause_key] ? (
+                                            <ToggleRight size={24} className="text-emerald-500" />
+                                        ) : (
+                                            <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                (template.structure as any).sections.map((section: any) => (
+                                    <div
+                                        key={section.key}
+                                        onClick={() => handleSectionToggle(section.key)}
+                                        className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
+                                            ? 'bg-emerald-500/10 border-emerald-500/30'
+                                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                            }`}
+                                    >
+                                        <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                            {section.label}
+                                        </span>
+                                        {sectionValues[section.key] ? (
+                                            <ToggleRight size={24} className="text-emerald-500" />
+                                        ) : (
+                                            <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
+                                        )}
+                                    </div>
+                                ))
+                            )}
                         </div>
                     )}
 
@@ -278,7 +341,23 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         </div>
 
                         <div className="space-y-5">
-                            {template.structure?.fields ? (
+                            {Array.isArray(template.structure) ? (
+                                Object.keys(fieldValues).map(key => (
+                                    <div key={key} className="space-y-2 group">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-500 transition-colors flex items-center gap-1.5 text-ellipsis overflow-hidden">
+                                            {getFieldIcon(key.includes('date') ? 'date' : key.includes('currency') || key.includes('amount') ? 'currency' : 'text')}
+                                            {key.replace(/_/g, ' ')}
+                                        </label>
+                                        <input
+                                            type={key.includes('date') ? 'date' : 'text'}
+                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-slate-800"
+                                            placeholder={`Enter ${key.replace(/_/g, ' ')}...`}
+                                            value={fieldValues[key]}
+                                            onChange={e => handleFieldChange(key, e.target.value)}
+                                        />
+                                    </div>
+                                ))
+                            ) : template.structure?.fields ? (
                                 template.structure.fields.map(field => (
                                     <div key={field.key} className="space-y-2 group">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-500 transition-colors flex items-center gap-1.5">
