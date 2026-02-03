@@ -20,6 +20,7 @@ import rulesRouter from './routes/rules';
 import analyticsRouter from './routes/analytics';
 import usersRouter from './routes/users';
 import pricingRouter from './routes/pricing';
+import exportRouter from './routes/export';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 
@@ -67,6 +68,7 @@ app.use('/api/documents', documentsRouter);
 app.use('/api/rules', rulesRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/analytics', authenticateToken, analyticsRouter);
+app.use('/api/export', authenticateToken, exportRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));

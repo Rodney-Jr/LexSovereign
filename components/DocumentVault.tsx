@@ -42,6 +42,39 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
   const [showMarketplace, setShowMarketplace] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
+  const handleExport = async (id: string, format: 'DOCX' | 'PDF', name: string) => {
+    try {
+      const token = localStorage.getItem('lexSovereign_token');
+      const sovPin = (window as any)._SOVEREIGN_PIN_ || '';
+
+      const response = await fetch(`/api/export/${id}/export`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...(sovPin ? { 'x-sov-pin': sovPin } : {})
+        },
+        body: JSON.stringify({ format })
+      });
+
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name}.${format.toLowerCase()}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export Error:', err);
+      alert('Failed to export document. Ensure the document is finalized.');
+    }
+  };
+
   // Derive unique matter IDs from current document set for the filter dropdown
   const uniqueMatterIds = Array.from(new Set(documents.map(doc => doc.matterId))).sort();
 
@@ -288,8 +321,19 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
                       <button title="View Document" className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
                         <Eye size={18} />
                       </button>
-                      <button title="Seal Document" className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
-                        <Lock size={18} />
+                      <button
+                        title="Export DOCX"
+                        onClick={() => handleExport(doc.id, 'DOCX', doc.name)}
+                        className="p-2.5 hover:bg-emerald-500/10 rounded-xl text-slate-500 hover:text-emerald-400 transition-all"
+                      >
+                        <FileText size={18} />
+                      </button>
+                      <button
+                        title="Export PDF"
+                        onClick={() => handleExport(doc.id, 'PDF', doc.name)}
+                        className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-500 hover:text-red-400 transition-all"
+                      >
+                        <ShieldAlert size={18} />
                       </button>
                       <button
                         title="Delete Document"
