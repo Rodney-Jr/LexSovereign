@@ -243,7 +243,7 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             return;
         }
 
-        const token = `SOV-INV-${crypto.randomUUID().split('-')[0].toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+        const token = `SOV-INV-${crypto.randomUUID().split('-')[0]!.toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 

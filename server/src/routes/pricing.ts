@@ -40,7 +40,7 @@ router.get('/', async (req, res) => {
             return res.json(defaultConfigs);
         }
 
-        res.json(configs);
+        return res.json(configs);
     } catch (error: any) {
         console.error('Pricing API Error:', error);
 
