@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import {
    ShieldCheck,
    Mail,
@@ -74,6 +75,37 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
          await onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId, data.token);
       } catch (err: unknown) {
          setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+         setIsProcessing(false);
+      }
+   };
+
+   const handleGoogleSuccess = async (credentialResponse: any) => {
+      if (!credentialResponse.credential) return;
+
+      setIsProcessing(true);
+      setError(null);
+
+      try {
+         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+         const response = await fetch('/api/auth/google-login', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
+            },
+            body: JSON.stringify({ idToken: credentialResponse.credential })
+         });
+
+         const data = await response.json();
+
+         if (!response.ok) {
+            throw new Error(data.error || 'Google Authentication failed');
+         }
+
+         await onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId, data.token);
+      } catch (err: unknown) {
+         setError(err instanceof Error ? err.message : 'Google Authentication failed');
       } finally {
          setIsProcessing(false);
       }
@@ -172,6 +204,28 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                      {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
                      {isProcessing ? "Authenticating..." : isLogin ? "Sign In" : "Register Silo"}
                   </button>
+
+                  {isLogin && (
+                     <div className="space-y-4">
+                        <div className="flex items-center gap-4 py-2">
+                           <div className="h-[1px] bg-slate-800 flex-1"></div>
+                           <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Or Continue With</span>
+                           <div className="h-[1px] bg-slate-800 flex-1"></div>
+                        </div>
+
+                        <div className="flex justify-center">
+                           <GoogleLogin
+                              onSuccess={handleGoogleSuccess}
+                              onError={() => setError('Google Login Failed')}
+                              useOneTap
+                              theme="filled_black"
+                              shape="pill"
+                              text="continue_with"
+                              width="100%"
+                           />
+                        </div>
+                     </div>
+                  )}
                </form>
 
                <div className="mt-8 pt-8 border-t border-slate-800 flex flex-col gap-4">

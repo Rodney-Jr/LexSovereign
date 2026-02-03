@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AppMode, DocumentMetadata, UserRole, Matter } from './types';
 import { TAB_REQUIRED_PERMISSIONS } from './constants';
 import {
@@ -304,11 +305,15 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 export default function WrappedApp() {
+  const googleClientId = (window as any).import?.meta?.env?.VITE_GOOGLE_CLIENT_ID || 'v0-google-client-id';
+
   return (
-    <PermissionProvider>
-      <ErrorBoundary>
-        <AppContent />
-      </ErrorBoundary>
-    </PermissionProvider>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <PermissionProvider>
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
+      </PermissionProvider>
+    </GoogleOAuthProvider>
   );
 }

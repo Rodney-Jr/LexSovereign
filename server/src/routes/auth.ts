@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
 import crypto from 'crypto';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { GoogleAuthService } from '../services/googleAuthService';
 
 const router = express.Router();
 
@@ -372,6 +373,104 @@ router.post('/login', async (req, res) => {
         });
     } catch (error: any) {
         return res.status(500).json({ error: error.message });
+    }
+});
+
+// 5. Google Login - PUBLIC
+router.post('/google-login', async (req, res) => {
+    try {
+        const { idToken } = req.body;
+        if (!idToken) return res.status(400).json({ error: 'Missing ID Token' });
+
+        const payload = await GoogleAuthService.verifyToken(idToken);
+        if (!payload || !payload.email) {
+            return res.status(401).json({ error: 'Invalid Google Token' });
+        }
+
+        const email = payload.email;
+
+        // 1. Find or Setup User
+        let user = await prisma.user.findUnique({
+            where: { email },
+            include: {
+                role: { include: { permissions: true } },
+                tenant: true
+            }
+        });
+
+        if (!user) {
+            // Check if there is an invitation for this email
+            const invitation = await prisma.invitation.findFirst({
+                where: { email, isUsed: false },
+                include: { tenant: true }
+            });
+
+            if (invitation) {
+                // Provision user based on invitation
+                const role = await prisma.role.findFirst({
+                    where: { name: invitation.roleName, OR: [{ isSystem: true }, { tenantId: invitation.tenantId }] }
+                });
+
+                if (role) {
+                    user = await prisma.user.create({
+                        data: {
+                            email,
+                            name: payload.name || email.split('@')[0],
+                            passwordHash: 'EXTERNAL_OIDC', // Flag for no local password
+                            roleId: role.id,
+                            roleString: role.name,
+                            tenantId: invitation.tenantId,
+                            region: invitation.tenant.primaryRegion,
+                            provider: 'GOOGLE',
+                            providerId: payload.sub
+                        },
+                        include: { role: { include: { permissions: true } }, tenant: true }
+                    });
+
+                    await prisma.invitation.update({
+                        where: { id: invitation.id },
+                        data: { isUsed: true }
+                    });
+                }
+            }
+        }
+
+        if (!user) {
+            return res.status(403).json({
+                error: 'Account not found. Please contact your administrator or seek an invitation.',
+                unregistered: true,
+                email
+            });
+        }
+
+        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+
+        const token = jwt.sign({
+            id: user.id,
+            email: user.email,
+            role: (user as any)?.role?.name || 'UNKNOWN',
+            permissions,
+            tenantId: user.tenantId,
+            appMode
+        }, JWT_SECRET, { expiresIn: '8h' });
+
+        return res.json({
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role?.name,
+                tenantId: user.tenantId,
+                permissions,
+                mode: appMode
+            }
+        });
+
+    } catch (error: any) {
+        console.error('[GoogleAuth] API Error:', error);
+        return res.status(500).json({ error: 'Authentication failed' });
     }
 });
 

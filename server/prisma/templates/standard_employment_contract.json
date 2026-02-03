@@ -1,0 +1,111 @@
+{
+    "template_name": "Standard Employment Contract",
+    "category": "EMPLOYMENT",
+    "jurisdiction": "GLOBAL",
+    "risk_level": "LOW",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "This Employment Contract (the \"Agreement\") is entered into on {{agreement_date}} between {{employer_name}}, a company organized and existing under the laws of {{employer_jurisdiction}} (\"Employer\"), and {{employee_name}}, residing at {{employee_address}} (\"Employee\").",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "position_and_duties",
+            "clause_title": "Position and Duties",
+            "clause_text": "The Employee is engaged in the position of {{job_title}}. The Employee shall report to {{manager_title}} and shall perform such duties and responsibilities as are customary for this position and as may be assigned by the Employer from time to time.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "commencement_date",
+            "clause_title": "Commencement Date",
+            "clause_text": "The Employee’s employment under this Agreement shall commence on {{start_date}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "term_of_employment",
+            "clause_title": "Term of Employment",
+            "clause_text": "The employment of the Employee shall be for {{employment_term}} unless terminated earlier in accordance with the provisions of this Agreement.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "place_of_work",
+            "clause_title": "Place of Work",
+            "clause_text": "The Employee’s primary place of work shall be at {{work_location}}. The Employee may be required to travel or work from other locations as reasonably required for the performance of their duties.",
+            "clause_type": "optional"
+        },
+        {
+            "clause_key": "working_hours",
+            "clause_title": "Working Hours",
+            "clause_text": "The Employee’s normal working hours shall be {{hours_per_week}} hours per week. The Employee may be required to work such additional hours as are reasonably necessary for the proper performance of their duties.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "remuneration_and_benefits",
+            "clause_title": "Remuneration and Benefits",
+            "clause_text": "The Employer shall pay the Employee a base salary of {{base_salary}} per {{payment_frequency}}, subject to applicable tax and statutory withholdings. The Employee shall also be entitled to such benefits as are provided to employees of similar rank as set forth in {{benefits_policy_name}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "leave_entitlements",
+            "clause_title": "Leave Entitlements",
+            "clause_text": "The Employee shall be entitled to {{annual_leave_days}} days of paid annual leave per calendar year, in addition to public holidays observed by the Employer. The timing of leave is subject to the Employer’s prior approval.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "confidentiality",
+            "clause_title": "Confidentiality",
+            "clause_text": "The Employee shall not, during or after the term of employment, disclose to any third party or use for their own benefit any confidential information related to the Employer’s business, clients, or trade secrets, except as required in the course of their duties or by law.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "intellectual_property",
+            "clause_title": "Intellectual Property",
+            "clause_text": "All intellectual property, including inventions, designs, and copyrights, created by the Employee during the course of their employment and relating to the Employer’s business shall be the sole property of the Employer. The Employee hereby assigns all rights in such property to the Employer.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "non_competition_solicitation",
+            "clause_title": "Non-Competition and Non-Solicitation",
+            "clause_text": "For a period of {{restriction_period_months}} months following termination of employment, the Employee shall not work for a direct competitor or solicit the Employer’s clients or employees.",
+            "clause_type": "optional"
+        },
+        {
+            "clause_key": "termination",
+            "clause_title": "Termination",
+            "clause_text": "Either party may terminate this Agreement by following a notice period of {{notice_period}}. The Employer reserves the right to terminate the Employee’s employment immediately for serious misconduct or breach of contract.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "return_of_company_property",
+            "clause_title": "Return of Company Property",
+            "clause_text": "Upon termination of employment, the Employee shall immediately return to the Employer all company property, including keys, access cards, electronic devices, and documents in their possession or control.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "governing_law",
+            "clause_title": "Governing Law",
+            "clause_text": "This Agreement and any disputes arising from it shall be governed by and construed in accordance with the laws of {{governing_law_jurisdiction}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "entire_agreement",
+            "clause_title": "Entire Agreement",
+            "clause_text": "This Agreement constitutes the entire agreement between the parties concerning its subject matter and supersedes all prior agreements, understandings, or representations, whether written or oral.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "amendments",
+            "clause_title": "Amendments",
+            "clause_text": "No amendment or modification of this Agreement shall be valid unless it is made in writing and signed by both parties.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.\\n\\nEmployer: ______________________\\nName: {{employer_signatory_name}}\\nTitle: {{employer_signatory_title}}\\n\\nEmployee: ______________________\\nName: {{employee_name}}",
+            "clause_type": "locked"
+        }
+    ]
+}
