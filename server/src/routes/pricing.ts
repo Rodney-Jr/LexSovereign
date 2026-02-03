@@ -77,7 +77,7 @@ router.get('/', async (req, res) => {
             return res.json(defaultConfigs);
         }
 
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

@@ -4,13 +4,7 @@ interface AssemblyInput {
     template: {
         template_name: string;
         version: string;
-        clauses: {
-            clause_key: string;
-            clause_title: string;
-            clause_text: string;
-            clause_type: 'locked' | 'variable' | 'optional';
-            order_index?: number;
-        }[];
+        clauses: Clause[];
     };
     variables: Record<string, string>;
     selectedOptionalKeys: string[];

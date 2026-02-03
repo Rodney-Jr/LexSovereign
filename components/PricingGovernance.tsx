@@ -60,21 +60,30 @@ export const PricingGovernance: React.FC = () => {
 
     const updateConfig = (index: number, field: keyof PricingConfig, value: any) => {
         const newConfigs = [...configs];
-        newConfigs[index] = { ...newConfigs[index], [field]: value };
-        setConfigs(newConfigs);
+        const target = newConfigs[index];
+        if (target) {
+            newConfigs[index] = { ...target, [field]: value };
+            setConfigs(newConfigs);
+        }
     };
 
     const addFeature = (index: number, feature: string) => {
         if (!feature) return;
         const newConfigs = [...configs];
-        newConfigs[index].features = [...newConfigs[index].features, feature];
-        setConfigs(newConfigs);
+        const target = newConfigs[index];
+        if (target) {
+            target.features = [...target.features, feature];
+            setConfigs(newConfigs);
+        }
     };
 
     const removeFeature = (configIndex: number, featureIndex: number) => {
         const newConfigs = [...configs];
-        newConfigs[configIndex].features.splice(featureIndex, 1);
-        setConfigs(newConfigs);
+        const target = newConfigs[configIndex];
+        if (target) {
+            target.features.splice(featureIndex, 1);
+            setConfigs(newConfigs);
+        }
     };
 
     if (loading) return <div className="p-8 text-center text-slate-400 font-mono animate-pulse">Loading Pricing Calibration...</div>;

@@ -88,19 +88,23 @@ import { INDUSTRY_TEMPLATES } from '../config/templates';
 // Get available templates (Discovery)
 router.get('/templates', authenticateToken, async (req, res) => {
     try {
-        const list = Object.keys(INDUSTRY_TEMPLATES).map(key => ({
-            id: key,
-            name: key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            roleCount: INDUSTRY_TEMPLATES[key].length,
-            roles: INDUSTRY_TEMPLATES[key].map(r => ({
-                name: r.name,
-                description: r.description,
-                permissionCount: r.permissions.length
-            }))
-        }));
-        res.json(list);
+        const list = Object.keys(INDUSTRY_TEMPLATES).map(key => {
+            const templateRoles = INDUSTRY_TEMPLATES[key];
+            if (!templateRoles) return null;
+            return {
+                id: key,
+                name: key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                roleCount: templateRoles.length,
+                roles: templateRoles.map(r => ({
+                    name: r.name,
+                    description: r.description,
+                    permissionCount: r.permissions.length
+                }))
+            };
+        }).filter(Boolean);
+        return res.json(list);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -109,17 +113,15 @@ router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 
     try {
         const { type } = req.params;
 
-        if (!req.user) {
-            res.status(401).json({ error: 'Unauthorized' });
-            return;
+        if (!req.user || !type) {
+            return res.status(401).json({ error: 'Unauthorized or Missing Type' });
         }
 
         const tenantId = req.user.tenantId;
 
         const template = INDUSTRY_TEMPLATES[type.toUpperCase()];
         if (!template) {
-            res.status(400).json({ error: `Invalid template type. Available: ${Object.keys(INDUSTRY_TEMPLATES).join(', ')}` });
-            return;
+            return res.status(400).json({ error: `Invalid template type. Available: ${Object.keys(INDUSTRY_TEMPLATES).join(', ')}` });
         }
 
         const results = [];
@@ -159,10 +161,10 @@ router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 
             results.push({ name: roleDef.name, status: 'CREATED', permissionCount: validPermissions.length });
         }
 
-        res.json({ message: 'Template applied successfully', results });
+        return res.json({ message: 'Template applied successfully', results });
 
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

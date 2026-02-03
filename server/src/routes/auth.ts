@@ -342,9 +342,8 @@ router.post('/login', async (req, res) => {
             }
         });
 
-        if (!user || !await bcrypt.compare(password, user.passwordHash)) {
-            res.status(401).json({ error: 'Invalid credentials' });
-            return;
+        if (!user || !user.passwordHash || !await bcrypt.compare(password, user.passwordHash)) {
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
@@ -359,7 +358,7 @@ router.post('/login', async (req, res) => {
             appMode
         }, JWT_SECRET, { expiresIn: '8h' });
 
-        res.json({
+        return res.json({
             token,
             user: {
                 id: user.id,
@@ -372,7 +371,7 @@ router.post('/login', async (req, res) => {
             }
         });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

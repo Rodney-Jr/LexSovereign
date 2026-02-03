@@ -81,10 +81,10 @@ export const aiGuard = (requiredAction: string) => {
                 }
             }).catch(console.error);
 
-            next();
+            return next();
         } catch (error: any) {
             console.error("AI Guard Error:", error);
-            res.status(500).json({ error: 'AI Governance Check Failed' });
+            return res.status(500).json({ error: 'AI Governance Check Failed' });
         }
     };
 };

@@ -64,13 +64,13 @@ router.get('/history', authenticateToken, async (req, res) => {
         for (let i = 5; i >= 0; i--) {
             const d = new Date();
             d.setMonth(currentMonth - i);
-            const key = months[d.getMonth()];
+            const key = months[d.getMonth()]!;
             historyMap.set(key, 0);
         }
 
         // Aggregate counts
         matters.forEach(m => {
-            const key = months[new Date(m.createdAt).getMonth()];
+            const key = months[new Date(m.createdAt).getMonth()]!;
             if (historyMap.has(key)) {
                 historyMap.set(key, (historyMap.get(key) || 0) + 1);
             }
@@ -78,10 +78,10 @@ router.get('/history', authenticateToken, async (req, res) => {
 
         const data = Array.from(historyMap.entries()).map(([name, value]) => ({ name, value }));
 
-        res.json(data);
+        return res.json(data);
     } catch (error: any) {
         console.error("[Analytics] History failed:", error);
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

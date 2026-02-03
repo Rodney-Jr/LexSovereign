@@ -313,3 +313,11 @@ export interface TenantUser {
     lastActive: string;
     mfaEnabled: boolean;
 }
+
+export interface Clause {
+    clause_key: string;
+    clause_title: string;
+    clause_text: string;
+    clause_type: 'locked' | 'variable' | 'optional';
+    order_index?: number;
+}

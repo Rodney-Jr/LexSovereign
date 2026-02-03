@@ -125,9 +125,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json(updated);
+        return res.json(updated);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

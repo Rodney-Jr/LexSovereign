@@ -18,10 +18,10 @@ router.post('/ghana-gazette', async (req, res) => {
             return res.status(403).json({ error: result.message });
         }
 
-        res.json({ status: 'ok', detail: result.message });
+        return res.json({ status: 'ok', detail: result.message });
     } catch (error: any) {
         console.error('[Webhook] Error processing update:', error);
-        res.status(500).json({ error: 'Internal Statutory Sync Error' });
+        return res.status(500).json({ error: 'Internal Statutory Sync Error' });
     }
 });
 
