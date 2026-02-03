@@ -1,7 +1,5 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer } from 'docx';
 import { DocumentElement } from './DocumentAssemblyService';
-import puppeteer from 'puppeteer-core';
-import { launch } from 'chrome-launcher';
 
 export class DocumentExportService {
     /**
@@ -65,6 +63,10 @@ export class DocumentExportService {
      * Generates a PDF buffer using puppeteer-core.
      */
     public static async generatePDF(elements: DocumentElement[]): Promise<Buffer> {
+        // Dynamic imports for ESM modules in CommonJS environment
+        const { launch } = await import('chrome-launcher');
+        const puppeteer = await import('puppeteer-core');
+
         const html = `
             <html>
             <head>
@@ -126,8 +128,8 @@ export class DocumentExportService {
             chromeFlags: ['--headless', '--disable-gpu', '--no-sandbox']
         });
 
-        const browser = await puppeteer.connect({
-            browserWSEndpoint: `ws://127.0.0.1:${chrome.port}${chrome.port ? '' : ''}` // Potential ws endpoint
+        const browser = await puppeteer.default.connect({
+            browserWSEndpoint: `ws://127.0.0.1:${chrome.port}`
         });
 
         // Fallback for finding the WS endpoint if connect fails
