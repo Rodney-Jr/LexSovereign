@@ -21,16 +21,16 @@ import { LexGeminiService } from '../services/geminiService';
 
 const INITIAL_REVIEWS: ReviewArtifact[] = [
   {
-    id: 'REV-101', matterId: 'MT-772', docId: 'doc_001', title: 'Shareholder Indemnity Clause',
-    status: ReviewStatus.AI_DRAFTED, urgency: 'Critical', aiConfidence: 0.92, piiCount: 8, jurisdiction: 'Ghana', assignedTo: UserRole.INTERNAL_COUNSEL
+    id: 'REV-PR-001', matterId: 'MAT-GEN-01', docId: 'doc_101', title: 'Standard Service Level Addendum',
+    status: ReviewStatus.AI_DRAFTED, urgency: 'Urgent', aiConfidence: 0.94, piiCount: 3, jurisdiction: 'United Kingdom', assignedTo: UserRole.INTERNAL_COUNSEL
   },
   {
-    id: 'REV-102', matterId: 'ENT-991', docId: 'doc_002', title: 'MSA Termination Notice',
-    status: ReviewStatus.SAFETY_VERIFIED, urgency: 'Routine', aiConfidence: 0.98, piiCount: 4, jurisdiction: 'Germany', assignedTo: UserRole.INTERNAL_COUNSEL
+    id: 'REV-PR-002', matterId: 'MAT-GEN-02', docId: 'doc_102', title: 'Confidentiality & IP Assignment',
+    status: ReviewStatus.SAFETY_VERIFIED, urgency: 'Routine', aiConfidence: 0.96, piiCount: 0, jurisdiction: 'USA', assignedTo: UserRole.INTERNAL_COUNSEL
   },
   {
-    id: 'REV-103', matterId: 'MT-772', docId: 'doc_003', title: 'Director Resignation Deed',
-    status: ReviewStatus.COUNSEL_REVIEW, urgency: 'Urgent', aiConfidence: 0.88, piiCount: 12, jurisdiction: 'Ghana', assignedTo: UserRole.EXTERNAL_COUNSEL
+    id: 'REV-PR-003', matterId: 'MAT-GEN-01', docId: 'doc_103', title: 'Lease Agreement - Clause 4.2',
+    status: ReviewStatus.COUNSEL_REVIEW, urgency: 'Critical', aiConfidence: 0.89, piiCount: 5, jurisdiction: 'Germany', assignedTo: UserRole.EXTERNAL_COUNSEL
   }
 ];
 
@@ -47,8 +47,8 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
     setSelectedId(artifact.id);
     setIsProcessing(true);
 
-    // Simulate fetching content and applying DAS proxy
-    const rawContent = `DRAFT FOR ${artifact.title}: Kofi Mensah of 12 High St, Accra agrees to pay $5,000 for equity. This is highly privileged counsel work product.`;
+    // Simulate fetching content and applying DAS proxy with generic text
+    const rawContent = `DRAFT ARTIFACT [${artifact.id}]: Regarding '${artifact.title}'. This document contains sensitive jurisdictional clauses for ${artifact.jurisdiction}. It has been processed through the Sovereign Data Anonymization Service to ensure compliance with organization-wide RBAC policies. Full counsel work product is maintained within the secure enclave.`;
     const result = await gemini.getScrubbedContent(rawContent, userRole, PrivilegeStatus.PRIVILEGED);
 
     setScrubbedView({ content: result.content, count: result.scrubbedEntities });
@@ -95,14 +95,14 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
                 key={artifact.id}
                 onClick={() => handleOpenReview(artifact)}
                 className={`p-5 rounded-3xl border transition-all cursor-pointer group ${selectedId === artifact.id
-                    ? 'bg-blue-500/5 border-blue-500/40 shadow-xl shadow-blue-500/5'
-                    : 'bg-slate-900/40 border-slate-800 hover:border-slate-700'
+                  ? 'bg-blue-500/5 border-blue-500/40 shadow-xl shadow-blue-500/5'
+                  : 'bg-slate-900/40 border-slate-800 hover:border-slate-700'
                   }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase ${artifact.urgency === 'Critical' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                      artifact.urgency === 'Urgent' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    artifact.urgency === 'Urgent' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                      'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                     }`}>
                     {artifact.urgency}
                   </span>
@@ -134,7 +134,7 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg text-white">{selectedArtifact.title}</h4>
-                    <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Sovereign SILO: West Africa-GH-1</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Sovereign SILO: {selectedArtifact.jurisdiction}-REG-1</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -177,22 +177,22 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
                   <p className="text-[10px] font-bold text-slate-500 uppercase">Decision Trace</p>
                   <div className="flex items-center gap-2">
                     <ShieldCheck size={14} className="text-emerald-500" />
-                    <span className="text-[10px] font-mono text-slate-300">TOK-991A-Sovereign</span>
+                    <span className="text-[10px] font-mono text-slate-300">VALIDATED-TOKEN-{selectedArtifact.id}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Lock size={14} className="text-blue-500" />
-                    <span className="text-[10px] font-mono text-slate-300">BYOK: Client-Encrypted</span>
+                    <span className="text-[10px] font-mono text-slate-300">BYOK: Secure Enclave</span>
                   </div>
                 </div>
                 <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-2xl space-y-3">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Dual-Agent Status</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Governance Status</p>
                   <div className="flex items-center gap-2">
                     <UserCheck size={14} className="text-emerald-500" />
-                    <span className="text-[10px] font-mono text-emerald-400 tracking-tighter font-bold">UPL VERIFIED: PASS</span>
+                    <span className="text-[10px] font-mono text-emerald-400 tracking-tighter font-bold">COMPLIANCE: VERIFIED</span>
                   </div>
                   <div className="flex items-center gap-2 opacity-50">
                     <Briefcase size={14} className="text-slate-500" />
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Wait: Counsel Only</span>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Access: {userRole}</span>
                   </div>
                 </div>
               </div>
