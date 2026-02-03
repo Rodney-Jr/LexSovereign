@@ -4,102 +4,265 @@
     "jurisdiction": "Global",
     "risk_level": "Low",
     "version": "1.0.0",
-    "clauses": [
-        {
-            "clause_key": "parties",
-            "clause_title": "Parties",
-            "clause_text": "This Service Agreement (the \"Agreement\") is entered into as of {{effective_date}} (the \"Effective Date\") by and between {{provider_name}}, a company organized and existing under the laws of {{provider_jurisdiction}}, with its principal place of business at {{provider_address}} (the \"Service Provider\"), and {{client_name}}, a company organized and existing under the laws of {{client_jurisdiction}}, with its principal place of business at {{client_address}} (the \"Client\").",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "background",
-            "clause_title": "Background",
-            "clause_text": "The Client wishes to engage the Service Provider to provide certain services as set out in this Agreement, and the Service Provider has agreed to provide such services on the terms and conditions set forth herein.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "scope_of_services",
-            "clause_title": "Scope of Services",
-            "clause_text": "The Service Provider shall perform the services described in {{services_description}} (the \"Services\") in a professional and workmanlike manner, in accordance with the standards generally prevailing in the Service Provider's industry and the specifications set forth in this Agreement.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "service_deliverables",
-            "clause_title": "Service Deliverables",
-            "clause_text": "In connection with the Services, the Service Provider shall provide the specific deliverables identified in {{deliverables_list}} (the \"Deliverables\") to the Client on or before the dates specified therein.",
-            "clause_type": "optional"
-        },
-        {
-            "clause_key": "term_and_termination",
-            "clause_title": "Term and Termination",
-            "clause_text": "This Agreement shall commence on the Effective Date and shall continue until {{term_end_date}} or until the Services are completed, unless terminated earlier in accordance with this clause. Either party may terminate this Agreement without cause upon giving {{notice_period_days}} days' written notice to the other party. Either party may terminate this Agreement immediately upon written notice if the other party commits a material breach of this Agreement and fails to cure such breach within thirty (30) days of receipt of notice of the breach.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "fees_and_payment",
-            "clause_title": "Fees and Payment Terms",
-            "clause_text": "In consideration for the performance of the Services, the Client shall pay the Service Provider the fees calculated as follows: {{fee_calculation}}. Payment shall be made in {{payment_currency}} within {{payment_term_days}} days of receipt of a valid and undisputed invoice from the Service Provider. Late payments shall bear interest at a rate of {{interest_rate_percent}}% per month.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "provider_obligations",
-            "clause_title": "Obligations of the Service Provider",
-            "clause_text": "The Service Provider shall: (a) use reasonable endeavors to meet any performance dates specified in this Agreement; (b) comply with all applicable laws and regulations in the performance of the Services; and (c) ensure that its personnel possess the necessary skills and experience for the performance of the Services.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "client_obligations",
-            "clause_title": "Obligations of the Client",
-            "clause_text": "The Client shall: (a) provide the Service Provider with all necessary access to information, equipment, or facilities as may be reasonably required by the Service Provider to perform the Services; and (b) provide any Client materials or content required for the Services in a timely manner.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "confidentiality",
-            "clause_title": "Confidentiality",
-            "clause_text": "Each party shall keep confidential and not disclose to any third party any non-public information concerning the business, affairs, customers, or suppliers of the other party obtained in connection with this Agreement. This obligation shall not apply to information that is: (a) public knowledge through no fault of the receiving party; (b) independently developed; or (c) required to be disclosed by law or regulatory authority.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "intellectual_property",
-            "clause_title": "Intellectual Property",
-            "clause_text": "Each party shall retain ownership of all intellectual property rights existing prior to the Effective Date. Subject to the full payment of fees, the Service Provider grants the Client a non-exclusive, world-wide, non-transferable license to use the Deliverables solely for the Client's internal business purposes in connection with the Services. Any intellectual property created specifically for the Client as part of the Services shall remain the property of the Service Provider unless expressly assigned in writing.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "limitation_of_liability",
-            "clause_title": "Limitation of Liability",
-            "clause_text": "To the maximum extent permitted by law, neither party shall be liable for any indirect, incidental, special, or consequential damages. Each party's total aggregate liability under this Agreement, whether in contract, tort, or otherwise, shall be limited to the total fees paid or payable by the Client to the Service Provider under this Agreement.",
-            "clause_type": "optional"
-        },
-        {
-            "clause_key": "force_majeure",
-            "clause_title": "Force Majeure",
-            "clause_text": "Neither party shall be in breach of this Agreement nor liable for delay in performing, or failure to perform, any of its obligations under this Agreement if such delay or failure results from events, circumstances, or causes beyond its reasonable control, including but not limited to acts of God, war, riot, or government intervention.",
-            "clause_type": "optional"
-        },
-        {
-            "clause_key": "governing_law",
-            "clause_title": "Governing Law",
-            "clause_text": "This Agreement and any dispute or claim arising out of or in connection with it or its subject matter or formation shall be governed by and construed in accordance with the laws of {{governing_law_jurisdiction}}. The parties irrevocably agree that the courts of {{governing_law_jurisdiction}} shall have exclusive jurisdiction to settle any such dispute or claim.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "entire_agreement",
-            "clause_title": "Entire Agreement",
-            "clause_text": "This Agreement constitutes the entire agreement between the parties and supersedes and extinguishes all previous agreements, promises, assurances, warranties, representations, and understandings between them, whether written or oral, relating to its subject matter.",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "amendments",
-            "clause_title": "Amendments",
-            "clause_text": "No variation or amendment of this Agreement shall be effective unless it is in writing and signed by the parties (or their authorized representatives).",
-            "clause_type": "locked"
-        },
-        {
-            "clause_key": "signatures",
-            "clause_title": "Signatures",
-            "clause_text": "IN WITNESS WHEREOF, the parties have executed this Agreement by their duly authorized representatives.\n\nFor the Service Provider:\nSignature: ____________________\nName: {{provider_signer_name}}\nTitle: {{provider_signer_title}}\nDate: {{provider_signing_date}}\n\nFor the Client:\nSignature: ____________________\nName: {{client_signer_name}}\nTitle: {{client_signer_title}}\nDate: {{client_signing_date}}",
-            "clause_type": "locked"
-        }
-    ]
+    "structure": {
+        "fields": [
+            {
+                "key": "effective_date",
+                "label": "Effective Date",
+                "type": "date",
+                "required": true,
+                "placeholder": "The date the agreement and its obligations legally begin."
+            },
+            {
+                "key": "provider_name",
+                "label": "Service Provider Name",
+                "type": "text",
+                "required": true,
+                "placeholder": "The full registered legal entity name of the service provider."
+            },
+            {
+                "key": "provider_jurisdiction",
+                "label": "Provider Jurisdiction",
+                "type": "text",
+                "required": true,
+                "placeholder": "The country or state where the provider is legally incorporated."
+            },
+            {
+                "key": "provider_address",
+                "label": "Provider Registered Address",
+                "type": "text",
+                "multiline": true,
+                "required": true,
+                "placeholder": "Full registered office or principal place of business address."
+            },
+            {
+                "key": "client_name",
+                "label": "Client Name",
+                "type": "text",
+                "required": true,
+                "placeholder": "The full registered legal entity name of the client."
+            },
+            {
+                "key": "client_jurisdiction",
+                "label": "Client Jurisdiction",
+                "type": "text",
+                "required": true,
+                "placeholder": "The country or state where the client is legally incorporated."
+            },
+            {
+                "key": "client_address",
+                "label": "Client Registered Address",
+                "type": "text",
+                "multiline": true,
+                "required": true,
+                "placeholder": "Full registered office or principal place of business address."
+            },
+            {
+                "key": "services_description",
+                "label": "Description of Services",
+                "type": "text",
+                "multiline": true,
+                "required": true,
+                "placeholder": "A clear and detailed summary of the work to be performed."
+            },
+            {
+                "key": "deliverables_list",
+                "label": "List of Deliverables",
+                "type": "text",
+                "multiline": true,
+                "required": false,
+                "placeholder": "Specific items, reports, or products provided as part of the services."
+            },
+            {
+                "key": "term_end_date",
+                "label": "Term End Date",
+                "type": "date",
+                "required": true,
+                "placeholder": "The scheduled date for the conclusion of the services or agreement."
+            },
+            {
+                "key": "notice_period_days",
+                "label": "Notice Period (Days)",
+                "type": "number",
+                "required": true,
+                "placeholder": "Number of days' notice required to terminate without cause."
+            },
+            {
+                "key": "fee_calculation",
+                "label": "Fee Calculation",
+                "type": "text",
+                "multiline": true,
+                "required": true,
+                "placeholder": "Detail the total fee, hourly rates, or the formula for payment."
+            },
+            {
+                "key": "payment_currency",
+                "label": "Payment Currency",
+                "type": "text",
+                "required": true,
+                "placeholder": "The currency for billing and payment (e.g., USD, EUR, GBP)."
+            },
+            {
+                "key": "payment_term_days",
+                "label": "Payment Terms (Days)",
+                "type": "number",
+                "required": true,
+                "placeholder": "Days allowed to pay an invoice from the date of receipt."
+            },
+            {
+                "key": "interest_rate_percent",
+                "label": "Late Payment Interest (%)",
+                "type": "number",
+                "required": true,
+                "placeholder": "The monthly interest percentage applied to overdue payments."
+            },
+            {
+                "key": "governing_law_jurisdiction",
+                "label": "Governing Law Jurisdiction",
+                "type": "text",
+                "required": true,
+                "placeholder": "The specific state or country whose laws will govern the agreement."
+            },
+            {
+                "key": "provider_signer_name",
+                "label": "Provider Signatory Name",
+                "type": "text",
+                "required": true,
+                "placeholder": "The full name of the authorized representative signing for the provider."
+            },
+            {
+                "key": "provider_signer_title",
+                "label": "Provider Signatory Title",
+                "type": "text",
+                "required": true,
+                "placeholder": "The formal job title of the person signing for the provider."
+            },
+            {
+                "key": "provider_signing_date",
+                "label": "Provider Signing Date",
+                "type": "date",
+                "required": true,
+                "placeholder": "The date on which the provider's representative signs."
+            },
+            {
+                "key": "client_signer_name",
+                "label": "Client Signatory Name",
+                "type": "text",
+                "required": true,
+                "placeholder": "The full name of the authorized representative signing for the client."
+            },
+            {
+                "key": "client_signer_title",
+                "label": "Client Signatory Title",
+                "type": "text",
+                "required": true,
+                "placeholder": "The formal job title of the person signing for the client."
+            },
+            {
+                "key": "client_signing_date",
+                "label": "Client Signing Date",
+                "type": "date",
+                "required": true,
+                "placeholder": "The date on which the client's representative signs."
+            }
+        ],
+        "clauses": [
+            {
+                "clause_key": "parties",
+                "clause_title": "Parties",
+                "clause_text": "This Service Agreement (the \"Agreement\") is entered into as of {{effective_date}} (the \"Effective Date\") by and between {{provider_name}}, a company organized and existing under the laws of {{provider_jurisdiction}}, with its principal place of business at {{provider_address}} (the \"Service Provider\"), and {{client_name}}, a company organized and existing under the laws of {{client_jurisdiction}}, with its principal place of business at {{client_address}} (the \"Client\").",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "background",
+                "clause_title": "Background",
+                "clause_text": "The Client wishes to engage the Service Provider to provide certain services as set out in this Agreement, and the Service Provider has agreed to provide such services on the terms and conditions set forth herein.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "scope_of_services",
+                "clause_title": "Scope of Services",
+                "clause_text": "The Service Provider shall perform the services described in {{services_description}} (the \"Services\") in a professional and workmanlike manner, in accordance with the standards generally prevailing in the Service Provider's industry and the specifications set forth in this Agreement.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "service_deliverables",
+                "clause_title": "Service Deliverables",
+                "clause_text": "In connection with the Services, the Service Provider shall provide the specific deliverables identified in {{deliverables_list}} (the \"Deliverables\") to the Client on or before the dates specified therein.",
+                "clause_type": "optional"
+            },
+            {
+                "clause_key": "term_and_termination",
+                "clause_title": "Term and Termination",
+                "clause_text": "This Agreement shall commence on the Effective Date and shall continue until {{term_end_date}} or until the Services are completed, unless terminated earlier in accordance with this clause. Either party may terminate this Agreement without cause upon giving {{notice_period_days}} days' written notice to the other party. Either party may terminate this Agreement immediately upon written notice if the other party commits a material breach of this Agreement and fails to cure such breach within thirty (30) days of receipt of notice of the breach.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "fees_and_payment",
+                "clause_title": "Fees and Payment Terms",
+                "clause_text": "In consideration for the performance of the Services, the Client shall pay the Service Provider the fees calculated as follows: {{fee_calculation}}. Payment shall be made in {{payment_currency}} within {{payment_term_days}} days of receipt of a valid and undisputed invoice from the Service Provider. Late payments shall bear interest at a rate of {{interest_rate_percent}}% per month.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "provider_obligations",
+                "clause_title": "Obligations of the Service Provider",
+                "clause_text": "The Service Provider shall: (a) use reasonable endeavors to meet any performance dates specified in this Agreement; (b) comply with all applicable laws and regulations in the performance of the Services; and (c) ensure that its personnel possess the necessary skills and experience for the performance of the Services.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "client_obligations",
+                "clause_title": "Obligations of the Client",
+                "clause_text": "The Client shall: (a) provide the Service Provider with all necessary access to information, equipment, or facilities as may be reasonably required by the Service Provider to perform the Services; and (b) provide any Client materials or content required for the Services in a timely manner.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "confidentiality",
+                "clause_title": "Confidentiality",
+                "clause_text": "Each party shall keep confidential and not disclose to any third party any non-public information concerning the business, affairs, customers, or suppliers of the other party obtained in connection with this Agreement. This obligation shall not apply to information that is: (a) public knowledge through no fault of the receiving party; (b) independently developed; or (c) required to be disclosed by law or regulatory authority.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "intellectual_property",
+                "clause_title": "Intellectual Property",
+                "clause_text": "Each party shall retain ownership of all intellectual property rights existing prior to the Effective Date. Subject to the full payment of fees, the Service Provider grants the Client a non-exclusive, world-wide, non-transferable license to use the Deliverables solely for the Client's internal business purposes in connection with the Services. Any intellectual property created specifically for the Client as part of the Services shall remain the property of the Service Provider unless expressly assigned in writing.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "limitation_of_liability",
+                "clause_title": "Limitation of Liability",
+                "clause_text": "To the maximum extent permitted by law, neither party shall be liable for any indirect, incidental, special, or consequential damages. Each party's total aggregate liability under this Agreement, whether in contract, tort, or otherwise, shall be limited to the total fees paid or payable by the Client to the Service Provider under this Agreement.",
+                "clause_type": "optional"
+            },
+            {
+                "clause_key": "force_majeure",
+                "clause_title": "Force Majeure",
+                "clause_text": "Neither party shall be in breach of this Agreement nor liable for delay in performing, or failure to perform, any of its obligations under this Agreement if such delay or failure results from events, circumstances, or causes beyond its reasonable control, including but not limited to acts of God, war, riot, or government intervention.",
+                "clause_type": "optional"
+            },
+            {
+                "clause_key": "governing_law",
+                "clause_title": "Governing Law",
+                "clause_text": "This Agreement and any dispute or claim arising out of or in connection with it or its subject matter or formation shall be governed by and construed in accordance with the laws of {{governing_law_jurisdiction}}. The parties irrevocably agree that the courts of {{governing_law_jurisdiction}} shall have exclusive jurisdiction to settle any such dispute or claim.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "entire_agreement",
+                "clause_title": "Entire Agreement",
+                "clause_text": "This Agreement constitutes the entire agreement between the parties and supersedes and extinguishes all previous agreements, promises, assurances, warranties, representations, and understandings between them, whether written or oral, relating to its subject matter.",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "amendments",
+                "clause_title": "Amendments",
+                "clause_text": "No variation or amendment of this Agreement shall be effective unless it is in writing and signed by the parties (or their authorized representatives).",
+                "clause_type": "locked"
+            },
+            {
+                "clause_key": "signatures",
+                "clause_title": "Signatures",
+                "clause_text": "IN WITNESS WHEREOF, the parties have executed this Agreement by their duly authorized representatives.\n\nFor the Service Provider:\nSignature: ____________________\nName: {{provider_signer_name}}\nTitle: {{provider_signer_title}}\nDate: {{provider_signing_date}}\n\nFor the Client:\nSignature: ____________________\nName: {{client_signer_name}}\nTitle: {{client_signer_title}}\nDate: {{client_signing_date}}",
+                "clause_type": "locked"
+            }
+        ]
+    }
 }
