@@ -145,52 +145,6 @@ const Layout: React.FC<LayoutProps> = ({
             />
           )}
 
-          {/* Management Section */}
-          {(isAllowed('org-blueprint') || (isAllowed('integration-bridge') && showAdvanced) || isAllowed('tenant-admin') || isAllowed('identity') || (isAllowed('backlog') && showAdvanced)) && (
-            <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Management</span>
-            </div>
-          )}
-          {isAllowed('org-blueprint') && (
-            <NavItem
-              icon={<GitBranch size={18} className="text-brand-secondary" />}
-              label="Firm Blueprint"
-              isActive={activeTab === 'org-blueprint'}
-              onClick={() => setActiveTab('org-blueprint')}
-            />
-          )}
-          {isAllowed('integration-bridge') && showAdvanced && (
-            <NavItem
-              icon={<Plug size={18} className="text-brand-primary" />}
-              label="Bridge Registry"
-              isActive={activeTab === 'integration-bridge'}
-              onClick={() => setActiveTab('integration-bridge')}
-            />
-          )}
-          {isAllowed('tenant-admin') && (
-            <NavItem
-              icon={<Building2 size={18} />}
-              label="Organization Admin"
-              isActive={activeTab === 'tenant-admin'}
-              onClick={() => setActiveTab('tenant-admin')}
-            />
-          )}
-          {isAllowed('identity') && (
-            <NavItem
-              icon={<Key size={18} />}
-              label="Access Governance"
-              isActive={activeTab === 'identity'}
-              onClick={() => setActiveTab('identity')}
-            />
-          )}
-          {isAllowed('backlog') && showAdvanced && (
-            <NavItem
-              icon={<ClipboardList size={18} />}
-              label="Eng Backlog"
-              isActive={activeTab === 'backlog'}
-              onClick={() => setActiveTab('backlog')}
-            />
-          )}
 
           {/* Operations Section */}
           {(isAllowed('conflict-check') || isAllowed('reviews') || isAllowed('workflow') || isAllowed('vault') || isAllowed('chat')) && (
@@ -302,8 +256,8 @@ const Layout: React.FC<LayoutProps> = ({
           )}
           {isAllowed('tenant-settings') && (
             <NavItem
-              icon={<Settings size={18} />}
-              label="Gov Controls"
+              icon={<Settings size={18} className="text-purple-400" />}
+              label="Tenant Settings"
               isActive={activeTab === 'tenant-settings'}
               onClick={() => setActiveTab('tenant-settings')}
             />

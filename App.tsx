@@ -262,7 +262,7 @@ const AppContent: React.FC = () => {
 
         {activeTab === 'chat' && <LegalChat killSwitchActive={killSwitchActive} rules={rules} documents={documents} matters={matters} />}
         {activeTab === 'status' && <ProjectStatus />}
-        {activeTab === 'tenant-settings' && <TenantSettings mode={mode} killSwitchActive={killSwitchActive} setKillSwitchActive={setKillSwitchActive} />}
+        {activeTab === 'tenant-settings' && <TenantSettings userRole={contextRole as any} setUserRole={() => { }} />}
         {activeTab === 'system-settings' && <GlobalSettings />}
       </div>
 

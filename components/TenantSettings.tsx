@@ -1,80 +1,102 @@
 
-import React from 'react';
-import { AppMode, UserRole } from '../types';
-import { ShieldAlert, Briefcase, Users, Settings as SettingsIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Settings, Building2, Key, GitBranch, Plug, ClipboardList } from 'lucide-react';
+import TenantAdministration from './TenantAdministration';
+import AccessGovernance from './AccessGovernance';
+import BridgeRegistry from './BridgeRegistry';
+import OrgChart from './OrgChart';
+import EngineeringBacklog from './EngineeringBacklog';
+import { UserRole } from '../types';
 
 interface TenantSettingsProps {
-    mode: AppMode;
-    killSwitchActive: boolean;
-    setKillSwitchActive: (val: boolean) => void;
+    userRole: UserRole;
+    setUserRole: (role: UserRole) => void;
 }
 
-const TenantSettings: React.FC<TenantSettingsProps> = ({ mode, killSwitchActive, setKillSwitchActive }) => {
+type SettingsTab = 'organization' | 'access' | 'integrations' | 'blueprint' | 'backlog';
+
+const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }) => {
+    const [activeTab, setActiveTab] = useState<SettingsTab>('organization');
+
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-12">
-            <div className="bg-slate-900/50 border border-slate-800 p-8 rounded-3xl space-y-8 shadow-2xl backdrop-blur-sm">
-                <div className="space-y-2 border-b border-slate-800 pb-6">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                        <SettingsIcon className="text-emerald-400" />
-                        Tenant Governance Controls
-                    </h3>
-                    <p className="text-slate-400 text-sm">
-                        Toggled to <span className="text-emerald-400 font-bold uppercase">{mode.replace('_', ' ')}</span> mode.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {/* Column 1: RBAC & Governance */}
-                    <div className="space-y-8">
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                                <Briefcase size={16} /> RBAC Hierarchy
-                            </h4>
-                            <div className="space-y-3">
-                                <RoleCard role={UserRole.GLOBAL_ADMIN} access="Full System & Audit Trace" />
-                                <RoleCard role={UserRole.INTERNAL_COUNSEL} access="Matter View + Approval Rights" />
-                                <RoleCard role={UserRole.EXTERNAL_COUNSEL} access="Drafting + Redline Only" />
-                            </div>
-                        </div>
+        <div className="max-w-7xl mx-auto space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            {/* Header */}
+            <div className="space-y-2">
+                <h2 className="text-3xl font-bold text-white flex items-center gap-4 tracking-tight">
+                    <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20">
+                        <Settings className="text-purple-400" size={32} />
                     </div>
+                    Tenant Settings
+                </h2>
+                <p className="text-slate-400 text-sm">
+                    Configure organizational settings, access control, and system integrations
+                </p>
+            </div>
 
-                    {/* Column 2: Safety Overrides */}
-                    <div className="space-y-8">
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                                <ShieldAlert size={16} /> Safety Overrides
-                            </h4>
-                            <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-2xl border border-slate-700">
-                                <div>
-                                    <p className="font-bold text-white text-sm">Deterministic Lock</p>
-                                    <p className="text-[10px] text-slate-400">Kill-switch AI for confidence &lt; 85%</p>
-                                </div>
-                                <button
-                                    onClick={() => setKillSwitchActive(!killSwitchActive)}
-                                    className={`w-12 h-6 rounded-full transition-all duration-300 relative ${killSwitchActive ? 'bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.5)]' : 'bg-slate-700'}`}
-                                    aria-label="Toggle Deterministic Lock"
-                                >
-                                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all duration-300 ${killSwitchActive ? 'left-6.5' : 'left-0.5'}`}></div>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* Tab Navigation */}
+            <div className="flex gap-2 border-b border-slate-800 pb-2 overflow-x-auto scrollbar-hide">
+                <TabButton
+                    icon={<Building2 size={16} />}
+                    label="Organization"
+                    active={activeTab === 'organization'}
+                    onClick={() => setActiveTab('organization')}
+                />
+                <TabButton
+                    icon={<Key size={16} />}
+                    label="Access Control"
+                    active={activeTab === 'access'}
+                    onClick={() => setActiveTab('access')}
+                />
+                <TabButton
+                    icon={<Plug size={16} />}
+                    label="Integrations"
+                    active={activeTab === 'integrations'}
+                    onClick={() => setActiveTab('integrations')}
+                />
+                <TabButton
+                    icon={<GitBranch size={16} />}
+                    label="Blueprint"
+                    active={activeTab === 'blueprint'}
+                    onClick={() => setActiveTab('blueprint')}
+                />
+                <TabButton
+                    icon={<ClipboardList size={16} />}
+                    label="Eng Backlog"
+                    active={activeTab === 'backlog'}
+                    onClick={() => setActiveTab('backlog')}
+                />
+            </div>
+
+            {/* Tab Content */}
+            <div className="animate-in fade-in duration-500">
+                {activeTab === 'organization' && <TenantAdministration />}
+                {activeTab === 'access' && <AccessGovernance userRole={userRole} setUserRole={setUserRole} />}
+                {activeTab === 'integrations' && <BridgeRegistry />}
+                {activeTab === 'blueprint' && <OrgChart />}
+                {activeTab === 'backlog' && <EngineeringBacklog />}
             </div>
         </div>
     );
 };
 
-const RoleCard = ({ role, access }: { role: UserRole, access: string }) => (
-    <div className="flex items-center gap-4 p-4 bg-slate-800/30 border border-slate-700 rounded-2xl hover:border-emerald-500/30 transition-colors">
-        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-emerald-400">
-            <Users size={20} />
-        </div>
-        <div>
-            <p className="font-bold text-sm text-white">{role}</p>
-            <p className="text-[10px] text-slate-400">{access}</p>
-        </div>
-    </div>
+interface TabButtonProps {
+    icon: React.ReactNode;
+    label: string;
+    active: boolean;
+    onClick: () => void;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ icon, label, active, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 border whitespace-nowrap ${active
+            ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+            : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700'
+            }`}
+    >
+        {icon}
+        {label}
+    </button>
 );
 
 export default TenantSettings;
