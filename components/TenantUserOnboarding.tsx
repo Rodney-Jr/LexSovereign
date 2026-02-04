@@ -136,6 +136,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
             role: data.user.role,
             token: data.token,
             userId: data.user.id,
+            userName: data.user.name,
             tenantId: data.user.tenantId,
             permissions: data.user.permissions || []
          }));

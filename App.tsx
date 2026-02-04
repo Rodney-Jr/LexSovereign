@@ -79,6 +79,7 @@ const AppContent: React.FC = () => {
   const {
     isAuthenticated,
     userId,
+    userName,
     tenantId,
     mode,
     setMode,
@@ -138,6 +139,7 @@ const AppContent: React.FC = () => {
         role: pending.user.role,
         token: pending.token,
         userId: pending.user.id,
+        userName: pending.user.name,
         tenantId: pending.user.tenantId,
         permissions: pending.user.permissions || [],
         mode: selectedMode
@@ -156,6 +158,7 @@ const AppContent: React.FC = () => {
       isPlatformMode={isPlatformMode}
       mode={mode}
       userId={userId}
+      userName={userName}
       tenantId={tenantId}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
@@ -180,7 +183,7 @@ const AppContent: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-brand-primary/20 rounded-2xl animate-float"><Rocket className="text-brand-primary" /></div>
                   <div>
-                    <h4 className="font-bold text-brand-text tracking-tight">System Operational Pulse</h4>
+                    <h4 className="font-bold text-brand-text tracking-tight">{userName ? `Welcome, ${userName}` : 'System Operational Pulse'}</h4>
                     <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{contextRole}</span> • SOV-PRIMARY-1</p>
                   </div>
                 </div>

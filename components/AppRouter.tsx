@@ -15,6 +15,7 @@ interface AppRouterProps {
     isPlatformMode: boolean;
     mode: AppMode;
     userId: string | null;
+    userName?: string | null;
     tenantId: string | null;
     activeTab: string;
     setActiveTab: (tab: string) => void;
@@ -40,6 +41,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
     isPlatformMode,
     mode,
     userId,
+    userName,
     tenantId,
     activeTab,
     setActiveTab,
@@ -88,6 +90,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
                             handleAuthenticated({
                                 role: session.role,
                                 userId: session.userId,
+                                userName: session.userName,
                                 tenantId: session.tenantId,
                                 permissions: session.permissions || [],
                                 token: session.token
@@ -108,11 +111,12 @@ const AppRouter: React.FC<AppRouterProps> = ({
         if (isPlatformMode) {
             return (
                 <PlatformGateway
-                    onAuthenticated={(role: string) => handleAuthenticated({
+                    onAuthenticated={(role: UserRole, permissions: string[], uName?: string) => handleAuthenticated({
                         role,
                         userId: 'PLATFORM_OWNER',
+                        userName: uName || 'Platform Owner',
                         tenantId: 'GLOBAL',
-                        permissions: []
+                        permissions: permissions || []
                     })}
                     onBackToTenant={() => setIsPlatformMode(false)}
                 />
@@ -120,10 +124,11 @@ const AppRouter: React.FC<AppRouterProps> = ({
         }
         return (
             <AuthFlow
-                onAuthenticated={(role: string, perms: string[], uId?: string, tId?: string, token?: string) => handleAuthenticated({
+                onAuthenticated={(role: string, perms: string[], uId?: string, tId?: string, token?: string, uName?: string) => handleAuthenticated({
                     role,
                     permissions: perms,
                     userId: uId || 'legacy-uid',
+                    userName: uName,
                     tenantId: tId || 'legacy-tid',
                     token
                 })}
@@ -142,6 +147,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
             setMode={setMode}
             killSwitchActive={killSwitchActive}
             userRole={contextRole as UserRole}
+            userName={userName}
             theme={theme}
             setTheme={setTheme}
         >

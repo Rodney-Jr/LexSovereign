@@ -15,7 +15,7 @@ import {
 import { UserRole } from '../types';
 
 interface PlatformGatewayProps {
-  onAuthenticated: (role: UserRole, permissions: string[]) => void;
+  onAuthenticated: (role: UserRole, permissions: string[], userName?: string) => void;
   onBackToTenant: () => void;
 }
 
@@ -59,13 +59,14 @@ const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBa
         role: data.user.role,
         token: data.token,
         userId: data.user.id,
+        userName: data.user.name,
         permissions: data.user.permissions || []
       }));
 
       addLog("AUTHORITY VERIFIED. PROJECTING IDENTITY...");
 
       setTimeout(() => {
-        onAuthenticated(data.user.role as UserRole, data.user.permissions || []);
+        onAuthenticated(data.user.role as UserRole, data.user.permissions || [], data.user.name);
       }, 1000);
 
     } catch (err: any) {

@@ -11,6 +11,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const { setPermissions, setRole, role: contextRole } = usePermissions();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string | null>(null);
     const [tenantId, setTenantId] = useState<string | null>(null);
     const [mode, setMode] = useState<AppMode>(AppMode.LAW_FIRM);
     const { recoverWork } = useWorkPersistence({ activeTab, selectedMatterId: selectedMatter });
@@ -51,6 +52,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         setRole(normalizedRole);
         setPermissions(activePermissions);
         setUserId(session.userId);
+        setUserName(session.userName || null);
         setTenantId(session.tenantId);
         if (session.mode) setMode(session.mode);
         setIsAuthenticated(true);
@@ -61,6 +63,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const handleLogout = useCallback(() => {
         setIsAuthenticated(false);
         setUserId(null);
+        setUserName(null);
         setTenantId(null);
         setRole('');
         setPermissions([]);
@@ -88,6 +91,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     return {
         isAuthenticated,
         userId,
+        userName,
         tenantId,
         mode,
         setMode,

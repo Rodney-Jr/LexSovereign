@@ -54,6 +54,7 @@ interface LayoutProps {
   setMode: (mode: AppMode) => void;
   killSwitchActive: boolean;
   userRole: UserRole;
+  userName?: string | null;
   theme: 'midnight' | 'gold' | 'cyber' | 'light';
   setTheme: (theme: 'midnight' | 'gold' | 'cyber' | 'light') => void;
 }
@@ -65,6 +66,8 @@ const Layout: React.FC<LayoutProps> = ({
   mode,
   setMode,
   killSwitchActive,
+  userRole,
+  userName,
   theme,
   setTheme
 }) => {
@@ -372,7 +375,13 @@ const Layout: React.FC<LayoutProps> = ({
             </button>
             <h2 className="text-sm lg:text-lg font-semibold text-brand-text capitalize truncate">{activeTab.replace('-', ' ')}</h2>
           </div>
-          <div className="flex items-center gap-2 lg:gap-4">
+          <div className="flex items-center gap-3 lg:gap-4">
+            {userName && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-sidebar border border-brand-border rounded-xl">
+                <User size={14} className="text-brand-muted" />
+                <span className="text-[11px] font-bold text-brand-text truncate max-w-[120px]">{userName}</span>
+              </div>
+            )}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
               <ShieldCheck size={14} className="text-brand-primary" />
               <span className="text-[10px] font-bold text-brand-primary uppercase tracking-widest leading-none">Protocol Secured</span>

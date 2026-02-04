@@ -69,6 +69,7 @@ export enum UserRole {
 export interface SessionData {
   role: string;
   userId: string;
+  userName?: string;
   tenantId: string;
   permissions: string[];
   mode?: AppMode;
