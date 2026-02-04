@@ -12,7 +12,7 @@ import { prisma } from '../db';
 
 async function verify() {
     console.log("---------------------------------------------------");
-    console.log("Verifying Ghana Legal Integration (Direct DB Check)");
+    console.log("Verifying Jurisdictional Legal Integration (Direct DB Check)");
 
     try {
         const count = await prisma.knowledgeArtifact.count();

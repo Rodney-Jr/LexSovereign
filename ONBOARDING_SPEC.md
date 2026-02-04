@@ -1,6 +1,6 @@
-# LexSovereign: Onboarding & Deployment Specification (Ghana-First)
+# LexSovereign: Onboarding & Deployment Specification (Sovereign-First)
 
-This document outlines the sovereign onboarding protocols for the **LexSovereign** platform. Our architecture prioritizes **Logical Sovereignty**, ensuring that West African legal data remains isolated via software-defined silos and Cloud-KMS encryption.
+This document outlines the sovereign onboarding protocols for the **LexSovereign** platform. Our architecture prioritizes **Logical Sovereignty**, ensuring that sensitive legal data remains isolated via software-defined silos and Cloud-KMS encryption.
 
 ---
 
@@ -10,12 +10,12 @@ Tenant onboarding is the process of provisioning a unique **Logical Silo**.
 
 ### Route A: Law Firm (The "Sovereign Chambers" Path)
 *   **Persona:** Managing Partner / Head of IT.
-*   **Objective:** Establish a digital chambers with GBA (Ghana Bar Association) ethical guardrails.
+*   **Objective:** Establish a digital chambers with Professional Ethics guardrails.
 *   **Key Workflow:**
     1.  **Entity Validation:** Input Law Firm name and Registration ID.
     2.  **Identity Bridge:** Link the firm's OIDC (OpenID Connect) provider (e.g., Microsoft 365 / Azure AD).
-    3.  **Silo Pinning:** Select `GH-ACC-1` (Accra Logical Silo).
-    4.  **Guardrail Activation:** Enable *GBA Ethics Intercept* (blocks non-lawyers from triggering advice-heavy AI outputs).
+    3.  **Silo Pinning:** Select `SOV-PR-1` (Primary Logical Silo).
+    4.  **Guardrail Activation:** Enable *Ethics Intercept* (blocks non-lawyers from triggering advice-heavy AI outputs).
     5.  **Billing:** Select *Sovereign Chambers* tier ($499/mo base).
 
 ### Route B: Legal Department (The "Enterprise Enclave" Path)
@@ -24,8 +24,8 @@ Tenant onboarding is the process of provisioning a unique **Logical Silo**.
 *   **Key Workflow:**
     1.  **Entity Validation:** Input Corporate Entity name and Department Code.
     2.  **Identity Bridge:** Deep integration with Okta or corporate SAML provider.
-    3.  **Silo Pinning:** Select `GH-ACC-1` or `Regional Cluster` for multi-national corps.
-    4.  **Guardrail Activation:** Enable *BoG AML/KYC Feed* and *OCG (Outside Counsel Guidelines) Auditor*.
+    3.  **Silo Pinning:** Select `SOV-PR-1` or `Regional Cluster` for multi-national corps.
+    4.  **Guardrail Activation:** Enable *Regulatory AML/KYC Feed* and *OCG (Outside Counsel Guidelines) Auditor*.
     5.  **Billing:** Select *Enterprise Tier* (Custom pricing based on data gravity).
 
 ---
@@ -52,7 +52,7 @@ Once the Silo is active, the Admin invites practitioners into the environment.
 2.  **Sovereign Link:** User receives a one-time "Sovereign Link" that only resolves when accessed via the corporate domain.
 3.  **ZK-Proof Enrollment:** User performs their first MFA event. LexSovereign generates a unique **Identity Fragment** on the user's hardware enclave.
 4.  **Role Acceptance:**
-    *   **Law Firm User:** Signs the "Ethical Use Affidavit" (digital trace recorded in the ledger) acknowledging GBA guardrails.
+    *   **Law Firm User:** Signs the "Ethical Use Affidavit" (digital trace recorded in the ledger) acknowledging Professional Ethics guardrails.
     *   **Legal Dept User:** Completes the "Internal Compliance Briefing" regarding PII handling.
 
 ---
@@ -68,7 +68,7 @@ Once the Silo is active, the Admin invites practitioners into the environment.
 
 ---
 
-## 5. Security Guarantee: The "Ghana Silo"
+## 5. Security Guarantee: The "Sovereign Silo"
 
 Every user, regardless of route, operates within a **Zero-Egress** environment. 
 - **Encryption:** All artifacts are wrapped in AES-256-GCM.

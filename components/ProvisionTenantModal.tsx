@@ -20,7 +20,7 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
         adminPassword: 'Password123!', // Dedicated default
         plan: SaaSPlan.STANDARD,
         appMode: AppMode.LAW_FIRM,
-        primaryRegion: Region.GHANA
+        primaryRegion: Region.PRIMARY
     });
 
     if (!isOpen) return null;
@@ -68,7 +68,7 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                     adminPassword: 'Password123!',
                     plan: SaaSPlan.STANDARD,
                     appMode: AppMode.LAW_FIRM,
-                    primaryRegion: Region.GHANA
+                    primaryRegion: Region.PRIMARY
                 });
             }, 2000);
 
@@ -123,7 +123,7 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                                     <input
                                         required
                                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-800"
-                                        placeholder="e.g. Accra Chambers"
+                                        placeholder="e.g. Strategic Partners Group"
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     />
@@ -140,9 +140,9 @@ const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ isOpen, onC
                                         value={formData.primaryRegion}
                                         onChange={e => setFormData({ ...formData, primaryRegion: e.target.value as Region })}
                                     >
-                                        <option value={Region.GHANA}>West Africa (GH-ACC-1)</option>
-                                        <option value={Region.GERMANY}>EU Central (DE-FRA-1)</option>
-                                        <option value={Region.USA}>US East (US-NYC-1)</option>
+                                        <option value={Region.PRIMARY}>Primary Silo (R-PRI-1)</option>
+                                        <option value={Region.SECONDARY}>Secondary Enclave (R-SEC-1)</option>
+                                        <option value={Region.GLOBAL}>Auxiliary Cluster (R-AUX-1)</option>
                                     </select>
                                 </div>
                             </div>

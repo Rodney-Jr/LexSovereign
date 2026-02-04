@@ -180,7 +180,7 @@ const AppContent: React.FC = () => {
                   <div className="p-3 bg-brand-primary/20 rounded-2xl animate-float"><Rocket className="text-brand-primary" /></div>
                   <div>
                     <h4 className="font-bold text-brand-text tracking-tight">System Operational Pulse</h4>
-                    <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{contextRole}</span> • GH-ACC-1</p>
+                    <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{contextRole}</span> • SOV-PRIMARY-1</p>
                   </div>
                 </div>
                 <div className="flex gap-3">

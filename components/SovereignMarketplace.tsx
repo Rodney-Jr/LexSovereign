@@ -113,7 +113,7 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                             icon={<FileText className="text-blue-400" />}
                             title="Master Service Agreement"
                             desc="Standard MSA for cross-border service engagements."
-                            region="GHANA"
+                            region="PRIMARY"
                             price="Standard"
                             onDeploy={() => setSelectedTemplateId('template-master-service-agreement-(msa)')}
                         />
@@ -129,7 +129,7 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                             icon={<ShieldCheck className="text-purple-400" />}
                             title="Employment Contract"
                             desc="Comprehensive agreement for full-time staff members."
-                            region="GHANA"
+                            region="SECURE"
                             price="Standard"
                             onDeploy={() => setSelectedTemplateId('template-standard-employment-contract')}
                         />
@@ -193,7 +193,7 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                             size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
                             uploadedBy: 'Sovereign AI',
                             uploadedAt: new Date().toLocaleTimeString(),
-                            region: Region.GHANA,
+                            region: Region.PRIMARY,
                             matterId: 'UNCATEGORIZED',
                             privilege: PrivilegeStatus.PRIVILEGED,
                             classification: 'Confidential',

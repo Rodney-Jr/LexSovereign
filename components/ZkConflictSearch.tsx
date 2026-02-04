@@ -30,7 +30,7 @@ const ZkConflictSearch: React.FC = () => {
         if (p >= 100) {
           clearInterval(interval);
           setIsSearching(false);
-          setResult(searchTerm.toLowerCase().includes('accra') ? 'COLLISION' : 'CLEAN');
+          setResult(searchTerm.toLowerCase().includes('restricted') ? 'COLLISION' : 'CLEAN');
           return 100;
         }
         return p + 5;
@@ -94,7 +94,10 @@ const ZkConflictSearch: React.FC = () => {
                 <span className="text-blue-400 font-mono">{scanProgress}%</span>
               </div>
               <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-                <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 dynamic-width"
+                  style={{ '--width': `${scanProgress}%` } as any}
+                ></div>
               </div>
             </div>
           )}
@@ -106,7 +109,7 @@ const ZkConflictSearch: React.FC = () => {
               </div>
               <div className="space-y-1">
                 <h4 className="text-xl font-bold text-white">Negative Conflict Result</h4>
-                <p className="text-xs text-emerald-400 font-medium">No collisions found in the GH-ACC-1 or Global Silo Indices.</p>
+                <p className="text-xs text-emerald-400 font-medium">No collisions found in the Regional or Global Silo Indices.</p>
                 <p className="text-[10px] text-slate-500 font-mono uppercase mt-2">HASH_SIG: {Math.random().toString(16).slice(2, 20)}</p>
               </div>
             </div>
@@ -119,7 +122,7 @@ const ZkConflictSearch: React.FC = () => {
               </div>
               <div className="space-y-1">
                 <h4 className="text-xl font-bold text-white">Potential Conflict Identified</h4>
-                <p className="text-xs text-red-400 font-medium">A collision was detected in Matter MT-772 (Ghana Partners). Escalate to GC immediately.</p>
+                <p className="text-xs text-red-400 font-medium">A collision was detected in Matter MAT-ORG-001. Escalate to Senior Counsel immediately.</p>
                 <button
                   onClick={() => {
                     console.log("Partner clearance requested for conflict.");

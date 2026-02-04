@@ -14,7 +14,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project     = "LexSovereign"
-      Jurisdiction = "Ghana"
+      Jurisdiction = "Primary"
       Compliance   = "DataSovereignty"
     }
   }
@@ -22,18 +22,18 @@ provider "aws" {
 
 resource "aws_kms_key" "silo_root_key" {
   provider = aws.sovereign_silo
-  description             = "Sovereign Root Key for Ghana Silo"
+  description             = "Sovereign Root Key for Primary Silo"
   deletion_window_in_days = 30
   enable_key_rotation     = true
 
   tags = {
-    Name = "SiloRootKey-GH"
+    Name = "SiloRootKey-Primary"
   }
 }
 
 resource "aws_s3_bucket" "sovereign_vault" {
   provider = aws.sovereign_silo
-  bucket_prefix = "lexsovereign-vault-gh-"
+  bucket_prefix = "lexsovereign-vault-primary-"
 
   tags = {
     Name = "SovereignVault"

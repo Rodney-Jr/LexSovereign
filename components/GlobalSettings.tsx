@@ -30,7 +30,7 @@ const GlobalSettings: React.FC = () => {
                                         type="text"
                                         title="OIDC Discovery URL"
                                         readOnly
-                                        value="https://idp.accrapartners.gh/.well-known/openid-configuration"
+                                        value="https://auth.organization.internal/.well-known/openid-configuration"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400"
                                     />
                                 </div>
@@ -69,7 +69,7 @@ const GlobalSettings: React.FC = () => {
                                 </div>
                                 <div className="pt-2">
                                     <p className="text-[9px] text-slate-500 leading-relaxed italic">
-                                        "Phase 3 mandates that all tokens destined for Meta endpoints traverse the Sovereign Scrubbing Proxy GH-PROXY-01."
+                                        "All tokens destined for external endpoints must traverse the Sovereign Scrubbing Proxy PRIMARY-PROXY-01."
                                     </p>
                                 </div>
                             </div>
@@ -78,7 +78,7 @@ const GlobalSettings: React.FC = () => {
                         <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Globe className="text-blue-400" size={18} />
-                                <p className="text-xs">Sovereign Silo: West Africa</p>
+                                <p className="text-xs">Sovereign Silo: Primary</p>
                             </div>
                             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">Latency: 12ms</span>
                         </div>

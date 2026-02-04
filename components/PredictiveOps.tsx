@@ -31,13 +31,13 @@ const PredictiveOps: React.FC<{ mode: AppMode }> = ({ mode }) => {
    const isFirm = mode === AppMode.LAW_FIRM;
 
    const [risks] = useState<PredictiveRisk[]>([
-      { id: 'r1', matterId: 'MT-772', type: 'SLA', probability: 0.85, impact: 'High', description: 'Predicted 48h delay in GBA filing due to counsel bottleneck.' },
-      { id: 'r2', matterId: 'ENT-991', type: 'COMPLIANCE', probability: 0.62, impact: 'Med', description: 'Updated EU Data act requires re-review of clause 14.b.' }
+      { id: 'r1', matterId: 'MAT-ORG-001', type: 'SLA', probability: 0.85, impact: 'High', description: 'Predicted 48h delay in jurisdictional filing due to counsel bottleneck.' },
+      { id: 'r2', matterId: 'MAT-ORG-002', type: 'COMPLIANCE', probability: 0.62, impact: 'Med', description: 'Updated Regulatory act requires re-review of clause set.' }
    ]);
 
    const [billing] = useState<BillingEntry[]>([
-      { id: 'b1', matterId: 'MT-772', lawyer: 'K. Mensah', hours: 4.5, rate: 450, description: 'Research on land title litigation procedures.', status: 'CLEAN' },
-      { id: 'b2', matterId: 'MT-772', lawyer: 'A. Serwaa', hours: 2.0, rate: 300, description: 'Formatting shareholder annex.', status: 'FLAGGED', auditReason: 'Non-billable clerical task flagged by OCG Rule 4.' }
+      { id: 'b1', matterId: 'MAT-ORG-001', lawyer: 'Lead Counsel', hours: 4.5, rate: 450, description: 'Research on regulatory litigation procedures.', status: 'CLEAN' },
+      { id: 'b2', matterId: 'MAT-ORG-001', lawyer: 'Associate Counsel', hours: 2.0, rate: 300, description: 'Formatting transaction annex.', status: 'FLAGGED', auditReason: 'Non-billable clerical task flagged by audit rule 4.' }
    ]);
 
    return (
@@ -121,7 +121,7 @@ const PredictiveOps: React.FC<{ mode: AppMode }> = ({ mode }) => {
                            <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                  <div className="h-1.5 w-24 bg-slate-800 rounded-full overflow-hidden">
-                                    <div className="h-full bg-amber-500" style={{ width: `${risk.probability * 100}%` }}></div>
+                                    <div className="h-full bg-amber-500 dynamic-width" style={{ '--width': `${risk.probability * 100}%` } as any}></div>
                                  </div>
                                  <span className="text-[10px] font-mono text-slate-500">{Math.round(risk.probability * 100)}% Confidence</span>
                               </div>
@@ -185,7 +185,7 @@ const PredictiveOps: React.FC<{ mode: AppMode }> = ({ mode }) => {
                      <h5 className="font-bold text-xs text-blue-300 uppercase tracking-widest">Cross-Silo Conflict Search</h5>
                   </div>
                   <p className="text-[10px] text-slate-400 leading-relaxed">
-                     Zero-Knowledge search active. Currently scanning <strong className="text-slate-200">West Africa</strong> and <strong className="text-slate-200">EU-Germany</strong> silos for party name collisions without un-pinning data.
+                     Zero-Knowledge search active. Currently scanning <strong className="text-slate-200">Primary</strong> and <strong className="text-slate-200">Secondary</strong> silos for party name collisions without un-pinning data.
                   </p>
                   <div className="flex items-center gap-2 text-[10px] font-mono text-emerald-500">
                      <CheckCircle2 size={12} /> 0 Conflicts Detected

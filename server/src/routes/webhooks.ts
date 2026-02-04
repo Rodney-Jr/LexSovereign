@@ -3,8 +3,8 @@ import { GazetteService } from '../services/gazetteService';
 
 const router = express.Router();
 
-// Webhook endpoint for Ghana Gazette / DPC updates
-router.post('/ghana-gazette', async (req, res) => {
+// Webhook endpoint for Statutory Gazette / DPC updates
+router.post('/statutory-gazette', async (req, res) => {
     try {
         const signature = req.headers['x-gazette-sig'] as string;
 

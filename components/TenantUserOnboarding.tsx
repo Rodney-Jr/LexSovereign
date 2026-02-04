@@ -157,7 +157,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                   </div>
                   <span className="font-bold text-2xl tracking-tight text-white">Practitioner Onboarding</span>
                </div>
-               <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]">Sovereign Silo Enrollment: GH-ACC-1</p>
+               <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]">Sovereign Silo Enrollment: PRIMARY-SILO-01</p>
                {onBack && step === 1 && (
                   <button
                      onClick={onBack}
@@ -244,7 +244,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                               value={name}
                               onChange={e => setName(e.target.value)}
                               className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium"
-                              placeholder="e.g. John Doe, Esq."
+                              placeholder="e.g. Practitioner Name, Esq."
                            />
                         </div>
                         <div className="space-y-2">

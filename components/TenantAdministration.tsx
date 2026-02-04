@@ -33,10 +33,10 @@ import { authorizedFetch, getSavedSession } from '../utils/api';
 
 const TenantAdministration: React.FC = () => {
    const [users, setUsers] = useState<TenantUser[]>([
-      { id: 'u1', name: 'Kofi Mensah', email: 'k.mensah@accrapartners.gh', role: UserRole.TENANT_ADMIN, lastActive: '2m ago', mfaEnabled: true },
-      { id: 'u2', name: 'Ama Serwaa', email: 'a.serwaa@accrapartners.gh', role: UserRole.INTERNAL_COUNSEL, lastActive: '1h ago', mfaEnabled: true },
-      { id: 'u3', name: 'Desmond Tutu', email: 'd.tutu@accrapartners.gh', role: UserRole.LEGAL_OPS, lastActive: '2d ago', mfaEnabled: false },
-      { id: 'u4', name: 'Marcus Aurelius', email: 'm.aurelius@accrapartners.gh', role: UserRole.INTERNAL_COUNSEL, lastActive: '5h ago', mfaEnabled: true },
+      { id: 'u1', name: 'Admin User', email: 'admin@organization.internal', role: UserRole.TENANT_ADMIN, lastActive: '2m ago', mfaEnabled: true },
+      { id: 'u2', name: 'Senior Associate', email: 'associate.sr@organization.internal', role: UserRole.INTERNAL_COUNSEL, lastActive: '1h ago', mfaEnabled: true },
+      { id: 'u3', name: 'Legal Operations', email: 'ops@organization.internal', role: UserRole.LEGAL_OPS, lastActive: '2d ago', mfaEnabled: false },
+      { id: 'u4', name: 'Compliance Officer', email: 'compliance@organization.internal', role: UserRole.INTERNAL_COUNSEL, lastActive: '5h ago', mfaEnabled: true },
    ]);
 
    const [activeTab, setActiveTab] = useState<'users' | 'oidc' | 'templates' | 'billing' | 'chatbot'>('users');
@@ -150,7 +150,7 @@ const TenantAdministration: React.FC = () => {
                               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                               <input
                                  type="text"
-                                 placeholder="Search lawyers and staff..."
+                                 placeholder="Search personnel..."
                                  className="bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500/50 w-72"
                               />
                            </div>
@@ -259,7 +259,7 @@ const TenantAdministration: React.FC = () => {
                               </div>
                               <div>
                                  <p className="text-sm font-bold text-white">Protocol: "Sovereign-Direct"</p>
-                                 <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Master Key: GH-ACC-V2-RSA4096-LIVE</p>
+                                 <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Master Key: SOV-ORG-RSA4096-ACTIVE</p>
                               </div>
                            </div>
                            <button title="Download Security Audit" className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] hover:underline">Download Security Audit</button>
@@ -280,14 +280,14 @@ const TenantAdministration: React.FC = () => {
                               <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
                                  <div className="flex items-center justify-between">
                                     <span className="text-xs text-slate-300">Matter Prefix</span>
-                                    <span className="text-xs font-mono text-emerald-400 font-bold">ACC-GH-</span>
+                                    <span className="text-xs font-mono text-emerald-400 font-bold">MAT-ORG-</span>
                                  </div>
                                  <div className="flex items-center justify-between">
                                     <span className="text-xs text-slate-300">Sequential Padding</span>
                                     <span className="text-xs font-mono text-slate-500">4-Digits (0001)</span>
                                  </div>
                                  <div className="pt-4 border-t border-slate-800 flex justify-end">
-                                    <button title="Edit Logic" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Edit Logic</button>
+                                    <button title="Edit Prefix" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Edit Logic</button>
                                  </div>
                               </div>
                            </div>
@@ -372,7 +372,7 @@ const TenantAdministration: React.FC = () => {
                               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
                               <input
                                  type="email"
-                                 placeholder="practitioner@firm.gh"
+                                 placeholder="personnel@organization.internal"
                                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
                                  value={inviteForm.email}
                                  onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}

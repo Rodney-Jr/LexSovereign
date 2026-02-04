@@ -18,7 +18,7 @@ Access is managed via your firm's OIDC provider (Azure AD / Okta).
 ### 2.1 Ingesting Artifacts
 Documents can be uploaded directly to the vault.
 *   **AI Profiling:** The system automatically suggests Matter IDs and Jurisdictions.
-*   **Regional Pinning:** All artifacts are pinned to the **GH-ACC-1 Silo**. LexSovereign guarantees that your data never leaves the West African logical boundary.
+*   **Regional Pinning:** All artifacts are pinned to the **SOV-PR-1 Silo**. LexSovereign guarantees that your data never leaves the primary logical boundary.
 
 ---
 
@@ -28,7 +28,7 @@ Documents can be uploaded directly to the vault.
 Interact with your documents using **Gemini 3 Pro**. Every AI response includes **Sovereign Citations** that link back to the specific source document in the vault.
 
 ### 3.2 Sovereign Research Grounding
-Activate the **Research Toggle** in chat to verify current case law or statutory updates (e.g., "What is the current BoG policy on e-money?"). 
+Interact with the **Research Toggle** in chat to verify current case law or statutory updates (e.g., "What is the current Sovereign policy on digital assets?"). 
 *   The system uses Google Search grounding.
 *   **PII-Scrubbing:** Your query is redacted by the DAS Proxy *before* it leaves the silo, ensuring no client identifiers are leaked to external search engines.
 

@@ -3,15 +3,15 @@ import { RegulatoryRule, DocumentMetadata, AppMode, UserRole, Matter, Region } f
 
 
 export const INITIAL_RULES: RegulatoryRule[] = [
-  { id: 'REG-001', name: 'GDPR Data Sovereignty', description: 'Ensure EU user data remains within EU enclaves.', region: Region.GERMANY, isActive: true, authority: 'EU Commission', triggerKeywords: ['personal data', 'eu citizen'], blockThreshold: 0.8 },
+  { id: 'REG-001', name: 'GDPR Data Sovereignty', description: 'Ensure EU user data remains within EU enclaves.', region: Region.GLOBAL, isActive: true, authority: 'EU Commission', triggerKeywords: ['personal data', 'eu citizen'], blockThreshold: 0.8 },
   { id: 'REG-002', name: 'CCPA Consumer Rights', description: 'Enforce right to deletion for CA residents.', region: Region.USA, isActive: true, authority: 'California State', triggerKeywords: ['california', 'consumer'], blockThreshold: 0.7 },
   { id: 'REG-003', name: 'Banking Secrecy Act', description: 'Flag transactions over $10k for review.', region: Region.USA, isActive: false, authority: 'FinCEN', triggerKeywords: ['transaction', 'structuring'], blockThreshold: 0.9 }
 ];
 
 export const INITIAL_DOCS: DocumentMetadata[] = [
-  { id: 'DOC-101', name: 'Merger Agreement v4.pdf', type: 'Contract', size: '2.4 MB', uploadedBy: 'Jane Doe', uploadedAt: '10:42 AM', region: Region.USA, classification: 'Privileged' },
+  { id: 'DOC-101', name: 'Merger Agreement v4.pdf', type: 'Contract', size: '2.4 MB', uploadedBy: 'Lead Counsel', uploadedAt: '10:42 AM', region: Region.USA, classification: 'Privileged' },
   { id: 'DOC-102', name: 'Financial Audit 2023.xlsx', type: 'Financial', size: '8.1 MB', uploadedBy: 'System', uploadedAt: '09:15 AM', region: Region.USA, classification: 'Confidential' },
-  { id: 'DOC-103', name: 'Employee Handbook.docx', type: 'Policy', size: '1.2 MB', uploadedBy: 'HR Bot', uploadedAt: 'Yesterday', region: Region.USA, classification: 'Internal' }
+  { id: 'DOC-103', name: 'Employee Handbook.docx', type: 'Policy', size: '1.2 MB', uploadedBy: 'Operations', uploadedAt: 'Yesterday', region: Region.USA, classification: 'Internal' }
 ];
 
 // Replaced Role-based map with Permission-based map
@@ -72,12 +72,12 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
 export const INITIAL_MATTERS: Matter[] = [
   {
-    id: 'MT-772',
-    name: 'Shareholder Restructuring',
-    client: 'Accra Global Partners',
-    type: 'Litigation',
-    internalCounsel: 'Jane Doe',
-    region: Region.GHANA,
+    id: 'MAT-GEN-001',
+    name: 'Standard Corporate Restructuring',
+    client: 'Strategic Partners Group',
+    type: 'Corporate',
+    internalCounsel: 'Senior Counsel',
+    region: Region.PRIMARY,
     status: 'Open',
     riskLevel: 'Medium',
     createdAt: '2024-05-01'

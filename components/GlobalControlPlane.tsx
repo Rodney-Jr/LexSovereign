@@ -44,10 +44,10 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
    ]);
 
    const regionalSilos = [
-      { id: Region.GHANA, name: 'West Africa', nodes: 12, health: 100, latency: '12ms', status: 'Active' },
-      { id: Region.GERMANY, name: 'EU Central', nodes: 24, health: 98, latency: '34ms', status: 'Maintenance' },
-      { id: Region.SINGAPORE, name: 'APAC South', nodes: 8, health: 100, latency: '48ms', status: 'Active' },
-      { id: Region.USA, name: 'US East', nodes: 64, health: 100, latency: '8ms', status: 'Active' },
+      { id: Region.PRIMARY, name: 'Silo Alpha', nodes: 12, health: 100, latency: '12ms', status: 'Active' },
+      { id: Region.SECONDARY, name: 'Silo Beta', nodes: 24, health: 98, latency: '34ms', status: 'Maintenance' },
+      { id: Region.GLOBAL, name: 'Global Cluster', nodes: 8, health: 100, latency: '48ms', status: 'Active' },
+      { id: Region.USA, name: 'US Cluster', nodes: 64, health: 100, latency: '8ms', status: 'Active' },
    ];
 
    const handleGlobalSync = () => {
@@ -168,7 +168,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                            <div className="space-y-3">
                               <ModelRow name="Gemini 3 Pro" regions="Global" users="Sovereign+" version="v1.2.4" status="PROD" />
                               <ModelRow name="Gemini 3 Flash" regions="Global" users="Standard" version="v2.0.1" status="PROD" />
-                              <ModelRow name="Llama-3-Sovereign-70B" regions="GH, DE" users="Enclave Only" version="v0.9.8" status="BETA" />
+                              <ModelRow name="Llama-3-Sovereign-70B" regions="Primary, Secondary" users="Enclave Only" version="v0.9.8" status="BETA" />
                            </div>
                         </div>
                      </div>
@@ -194,8 +194,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                               <div className="space-y-4">
                                  <p className="text-[10px] font-bold text-slate-500 uppercase px-1">Global Audit Pulse</p>
                                  <div className="bg-slate-950 rounded-2xl p-4 font-mono text-[9px] h-40 overflow-y-auto space-y-2 border border-slate-900">
-                                    <p className="text-cyan-500/80">&gt; Silo-GH-ACC-01 Heartbeat: OK</p>
-                                    <p className="text-cyan-500/80">&gt; Quota Rebalance: ACCRA_LTD (+500c)...</p>
+                                    <p className="text-cyan-500/80">&gt; Silo-PRIMARY-01 Heartbeat: OK</p>
+                                    <p className="text-cyan-500/80">&gt; Quota Rebalance: ORG_LTD (+500c)...</p>
                                     <p className="text-amber-500/80">&gt; Warning: Latency Spike DE-FRA-1 (42ms)</p>
                                     <p className="text-cyan-500/80">&gt; DAS-Proxy-Handshake: Verified x420</p>
                                  </div>

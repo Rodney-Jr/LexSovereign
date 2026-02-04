@@ -40,7 +40,7 @@ const ArchitectureMap: React.FC = () => {
             <div className="absolute top-0 right-0 p-4 opacity-10 text-brand-primary">
               <ShieldCheck size={120} />
             </div>
-            <h4 className="text-xs font-bold uppercase text-brand-muted mb-6">Regional Silo (Ghana/EU)</h4>
+            <h4 className="text-xs font-bold uppercase text-brand-muted mb-6">Regional Silo (Primary/Global)</h4>
             <div className="space-y-6 relative z-10">
               <div className="flex items-center gap-4 justify-between">
                 <div className="flex flex-col items-center">
@@ -80,7 +80,7 @@ const ArchitectureMap: React.FC = () => {
         <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <Globe className="text-purple-400 mb-4" />
           <h5 className="font-bold text-sm mb-2">Hybrid Residency</h5>
-          <p className="text-xs text-slate-400">Metadata in US-East-1 (Railway); Legal artifacts in GH-ACC-1 (Regional S3).</p>
+          <p className="text-xs text-slate-400">Metadata in Cloud-Region; Legal artifacts in Primary-Silo.</p>
         </div>
       </div>
     </div>

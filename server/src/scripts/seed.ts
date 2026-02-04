@@ -213,9 +213,9 @@ async function main() {
         { id: 'REG-001', name: 'GDPR Data Sovereignty', description: 'Ensure EU user data remains within EU enclaves.', region: 'EU', isActive: true, authority: 'EU Commission', triggerKeywords: ['personal data', 'eu citizen'], blockThreshold: 0.8 },
         { id: 'REG-002', name: 'CCPA Consumer Rights', description: 'Enforce right to deletion for CA residents.', region: 'US', isActive: true, authority: 'California State', triggerKeywords: ['california', 'consumer'], blockThreshold: 0.7 },
         { id: 'REG-003', name: 'Banking Secrecy Act', description: 'Flag transactions over $10k for review.', region: 'US', isActive: false, authority: 'FinCEN', triggerKeywords: ['transaction', 'structuring'], blockThreshold: 0.9 },
-        // Ghana Specific Rules (Since we are GH_ACC_1)
-        { id: 'REG-GH-001', name: 'Data Protection Act, 2012 (Act 843)', description: 'Mandates registration of data controllers and protects personal data.', region: 'GH_ACC_1', isActive: true, authority: 'Data Protection Commission', triggerKeywords: ['ghana card', 'digital address', 'personal data'], blockThreshold: 0.85 },
-        { id: 'REG-GH-002', name: 'BoG AML/CFT Guidelines', description: 'Anti-Money Laundering monitoring for suspicious transactions.', region: 'GH_ACC_1', isActive: true, authority: 'Bank of Ghana', triggerKeywords: ['laundering', 'structuring', 'suspicious'], blockThreshold: 0.9 }
+        // Jurisdictional Specific Rules
+        { id: 'REG-SOV-001', name: 'Data Protection Act (Section A)', description: 'Mandates registration of data controllers and protects personal data.', region: 'SOV_ENCLAVE_1', isActive: true, authority: 'Regulator Alpha', triggerKeywords: ['national id', 'digital address', 'personal data'], blockThreshold: 0.85 },
+        { id: 'REG-SOV-002', name: 'AML/CFT Guidelines', description: 'Anti-Money Laundering monitoring for suspicious transactions.', region: 'SOV_ENCLAVE_1', isActive: true, authority: 'Regulator Beta', triggerKeywords: ['laundering', 'structuring', 'suspicious'], blockThreshold: 0.9 }
     ];
 
     console.log('🌱 Seeding Regulatory Rules...');

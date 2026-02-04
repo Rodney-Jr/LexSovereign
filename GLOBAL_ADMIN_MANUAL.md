@@ -17,7 +17,7 @@ The **Platform Gateway** is hidden from standard users to prevent brute-force di
 
 ### 2.1 Regional Silo Topography
 Monitor the health and latency of logical partitions globally:
-*   **West Africa (GH-ACC-1):** Primary cluster for Ghana-pinned data.
+*   **Region Alpha (SOV-PR-1):** Primary cluster for pinned jurisdictional data.
 *   **EU Central (DE-FRA-1):** GDPR-exclusive partition.
 *   **APAC / US:** Standard regional enclaves.
 
@@ -45,7 +45,7 @@ In the event of a compromised Corporate Identity Provider (IdP), the **Security 
 ## 4. Federated Infrastructure (Advanced)
 
 ### 4.1 ZK-Conflict Index Maintenance
-Global Admins manage the **Encrypted Collision Index**. This index contains only SHA-256 hashes of party names. You are responsible for ensuring that indices from different regional silos (e.g., GH and DE) are synchronized without the underlying names ever leaving their home region.
+Global Admins manage the **Encrypted Collision Index**. This index contains only SHA-256 hashes of party names. You are responsible for ensuring that indices from different regional silos are synchronized without the underlying names ever leaving their home region.
 
 ### 4.2 Bridge Registry & Tunnels
 Manage the **Bridge Registry** to facilitate "Matter Tunnels." As a Global Admin, you monitor the health of these E2EE tunnels but cannot inspect the data flowing through them. Multi-sig approval is required to provision a new cross-tenant bridge.

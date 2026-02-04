@@ -52,7 +52,7 @@ const MatterWorkflow: React.FC = () => {
       title: 'Sovereignty Pinning',
       icon: <Globe size={24} />,
       color: 'blue',
-      desc: 'Data is physically routed to the Accra-GH-1 regional silo. Cross-border transit is blocked.',
+      desc: 'Data is physically routed to the primary regional silo. Cross-border transit is blocked.',
       security: 'Regional IP-Pinning'
     },
     {
@@ -76,8 +76,8 @@ const MatterWorkflow: React.FC = () => {
       title: 'Regulatory Intercept',
       icon: <Scale size={24} />,
       color: 'amber',
-      desc: 'RRE Engine checks AI output against GBA/BoG rules for unauthorized legal advice triggers.',
-      security: 'GBA Rules Engine v2.4'
+      desc: 'RRE Engine checks AI output against jurisdictional rules for unauthorized legal advice triggers.',
+      security: 'Regulatory Rules Engine v2.4'
     },
     {
       id: 'AUDIT',
@@ -116,7 +116,7 @@ const MatterWorkflow: React.FC = () => {
       } else {
         clearInterval(interval);
         setIsTracing(false);
-        setResolutionHash(`SOV-${Math.random().toString(16).slice(2, 10).toUpperCase()}-GH1`);
+        setResolutionHash(`SOV-${Math.random().toString(16).slice(2, 10).toUpperCase()}-PRI`);
         addTraceLog("MATTER LIFECYCLE: RESOLVED & SEALED.");
       }
     }, 1200);
@@ -132,7 +132,7 @@ const MatterWorkflow: React.FC = () => {
             </div>
             End-to-End Matter Orchestration
           </h3>
-          <p className="text-slate-400 text-sm">Visualizing the 8-stage Zero-Knowledge lifecycle of Matter MT-772.</p>
+          <p className="text-slate-400 text-sm">Visualizing the 8-stage Zero-Knowledge lifecycle of Matter MAT-ORG-001.</p>
         </div>
 
         <div className="flex items-center gap-4">
@@ -229,7 +229,7 @@ const MatterWorkflow: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-xl font-bold text-white">Matter Resolution</h4>
-                  <p className="text-[10px] text-emerald-400 uppercase font-bold tracking-widest">MT-772 Cryptographically Sealed</p>
+                  <p className="text-[10px] text-emerald-400 uppercase font-bold tracking-widest">MAT-ORG-001 Cryptographically Sealed</p>
                 </div>
                 <div className="bg-slate-950/80 p-4 rounded-2xl border border-emerald-500/20">
                   <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Final Resolution Hash</p>
@@ -256,7 +256,7 @@ const MatterWorkflow: React.FC = () => {
               </h4>
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-[10px] font-mono text-emerald-500 uppercase">GH-HSM-ACTIVE</span>
+                <span className="text-[10px] font-mono text-emerald-500 uppercase">HSM-ACTIVE</span>
               </div>
             </div>
 

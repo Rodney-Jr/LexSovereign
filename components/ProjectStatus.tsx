@@ -8,9 +8,9 @@ const ProjectStatus: React.FC = () => {
   const [lastScan, setLastScan] = useState(new Date().toLocaleTimeString());
   const [activeNodes, setActiveNodes] = useState(12);
   const [securityEvents, setSecurityEvents] = useState<string[]>([
-    "KMS Key Rotation GH-ACC-01 successful",
-    "GBA Rule Intercept: Legal Advice Trigger Blocked",
-    "OIDC Handshake: Accra Partners verified",
+    "KMS Key Rotation: Vault Enclave successful",
+    "Regulatory Rule Intercept: Advice Trigger Blocked",
+    "OIDC Handshake: Strategic Partners verified",
     "Logical Silo integrity check: 100% compliant"
   ]);
 
@@ -25,8 +25,8 @@ const ProjectStatus: React.FC = () => {
           "Logical Enclave heartbeat verified",
           "DAS Proxy re-indexing complete",
           "Regional egress attempt: DENIED",
-          "GBA Regulatory cache refreshed",
-          "BoG AML Proof accepted: MT-772"
+          "Jurisdictional Regulatory cache refreshed",
+          "Compliance Audit Proof accepted: MAT-ORG-001"
         ];
         const randomEvent = events[Math.floor(Math.random() * events.length)] || "System Check";
         setSecurityEvents(prev => [randomEvent, ...prev.slice(0, 3)]);
@@ -51,15 +51,15 @@ const ProjectStatus: React.FC = () => {
         />
         <StatusCard
           title="Data Residency"
-          status="Ghana Pinned"
+          status="Jurisdiction Pinned"
           progress={100}
           icon={<Globe className="text-blue-400" />}
           color="blue"
-          detail="West Africa Silo Enforced"
+          detail="Primary Silo Enforced"
         />
         <StatusCard
           title="Intelligence Layer"
-          status="GBA Rules Active"
+          status="Regulatory Guardrails Active"
           progress={98}
           icon={<ShieldCheck className="text-purple-400" />}
           color="purple"
@@ -73,11 +73,11 @@ const ProjectStatus: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Rocket className="text-emerald-400" size={24} />
-              <h3 className="text-2xl font-bold tracking-tight text-white">Sovereignty Roadmap (GhanaContext)</h3>
+              <h3 className="text-2xl font-bold tracking-tight text-white">Sovereignty Roadmap</h3>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
               <Activity size={12} className="text-emerald-500" />
-              BUILD: v1.2-GHANA-SOVEREIGN
+              BUILD: v1.2-GEN-SOVEREIGN
             </div>
           </div>
 
@@ -85,8 +85,8 @@ const ProjectStatus: React.FC = () => {
             <div className="space-y-10 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800/60">
               <RoadmapItem
                 phase="Current: Phase 1"
-                title="Logical Sovereignty & GBA Rules"
-                description="Deployment of isolated cloud partitions with Ghana-specific regulatory guardrails and Cloud-KMS key management."
+                title="Logical Sovereignty & Guardrails"
+                description="Deployment of isolated cloud partitions with jurisdiction-specific regulatory guardrails and Cloud-KMS key management."
                 completed={true}
               />
               <RoadmapItem
@@ -147,7 +147,7 @@ const ProjectStatus: React.FC = () => {
             <div className="space-y-4">
               <IntegrityLine label="Logical Silo Isolation" status="ENFORCED" active={true} icon={<Globe size={12} />} />
               <IntegrityLine label="Cloud-KMS Handshake" status="ACTIVE" active={true} icon={<Lock size={12} />} />
-              <IntegrityLine label="GBA Rule Intercept" status="READY" active={true} icon={<Layers size={12} />} />
+              <IntegrityLine label="Regulatory Rule Intercept" status="READY" active={true} icon={<Layers size={12} />} />
               <IntegrityLine label="PII Scrubbing Proxy" status="FILTERING" active={true} icon={<Fingerprint size={12} />} />
             </div>
 
@@ -167,10 +167,10 @@ const ProjectStatus: React.FC = () => {
               <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
                 <ShieldAlert className="text-blue-400" size={20} />
               </div>
-              <h4 className="font-bold text-sm text-blue-300">Ghana Privacy Act</h4>
+              <h4 className="font-bold text-sm text-blue-300">Data Privacy Act</h4>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed italic">
-              "Logical isolation ensures that Ghana Data Protection Commission (DPC) standards are met by pinning executing context to regional boundaries without requiring physical server ownership."
+              "Logical isolation ensures that jurisdictional Data Protection standards are met by pinning executing context to regional boundaries without requiring physical server ownership."
             </p>
           </div>
         </div>
@@ -196,8 +196,8 @@ const StatusCard = ({ title, status, progress, icon, color, detail }: any) => (
       </div>
       <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
         <div
-          className={`h-full bg-${color}-500 rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(var(--color-rgb),0.5)]`}
-          style={{ width: `${progress}%` }}
+          className={`h-full bg-${color}-500 rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(var(--color-rgb),0.5)] dynamic-width`}
+          style={{ '--width': `${progress}%` } as any}
         ></div>
       </div>
     </div>
@@ -207,8 +207,8 @@ const StatusCard = ({ title, status, progress, icon, color, detail }: any) => (
 const RoadmapItem = ({ phase, title, description, completed, inProgress }: any) => (
   <div className="relative pl-12 group/item">
     <div className={`absolute left-[0.15rem] top-1 w-7 h-7 rounded-xl z-10 border-2 transition-all duration-700 flex items-center justify-center ${completed ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]' :
-        inProgress ? 'bg-slate-950 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]' :
-          'bg-slate-950 border-slate-800 opacity-50'
+      inProgress ? 'bg-slate-950 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]' :
+        'bg-slate-950 border-slate-800 opacity-50'
       }`}>
       {completed ? <CheckCircle2 size={16} className="text-slate-950" /> :
         inProgress ? <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div> :

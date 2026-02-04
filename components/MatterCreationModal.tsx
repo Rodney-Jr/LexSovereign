@@ -43,7 +43,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
     client: '',
     type: isFirm ? 'Litigation' : 'Corporate Governance',
     internalCounsel: '',
-    region: Region.GHANA,
+    region: Region.PRIMARY,
     description: '',
     riskLevel: 'Medium' as 'Low' | 'Medium' | 'High',
     dasLevel: 2,
@@ -131,7 +131,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                 <Briefcase className="text-blue-400" size={24} />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white tracking-tight">Advanced Matter Inception</h3>
+                <h3 className="text-xl font-bold text-white tracking-tight">Matter Inception</h3>
                 <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em]">Tenant Administrator Protocol</p>
               </div>
             </div>
@@ -165,7 +165,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
           {step === 1 && (
             <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
               <div className="grid grid-cols-2 gap-8">
-                <MetadataInput label="Matter Name" placeholder="e.g. Project Sunbird Restructure" value={formData.name} onChange={(v: string) => setFormData({ ...formData, name: v })} />
+                <MetadataInput label="Matter Name" placeholder="e.g. Standard Corporate Restructure" value={formData.name} onChange={(v: string) => setFormData({ ...formData, name: v })} />
                 <MetadataInput label={isFirm ? "Client Entity" : "Internal Business Unit"} placeholder="Search verified directory..." value={formData.client} onChange={(v: string) => setFormData({ ...formData, client: v })} />
               </div>
               <div className="space-y-2.5">
@@ -274,8 +274,8 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
               <div className="space-y-4">
                 <InterceptorCard
                   active={true}
-                  label={isFirm ? "GBA Ethical Intercept v2.4" : "BoG Compliance Auditor"}
-                  desc={isFirm ? "Blocks definitive legal advice triggers for non-verified practitioners." : "Scans for Bank of Ghana AML/KYC trigger events automatically."}
+                  label={isFirm ? "Ethical Intercept v2.4" : "Compliance Auditor"}
+                  desc={isFirm ? "Blocks definitive legal advice triggers for non-verified practitioners." : "Scans for AML/KYC trigger events automatically."}
                 />
                 <InterceptorCard
                   active={true}
@@ -286,7 +286,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                   <InterceptorCard
                     active={true}
                     label="Scale of Fees Enforcement"
-                    desc="Automated audit of time entries against Ghana statutory fee scales."
+                    desc="Automated audit of time entries against statutory fee scales."
                   />
                 )}
               </div>
@@ -296,7 +296,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                 <div className="space-y-1">
                   <p className="text-base font-bold text-white">Sovereign Key Handshake Ready</p>
                   <p className="text-xs text-slate-400 leading-relaxed italic">
-                    "Finalizing inception will generate a unique matter root key in the Accra HSM. Only authorized team members can sign session tokens for this artifact."
+                    "Finalizing inception will generate a unique matter root key in the primary HSM. Only authorized team members can sign session tokens for this artifact."
                   </p>
                 </div>
               </div>

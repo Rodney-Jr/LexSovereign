@@ -9,8 +9,8 @@ While the UI demonstrates the "BYOK Handshake," production requires a physical *
 
 ## 2. Infrastructure-as-Code for Regional Silos
 We need to turn our "Logical Silo" concept into immutable infrastructure.
-*   **Action:** Develop **Terraform/Pulumi provider modules** that specifically restrict resource deployment to the **af-south-1** (Cape Town) or future West African regions.
-*   **Enforcement:** Implement **Service Control Policies (SCPs)** that physically block any `S3:PutObject` or `DB:Write` operations if the metadata header doesn't match the tenant's pinned jurisdiction (e.g., `x-sov-pin: GH-ACC-1`).
+*   **Action:** Develop **Terraform/Pulumi provider modules** that specifically restrict resource deployment to jurisdictional regions.
+*   **Enforcement:** Implement **Service Control Policies (SCPs)** that physically block any `S3:PutObject` or `DB:Write` operations if the metadata header doesn't match the tenant's pinned jurisdiction (e.g., `x-sov-pin: PLATFORM-PRIMARY-1`).
 
 ## 3. The Dual-Agent "Auditor" Implementation
 The current RRE (Regulatory Rules Engine) is a single-call logic. Production requires an adversarial setup.
@@ -19,12 +19,12 @@ The current RRE (Regulatory Rules Engine) is a single-call logic. Production req
 
 ## 4. PII Sanitization Proxy (The "DAS" Engine)
 The **Data Access Service** must move beyond basic regex to semantic NER.
-*   **Action:** Integrate a dedicated **Named Entity Recognition (NER) pipeline** (using SpaCy or a fine-tuned BERT model) that understands jurisdictional-specific identifiers (e.g., Ghana Digital Address codes, NHIS numbers).
+*   **Action:** Integrate a dedicated **Named Entity Recognition (NER) pipeline** (using SpaCy or a fine-tuned BERT model) that understands jurisdictional-specific identifiers (e.g., National ID codes, Digital Address codes).
 *   **Behavior:** All text flowing into the Gemini 3 Pro context window must be tokenized and replaced with deterministic salts (e.g., `[CLIENT_NAME_A]`) so the AI performs logic on the *structure* of the matter, not the *identity* of the parties.
 
 ## 5. Jurisdictional Statutory Sync
 The "Guardrails" are currently static constants.
-*   **Action:** Establish a **Statutory Webhook** that pulls live updates from the **Ghana Gazette** and **Bank of Ghana (BoG)** circulars.
+*   **Action:** Establish a **Statutory Webhook** that pulls live updates from Official Statutory Gazettes and Regulatory circulars.
 *   **Verification:** These updates should be cryptographically signed by the Silo Admin before they are promoted to the active RRE rule set, ensuring no "Shadow Law" or prompt-injection can alter the firm's compliance posture.
 
 ## Summary Production Milestones
@@ -34,4 +34,4 @@ The "Guardrails" are currently static constants.
 | **Q3 2024** | **Hardware Anchor** | FIPS 140-2 HSM Key Wrapping & BYOK |
 | **Q4 2024** | **Silo Hardening** | SCP-driven regional pinning & Zero-Egress networking |
 | **Q1 2025** | **Adversarial Audit** | Dual-Agent UPL Interception & PII Scrubbing |
-| **Q2 2025** | **Compliance Cert** | SOC2 Type II & Ghana DPC Certification |
+| **Q2 2025** | **Compliance Cert** | SOC2 Type II & Regional Data Protection Certification |

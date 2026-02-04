@@ -60,7 +60,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
   const [formData, setFormData] = useState({
     name: '',
     plan: SaaSPlan.SOVEREIGN,
-    region: Region.GHANA,
+    region: Region.PRIMARY,
     encryption: 'SYSTEM',
     adminEmail: '',
     adminPassword: ''
@@ -116,7 +116,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
       // Visual sequence
       const sequence = [
         `Initializing ${formData.plan} Instance...`,
-        "Software-Defined Silo: GH-ACC-1 allocated.",
+        "Software-Defined Silo: Allocated.",
         "Binding Logical Context to Regional IP-Pin...",
         formData.plan === SaaSPlan.SOVEREIGN ? "Provisioning BYOK Handshake Gateway..." : "Generating System-Managed Master Key...",
         "Sovereign Trust Chain pinned. HSM Handshake Complete."
@@ -223,7 +223,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                   onClick={() => setEntityType(AppMode.LAW_FIRM)}
                   icon={<Scale size={28} />}
                   title="Route A: Law Firm"
-                  desc="Provision a Digital Chambers with GBA Ethical Interceptors enabled by default."
+                  desc="Provision a Digital Chambers with Professional Ethical Interceptors enabled by default."
                   color="blue"
                   sub="SOVEREIGN CHAMBERS"
                 />
@@ -232,7 +232,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                   onClick={() => setEntityType(AppMode.ENTERPRISE)}
                   icon={<Briefcase size={28} />}
                   title="Route B: Legal Dept"
-                  desc="Provision an Enterprise Enclave with BoG Compliance and OCG Audit logic."
+                  desc="Provision an Enterprise Enclave with Jurisdictional Compliance and OCG Audit logic."
                   color="purple"
                   sub="ENTERPRISE ENCLAVE"
                 />
@@ -243,7 +243,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Legal Entity Identity</label>
                   <input
                     className="w-full bg-slate-950 border border-slate-800 rounded-[1.5rem] px-6 py-4 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-slate-800"
-                    placeholder={entityType === AppMode.ENTERPRISE ? "e.g. Ghana Telecom Corp" : "e.g. Accra Global Partners"}
+                    placeholder={entityType === AppMode.ENTERPRISE ? "e.g. Enterprise Global Corp" : "e.g. Strategic Partners Group"}
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -254,7 +254,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                     <input
                       type="email"
                       className="w-full bg-slate-950 border border-slate-800 rounded-[1.5rem] px-6 py-4 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-slate-800"
-                      placeholder="admin@firm.gh"
+                      placeholder="admin@organization.internal"
                       value={formData.adminEmail}
                       onChange={e => setFormData({ ...formData, adminEmail: e.target.value })}
                     />
@@ -283,15 +283,15 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                   <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Globe className="text-emerald-400" size={20} /></div>
                   Regional Silo Residency
                 </h3>
-                <p className="text-slate-400 text-sm max-w-lg leading-relaxed">Select your logical data pinning silo. This ensures compliance with regional Data Protection Commission (DPC) standards.</p>
+                <p className="text-slate-400 text-sm max-w-lg leading-relaxed">Select your logical data pinning silo. This ensures compliance with regional Data Protection standards.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SiloCard
-                  region={Region.GHANA}
-                  active={formData.region === Region.GHANA}
-                  onSelect={() => setFormData({ ...formData, region: Region.GHANA })}
-                  cluster="West Africa - Accra Primary"
+                  region={Region.PRIMARY}
+                  active={formData.region === Region.PRIMARY}
+                  onSelect={() => setFormData({ ...formData, region: Region.PRIMARY })}
+                  cluster="Jurisdictional Primary Silo"
                   latency="12ms"
                 />
                 <div className="p-8 rounded-[2.5rem] border border-slate-900 bg-slate-950/40 opacity-30 cursor-not-allowed flex flex-col justify-center items-center gap-4 text-center grayscale">
@@ -383,12 +383,12 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
               <div className="space-y-4">
                 {entityType === AppMode.LAW_FIRM ? (
                   <>
-                    <InterceptorToggle active={true} icon={<Scale size={16} />} label="GBA Ethics & UPL Intercept" desc="Blocks advice triggers for non-verified practitioners." />
-                    <InterceptorToggle active={formData.plan !== SaaSPlan.STANDARD} icon={<Activity size={16} />} label="Scale of Fees Auditor" desc="Real-time compliance checks for Ghana legal billing." />
+                    <InterceptorToggle active={true} icon={<Scale size={16} />} label="Ethics & UPL Intercept" desc="Blocks advice triggers for non-verified practitioners." />
+                    <InterceptorToggle active={formData.plan !== SaaSPlan.STANDARD} icon={<Activity size={16} />} label="Scale of Fees Auditor" desc="Real-time compliance checks for jurisdictional legal billing." />
                   </>
                 ) : (
                   <>
-                    <InterceptorToggle active={true} icon={<Layers size={16} />} label="BoG Compliance Auditor" desc="Scans for Bank of Ghana AML/KYC trigger events." />
+                    <InterceptorToggle active={true} icon={<Layers size={16} />} label="Regulatory Compliance Auditor" desc="Scans for regional AML/KYC trigger events." />
                     <InterceptorToggle active={formData.plan !== SaaSPlan.STANDARD} icon={<ShieldAlert size={16} />} label="OCG Expenditure Policy" desc="Ensures external spend matches corporate guidelines." />
                   </>
                 )}
@@ -405,7 +405,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
               <div className="bg-slate-950 border border-slate-800 rounded-[2.5rem] p-10 space-y-8 w-full max-w-2xl shadow-inner text-center">
                 <h4 className="text-2xl font-bold text-white">Sovereign Admin Oath</h4>
                 <p className="text-slate-500 text-xs font-medium uppercase tracking-widest italic leading-relaxed">
-                  "I acknowledge that this Silo operates on the <strong className="text-emerald-500">{formData.plan}</strong> Tier. I accept regional pinning to GH-ACC-1 and verify that all AI outputs will be human-reviewed."
+                  "I acknowledge that this Silo operates on the <strong className="text-emerald-500">{formData.plan}</strong> Tier. I accept regional pinning and verify that all AI outputs will be human-reviewed."
                 </p>
                 <label className="flex items-center gap-5 cursor-pointer group p-6 bg-slate-900 border border-slate-800 rounded-3xl transition-all hover:border-emerald-500/30 text-left">
                   <div className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center transition-all ${affidavitSigned ? 'bg-emerald-500 border-emerald-500' : 'bg-slate-950 border-slate-700'}`}>

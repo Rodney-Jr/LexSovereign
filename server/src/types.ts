@@ -119,10 +119,10 @@ export enum PrivilegeStatus {
 }
 
 export enum Region {
-    GHANA = 'GH-ACC-1',
-    GERMANY = 'DE-FRA-1',
-    USA = 'US-EAS-1',
-    SINGAPORE = 'SG-SIN-1'
+    PRIMARY = 'SOV-PR-1',
+    SECONDARY = 'SOV-SC-1',
+    GLOBAL = 'GL-ALL-1',
+    USA = 'US-EAS-1'
 }
 
 export enum ReviewStatus {

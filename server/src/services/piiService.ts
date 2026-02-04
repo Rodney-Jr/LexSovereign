@@ -3,18 +3,18 @@
  * Data Access Service that scrubs sensitive information before LLM inference.
  */
 
-// Regex patterns for common Ghana/Legal entities
+// Regex patterns for common jurisdictional/Legal entities
 const PATTERNS = {
     // GH-PostGPS (e.g., GA-183-8164)
     DIGITAL_ADDRESS: /\b[A-Z]{2}-\d{3}-\d{4}\b/g,
-    // Ghana Card (e.g., GHA-123456789-0)
-    GHANA_CARD: /\bGHA-\d{9}-\d\b/g,
+    // National ID Card (e.g., ID-123456789-0)
+    NATIONAL_ID: /\b[A-Z]{3}-\d{9}-\d\b/g,
     // Emails
     EMAIL: /\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/g,
-    // Phone Numbers (Ghana formats)
-    PHONE: /\b(\+233|0)[235][0-9]{8}\b/g,
-    // Currency (GHS 1,000.00)
-    CURRENCY: /\bGHS\s?[\d,]+(\.\d{2})?\b/g
+    // Phone Numbers (Standard formats)
+    PHONE: /\b(\+\d{1,3}|0)[0-9]{9,10}\b/g,
+    // Currency (Base unit 1,000.00)
+    CURRENCY: /\b[A-Z]{3}\s?[\d,]+(\.\d{2})?\b/g
 };
 
 export class PiiService {
@@ -49,7 +49,7 @@ export class PiiService {
         };
 
         replace(PATTERNS.DIGITAL_ADDRESS, 'GEO_LOC');
-        replace(PATTERNS.GHANA_CARD, 'GOV_ID');
+        replace(PATTERNS.NATIONAL_ID, 'GOV_ID');
         replace(PATTERNS.EMAIL, 'CONTACT_EMAIL');
         replace(PATTERNS.PHONE, 'CONTACT_PHONE');
         replace(PATTERNS.CURRENCY, 'MONETARY_VAL');

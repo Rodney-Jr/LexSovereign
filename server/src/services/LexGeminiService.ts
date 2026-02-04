@@ -55,7 +55,7 @@ export class LexGeminiService {
         // 1. PII Sanitization (DAS Engine)
         const { sanitized, entityMap } = PiiService.sanitize(input);
 
-        // Search Ghana Legal Knowledge Base
+        // Search Jurisdictional Legal Knowledge Base
         let legalKnowledge = "";
         try {
             // Naive search: Find docs containing the user query or key terms
@@ -71,7 +71,7 @@ export class LexGeminiService {
             });
 
             if (artifacts.length > 0) {
-                legalKnowledge = "GHANA LEGAL ARCHIVES (OFFICIAL):\n" +
+                legalKnowledge = "LEGAL ARCHIVES (OFFICIAL):\n" +
                     artifacts.map(a => `[Source: ${a.title} (${a.category})]\n${a.content.substring(0, 2000)}...`).join('\n\n');
             }
         } catch (e) {

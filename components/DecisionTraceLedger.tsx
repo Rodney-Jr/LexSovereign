@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
-import { 
-  ShieldCheck, 
-  Search, 
-  Filter, 
-  FileText, 
-  Cpu, 
-  UserCheck, 
-  Lock, 
-  AlertCircle, 
-  Activity, 
-  Clock, 
-  Hash, 
+import {
+  ShieldCheck,
+  Search,
+  Filter,
+  FileText,
+  Cpu,
+  UserCheck,
+  Lock,
+  AlertCircle,
+  Activity,
+  Clock,
+  Hash,
   ChevronRight,
   ShieldAlert,
   Terminal,
@@ -26,7 +26,7 @@ const SAMPLE_LOGS: AuditLogEntry[] = [
     action: 'Contract Summary',
     model: 'gemini-3-pro-preview',
     promptVersion: 'p-legal-v4.2',
-    approvalToken: 'APP-992-KMENSAH',
+    approvalToken: 'APP-992-LEGAL-SR',
     confidenceScore: 0.94,
     status: 'PROCEEDED'
   },
@@ -56,7 +56,7 @@ const SAMPLE_LOGS: AuditLogEntry[] = [
     action: 'Privileged Redline',
     model: 'llama-3-70b-enclave',
     promptVersion: 'p-priv-v2.0',
-    approvalToken: 'APP-995-ASERWAA',
+    approvalToken: 'APP-995-COUNSEL',
     confidenceScore: 0.98,
     status: 'PROCEEDED'
   }
@@ -80,13 +80,13 @@ const DecisionTraceLedger: React.FC = () => {
         <div className="flex items-center gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Filter by Token or ID..."
               className="bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
             />
           </div>
-          <button className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all">
+          <button title="Filter Logs" className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all">
             <Filter size={18} />
           </button>
         </div>
@@ -106,19 +106,18 @@ const DecisionTraceLedger: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-800/50">
               {SAMPLE_LOGS.map((log, idx) => (
-                <tr 
-                  key={idx} 
+                <tr
+                  key={idx}
                   onClick={() => setSelectedLog(log)}
                   className={`group cursor-pointer transition-all ${selectedLog === log ? 'bg-emerald-500/5' : 'hover:bg-slate-800/20'}`}
                 >
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-xl border ${
-                        log.status === 'PROCEEDED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                      <div className={`p-2 rounded-xl border ${log.status === 'PROCEEDED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
                         log.status === 'KILL_SWITCH' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                        'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                      }`}>
-                        {log.status === 'PROCEEDED' ? <ShieldCheck size={18}/> : log.status === 'KILL_SWITCH' ? <ShieldAlert size={18}/> : <Lock size={18}/>}
+                          'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                        }`}>
+                        {log.status === 'PROCEEDED' ? <ShieldCheck size={18} /> : log.status === 'KILL_SWITCH' ? <ShieldAlert size={18} /> : <Lock size={18} />}
                       </div>
                       <div>
                         <p className="text-sm font-bold text-slate-100">{log.action}</p>
@@ -139,16 +138,18 @@ const DecisionTraceLedger: React.FC = () => {
                   </td>
                   <td className="px-8 py-5">
                     <div className="space-y-2">
-                      <div className={`text-[9px] font-bold px-2 py-0.5 rounded border inline-block ${
-                        log.status === 'PROCEEDED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                      <div className={`text-[9px] font-bold px-2 py-0.5 rounded border inline-block ${log.status === 'PROCEEDED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                         log.status === 'KILL_SWITCH' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      }`}>
+                          'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        }`}>
                         {log.status.replace('_', ' ')}
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="h-1 w-12 bg-slate-800 rounded-full overflow-hidden">
-                          <div className={`h-full ${log.confidenceScore >= 0.85 ? 'bg-emerald-500' : 'bg-red-500'}`} style={{ width: `${log.confidenceScore * 100}%` }}></div>
+                          <div
+                            className={`h-full dynamic-width ${log.confidenceScore >= 0.85 ? 'bg-emerald-500' : 'bg-red-500'}`}
+                            style={{ '--width': `${log.confidenceScore * 100}%` } as any}
+                          ></div>
                         </div>
                         <span className="text-[10px] font-mono text-slate-400">{Math.round(log.confidenceScore * 100)}%</span>
                       </div>
@@ -167,61 +168,61 @@ const DecisionTraceLedger: React.FC = () => {
         <div className="lg:col-span-4 space-y-6 sticky top-24">
           {selectedLog ? (
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl animate-in zoom-in-95 duration-300">
-               <div className="space-y-1">
-                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <Terminal size={14} className="text-emerald-400" /> Trace Inspector
-                  </h4>
-                  <p className="text-lg font-bold text-white tracking-tight">{selectedLog.action}</p>
-               </div>
+              <div className="space-y-1">
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <Terminal size={14} className="text-emerald-400" /> Trace Inspector
+                </h4>
+                <p className="text-lg font-bold text-white tracking-tight">{selectedLog.action}</p>
+              </div>
 
-               <div className="space-y-6">
-                  <div className="p-5 bg-slate-950/80 border border-slate-800 rounded-2xl space-y-4">
-                     <div className="space-y-1">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase">Decision Hash</p>
-                        <p className="text-[10px] font-mono text-blue-400 break-all">sha256:7f92e3a1...882c</p>
-                     </div>
-                     <div className="flex items-center justify-between">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase">Human Approval Token</p>
-                        <p className="text-[10px] font-mono text-emerald-400 font-bold">{selectedLog.approvalToken}</p>
-                     </div>
+              <div className="space-y-6">
+                <div className="p-5 bg-slate-950/80 border border-slate-800 rounded-2xl space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase">Decision Hash</p>
+                    <p className="text-[10px] font-mono text-blue-400 break-all">sha256:7f92e3a1...882c</p>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase">Human Approval Token</p>
+                    <p className="text-[10px] font-mono text-emerald-400 font-bold">{selectedLog.approvalToken}</p>
+                  </div>
+                </div>
 
-                  <div className="space-y-4">
-                    <h5 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                      <ArrowRightLeft size={14} className="text-purple-400" /> Protocol Status
-                    </h5>
-                    <div className="space-y-3">
-                       <StatusLine label="DAS Scrubbing" status="Verified" active={true} />
-                       <StatusLine label="RRE Validation" status={selectedLog.status === 'INTERCEPTED' ? 'Blocked' : 'Passed'} active={true} />
-                       <StatusLine 
-                         label="Kill-Switch" 
-                         status={selectedLog.confidenceScore < 0.85 ? 'Triggered' : 'Inactive'} 
-                         active={selectedLog.confidenceScore < 0.85} 
-                         color={selectedLog.confidenceScore < 0.85 ? 'red' : 'slate'}
-                       />
-                       <StatusLine label="BYOK Handshake" status="Exclusive" active={true} />
-                    </div>
+                <div className="space-y-4">
+                  <h5 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                    <ArrowRightLeft size={14} className="text-purple-400" /> Protocol Status
+                  </h5>
+                  <div className="space-y-3">
+                    <StatusLine label="DAS Scrubbing" status="Verified" active={true} />
+                    <StatusLine label="RRE Validation" status={selectedLog.status === 'INTERCEPTED' ? 'Blocked' : 'Passed'} active={true} />
+                    <StatusLine
+                      label="Kill-Switch"
+                      status={selectedLog.confidenceScore < 0.85 ? 'Triggered' : 'Inactive'}
+                      active={selectedLog.confidenceScore < 0.85}
+                      color={selectedLog.confidenceScore < 0.85 ? 'red' : 'slate'}
+                    />
+                    <StatusLine label="BYOK Handshake" status="Exclusive" active={true} />
                   </div>
-               </div>
+                </div>
+              </div>
 
-               <div className="pt-6 border-t border-slate-800/50">
-                  <div className="bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-xl flex items-start gap-3">
-                     <ShieldCheck className="text-emerald-500 shrink-0" size={18} />
-                     <p className="text-[10px] leading-relaxed text-slate-400">
-                       This trace is cryptographically sealed in the <strong>West Africa-GH-1 Silo</strong>. It cannot be altered without un-pinning the primary HSM master key.
-                     </p>
-                  </div>
-               </div>
+              <div className="pt-6 border-t border-slate-800/50">
+                <div className="bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-xl flex items-start gap-3">
+                  <ShieldCheck className="text-emerald-500 shrink-0" size={18} />
+                  <p className="text-[10px] leading-relaxed text-slate-400">
+                    This trace is cryptographically sealed in the <strong>Jurisdictional Silo</strong>. It cannot be altered without un-pinning the primary HSM master key.
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="h-[400px] border-2 border-dashed border-slate-800 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-600 gap-4 text-center p-8">
-               <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center opacity-50">
-                  <Activity size={32} />
-               </div>
-               <div>
-                  <p className="text-sm font-bold text-slate-400">Ledger Awaiting Inspector</p>
-                  <p className="text-[10px] text-slate-600 mt-2 uppercase tracking-widest font-mono">Select a sovereign event to view full cryptographic proof.</p>
-               </div>
+              <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center opacity-50">
+                <Activity size={32} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-400">Ledger Awaiting Inspector</p>
+                <p className="text-[10px] text-slate-600 mt-2 uppercase tracking-widest font-mono">Select a sovereign event to view full cryptographic proof.</p>
+              </div>
             </div>
           )}
         </div>
@@ -233,10 +234,9 @@ const DecisionTraceLedger: React.FC = () => {
 const StatusLine = ({ label, status, active, color = 'emerald' }: any) => (
   <div className="flex items-center justify-between text-[10px] font-mono">
     <span className="text-slate-500">{label}</span>
-    <span className={`font-bold uppercase ${
-      color === 'red' ? 'text-red-400' :
+    <span className={`font-bold uppercase ${color === 'red' ? 'text-red-400' :
       active ? 'text-emerald-400' : 'text-slate-600'
-    }`}>{status}</span>
+      }`}>{status}</span>
   </div>
 );
 

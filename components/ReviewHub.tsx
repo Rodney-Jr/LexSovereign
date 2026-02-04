@@ -22,15 +22,15 @@ import { LexGeminiService } from '../services/geminiService';
 const INITIAL_REVIEWS: ReviewArtifact[] = [
   {
     id: 'REV-PR-001', matterId: 'MAT-GEN-01', docId: 'doc_101', title: 'Standard Service Level Addendum',
-    status: ReviewStatus.AI_DRAFTED, urgency: 'Urgent', aiConfidence: 0.94, piiCount: 3, jurisdiction: 'United Kingdom', assignedTo: UserRole.INTERNAL_COUNSEL
+    status: ReviewStatus.AI_DRAFTED, urgency: 'Urgent', aiConfidence: 0.94, piiCount: 3, jurisdiction: 'Jurisdiction A', assignedTo: UserRole.INTERNAL_COUNSEL
   },
   {
     id: 'REV-PR-002', matterId: 'MAT-GEN-02', docId: 'doc_102', title: 'Confidentiality & IP Assignment',
-    status: ReviewStatus.SAFETY_VERIFIED, urgency: 'Routine', aiConfidence: 0.96, piiCount: 0, jurisdiction: 'USA', assignedTo: UserRole.INTERNAL_COUNSEL
+    status: ReviewStatus.SAFETY_VERIFIED, urgency: 'Routine', aiConfidence: 0.96, piiCount: 0, jurisdiction: 'Jurisdiction B', assignedTo: UserRole.INTERNAL_COUNSEL
   },
   {
     id: 'REV-PR-003', matterId: 'MAT-GEN-01', docId: 'doc_103', title: 'Lease Agreement - Clause 4.2',
-    status: ReviewStatus.COUNSEL_REVIEW, urgency: 'Critical', aiConfidence: 0.89, piiCount: 5, jurisdiction: 'Germany', assignedTo: UserRole.EXTERNAL_COUNSEL
+    status: ReviewStatus.COUNSEL_REVIEW, urgency: 'Critical', aiConfidence: 0.89, piiCount: 5, jurisdiction: 'Jurisdiction C', assignedTo: UserRole.EXTERNAL_COUNSEL
   }
 ];
 

@@ -76,7 +76,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
                             size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
                             uploadedBy: 'Sovereign AI',
                             uploadedAt: new Date().toLocaleTimeString(),
-                            region: Region.GHANA,
+                            region: Region.PRIMARY,
                             matterId: 'UNCATEGORIZED',
                             privilege: PrivilegeStatus.PRIVILEGED,
                             classification: 'Confidential',

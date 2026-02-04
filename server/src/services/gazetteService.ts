@@ -4,11 +4,11 @@ import { RegulatoryRule, Region } from '../types';
 
 /**
  * Gazette Service
- * Handles "Statutory Sync" from the Ghana Gazette.
+ * Handles "Statutory Sync" from the Official Gazette.
  * Enforces cryptographic chain-of-custody for all rule updates.
  */
 
-// Mock Public Key of the "Ghana Data Protection Commission" (DPC)
+// Mock Public Key of the "Regional Data Protection Commission" (DPC)
 // In production, this would be loaded from a secure keystore or hardcoded pinned certificate.
 const DPC_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxz...MOCK_KEY...
@@ -33,7 +33,7 @@ export class GazetteService {
             return { success: false, message: 'Invalid Cryptographic Signature. Update Rejected.' };
         }
 
-        console.log('[Gazette] Signature Verified. Authority: Ghana DPC.');
+        console.log('[Gazette] Signature Verified. Authority: Regional DPC.');
 
         // 2. Process Rules
         const updates = payload.updates || [];
@@ -55,7 +55,7 @@ export class GazetteService {
                     id: update.id,
                     name: update.name,
                     description: update.description,
-                    region: Region.GHANA, // Enforce Region
+                    region: Region.PRIMARY, // Enforce Region
                     isActive: update.isActive,
                     authority: update.authority,
                     triggerKeywords: update.triggerKeywords,

@@ -51,9 +51,9 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
 
   // State for Legal Team
   const [team] = useState<LegalProfessional[]>([
-    { id: 'u1', name: 'Kofi Mensah', role: 'Lead Counsel' },
-    { id: 'u2', name: 'Ama Serwaa', role: 'Associate' },
-    { id: 'u4', name: 'Jane Doe', role: 'Internal Counsel' }
+    { id: 'u1', name: 'Senior Partner', role: 'Lead Counsel' },
+    { id: 'u2', name: 'Associate Counsel', role: 'Associate' },
+    { id: 'u4', name: 'Legal Counsel', role: 'Internal Counsel' }
   ]);
 
   // State for Time Recording
@@ -64,13 +64,13 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([
     {
       id: 'te-1',
-      matterId: 'MT-772',
+      matterId: 'MAT-ORG-001',
       lawyerId: 'u1',
-      lawyerName: 'Kofi Mensah',
+      lawyerName: 'Senior Partner',
       activityType: 'Research',
       startTime: '2024-05-20T09:00:00Z',
       durationMinutes: 45,
-      description: 'Detailed analysis of GBA property transfer regulations.',
+      description: 'Systemic review of jurisdictional regulatory requirements.',
       isBillable: true,
       status: 'Approved'
     }
@@ -91,7 +91,7 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
   const handleGenerateBrief = async () => {
     setIsBriefing(true);
     try {
-      const result = await gemini.generateExecutiveBriefing('MT-772', documents);
+      const result = await gemini.generateExecutiveBriefing('SOV-MAT-001', documents);
       setBriefingText(result);
     } catch (e) {
       setBriefingText("Sovereign Briefing Enclave: Synthesis Timeout.");
@@ -127,9 +127,9 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
   const handleSaveEntry = () => {
     const newEntry: TimeEntry = {
       id: `te-${Date.now()}`,
-      matterId: 'MT-772',
+      matterId: 'MAT-ORG-001',
       lawyerId: 'u1',
-      lawyerName: 'Kofi Mensah',
+      lawyerName: 'Senior Partner',
       activityType: 'Drafting',
       startTime: new Date().toISOString(),
       durationMinutes: Math.ceil(timeInSeconds / 60),
@@ -171,8 +171,8 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
             <History size={20} className="rotate-180" />
           </button>
           <div>
-            <h3 className="text-2xl font-bold text-brand-text tracking-tight">MT-772: Shareholder Restructuring</h3>
-            <p className="text-brand-muted text-sm">Managing Entity: <span className="text-brand-primary font-semibold uppercase">Accra Partners</span></p>
+            <h3 className="text-2xl font-bold text-brand-text tracking-tight">SOV-MAT-001: Systemic Asset Review</h3>
+            <p className="text-brand-muted text-sm">Managing Entity: <span className="text-brand-primary font-semibold uppercase">Jurisdictional Silo</span></p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -363,8 +363,8 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ mode, onBack, d
               <MessageSquare size={16} className="text-brand-secondary" /> Collaboration
             </h4>
             <div className="space-y-4 max-h-[400px] overflow-y-auto scrollbar-hide">
-              <Note author="Ama Serwaa" time="15m ago" text="High risk non-compete identified in clause 4.2." />
-              <Note author="Kofi Mensah" time="1h ago" text="Verified. Adjust duration to match GBA guidelines." />
+              <Note author="Associate Counsel" time="15m ago" text="Regulatory risk identified in active clause set." />
+              <Note author="Senior Partner" time="1h ago" text="Verified. Adjust duration to match jurisdictional guidelines." />
             </div>
             <div className="relative">
               <textarea

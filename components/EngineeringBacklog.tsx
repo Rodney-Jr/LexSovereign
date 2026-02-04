@@ -29,7 +29,7 @@ interface BacklogItem {
 
 const Phase2Backlog: BacklogItem[] = [
    { id: 'SOV-201', title: 'OIDC Discovery Resolver', priority: 'P0', effort: 'M', status: 'In Progress', category: 'Infrastructure', desc: 'Dynamic mapping of email domains to tenant-specific IdPs for zero-discovery leaks.' },
-   { id: 'SOV-202', title: 'DAS Proxy v2 (Legal NER)', priority: 'P0', effort: 'L', status: 'In Progress', category: 'Intelligence', desc: 'Legal-aware Named Entity Recognition for jurisdictional PII (e.g. Ghana Card recognition).' },
+   { id: 'SOV-202', title: 'DAS Proxy v2 (Legal NER)', priority: 'P0', effort: 'L', status: 'In Progress', category: 'Intelligence', desc: 'Legal-aware Named Entity Recognition for jurisdictional PII (e.g. Identity Document recognition).' },
    { id: 'SOV-203', title: 'HSM RS256 Token Enclave', priority: 'P0', effort: 'M', status: 'Done', category: 'Governance', desc: 'Implementing RS256 signing inside the TEE for short-lived mobile session tokens.' },
    { id: 'SOV-204', title: 'Sovereign Revocation Sync (SRS)', priority: 'P1', effort: 'L', status: 'Backlog', category: 'Infrastructure', desc: 'Global kill-switch broadcast to invalidate tokens across all regional silos in <200ms.' },
    { id: 'SOV-205', title: 'WhatsApp Sanitized Egress', priority: 'P1', effort: 'M', status: 'In Progress', category: 'Infrastructure', desc: 'E2EE bridge for WhatsApp with automatic PII scrubbing on every outgoing bubble.' },
@@ -44,9 +44,9 @@ const EngineeringBacklog: React.FC = () => {
    useEffect(() => {
       if (buildStatus === 'DEPLOYING') {
          const messages = [
-            "Initializing Silo-GH-ACC-01 Build Chain...",
+            "Initializing Silo-PRIMARY-01 Build Chain...",
             "Cloning DAS-Proxy-v2 repository...",
-            "Injecting GBA Ethics Model v2.4...",
+            "Injecting Jurisdictional Ethics Model v2.4...",
             "Testing KMS Handshake... SUCCESS",
             "Provisioning HSM Enclave 01... ACTIVE",
             "Deploying OIDC Discovery Node...",
@@ -112,8 +112,8 @@ const EngineeringBacklog: React.FC = () => {
                         <div className="flex items-start justify-between relative z-10">
                            <div className="flex items-center gap-5">
                               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${item.status === 'Done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                    item.status === 'In Progress' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400 animate-pulse' :
-                                       'bg-slate-800 border-slate-700 text-slate-500'
+                                 item.status === 'In Progress' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400 animate-pulse' :
+                                    'bg-slate-800 border-slate-700 text-slate-500'
                                  }`}>
                                  {item.status === 'Done' ? <CheckCircle2 size={24} /> : <GitBranch size={24} />}
                               </div>
@@ -129,8 +129,8 @@ const EngineeringBacklog: React.FC = () => {
                            <div className="flex flex-col items-end gap-3">
                               <div className="flex gap-2">
                                  <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase border ${item.priority === 'P0' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
-                                       item.priority === 'P1' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
-                                          'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                                    item.priority === 'P1' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                                       'bg-blue-500/10 text-blue-400 border-blue-500/30'
                                     }`}>
                                     {item.priority}
                                  </span>

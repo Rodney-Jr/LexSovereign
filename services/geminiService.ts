@@ -10,7 +10,7 @@ export class LexGeminiService {
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
-      'x-sov-pin': 'GH-ACC-1'
+      'x-sov-pin': 'SOV-PRIMARY-1'
     };
   }
 

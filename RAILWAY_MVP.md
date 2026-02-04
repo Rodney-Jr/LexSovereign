@@ -6,7 +6,7 @@ This guide details how to run the LexSovereign architecture on **Railway.app** f
 ## 1. The Split-Plane Philosophy
 In a standard app, everything sits on the PaaS. In LexSovereign, we split the planes:
 *   **Control Plane (Railway):** The UI, API logic, and Gemini Orchestration.
-*   **Data Plane (Regional):** Regional object storage (e.g., Storj, AWS S3 in Cape Town, or a local server in Accra).
+*   **Data Plane (Regional):** Regional object storage (e.g., Storj, AWS S3 in Cape Town, or a local primary server).
 
 ## 2. Security Enforcement
 To run safely on Railway, the following environment variables must be configured:
@@ -14,7 +14,7 @@ To run safely on Railway, the following environment variables must be configured
 *   `JWT_SECRET`: A strong random string for session security.
 *   `GEMINI_API_KEY`: Your Gemini Pro API Key.
 *   `DAS_SCRUBBING_LEVEL`: Set to `3` (Aggressive) for PaaS deployments to ensure no PII reaches Railway logs.
-*   `SOVEREIGN_REGION_PIN`: Hardcoded to your primary silo (e.g., `GH-ACC-1`).
+*   `SOVEREIGN_REGION_PIN`: Hardcoded to your primary silo (e.g., `SOV-PR-1`).
 
 ## 3. Deployment Steps
 1.  **Repository Sync:** Connect your LexSovereign repo to Railway.
