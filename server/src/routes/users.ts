@@ -50,4 +50,46 @@ router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN'])
     }
 });
 
+/**
+ * DELETE /api/users/:id
+ * Removes a user from the tenant.
+ * Restricted to TENANT_ADMIN and GLOBAL_ADMIN.
+ */
+router.delete('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const tenantId = req.user?.tenantId;
+
+        if (!tenantId) {
+            res.status(400).json({ error: 'Tenant context missing' });
+            return;
+        }
+
+        // 1. Verify user exists in this tenant
+        const user = await prisma.user.findFirst({
+            where: { id: userId, tenantId }
+        });
+
+        if (!user) {
+            res.status(404).json({ error: 'User not found in this tenant' });
+            return;
+        }
+
+        // 2. Prevent self-deletion if needed (optional check)
+        if (userId === req.user?.id) {
+            res.status(400).json({ error: 'You cannot remove yourself' });
+            return;
+        }
+
+        // 3. Delete user
+        await prisma.user.delete({
+            where: { id: userId }
+        });
+
+        res.json({ success: true, message: 'User removed successfully' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

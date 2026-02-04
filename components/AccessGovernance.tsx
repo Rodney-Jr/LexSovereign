@@ -199,6 +199,14 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
     }
   };
 
+  const handleDuplicate = () => {
+    if (!selectedRole) return;
+    setEditName(`${selectedRole.name} (Copy)`);
+    setEditDesc(selectedRole.description);
+    setEditPerms(selectedRole.permissions.map(p => p.id));
+    setShowCreateModal(true);
+  };
+
   const applyTemplate = async (type: string) => {
     try {
       const session = getSavedSession();
@@ -353,6 +361,9 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
                         <button onClick={handleDelete} className="px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                           <Trash2 size={14} /> Delete
                         </button>
+                        <button onClick={handleDuplicate} title="Duplicate Role" className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg border border-slate-700 transition-colors">
+                          <Copy size={16} />
+                        </button>
                       </>
                     )}
                   </div>
@@ -452,18 +463,31 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">Initial Capabilities</label>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 h-48 overflow-y-auto grid grid-cols-2 gap-2">
-                  {allPermissions.map(p => (
-                    <label key={p.id} className="flex items-center gap-2 p-2 hover:bg-slate-900 rounded cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="accent-emerald-500"
-                        checked={editPerms.includes(p.id)}
-                        onChange={() => setEditPerms(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
-                      />
-                      <span className="text-xs font-mono text-slate-400">{p.id}</span>
-                    </label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-4">Initial Capabilities</label>
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 h-[400px] overflow-y-auto space-y-6 scrollbar-hide">
+                  {Object.entries(groupPermissions()).map(([resource, perms]) => (
+                    <div key={resource} className="space-y-3">
+                      <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 border-b border-slate-800 pb-2">
+                        <div className="w-1 h-1 rounded-full bg-blue-500"></div>
+                        {resource} Capabilities
+                      </h6>
+                      <div className="grid grid-cols-1 gap-2">
+                        {perms.map(p => (
+                          <label key={p.id} className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-all ${editPerms.includes(p.id) ? 'bg-blue-600/10 border-blue-500/30' : 'bg-slate-900 border-slate-800 hover:border-slate-700 opacity-80'}`}>
+                            <input
+                              type="checkbox"
+                              className="mt-0.5 w-4 h-4 rounded border accent-blue-600"
+                              checked={editPerms.includes(p.id)}
+                              onChange={() => setEditPerms(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
+                            />
+                            <div className="flex-1">
+                              <span className={`font-bold block ${editPerms.includes(p.id) ? 'text-blue-400' : 'text-slate-300'}`}>{p.action}</span>
+                              <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{p.description}</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

@@ -24,7 +24,8 @@ import {
    Copy,
    CheckCircle2,
    X,
-   Bot
+   Bot,
+   Trash2
 } from 'lucide-react';
 import { TenantUser, UserRole } from '../types';
 import SovereignBilling from './SovereignBilling';
@@ -50,36 +51,46 @@ const TenantAdministration: React.FC = () => {
    const [isLoadingRoles, setIsLoadingRoles] = useState(false);
    const [searchTerm, setSearchTerm] = useState('');
    const [emailError, setEmailError] = useState('');
+   const [pendingInvites, setPendingInvites] = useState<any[]>([]);
+
+   const fetchData = async () => {
+      const session = getSavedSession();
+      if (!session?.token) return;
+
+      // Fetch Roles
+      try {
+         setIsLoadingRoles(true);
+         const data = await authorizedFetch('/api/roles', { token: session.token });
+         setAvailableRoles(data);
+         const filtered = data.filter((r: any) => !r.isSystem || r.name !== 'GLOBAL_ADMIN');
+         if (filtered.length > 0 && !filtered.find((r: any) => r.name === inviteForm.roleName)) {
+            setInviteForm(prev => ({ ...prev, roleName: filtered[0].name }));
+         }
+      } catch (e) {
+         console.error("[TenantAdmin] Role discovery failed:", e);
+      } finally {
+         setIsLoadingRoles(false);
+      }
+
+      // Fetch Users
+      try {
+         const userData = await authorizedFetch('/api/users', { token: session.token });
+         setUsers(userData);
+      } catch (e) {
+         console.error("[TenantAdmin] User discovery failed:", e);
+      }
+
+      // Fetch Pending Invites
+      try {
+         const invites = await authorizedFetch('/api/auth/invites', { token: session.token });
+         setPendingInvites(invites);
+      } catch (e) {
+         console.error("[TenantAdmin] Invite discovery failed:", e);
+      }
+   };
 
    React.useEffect(() => {
-      const fetchInitialData = async () => {
-         const session = getSavedSession();
-         if (!session?.token) return;
-
-         // Fetch Roles
-         try {
-            setIsLoadingRoles(true);
-            const data = await authorizedFetch('/api/roles', { token: session.token });
-            setAvailableRoles(data);
-            const filtered = data.filter((r: any) => !r.isSystem || r.name !== 'GLOBAL_ADMIN');
-            if (filtered.length > 0 && !filtered.find((r: any) => r.name === inviteForm.roleName)) {
-               setInviteForm(prev => ({ ...prev, roleName: filtered[0].name }));
-            }
-         } catch (e) {
-            console.error("[TenantAdmin] Role discovery failed:", e);
-         } finally {
-            setIsLoadingRoles(false);
-         }
-
-         // Fetch Users
-         try {
-            const userData = await authorizedFetch('/api/users', { token: session.token });
-            setUsers(userData);
-         } catch (e) {
-            console.error("[TenantAdmin] User discovery failed:", e);
-         }
-      };
-      fetchInitialData();
+      fetchData();
    }, []);
 
    // ESC key handler for modal
@@ -125,6 +136,7 @@ const TenantAdministration: React.FC = () => {
             const host = window.location.origin;
             setGeneratedLink(`${host}/join?token=${data.token}`);
             setInviteForm(prev => ({ ...prev, email: '' }));
+            fetchData(); // Refresh invites list
          }
       } catch (e: unknown) {
          console.error(e);
@@ -147,6 +159,40 @@ const TenantAdministration: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       setIsEmailing(false);
       alert("Sovereign Invitation dispatched to practitioner.");
+   };
+
+   const removeUser = async (id: string, name: string) => {
+      if (!confirm(`Are you sure you want to remove ${name}? This action is irreversible.`)) return;
+
+      try {
+         const session = getSavedSession();
+         if (!session?.token) return;
+
+         await authorizedFetch(`/api/users/${id}`, {
+            method: 'DELETE',
+            token: session.token
+         });
+         fetchData();
+      } catch (e: any) {
+         alert(`Removal failed: ${e.message}`);
+      }
+   };
+
+   const revokeInvite = async (id: string, email: string) => {
+      if (!confirm(`Revoke invitation for ${email}?`)) return;
+
+      try {
+         const session = getSavedSession();
+         if (!session?.token) return;
+
+         await authorizedFetch(`/api/auth/invites/${id}`, {
+            method: 'DELETE',
+            token: session.token
+         });
+         fetchData();
+      } catch (e: any) {
+         alert(`Revocation failed: ${e.message}`);
+      }
    };
 
    return (
@@ -209,13 +255,14 @@ const TenantAdministration: React.FC = () => {
                                        <th className="px-8 py-4">User Identity</th>
                                        <th className="px-8 py-4">Sovereign Role</th>
                                        <th className="px-8 py-4 text-center">Security</th>
-                                       <th className="px-8 py-4 text-right">Last Session</th>
+                                       <th className="px-8 py-4 text-center">Last Session</th>
+                                       <th className="px-8 py-4 text-right">Actions</th>
                                     </tr>
                                  </thead>
                                  <tbody className="divide-y divide-slate-800/50">
                                     {filteredUsers.length === 0 ? (
                                        <tr>
-                                          <td colSpan={4} className="px-8 py-12 text-center">
+                                          <td colSpan={5} className="px-8 py-12 text-center">
                                              <div className="flex flex-col items-center gap-3 text-slate-600">
                                                 <Users size={32} className="opacity-20" />
                                                 <p className="text-sm font-bold">No users found</p>
@@ -258,8 +305,17 @@ const TenantAdministration: React.FC = () => {
                                                    )}
                                                 </div>
                                              </td>
-                                             <td className="px-8 py-5 text-right">
+                                             <td className="px-8 py-5 text-center">
                                                 <span className="text-[10px] font-mono text-slate-500">{user.lastActive}</span>
+                                             </td>
+                                             <td className="px-8 py-5 text-right">
+                                                <button
+                                                   onClick={() => removeUser(user.id, user.name)}
+                                                   className="p-2 hover:bg-red-500/10 text-slate-600 hover:text-red-400 rounded-lg transition-all"
+                                                   title="Remove Practitioner"
+                                                >
+                                                   <Trash2 size={16} />
+                                                </button>
                                              </td>
                                           </tr>
                                        ))
@@ -268,6 +324,60 @@ const TenantAdministration: React.FC = () => {
                               </table>
                            </div>
                         </div>
+
+                        {/* Pending Invitations Section */}
+                        {pendingInvites.length > 0 && (
+                           <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                              <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+                                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                                    <Mail className="text-blue-400" size={16} /> Pending Invitations
+                                 </h4>
+                                 <span className="bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                    {pendingInvites.length} Active
+                                 </span>
+                              </div>
+                              <div className="overflow-x-auto">
+                                 <table className="w-full text-left">
+                                    <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                                       <tr>
+                                          <th className="px-8 py-4">Recepient</th>
+                                          <th className="px-8 py-4">Assigned Role</th>
+                                          <th className="px-8 py-4 text-center">Expires</th>
+                                          <th className="px-8 py-4 text-right">Actions</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-800/50">
+                                       {pendingInvites.map(invite => (
+                                          <tr key={invite.id} className="hover:bg-slate-800/20 transition-all group">
+                                             <td className="px-8 py-5">
+                                                <p className="text-sm font-bold text-white tracking-tight">{invite.email}</p>
+                                             </td>
+                                             <td className="px-8 py-5">
+                                                <span className="px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase border bg-slate-800 text-slate-400 border-slate-700">
+                                                   {invite.roleName}
+                                                </span>
+                                             </td>
+                                             <td className="px-8 py-5 text-center">
+                                                <span className="text-[10px] font-mono text-slate-500">
+                                                   {new Date(invite.expiresAt).toLocaleDateString()}
+                                                </span>
+                                             </td>
+                                             <td className="px-8 py-5 text-right">
+                                                <button
+                                                   onClick={() => revokeInvite(invite.id, invite.email)}
+                                                   className="p-2 hover:bg-red-500/10 text-slate-600 hover:text-red-400 rounded-lg transition-all"
+                                                   title="Revoke Invitation"
+                                                >
+                                                   <Trash2 size={16} />
+                                                </button>
+                                             </td>
+                                          </tr>
+                                       ))}
+                                    </tbody>
+                                 </table>
+                              </div>
+                           </div>
+                        )}
                      </div>
                   );
                })()}
@@ -443,7 +553,7 @@ const TenantAdministration: React.FC = () => {
                                  value={inviteForm.email}
                                  onChange={e => { setInviteForm({ ...inviteForm, email: e.target.value }); setEmailError(''); }}
                                  aria-required="true"
-                                 aria-invalid={emailError ? "true" : "false"}
+                                 aria-invalid={!!emailError}
                                  aria-describedby={emailError ? "email-error" : undefined}
                               />
                               {emailError && (

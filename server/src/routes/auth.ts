@@ -516,4 +516,56 @@ router.get('/pin', authenticateToken, (req, res) => {
     res.json({ pin: process.env.SOVEREIGN_PIN || "" });
 });
 
+// 7. Get Pending Invites - PROTECTED
+router.get('/invites', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        if (!req.user?.tenantId) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        const invites = await prisma.invitation.findMany({
+            where: {
+                tenantId: req.user.tenantId,
+                isUsed: false,
+                expiresAt: { gt: new Date() }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(invites);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 8. Delete Invitation - PROTECTED
+router.delete('/invites/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const inviteId = req.params.id;
+        if (!req.user?.tenantId) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        // Check if invite belongs to tenant
+        const invite = await prisma.invitation.findFirst({
+            where: { id: inviteId, tenantId: req.user.tenantId }
+        });
+
+        if (!invite) {
+            res.status(404).json({ error: 'Invitation not found' });
+            return;
+        }
+
+        await prisma.invitation.delete({
+            where: { id: inviteId }
+        });
+
+        res.json({ success: true, message: 'Invitation revoked successfully' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
