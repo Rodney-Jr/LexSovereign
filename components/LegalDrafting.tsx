@@ -11,7 +11,7 @@ interface LegalDraftingProps {
 }
 
 const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
-    const [showMarketplace, setShowMarketplace] = useState(true);
+    const [showMarketplace, setShowMarketplace] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
     const [showBlankEditor, setShowBlankEditor] = useState(false);
 
