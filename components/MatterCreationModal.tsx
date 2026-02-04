@@ -139,24 +139,6 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
               <X size={20} />
             </button>
           </div>
-
-          <div className="flex items-center justify-between px-2">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <React.Fragment key={i}>
-                <div className={`flex flex-col items-center gap-2 transition-all ${step >= i ? 'text-emerald-400' : 'text-slate-600'}`}>
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center border-2 font-bold text-[10px] ${step === i ? 'bg-emerald-500/20 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' :
-                    step > i ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-900 border-slate-800'
-                    }`}>
-                    {step > i ? <CheckCircle2 size={16} /> : i}
-                  </div>
-                  <span className="text-[8px] font-bold uppercase tracking-widest hidden md:block">
-                    {['Context', 'Pinning', 'Team/RBAC', 'Proxy/DAS', 'Rules'][i - 1]}
-                  </span>
-                </div>
-                {i < 5 && <div className={`flex-1 h-[1px] mx-4 ${step > i ? 'bg-emerald-500' : 'bg-slate-800'}`}></div>}
-              </React.Fragment>
-            ))}
-          </div>
         </div>
 
         {/* Content Area */}
