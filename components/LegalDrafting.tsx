@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Sparkles, FileText, ChevronRight, Search } from 'lucide-react';
+import { Sparkles, FileText, ChevronRight, Search, Edit3 } from 'lucide-react';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
+import BlankDocumentEditor from './BlankDocumentEditor';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
 interface LegalDraftingProps {
@@ -12,6 +13,7 @@ interface LegalDraftingProps {
 const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
     const [showMarketplace, setShowMarketplace] = useState(true);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+    const [showBlankEditor, setShowBlankEditor] = useState(false);
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
@@ -33,7 +35,13 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <ActionCard
+                    icon={<Edit3 className="text-emerald-400" />}
+                    title="Blank Document"
+                    description="Start from scratch with a freeform editor for custom drafting."
+                    onClick={() => setShowBlankEditor(true)}
+                />
                 <ActionCard
                     icon={<FileText className="text-brand-primary" />}
                     title="New Contract"
@@ -84,6 +92,29 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
                             content: content
                         });
                         setSelectedTemplateId(null);
+                    }}
+                />
+            )}
+
+            {showBlankEditor && (
+                <BlankDocumentEditor
+                    onClose={() => setShowBlankEditor(false)}
+                    onSave={(name, content) => {
+                        onAddDocument({
+                            id: `DOC-BLANK-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+                            name,
+                            type: 'Draft',
+                            size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
+                            uploadedBy: 'User',
+                            uploadedAt: new Date().toLocaleTimeString(),
+                            region: Region.PRIMARY,
+                            matterId: 'UNCATEGORIZED',
+                            privilege: PrivilegeStatus.PRIVILEGED,
+                            classification: 'Confidential',
+                            encryption: 'DAS',
+                            content: content
+                        });
+                        setShowBlankEditor(false);
                     }}
                 />
             )}
