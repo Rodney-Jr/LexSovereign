@@ -35,9 +35,9 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
 
 
     return (
-        <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24">
+        <div className="max-w-7xl mx-auto space-y-8 lg:space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24 px-4 lg:px-0">
             {/* Hero Section */}
-            <div className="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-[3rem] p-12 shadow-2xl">
+            <div className="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-12 shadow-2xl">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-primary/10 blur-[120px] -mr-64 -mt-64"></div>
                 <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-brand-secondary/5 blur-[80px] -ml-32 -mb-32"></div>
 
@@ -46,24 +46,24 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-primary/10 border border-brand-primary/20 rounded-full text-brand-primary text-[10px] font-bold uppercase tracking-widest">
                             <Sparkles size={12} /> Sovereign Ecosystem
                         </div>
-                        <h1 className="text-5xl font-black text-white leading-tight">
+                        <h1 className="text-3xl lg:text-5xl font-black text-white leading-tight text-center lg:text-left">
                             The Sovereign <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">Blueprint Marketplace</span>
                         </h1>
-                        <p className="text-slate-400 text-lg leading-relaxed">
+                        <p className="text-slate-400 text-sm lg:text-lg leading-relaxed text-center lg:text-left">
                             Acquire jurisdictional legal logic, cryptographically-hardened role sets, and regional compliance blueprints instantly.
                         </p>
                         {isTenantAdmin && (
-                            <div className="flex gap-4">
+                            <div className="flex flex-col sm:flex-row gap-4">
                                 <button
                                     onClick={() => setCategory('DOCUMENTS')}
-                                    className={`px-8 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 ${category === 'DOCUMENTS' ? 'bg-brand-primary text-brand-bg shadow-xl shadow-brand-primary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
+                                    className={`px-6 lg:px-8 py-3 rounded-2xl font-bold text-xs lg:text-sm transition-all flex items-center justify-center gap-2 ${category === 'DOCUMENTS' ? 'bg-brand-primary text-brand-bg shadow-xl shadow-brand-primary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
                                 >
                                     <FileText size={18} /> Legal Artifacts
                                 </button>
                                 <button
                                     onClick={() => setCategory('IDENTITY')}
-                                    className={`px-8 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 ${category === 'IDENTITY' ? 'bg-brand-secondary text-brand-bg shadow-xl shadow-brand-secondary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
+                                    className={`px-6 lg:px-8 py-3 rounded-2xl font-bold text-xs lg:text-sm transition-all flex items-center justify-center gap-2 ${category === 'IDENTITY' ? 'bg-brand-secondary text-brand-bg shadow-xl shadow-brand-secondary/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
                                 >
                                     <Zap size={18} /> Identity Blueprints
                                 </button>
@@ -218,8 +218,8 @@ const FeatureStat = ({ icon, label, value }: { icon: React.ReactNode, label: str
 );
 
 const BlueprintCard = ({ icon, title, desc, region, price, onDeploy }: any) => (
-    <div className="bg-slate-900 border border-slate-800 p-8 rounded-[3rem] space-y-8 hover:border-brand-primary/40 transition-all group shadow-xl relative overflow-hidden flex flex-col justify-between h-80">
-        <div className="space-y-6">
+    <div className="bg-slate-900 border border-slate-800 p-6 lg:p-8 rounded-[2rem] lg:rounded-[3rem] space-y-6 lg:space-y-8 hover:border-brand-primary/40 transition-all group shadow-xl relative overflow-hidden flex flex-col justify-between h-[18rem] lg:h-80">
+        <div className="space-y-4 lg:space-y-6">
             <div className="flex items-center justify-between">
                 <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 group-hover:scale-110 transition-transform">{icon}</div>
                 <div className="text-[10px] font-mono text-slate-600 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">{region} SILO</div>

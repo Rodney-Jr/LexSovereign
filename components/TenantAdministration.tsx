@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
    Users,
@@ -199,15 +198,15 @@ const TenantAdministration: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
-               <h3 className="text-3xl font-bold flex items-center gap-4 tracking-tight text-white">
-                  <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20">
-                     <Settings className="text-purple-400" size={28} />
+               <h3 className="text-2xl lg:text-3xl font-bold flex items-center gap-3 lg:gap-4 tracking-tight text-white">
+                  <div className="p-2 lg:p-3 bg-purple-500/10 rounded-xl lg:rounded-2xl border border-purple-500/20">
+                     <Settings className="text-purple-400" size={24} />
                   </div>
                   Organization Administration
                </h3>
-               <p className="text-slate-400 text-sm">Managing organization-level users, identity federation, and regional legal templates.</p>
+               <p className="text-slate-400 text-xs lg:text-sm">Managing organization-level users, identity federation, and regional legal templates.</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mt-4 lg:mt-0">
                <TabButton label="Users & RBAC" active={activeTab === 'users'} icon={<Users size={16} />} onClick={() => setActiveTab('users')} />
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
                <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
@@ -242,10 +241,10 @@ const TenantAdministration: React.FC = () => {
                               </div>
                               <button
                                  onClick={() => { setShowInviteModal(true); setGeneratedLink(''); setCopySuccess(false); setIsEmailing(false); setEmailError(''); }}
-                                 className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20"
+                                 className="bg-purple-600 hover:bg-purple-500 text-white px-4 lg:px-5 py-2.5 rounded-xl lg:rounded-2xl font-bold text-[10px] lg:text-xs flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20 whitespace-nowrap"
                                  aria-label="Invite new practitioner"
                               >
-                                 <UserPlus size={16} /> Invite Practitioner
+                                 <UserPlus size={16} /> <span className="hidden sm:inline">Invite Practitioner</span><span className="sm:hidden">Invite</span>
                               </button>
                            </div>
                            <div className="overflow-x-auto">

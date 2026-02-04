@@ -34,7 +34,9 @@ import {
   // Added missing Cloud icon
   Cloud,
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  Menu,
+  X
 } from 'lucide-react';
 import { AppMode, UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
@@ -68,6 +70,7 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const { hasAnyPermission, role } = usePermissions();
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showAdvanced, setShowAdvanced] = React.useState(() => {
     return localStorage.getItem('lexSovereign_advancedMode') === 'true';
   });
@@ -102,13 +105,33 @@ const Layout: React.FC<LayoutProps> = ({
   };
   return (
     <div className="flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] lg:hidden animate-in fade-in duration-300"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 border-r border-brand-border bg-brand-sidebar flex flex-col shadow-2xl transition-all duration-500">
-        <div className="p-6 flex items-center gap-3">
-          <div className="bg-emerald-500/20 p-2 rounded-lg">
-            <ShieldCheck className="text-emerald-400 w-6 h-6" />
+      <aside className={`
+        fixed inset-y-0 left-0 w-64 border-r border-brand-border bg-brand-sidebar flex flex-col shadow-2xl transition-transform duration-300 z-[100] lg:relative lg:translate-x-0
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-500/20 p-2 rounded-lg">
+              <ShieldCheck className="text-emerald-400 w-6 h-6" />
+            </div>
+            <span className="font-bold text-xl tracking-tight text-white">LexSovereign</span>
           </div>
-          <span className="font-bold text-xl tracking-tight text-white">LexSovereign</span>
+          <button
+            className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-brand-muted"
+            onClick={() => setIsSidebarOpen(false)}
+            title="Close Sidebar"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 space-y-1.5 mt-4 overflow-y-auto scrollbar-hide">
@@ -119,6 +142,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Intelligence Hub"
               isActive={activeTab === 'dashboard'}
               onClick={() => setActiveTab('dashboard')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
 
@@ -134,6 +158,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Global Plane"
               isActive={activeTab === 'platform-ops'}
               onClick={() => setActiveTab('platform-ops')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('governance') && (
@@ -142,6 +167,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Global Governance"
               isActive={activeTab === 'governance'}
               onClick={() => setActiveTab('governance')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
 
@@ -158,6 +184,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="ZK Conflict Check"
               isActive={activeTab === 'conflict-check'}
               onClick={() => setActiveTab('conflict-check')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('reviews') && (
@@ -166,6 +193,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Review Hub"
               isActive={activeTab === 'reviews'}
               onClick={() => setActiveTab('reviews')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('marketplace') && (
@@ -174,6 +202,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Sovereign Marketplace"
               isActive={activeTab === 'marketplace'}
               onClick={() => setActiveTab('marketplace')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('workflow') && showAdvanced && (
@@ -182,6 +211,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Workflow Engine"
               isActive={activeTab === 'workflow'}
               onClick={() => setActiveTab('workflow')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('drafting') && (
@@ -190,6 +220,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Legal Drafting"
               isActive={activeTab === 'drafting'}
               onClick={() => setActiveTab('drafting')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('vault') && (
@@ -198,6 +229,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Sovereign Vault"
               isActive={activeTab === 'vault'}
               onClick={() => setActiveTab('vault')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('chat') && (
@@ -206,6 +238,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Legal Chat"
               isActive={activeTab === 'chat'}
               onClick={() => setActiveTab('chat')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
 
@@ -221,6 +254,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Business Growth"
               isActive={activeTab === 'growth'}
               onClick={() => setActiveTab('growth')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('audit') && showAdvanced && (
@@ -229,6 +263,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Forensic Traces"
               isActive={activeTab === 'audit'}
               onClick={() => setActiveTab('audit')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
 
@@ -244,6 +279,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Project Roadmap"
               isActive={activeTab === 'status'}
               onClick={() => setActiveTab('status')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('system-settings') && (
@@ -252,6 +288,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Infrastructure Plane"
               isActive={activeTab === 'system-settings'}
               onClick={() => setActiveTab('system-settings')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
           {isAllowed('tenant-settings') && (
@@ -260,6 +297,7 @@ const Layout: React.FC<LayoutProps> = ({
               label="Tenant Settings"
               isActive={activeTab === 'tenant-settings'}
               onClick={() => setActiveTab('tenant-settings')}
+              setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
         </nav>
@@ -322,20 +360,27 @@ const Layout: React.FC<LayoutProps> = ({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-16 border-b border-brand-border bg-brand-sidebar flex items-center justify-between px-8 backdrop-blur-md sticky top-0 z-20 transition-all duration-500">
+      <main className="flex-1 flex flex-col overflow-hidden relative w-full">
+        <header className="h-16 border-b border-brand-border bg-brand-sidebar flex items-center justify-between px-4 lg:px-8 backdrop-blur-md sticky top-0 z-20 transition-all duration-500">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold text-brand-text capitalize">{activeTab.replace('-', ' ')}</h2>
+            <button
+              className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-brand-muted"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Open Sidebar"
+            >
+              <Menu size={24} />
+            </button>
+            <h2 className="text-sm lg:text-lg font-semibold text-brand-text capitalize truncate">{activeTab.replace('-', ' ')}</h2>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
+          <div className="flex items-center gap-2 lg:gap-4">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
               <ShieldCheck size={14} className="text-brand-primary" />
-              <span className="text-[10px] font-bold text-brand-primary uppercase tracking-widest">Protocol Secured</span>
+              <span className="text-[10px] font-bold text-brand-primary uppercase tracking-widest leading-none">Protocol Secured</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto bg-brand-bg p-8 scroll-smooth transition-colors duration-500">
+        <div className="flex-1 overflow-y-auto bg-brand-bg p-4 lg:p-8 scroll-smooth transition-colors duration-500">
           {children}
         </div>
       </main>
@@ -346,6 +391,9 @@ const Layout: React.FC<LayoutProps> = ({
           onNavigate={(tab) => {
             setActiveTab(tab);
             setIsPaletteOpen(false);
+            if (typeof setIsSidebarOpen === 'function') {
+              setIsSidebarOpen(false);
+            }
           }}
         />
       )}
@@ -353,9 +401,9 @@ const Layout: React.FC<LayoutProps> = ({
   );
 };
 
-const NavItem = ({ icon, label, isActive, onClick, disabled }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void, disabled?: boolean }) => (
+const NavItem = ({ icon, label, isActive, onClick, disabled, setIsSidebarOpen }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void, disabled?: boolean, setIsSidebarOpen?: (open: boolean) => void }) => (
   <button
-    onClick={onClick}
+    onClick={() => { onClick(); if (setIsSidebarOpen) setIsSidebarOpen(false); }}
     disabled={disabled}
     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${isActive
       ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-[0_0_12px_-4px_rgba(16,185,129,0.4)]'
