@@ -38,13 +38,6 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
 
    const isFirm = mode === AppMode.LAW_FIRM;
 
-   // Auto-populate token from URL
-   React.useEffect(() => {
-      if (initialToken && !inviteToken) {
-         setInviteToken(initialToken);
-      }
-   }, [initialToken, inviteToken]);
-
    // Password validation
    const validatePassword = (pwd: string): string[] => {
       const errors: string[] = [];
@@ -60,13 +53,14 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
       setPasswordErrors(validatePassword(pwd));
    };
 
-   const handleResolveLink = async () => {
+   const handleResolveLink = async (tokenOverride?: string) => {
       setIsProcessing(true);
+      const tokenToResolve = tokenOverride || inviteToken;
       try {
          const res = await fetch('/api/auth/resolve-invite', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: inviteToken })
+            body: JSON.stringify({ token: tokenToResolve })
          });
 
          if (!res.ok) {
@@ -97,6 +91,15 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
          setIsProcessing(false);
       }
    };
+
+   // Auto-populate token from URL and auto-resolve
+   React.useEffect(() => {
+      if (initialToken) {
+         setInviteToken(initialToken);
+         // If we have an initial token, automatically try to resolve it
+         handleResolveLink(initialToken);
+      }
+   }, [initialToken]);
 
 
    const handleFinalJoin = async () => {
@@ -196,7 +199,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                            />
                         </div>
                         <button
-                           onClick={handleResolveLink}
+                           onClick={() => handleResolveLink()}
                            disabled={!inviteToken || isProcessing}
                            className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-blue-900/20 group"
                         >

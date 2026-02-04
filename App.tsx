@@ -170,6 +170,7 @@ const AppContent: React.FC = () => {
       setIsPlatformMode={setIsPlatformMode}
       setIsOnboarding={setIsOnboarding}
       setIsUserInvitation={setIsUserInvitation}
+      initialToken={initialToken}
     >
       <div className="animate-fade-in-up">
         {activeTab === 'dashboard' && (
