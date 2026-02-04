@@ -35,7 +35,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'reviews': ['review_work'],
   'workflow': ['design_workflow'],
   'vault': ['upload_document', 'read_assigned_matter'],
-  'drafting': ['upload_document'],
+  'drafting': ['upload_document', 'create_draft'],
   'marketplace': ['read_assigned_matter'],
   'chat': ['create_matter', 'read_assigned_matter'],
 
@@ -50,21 +50,22 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
 // Default Permissions for Roles (Fallback/Mock)
 // Default Permissions for Roles (Fallback/Mock)
 export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  'TENANT_ADMIN': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow'],
-  'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'],
-  'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits'],
+  'TENANT_ADMIN': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review'],
+  'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft'],
+  'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts'],
   'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits'],
-  'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles'],
-  'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter'],
+  'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing'],
+  'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter', 'create_draft'],
   'CLIENT': ['read_assigned_matter', 'client_portal_access'],
   'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing'],
   'COMPLIANCE': ['read_all_audits', 'manage_tenant'],
   'FINANCE_BILLING': ['read_billing'],
+  'PARTNER': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users'],
+  'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'read_billing'],
+  'JUNIOR_ASSOCIATE': ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter'],
 
   // Approval Workflow Permissions
   'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform'],
-  'PARTNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final'], // Partner = Owner in this context
-  'JUNIOR_ASSOCIATE': ['create_draft', 'edit_draft', 'submit_review'],
   'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review'],
   'AUDITOR': ['read_all_audits', 'read_assigned_matter']
 };

@@ -24,6 +24,7 @@ import {
   Key,
   Database,
   Users,
+  UserPlus,
   TrendingUp,
   Coins,
   ClipboardList,
@@ -174,6 +175,31 @@ const Layout: React.FC<LayoutProps> = ({
             />
           )}
 
+
+          {/* Identity Governance Section */}
+          {(isAllowed('identity') || isAllowed('tenant-admin')) && (
+            <div className="pt-4 pb-2 px-4">
+              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Identity Governance</span>
+            </div>
+          )}
+          {isAllowed('identity') && (
+            <NavItem
+              icon={<Fingerprint size={18} />}
+              label="Access Governance"
+              isActive={activeTab === 'identity'}
+              onClick={() => setActiveTab('identity')}
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+          )}
+          {isAllowed('tenant-admin') && (
+            <NavItem
+              icon={<UserPlus size={18} />}
+              label="Practitioner Directory"
+              isActive={activeTab === 'tenant-admin'}
+              onClick={() => setActiveTab('tenant-admin')}
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+          )}
 
           {/* Operations Section */}
           {(isAllowed('conflict-check') || isAllowed('reviews') || isAllowed('workflow') || isAllowed('vault') || isAllowed('chat')) && (
