@@ -49,6 +49,17 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
         if (isOpen) fetchTemplates();
     }, [isOpen]);
 
+    // ESC key handler
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [isOpen, onClose]);
+
     const fetchTemplates = async () => {
         try {
             setIsLoading(true);
@@ -91,7 +102,7 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
             <div className="bg-slate-900 border border-slate-800 rounded-[3rem] w-full max-w-6xl h-[85vh] shadow-[0_0_100px_rgba(0,0,0,0.8)] relative overflow-hidden flex flex-col">
 
                 {/* Header */}
-                <div className="p-8 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900/50">
+                <div className="p-8 border-b border-slate-800 flex items-center justify-between gap-6 bg-slate-900/50">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-emerald-600/20 rounded-2xl border border-emerald-600/30">
                             <FileText className="text-emerald-400" size={24} />
@@ -103,7 +114,7 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="relative">
+                        <div className="relative hidden md:block">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                             <input
                                 type="text"
@@ -113,9 +124,27 @@ const DocumentTemplateMarketplace: React.FC<DocumentTemplateMarketplaceProps> = 
                                 onChange={e => setFilter(e.target.value)}
                             />
                         </div>
-                        <button onClick={onClose} title="Close Library" className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                        <button
+                            onClick={onClose}
+                            title="Close Library"
+                            className="p-3 bg-slate-800 hover:bg-slate-700 rounded-2xl text-slate-400 hover:text-white transition-all border border-slate-700 hover:border-slate-600 shadow-lg"
+                        >
                             <X size={24} />
                         </button>
+                    </div>
+                </div>
+
+                {/* Mobile Search Bar */}
+                <div className="md:hidden px-8 py-4 border-b border-slate-800 bg-slate-900/30">
+                    <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search blueprints..."
+                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 transition-all"
+                            value={filter}
+                            onChange={e => setFilter(e.target.value)}
+                        />
                     </div>
                 </div>
 
