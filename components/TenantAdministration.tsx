@@ -48,6 +48,8 @@ const TenantAdministration: React.FC = () => {
    const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL' });
    const [availableRoles, setAvailableRoles] = useState<{ id: string, name: string, isSystem: boolean }[]>([]);
    const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+   const [searchTerm, setSearchTerm] = useState('');
+   const [emailError, setEmailError] = useState('');
 
    React.useEffect(() => {
       const fetchInitialData = async () => {
@@ -80,7 +82,35 @@ const TenantAdministration: React.FC = () => {
       fetchInitialData();
    }, []);
 
+   // ESC key handler for modal
+   React.useEffect(() => {
+      const handleEscape = (e: KeyboardEvent) => {
+         if (e.key === 'Escape' && showInviteModal) {
+            setShowInviteModal(false);
+            setEmailError('');
+         }
+      };
+      window.addEventListener('keydown', handleEscape);
+      return () => window.removeEventListener('keydown', handleEscape);
+   }, [showInviteModal]);
+
+   const validateEmail = (email: string): boolean => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+   };
+
    const generateInvite = async () => {
+      // Validate email
+      if (!inviteForm.email.trim()) {
+         setEmailError('Email address is required');
+         return;
+      }
+      if (!validateEmail(inviteForm.email)) {
+         setEmailError('Please enter a valid email address');
+         return;
+      }
+      setEmailError('');
+
       const session = getSavedSession();
       if (!session?.token) return;
 
@@ -99,7 +129,7 @@ const TenantAdministration: React.FC = () => {
       } catch (e: unknown) {
          console.error(e);
          const msg = e instanceof Error ? e.message : "Invitation failed. Verify your administrative session.";
-         alert(msg);
+         setEmailError(msg);
       } finally {
          setIsGenerating(false);
       }
@@ -142,81 +172,105 @@ const TenantAdministration: React.FC = () => {
 
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             <div className="lg:col-span-12">
-               {activeTab === 'users' && (
-                  <div className="space-y-6">
-                     <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
-                           <div className="relative">
-                              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-                              <input
-                                 type="text"
-                                 placeholder="Search personnel..."
-                                 className="bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500/50 w-72"
-                              />
+               {activeTab === 'users' && (() => {
+                  const filteredUsers = users.filter(u =>
+                     u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     u.role.toLowerCase().includes(searchTerm.toLowerCase())
+                  );
+
+                  return (
+                     <div className="space-y-6">
+                        <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                           <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+                              <div className="relative">
+                                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                                 <input
+                                    type="text"
+                                    placeholder="Search personnel..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500/50 w-72 transition-all"
+                                    aria-label="Search users by name, email, or role"
+                                 />
+                              </div>
+                              <button
+                                 onClick={() => { setShowInviteModal(true); setGeneratedLink(''); setCopySuccess(false); setIsEmailing(false); setEmailError(''); }}
+                                 className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20"
+                                 aria-label="Invite new practitioner"
+                              >
+                                 <UserPlus size={16} /> Invite Practitioner
+                              </button>
                            </div>
-                           <button
-                              onClick={() => { setShowInviteModal(true); setGeneratedLink(''); setCopySuccess(false); setIsEmailing(false); }}
-                              className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20"
-                           >
-                              <UserPlus size={16} /> Invite Practitioner
-                           </button>
-                        </div>
-                        <div className="overflow-x-auto">
-                           <table className="w-full text-left">
-                              <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                                 <tr>
-                                    <th className="px-8 py-4">User Identity</th>
-                                    <th className="px-8 py-4">Sovereign Role</th>
-                                    <th className="px-8 py-4 text-center">Security</th>
-                                    <th className="px-8 py-4 text-right">Last Session</th>
-                                 </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-800/50">
-                                 {users.map(user => (
-                                    <tr key={user.id} className="hover:bg-slate-800/20 transition-all group">
-                                       <td className="px-8 py-5">
-                                          <div className="flex items-center gap-4">
-                                             <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-purple-400 font-bold border border-slate-700 group-hover:bg-purple-500/10 transition-colors">
-                                                {user.name.charAt(0)}
-                                             </div>
-                                             <div>
-                                                <p className="text-sm font-bold text-white tracking-tight">{user.name}</p>
-                                                <p className="text-[10px] text-slate-500 font-mono lowercase">{user.email}</p>
-                                             </div>
-                                          </div>
-                                       </td>
-                                       <td className="px-8 py-5">
-                                          <span className={`px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase border ${user.role === UserRole.TENANT_ADMIN ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'
-                                             }`}>
-                                             {user.role}
-                                          </span>
-                                       </td>
-                                       <td className="px-8 py-5">
-                                          <div className="flex justify-center">
-                                             {user.mfaEnabled ? (
-                                                <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-400/5 px-2 py-1 rounded-lg border border-emerald-400/20">
-                                                   <Fingerprint size={12} />
-                                                   <span className="text-[8px] font-bold uppercase">MFA Active</span>
-                                                </div>
-                                             ) : (
-                                                <div className="flex items-center gap-1.5 text-amber-500 bg-amber-500/5 px-2 py-1 rounded-lg border border-amber-500/20">
-                                                   <ShieldAlert size={12} />
-                                                   <span className="text-[8px] font-bold uppercase">MFA Required</span>
-                                                </div>
-                                             )}
-                                          </div>
-                                       </td>
-                                       <td className="px-8 py-5 text-right">
-                                          <span className="text-[10px] font-mono text-slate-500">{user.lastActive}</span>
-                                       </td>
+                           <div className="overflow-x-auto">
+                              <table className="w-full text-left">
+                                 <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                                    <tr>
+                                       <th className="px-8 py-4">User Identity</th>
+                                       <th className="px-8 py-4">Sovereign Role</th>
+                                       <th className="px-8 py-4 text-center">Security</th>
+                                       <th className="px-8 py-4 text-right">Last Session</th>
                                     </tr>
-                                 ))}
-                              </tbody>
-                           </table>
+                                 </thead>
+                                 <tbody className="divide-y divide-slate-800/50">
+                                    {filteredUsers.length === 0 ? (
+                                       <tr>
+                                          <td colSpan={4} className="px-8 py-12 text-center">
+                                             <div className="flex flex-col items-center gap-3 text-slate-600">
+                                                <Users size={32} className="opacity-20" />
+                                                <p className="text-sm font-bold">No users found</p>
+                                                <p className="text-xs">Try adjusting your search criteria</p>
+                                             </div>
+                                          </td>
+                                       </tr>
+                                    ) : (
+                                       filteredUsers.map(user => (
+                                          <tr key={user.id} className="hover:bg-slate-800/20 transition-all group">
+                                             <td className="px-8 py-5">
+                                                <div className="flex items-center gap-4">
+                                                   <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-purple-400 font-bold border border-slate-700 group-hover:bg-purple-500/10 transition-colors">
+                                                      {user.name.charAt(0)}
+                                                   </div>
+                                                   <div>
+                                                      <p className="text-sm font-bold text-white tracking-tight">{user.name}</p>
+                                                      <p className="text-[10px] text-slate-500 font-mono lowercase">{user.email}</p>
+                                                   </div>
+                                                </div>
+                                             </td>
+                                             <td className="px-8 py-5">
+                                                <span className={`px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase border ${user.role === UserRole.TENANT_ADMIN ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'
+                                                   }`}>
+                                                   {user.role}
+                                                </span>
+                                             </td>
+                                             <td className="px-8 py-5">
+                                                <div className="flex justify-center">
+                                                   {user.mfaEnabled ? (
+                                                      <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-400/5 px-2 py-1 rounded-lg border border-emerald-400/20">
+                                                         <Fingerprint size={12} />
+                                                         <span className="text-[8px] font-bold uppercase">MFA Active</span>
+                                                      </div>
+                                                   ) : (
+                                                      <div className="flex items-center gap-1.5 text-amber-500 bg-amber-500/5 px-2 py-1 rounded-lg border border-amber-500/20">
+                                                         <ShieldAlert size={12} />
+                                                         <span className="text-[8px] font-bold uppercase">MFA Required</span>
+                                                      </div>
+                                                   )}
+                                                </div>
+                                             </td>
+                                             <td className="px-8 py-5 text-right">
+                                                <span className="text-[10px] font-mono text-slate-500">{user.lastActive}</span>
+                                             </td>
+                                          </tr>
+                                       ))
+                                    )}
+                                 </tbody>
+                              </table>
+                           </div>
                         </div>
                      </div>
-                  </div>
-               )}
+                  );
+               })()}
 
                {activeTab === 'chatbot' && <ChatbotStudio />}
 
@@ -317,7 +371,12 @@ const TenantAdministration: React.FC = () => {
 
          {/* Invite Modal */}
          {showInviteModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-xl">
+            <div
+               className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-xl"
+               role="dialog"
+               aria-modal="true"
+               aria-labelledby="invite-modal-title"
+            >
                <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-[2.5rem] p-10 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-6 opacity-5"><LinkIcon size={120} /></div>
 
@@ -327,11 +386,16 @@ const TenantAdministration: React.FC = () => {
                            <UserPlus className="text-purple-400" size={24} />
                         </div>
                         <div>
-                           <h4 className="text-xl font-bold text-white tracking-tight">Sovereign Invite</h4>
+                           <h4 id="invite-modal-title" className="text-xl font-bold text-white tracking-tight">Sovereign Invite</h4>
                            <p className="text-xs text-slate-500">Generating cryptographically-signed link.</p>
                         </div>
                      </div>
-                     <button onClick={() => setShowInviteModal(false)} title="Close Modal" className="p-2 hover:bg-slate-800 rounded-full text-slate-500 transition-colors">
+                     <button
+                        onClick={() => { setShowInviteModal(false); setEmailError(''); }}
+                        title="Close Modal"
+                        className="p-2 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors"
+                        aria-label="Close invite modal"
+                     >
                         <X size={20} />
                      </button>
                   </div>
@@ -369,14 +433,25 @@ const TenantAdministration: React.FC = () => {
                      ) : (
                         <div className="space-y-6">
                            <div className="space-y-2">
-                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                              <label htmlFor="invite-email" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
                               <input
+                                 id="invite-email"
                                  type="email"
                                  placeholder="personnel@organization.internal"
-                                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                 className={`w-full bg-slate-950 border rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 transition-all ${emailError ? 'border-red-500 focus:ring-red-500' : 'border-slate-800 focus:ring-purple-500'
+                                    }`}
                                  value={inviteForm.email}
-                                 onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}
+                                 onChange={e => { setInviteForm({ ...inviteForm, email: e.target.value }); setEmailError(''); }}
+                                 aria-required="true"
+                                 aria-invalid={emailError ? "true" : "false"}
+                                 aria-describedby={emailError ? "email-error" : undefined}
                               />
+                              {emailError && (
+                                 <p id="email-error" className="text-xs text-red-400 ml-1 flex items-center gap-1.5 animate-in slide-in-from-top-2">
+                                    <ShieldAlert size={12} />
+                                    {emailError}
+                                 </p>
+                              )}
                            </div>
                            <div className="space-y-2">
                               <label htmlFor="enclave-role" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Enclave Role</label>
