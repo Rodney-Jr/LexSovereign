@@ -70,19 +70,33 @@ const PERMISSIONS = [
     // Public Sector
     { id: 'draft_legislation', description: 'Draft legislative instruments', resource: 'LEGAL', action: 'DRAFT_LAW' },
     { id: 'manage_public_disclosure', description: 'Manage FOI and public disclosure requests', resource: 'GOVERNANCE', action: 'DISCLOSE' },
+
+    // Approval & Portal
+    { id: 'create_draft', description: 'Create document drafts', resource: 'DOCUMENT', action: 'CREATE_DRAFT' },
+    { id: 'edit_draft', description: 'Edit existing drafts', resource: 'DOCUMENT', action: 'EDIT_DRAFT' },
+    { id: 'approve_document', description: 'Approve finalized documents', resource: 'DOCUMENT', action: 'APPROVE' },
+    { id: 'submit_review', description: 'Submit work for review', resource: 'WORK', action: 'SUBMIT' },
+    { id: 'export_final', description: 'Export finalized documents', resource: 'DOCUMENT', action: 'EXPORT' },
+    { id: 'client_portal_access', description: 'Access to client portal', resource: 'PORTAL', action: 'ACCESS' },
 ];
 
 const ROLES = [
-    { name: 'GLOBAL_ADMIN', permissions: ['manage_platform', 'create_tenant', 'configure_bridge', 'read_all_audits'] },
-    { name: 'TENANT_ADMIN', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'approve_spend', 'create_matter'] },
-    { name: 'PARTNER', permissions: ['sign_document', 'close_matter', 'create_matter', 'edit_document', 'override_ai', 'approve_spend'] },
-    { name: 'SENIOR_COUNSEL', permissions: ['create_matter', 'edit_document', 'override_ai', 'draft_document'] },
-    { name: 'INTERNAL_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document'] },
-    { name: 'JUNIOR_ASSOCIATE', permissions: ['draft_document', 'upload_document'] },
-    { name: 'LEGAL_OPS', permissions: ['design_workflow', 'manage_users', 'read_billing', 'read_all_audits'] },
+    { name: 'GLOBAL_ADMIN', permissions: ['manage_platform', 'manage_tenant', 'read_all_audits'] },
+    { name: 'TENANT_ADMIN', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review'] },
+    { name: 'PARTNER', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow'] },
+    { name: 'SENIOR_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'read_billing'] },
+    { name: 'INTERNAL_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft'] },
+    { name: 'JUNIOR_ASSOCIATE', permissions: ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter'] },
+    { name: 'LEGAL_OPS', permissions: ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts'] },
     { name: 'COMPLIANCE', permissions: ['read_all_audits', 'manage_tenant'] },
     { name: 'FINANCE_BILLING', permissions: ['read_billing'] },
-    { name: 'EXTERNAL_COUNSEL', permissions: ['upload_document', 'draft_document'] }
+    { name: 'EXTERNAL_COUNSEL', permissions: ['read_assigned_matter', 'upload_document', 'create_matter', 'create_draft'] },
+    { name: 'DEPUTY_GC', permissions: ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing', 'design_workflow'] },
+    { name: 'CLIENT', permissions: ['read_assigned_matter', 'client_portal_access'] },
+    { name: 'EXECUTIVE_BOARD', permissions: ['read_all_audits', 'read_billing'] },
+    { name: 'OWNER', permissions: ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform'] },
+    { name: 'PARALEGAL', permissions: ['create_draft', 'edit_draft', 'submit_review'] },
+    { name: 'AUDITOR', permissions: ['read_all_audits', 'read_assigned_matter'] }
 ];
 
 async function main() {
