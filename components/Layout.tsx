@@ -176,16 +176,28 @@ const Layout: React.FC<LayoutProps> = ({
           )}
 
 
-          {/* Identity Governance Section */}
-          {(isAllowed('identity') || isAllowed('tenant-admin')) && (
+          {/* Firm Management Section */}
+          {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity')) && (
             <div className="pt-4 pb-2 px-4">
-              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Identity Governance</span>
+              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Firm Management</span>
             </div>
           )}
+
+          {/* Capacity - Promoted to top of Firm Mgmt */}
+          {isAllowed('capacity') && (
+            <NavItem
+              icon={<Activity size={18} className="text-brand-secondary" />}
+              label="Workload & Capacity"
+              isActive={activeTab === 'capacity'}
+              onClick={() => setActiveTab('capacity')}
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+          )}
+
           {isAllowed('identity') && (
             <NavItem
               icon={<Fingerprint size={18} />}
-              label="Access Governance"
+              label="User Management"
               isActive={activeTab === 'identity'}
               onClick={() => setActiveTab('identity')}
               setIsSidebarOpen={setIsSidebarOpen}
@@ -194,22 +206,15 @@ const Layout: React.FC<LayoutProps> = ({
           {isAllowed('tenant-admin') && (
             <NavItem
               icon={<UserPlus size={18} />}
-              label="Practitioner Directory"
+              label="Firm Directory"
               isActive={activeTab === 'tenant-admin'}
               onClick={() => setActiveTab('tenant-admin')}
               setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
-          {isAllowed('capacity') && (
-            <NavItem
-              icon={<Activity size={18} className="text-brand-secondary" />}
-              label="Capacity Intelligence"
-              isActive={activeTab === 'capacity'}
-              onClick={() => setActiveTab('capacity')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('org-blueprint') && (
+
+          {/* Technical Items - Moved to Advanced */}
+          {isAllowed('org-blueprint') && showAdvanced && (
             <NavItem
               icon={<GitBranch size={18} />}
               label="Organization Blueprint"
@@ -218,7 +223,7 @@ const Layout: React.FC<LayoutProps> = ({
               setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
-          {isAllowed('integration-bridge') && (
+          {isAllowed('integration-bridge') && showAdvanced && (
             <NavItem
               icon={<Plug size={18} />}
               label="Bridge Registry"

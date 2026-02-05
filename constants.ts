@@ -41,7 +41,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
 
   // Finance/Growth
   'growth': ['read_billing'],
-  'capacity': ['read_billing', 'manage_users'],
+  'capacity': ['manage_users'],
   'system-settings': ['manage_platform'],
   'tenant-settings': ['manage_tenant'],
   'status': ['manage_platform'],
