@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "Matter" ADD COLUMN     "complexityWeight" DOUBLE PRECISION NOT NULL DEFAULT 5.0;
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "credentials" JSONB DEFAULT '[]',
+ADD COLUMN     "jurisdictionPins" JSONB DEFAULT '[]',
+ADD COLUMN     "maxWeeklyHours" DOUBLE PRECISION NOT NULL DEFAULT 40.0,
+ADD COLUMN     "roleSeniority" DOUBLE PRECISION NOT NULL DEFAULT 1.0;
