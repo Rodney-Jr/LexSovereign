@@ -200,6 +200,24 @@ const Layout: React.FC<LayoutProps> = ({
               setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
+          {isAllowed('org-blueprint') && (
+            <NavItem
+              icon={<GitBranch size={18} />}
+              label="Organization Blueprint"
+              isActive={activeTab === 'org-blueprint'}
+              onClick={() => setActiveTab('org-blueprint')}
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+          )}
+          {isAllowed('integration-bridge') && (
+            <NavItem
+              icon={<Plug size={18} />}
+              label="Bridge Registry"
+              isActive={activeTab === 'integration-bridge'}
+              onClick={() => setActiveTab('integration-bridge')}
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+          )}
 
           {/* Operations Section */}
           {(isAllowed('conflict-check') || isAllowed('reviews') || isAllowed('workflow') || isAllowed('vault') || isAllowed('chat')) && (

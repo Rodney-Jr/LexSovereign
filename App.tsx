@@ -62,12 +62,19 @@ const AppContent: React.FC = () => {
   const [isUserInvitation, setIsUserInvitation] = useState(false);
   const [initialToken, setInitialToken] = useState('');
   const [showMatterModal, setShowMatterModal] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [resetToken, setResetToken] = useState('');
 
   // URL Invitation Discovery
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
-    if (token) {
+    const resetTokenParam = params.get('resetToken');
+
+    if (resetTokenParam) {
+      setResetToken(resetTokenParam);
+      setIsResettingPassword(true);
+    } else if (token) {
       setInitialToken(token);
       setIsUserInvitation(true);
     } else if (window.location.pathname === '/join') {
@@ -174,6 +181,9 @@ const AppContent: React.FC = () => {
       setIsOnboarding={setIsOnboarding}
       setIsUserInvitation={setIsUserInvitation}
       initialToken={initialToken}
+      isResettingPassword={isResettingPassword}
+      resetToken={resetToken}
+      setIsResettingPassword={setIsResettingPassword}
     >
       <div className="animate-fade-in-up">
         {activeTab === 'dashboard' && (

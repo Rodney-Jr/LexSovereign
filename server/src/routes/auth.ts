@@ -568,4 +568,91 @@ router.delete('/invites/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'G
     }
 });
 
+// 9. Forgot Password - PUBLIC
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            // Return success anyway to avoid email enumeration
+            res.json({ success: true, message: 'If an account exists, a reset link has been generated.' });
+            return;
+        }
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 3600000); // 1 hour
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                resetToken: token,
+                resetTokenExpires: expires
+            }
+        });
+
+        // LOGGING TOKEN FOR DEMO
+        console.log(`[AUTH] Password Reset Token for ${email}: ${token}`);
+        console.log(`[AUTH] URL: http://localhost:5173/?resetToken=${token}`);
+
+        res.json({ success: true, message: 'Instructions sent to email.' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 10. Verify Reset Token - PUBLIC
+router.post('/verify-reset-token', async (req, res) => {
+    try {
+        const { token } = req.body;
+        const user = await prisma.user.findFirst({
+            where: {
+                resetToken: token,
+                resetTokenExpires: { gt: new Date() }
+            }
+        });
+
+        if (!user) {
+            res.status(400).json({ error: 'Invalid or expired token' });
+            return;
+        }
+
+        res.json({ success: true, email: user.email });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 11. Reset Password - PUBLIC
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        const user = await prisma.user.findFirst({
+            where: {
+                resetToken: token,
+                resetTokenExpires: { gt: new Date() }
+            }
+        });
+
+        if (!user) {
+            res.status(400).json({ error: 'Invalid or expired token' });
+            return;
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                passwordHash: hashedPassword,
+                resetToken: null,
+                resetTokenExpires: null
+            }
+        });
+
+        res.json({ success: true, message: 'Password reset successfully' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

@@ -67,6 +67,61 @@ const assertions = [
         name: "Global Admin CAN access System Settings",
         check: () => canAccess(UserRole.GLOBAL_ADMIN, 'system-settings'),
         expected: true
+    },
+    {
+        name: "LEGAL_OPS CAN access Practitioner Directory",
+        check: () => canAccess(UserRole.LEGAL_OPS, 'tenant-admin'),
+        expected: true
+    },
+    {
+        name: "LEGAL_OPS CAN access Workflow Engine",
+        check: () => canAccess(UserRole.LEGAL_OPS, 'workflow'),
+        expected: true
+    },
+    {
+        name: "LEGAL_OPS CAN access Legal Drafting",
+        check: () => canAccess(UserRole.LEGAL_OPS, 'drafting'),
+        expected: true
+    },
+    {
+        name: "PARTNER CAN access Billing/Growth",
+        check: () => canAccess(UserRole.PARTNER, 'growth'),
+        expected: true
+    },
+    {
+        name: "PARTNER CAN access Forensic Traces/Audit",
+        check: () => canAccess(UserRole.PARTNER, 'audit'),
+        expected: true
+    },
+    {
+        name: "PARTNER CAN access Practitioner Directory",
+        check: () => canAccess(UserRole.PARTNER, 'tenant-admin'),
+        expected: true
+    },
+    {
+        name: "DEPUTY_GC CAN access Billing/Growth",
+        check: () => canAccess(UserRole.DEPUTY_GC, 'growth'),
+        expected: true
+    },
+    {
+        name: "DEPUTY_GC CAN access Forensic Traces/Audit",
+        check: () => canAccess(UserRole.DEPUTY_GC, 'audit'),
+        expected: true
+    },
+    {
+        name: "DEPUTY_GC CAN access Practitioner Directory",
+        check: () => canAccess(UserRole.DEPUTY_GC, 'tenant-admin'),
+        expected: true
+    },
+    {
+        name: "JUNIOR_ASSOCIATE CAN access Matter Creation (via conflict check or chat)",
+        check: () => canAccess(UserRole.JUNIOR_ASSOCIATE, 'conflict-check') && canAccess(UserRole.JUNIOR_ASSOCIATE, 'chat'),
+        expected: true
+    },
+    {
+        name: "JUNIOR_ASSOCIATE cannot access Growth",
+        check: () => !canAccess(UserRole.JUNIOR_ASSOCIATE, 'growth'),
+        expected: true
     }
 ];
 

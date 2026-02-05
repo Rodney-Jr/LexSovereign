@@ -31,6 +31,9 @@ interface AppRouterProps {
     setIsOnboarding: (active: boolean) => void;
     setIsUserInvitation: (active: boolean) => void;
     initialToken?: string;
+    isResettingPassword?: boolean;
+    resetToken?: string;
+    setIsResettingPassword?: (active: boolean) => void;
     children: React.ReactNode;
 }
 
@@ -57,6 +60,9 @@ const AppRouter: React.FC<AppRouterProps> = ({
     setIsOnboarding,
     setIsUserInvitation,
     initialToken,
+    isResettingPassword,
+    resetToken,
+    setIsResettingPassword,
     children
 }) => {
     if (isOnboarding) {
@@ -101,6 +107,26 @@ const AppRouter: React.FC<AppRouterProps> = ({
                         } else {
                             console.error('[AppRouter] No session found in localStorage!');
                         }
+                    }}
+                />
+            </Suspense>
+        );
+    }
+
+    if (isResettingPassword && resetToken) {
+        const ResetPassword = React.lazy(() => import('./ResetPassword'));
+        return (
+            <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+                <ResetPassword
+                    token={resetToken}
+                    onComplete={() => {
+                        if (setIsResettingPassword) setIsResettingPassword(false);
+                        // Redirect to login (AuthFlow will be shown as isAuthenticated is false)
+                        window.history.replaceState({}, document.title, "/");
+                    }}
+                    onBack={() => {
+                        if (setIsResettingPassword) setIsResettingPassword(false);
+                        window.history.replaceState({}, document.title, "/");
                     }}
                 />
             </Suspense>

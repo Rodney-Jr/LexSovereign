@@ -60,6 +60,7 @@ export enum UserRole {
   FINANCE_BILLING = 'FINANCE_BILLING',
   CLIENT = 'CLIENT',
   EXECUTIVE_BOARD = 'EXECUTIVE_BOARD',
+  DEPUTY_GC = 'DEPUTY_GC',
   // New Roles for Approval Workflow
   OWNER = 'OWNER',
   PARALEGAL = 'PARALEGAL',

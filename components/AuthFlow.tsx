@@ -35,6 +35,8 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    const [isProcessing, setIsProcessing] = useState(false);
    const [error, setError] = useState<string | null>(null);
    const [logoClicks, setLogoClicks] = useState(0);
+   const [isForgotPassword, setIsForgotPassword] = useState(false);
+   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
 
    const handleLogoClick = () => {
       const nextClicks = logoClicks + 1;
@@ -42,6 +44,32 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       if (nextClicks === 5) {
          setLogoClicks(0);
          onSecretTrigger?.();
+      }
+   };
+
+   const handleForgotPassword = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsProcessing(true);
+      setError(null);
+
+      try {
+         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+         const response = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
+            },
+            body: JSON.stringify({ email })
+         });
+
+         const data = await response.json();
+         if (!response.ok) throw new Error(data.error || 'Failed to send reset link');
+         setForgotPasswordSent(true);
+      } catch (err: unknown) {
+         setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+         setIsProcessing(false);
       }
    };
 
@@ -132,101 +160,182 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl">
-               <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                     <h3 className="text-2xl font-bold text-white">
-                        {isLogin ? 'Welcome Back' : 'Create Account'}
-                     </h3>
-                     <p className="text-slate-400 text-sm leading-relaxed">
-                        {isLogin ? 'Access your sovereign workspace.' : 'Join the frontier of sovereign legal technology.'}
-                     </p>
-                  </div>
-
-                  {error && (
-                     <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in shake duration-300">
-                        <AlertCircle size={18} />
-                        <p>{error}</p>
+               {isForgotPassword ? (
+                  <form onSubmit={handleForgotPassword} className="space-y-6">
+                     <div className="space-y-2">
+                        <h3 className="text-2xl font-bold text-white">Reset Access</h3>
+                        <p className="text-slate-400 text-sm leading-relaxed">
+                           Enter your email to receive a secure recovery link.
+                        </p>
                      </div>
-                  )}
 
-                  <div className="space-y-4">
-                     {!isLogin && (
-                        <div className="relative group">
-                           <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
-                           <input
-                              type="text"
-                              required
-                              value={name}
-                              onChange={e => setName(e.target.value)}
-                              className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
-                              placeholder="Full Name"
-                           />
+                     {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in shake duration-300">
+                           <AlertCircle size={18} />
+                           <p>{error}</p>
                         </div>
                      )}
 
-                     <div className="relative group">
-                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
-                        <input
-                           type="email"
-                           required
-                           value={email}
-                           onChange={e => setEmail(e.target.value)}
-                           className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
-                           placeholder="Legal Email Address"
-                        />
-                     </div>
-
-                     <div className="relative group">
-                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
-                        <input
-                           type={showPassword ? 'text' : 'password'}
-                           required
-                           value={password}
-                           onChange={e => setPassword(e.target.value)}
-                           className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-14 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
-                           placeholder="Secure Password"
-                        />
-                        <button
-                           type="button"
-                           onClick={() => setShowPassword(!showPassword)}
-                           className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors"
-                        >
-                           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                        </button>
-                     </div>
-                  </div>
-
-                  <button
-                     type="submit"
-                     disabled={isProcessing}
-                     className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20 group active:scale-95"
-                  >
-                     {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
-                     {isProcessing ? "Authenticating..." : isLogin ? "Sign In" : "Register Silo"}
-                  </button>
-
-                  {isLogin && (
-                     <div className="space-y-4">
-                        <div className="flex items-center gap-4 py-2">
-                           <div className="h-[1px] bg-slate-800 flex-1"></div>
-                           <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Or Continue With</span>
-                           <div className="h-[1px] bg-slate-800 flex-1"></div>
+                     {forgotPasswordSent ? (
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-2xl space-y-4 text-center">
+                           <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto">
+                              <ShieldCheck className="text-emerald-400" size={24} />
+                           </div>
+                           <p className="text-emerald-400 text-sm font-medium">Link Injected Into System Logs.</p>
+                           <p className="text-slate-500 text-xs italic leading-relaxed">"If an account exists, a reset authority token has been generated."</p>
+                           <button
+                              type="button"
+                              onClick={() => {
+                                 setIsForgotPassword(false);
+                                 setForgotPasswordSent(false);
+                              }}
+                              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
+                           >
+                              Return to Login
+                           </button>
                         </div>
+                     ) : (
+                        <>
+                           <div className="relative group">
+                              <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
+                              <input
+                                 type="email"
+                                 required
+                                 value={email}
+                                 onChange={e => setEmail(e.target.value)}
+                                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
+                                 placeholder="Legal Email Address"
+                              />
+                           </div>
 
-                        <div className="flex justify-center">
-                           <GoogleLogin
-                              onSuccess={handleGoogleSuccess}
-                              onError={() => setError('Google Login Failed')}
-                              useOneTap
-                              theme="filled_black"
-                              shape="pill"
-                              text="continue_with"
-                              width="100%"
+                           <button
+                              type="submit"
+                              disabled={isProcessing}
+                              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20 group active:scale-95"
+                           >
+                              {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
+                              {isProcessing ? "Processing..." : "Request Reset Authority"}
+                           </button>
+
+                           <button
+                              type="button"
+                              onClick={() => setIsForgotPassword(false)}
+                              className="w-full text-xs text-slate-500 hover:text-white font-bold uppercase tracking-widest text-center transition-colors"
+                           >
+                              Back to sign in
+                           </button>
+                        </>
+                     )}
+                  </form>
+               ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                     <div className="space-y-2">
+                        <h3 className="text-2xl font-bold text-white">
+                           {isLogin ? 'Welcome Back' : 'Create Account'}
+                        </h3>
+                        <p className="text-slate-400 text-sm leading-relaxed">
+                           {isLogin ? 'Access your sovereign workspace.' : 'Join the frontier of sovereign legal technology.'}
+                        </p>
+                     </div>
+
+                     {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in shake duration-300">
+                           <AlertCircle size={18} />
+                           <p>{error}</p>
+                        </div>
+                     )}
+
+                     <div className="space-y-4">
+                        {!isLogin && (
+                           <div className="relative group">
+                              <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
+                              <input
+                                 type="text"
+                                 required
+                                 value={name}
+                                 onChange={e => setName(e.target.value)}
+                                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
+                                 placeholder="Full Name"
+                              />
+                           </div>
+                        )}
+
+                        <div className="relative group">
+                           <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
+                           <input
+                              type="email"
+                              required
+                              value={email}
+                              onChange={e => setEmail(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
+                              placeholder="Legal Email Address"
                            />
                         </div>
+
+                        <div className="relative group">
+                           <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
+                           <input
+                              type={showPassword ? 'text' : 'password'}
+                              required
+                              value={password}
+                              onChange={e => setPassword(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-14 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
+                              placeholder="Secure Password"
+                           />
+                           <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors"
+                           >
+                              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                           </button>
+                        </div>
                      </div>
-                  )}
-               </form>
+
+                     {isLogin && (
+                        <div className="flex justify-end">
+                           <button
+                              type="button"
+                              onClick={() => setIsForgotPassword(true)}
+                              className="text-[10px] font-bold text-slate-500 hover:text-emerald-400 uppercase tracking-widest transition-colors"
+                           >
+                              Forgot Password?
+                           </button>
+                        </div>
+                     )}
+
+                     <button
+                        type="submit"
+                        disabled={isProcessing}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20 group active:scale-95"
+                     >
+                        {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
+                        {isProcessing ? "Authenticating..." : isLogin ? "Sign In" : "Register Silo"}
+                     </button>
+
+                     {isLogin && (
+                        <div className="space-y-4">
+                           <div className="flex items-center gap-4 py-2">
+                              <div className="h-[1px] bg-slate-800 flex-1"></div>
+                              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Or Continue With</span>
+                              <div className="h-[1px] bg-slate-800 flex-1"></div>
+                           </div>
+
+                           <div className="flex justify-center">
+                              <GoogleLogin
+                                 onSuccess={handleGoogleSuccess}
+                                 onError={() => setError('Google Login Failed')}
+                                 useOneTap
+                                 theme="filled_black"
+                                 shape="pill"
+                                 text="continue_with"
+                                 width="100%"
+                              />
+                           </div>
+                        </div>
+                     )}
+                  </form>
+               )}
 
                <div className="mt-8 pt-8 border-t border-slate-800 flex flex-col gap-4">
                   <button

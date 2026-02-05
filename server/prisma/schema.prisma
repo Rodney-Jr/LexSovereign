@@ -41,6 +41,10 @@ model User {
   // OIDC / Federation
   provider          String    @default("LOCAL")
   providerId        String?
+
+  // Password Reset
+  resetToken        String?   @unique
+  resetTokenExpires DateTime?
 }
 
 model Role {
