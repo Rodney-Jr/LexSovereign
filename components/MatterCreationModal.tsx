@@ -37,7 +37,6 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<UploadedFile[]>([]);
   const isFirm = mode === AppMode.LAW_FIRM;
-
   const [formData, setFormData] = useState({
     name: '',
     client: '',
@@ -51,8 +50,53 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
       lead: { viewPrivileged: true, exportSovereign: true, overrideAI: true },
       associate: { viewPrivileged: true, exportSovereign: false, overrideAI: true },
       external: { viewPrivileged: false, exportSovereign: false, overrideAI: false }
-    } as RbacMatrix
+    } as RbacMatrix,
+    complexityWeight: 5.0,
+    overrideJustification: ''
   });
+
+  const [practitioners, setPractitioners] = useState<any[]>([]);
+  const [capacityStatus, setCapacityStatus] = useState<any>(null);
+  const [showOverrideInput, setShowOverrideInput] = useState(false);
+
+  useEffect(() => {
+    const fetchPractitioners = async () => {
+      const session = getSavedSession();
+      if (!session?.token) return;
+      try {
+        const data = await authorizedFetch('/api/users', { token: session.token });
+        setPractitioners(data);
+      } catch (e) {
+        console.error("Failed to fetch practitioners:", e);
+      }
+    };
+    fetchPractitioners();
+  }, []);
+
+  useEffect(() => {
+    if (formData.internalCounsel) {
+      validateCapacity();
+    }
+  }, [formData.internalCounsel, formData.complexityWeight, formData.riskLevel]);
+
+  const validateCapacity = async () => {
+    // In a real app, this would be an API call to CapacityService.validateAssignment
+    // For the prototype, we simulate the validation logic
+    const user = practitioners.find(p => p.id === formData.internalCounsel);
+    if (!user) return;
+
+    // Simulate potential issues
+    const isOverloaded = Math.random() > 0.7; // Mock condition
+    if (isOverloaded) {
+      setCapacityStatus({
+        severity: 'OVERRIDE',
+        reason: 'Assignment would exceed capacity: 42.5h / 40h (Critical Overload)'
+      });
+    } else {
+      setCapacityStatus({ severity: 'GREEN' });
+      setShowOverrideInput(false);
+    }
+  };
 
   const handleFilesAdded = (files: FileList) => {
     const newFiles = Array.from(files).map((f: File) => {
@@ -84,9 +128,11 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         client: formData.client,
         type: formData.type,
         description: formData.description,
-        internalCounselId: userId,
+        internalCounselId: formData.internalCounsel || userId,
         tenantId: tenantId,
         riskLevel: formData.riskLevel,
+        complexityWeight: formData.complexityWeight,
+        overrideJustification: formData.overrideJustification
       };
 
       const session = getSavedSession();
@@ -150,15 +196,66 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                 <MetadataInput label="Matter Name" placeholder="e.g. Standard Corporate Restructure" value={formData.name} onChange={(v: string) => setFormData({ ...formData, name: v })} />
                 <MetadataInput label={isFirm ? "Client Entity" : "Internal Business Unit"} placeholder="Search verified directory..." value={formData.client} onChange={(v: string) => setFormData({ ...formData, client: v })} />
               </div>
-              <div className="space-y-2.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Contextual Summary (AI-Profiled)</label>
-                <textarea
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 h-32 resize-none transition-all placeholder:text-slate-800"
-                  placeholder="Describe the matter scope for risk inference..."
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-2.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1" htmlFor="internalCounsel">Assigned Practitioner</label>
+                  <select
+                    id="internalCounsel"
+                    title="Select assigned practitioner"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-slate-300"
+                    value={formData.internalCounsel}
+                    onChange={e => setFormData({ ...formData, internalCounsel: e.target.value })}
+                  >
+                    <option value="">Select Practitioner...</option>
+                    {practitioners.map(p => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.role})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1" htmlFor="complexityWeight">Complexity Weight</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      id="complexityWeight"
+                      title="Set complexity weight"
+                      type="range" min="1" max="20" step="0.5"
+                      value={formData.complexityWeight}
+                      onChange={e => setFormData({ ...formData, complexityWeight: parseFloat(e.target.value) })}
+                      className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    />
+                    <span className="text-xs font-mono text-blue-400 w-10">{formData.complexityWeight}</span>
+                  </div>
+                </div>
               </div>
+
+              {capacityStatus && capacityStatus.severity !== 'GREEN' && (
+                <div className="p-5 bg-rose-500/10 border border-rose-500/20 rounded-2xl space-y-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-3">
+                    <ShieldAlert className="text-rose-400" size={18} />
+                    <p className="text-xs font-bold text-rose-400 uppercase tracking-tight">{capacityStatus.reason}</p>
+                  </div>
+                  {capacityStatus.severity === 'OVERRIDE' && !showOverrideInput && (
+                    <button
+                      onClick={() => setShowOverrideInput(true)}
+                      className="text-[10px] font-black uppercase text-white bg-rose-600 px-4 py-1.5 rounded-lg hover:bg-rose-500 transition-all"
+                    >
+                      Authorize Manual Override
+                    </button>
+                  )}
+                  {showOverrideInput && (
+                    <div className="space-y-2">
+                      <p className="text-[9px] text-rose-300 uppercase font-black">Override Justification Required (Audit Logged)</p>
+                      <input
+                        className="w-full bg-slate-950 border border-rose-500/30 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                        placeholder="State reason for capacity override..."
+                        value={formData.overrideJustification}
+                        onChange={e => setFormData({ ...formData, overrideJustification: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <FileUploader files={attachedFiles} onFilesAdded={handleFilesAdded} onRemove={removeFile} />
               {isProfiling && <div className="p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl animate-pulse text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2"><Zap size={14} /> Running Jurisdictional Complexity Profile...</div>}
             </div>

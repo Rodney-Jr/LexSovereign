@@ -209,6 +209,7 @@ export interface Matter {
   description?: string;
   createdAt: string;
   attachedFiles?: string[];
+  complexityWeight?: number;
   attributes?: Record<string, any>;
 }
 
@@ -336,5 +337,9 @@ export interface TenantUser {
   role: UserRole;
   lastActive: string;
   mfaEnabled: boolean;
+  maxWeeklyHours?: number;
+  roleSeniority?: number;
+  jurisdictionPins?: string[];
+  credentials?: any[];
   attributes?: Record<string, any>;
 }

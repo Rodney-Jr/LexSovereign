@@ -157,7 +157,10 @@ async function main() {
             roleId: globalAdminRole?.id,
             roleString: 'GLOBAL_ADMIN',
             region: 'GH_ACC_1',
-            tenantId: tenant.id
+            tenantId: tenant.id,
+            maxWeeklyHours: 40.0,
+            jurisdictionPins: ['GH_ACC_1'],
+            credentials: [{ type: 'SYSTEM_ADMIN', id: 'SA-001' }]
         }
     });
 

@@ -2,6 +2,8 @@ import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken } from '../middleware/auth';
 import { PolicyEngine } from '../services/policyEngine';
+import { CapacityService } from '../services/capacityService';
+import { AuditService } from '../services/auditService';
 
 const router = express.Router();
 
@@ -26,7 +28,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // Create a new matter
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { name, client, type, region, internalCounselId, tenantId, description } = req.body;
+        const { name, client, type, region, internalCounselId, tenantId, description, complexityWeight, overrideJustification } = req.body;
 
         // Basic validation
         if (!name || !client || !type || !internalCounselId || !tenantId) {
@@ -34,21 +36,43 @@ router.post('/', authenticateToken, async (req, res) => {
             return;
         }
 
+        // Capacity & Eligibility Lock
+        const validation = await CapacityService.validateAssignment(internalCounselId, {
+            riskLevel: 'LOW',
+            region,
+            complexityWeight
+        });
+
+        if (!validation.allowed) {
+            if (validation.severity === 'OVERRIDE' && overrideJustification) {
+                // Log the override
+                await AuditService.log(
+                    'CAPACITY_OVERRIDE',
+                    req.user?.id || null,
+                    name,
+                    `Manual override for assignment to ${internalCounselId}. Reason: ${overrideJustification}`
+                );
+            } else {
+                res.status(403).json({
+                    error: validation.reason,
+                    severity: validation.severity,
+                    details: validation.details
+                });
+                return;
+            }
+        }
+
         const matter = await prisma.matter.create({
             data: {
                 name,
                 client,
                 type,
-                status: 'OPEN', // Default
-                riskLevel: 'LOW', // Default
+                status: 'OPEN',
+                riskLevel: 'LOW',
                 description: description || '',
+                complexityWeight: complexityWeight || 5.0,
                 internalCounselId,
                 tenantId,
-                // region is not on Matter model directly in schema? Let's check schema.
-                // Schema has: tenantId, internalCounselId, etc.
-                // Wait, reviewing schema.prisma from Step 25:
-                // model Matter { ... name, client, type, status, riskLevel, description, tenantId, internalCounselId ... }
-                // No 'region' on Matter. It's on User/Tenant.
             }
         });
 
@@ -63,7 +87,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, client, type, internalCounsel, status, riskLevel, description } = req.body;
+        const { name, client, type, internalCounsel, status, riskLevel, description, complexityWeight, overrideJustification } = req.body;
         const user = req.user;
 
         if (!user) {
@@ -77,7 +101,32 @@ router.put('/:id', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'Matter not found' });
         }
 
-        // 2. Policy Check: High Risk Updates
+        // 2. Capacity & Eligibility Lock (If counsel changes or risk/weight changes)
+        if (internalCounsel !== currentMatter.internalCounselId || riskLevel !== currentMatter.riskLevel || complexityWeight !== currentMatter.complexityWeight) {
+            const validation = await CapacityService.validateAssignment(internalCounsel || currentMatter.internalCounselId, {
+                riskLevel: riskLevel || currentMatter.riskLevel,
+                complexityWeight: complexityWeight || currentMatter.complexityWeight
+            });
+
+            if (!validation.allowed) {
+                if (validation.severity === 'OVERRIDE' && overrideJustification) {
+                    await AuditService.log(
+                        'CAPACITY_OVERRIDE_UPDATE',
+                        user.id,
+                        id,
+                        `Manual override during update for matter ${id}. Reason: ${overrideJustification}`
+                    );
+                } else {
+                    return res.status(403).json({
+                        error: validation.reason,
+                        severity: validation.severity,
+                        details: validation.details
+                    });
+                }
+            }
+        }
+
+        // 3. Policy Check: High Risk Updates
         if (riskLevel === 'HIGH' || currentMatter.riskLevel === 'HIGH') {
             const policyResult = await PolicyEngine.evaluate(
                 user.id,
@@ -95,10 +144,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
             }
         }
 
-        // 3. Dual Approval for Closing
+        // 4. Dual Approval for Closing
         if (status === 'CLOSED' && currentMatter.status !== 'CLOSED') {
-            // Example: Require User Role to be 'TENANT_ADMIN' or 'DEPUTY_GC' explicitly?
-            // Or rely on PolicyEngine 'CLOSE_MATTER' action.
             const closePolicy = await PolicyEngine.evaluate(
                 user.id,
                 user.attributes || {},
@@ -121,6 +168,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 internalCounselId: internalCounsel,
                 status,
                 riskLevel,
+                complexityWeight,
                 description
             }
         });

@@ -45,6 +45,12 @@ model User {
   // Password Reset
   resetToken        String?   @unique
   resetTokenExpires DateTime?
+
+  // People & Capacity
+  maxWeeklyHours    Float     @default(40.0)
+  roleSeniority     Float     @default(1.0)
+  jurisdictionPins  Json?     @default("[]")
+  credentials       Json?     @default("[]")
 }
 
 model Role {
@@ -115,7 +121,7 @@ model Matter {
   status            String    @default("OPEN")
   riskLevel         String    @default("LOW")
   description       String?
-  
+  complexityWeight  Float     @default(5.0)
   attributes        Json?     @default("{}")
 
   // Relations

@@ -26,8 +26,10 @@ router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN'])
                 name: true,
                 roleString: true,
                 createdAt: true,
-                // We don't have a 'lastActive' or 'mfaEnabled' field in the schema yet, 
-                // but we can return createdAt as a proxy for now or default values.
+                maxWeeklyHours: true,
+                roleSeniority: true,
+                jurisdictionPins: true,
+                credentials: true
             },
             orderBy: {
                 createdAt: 'desc'
@@ -41,7 +43,11 @@ router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN'])
             email: u.email,
             role: u.roleString,
             lastActive: 'Recently', // Placeholder
-            mfaEnabled: true       // Placeholder
+            mfaEnabled: true,       // Placeholder
+            maxWeeklyHours: u.maxWeeklyHours,
+            roleSeniority: u.roleSeniority,
+            jurisdictionPins: u.jurisdictionPins as string[],
+            credentials: u.credentials as any[]
         }));
 
         res.json(formattedUsers);

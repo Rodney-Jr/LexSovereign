@@ -200,6 +200,15 @@ const Layout: React.FC<LayoutProps> = ({
               setIsSidebarOpen={setIsSidebarOpen}
             />
           )}
+          {isAllowed('capacity') && (
+            <NavItem
+              icon={<Activity size={18} className="text-brand-secondary" />}
+              label="Capacity Intelligence"
+              isActive={activeTab === 'capacity'}
+              onClick={() => setActiveTab('capacity')}
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+          )}
           {isAllowed('org-blueprint') && (
             <NavItem
               icon={<GitBranch size={18} />}

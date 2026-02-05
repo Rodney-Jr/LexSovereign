@@ -32,6 +32,7 @@ import ZkConflictSearch from './components/ZkConflictSearch';
 import ChatbotStudio from './components/ChatbotStudio';
 import SovereignBilling from './components/SovereignBilling';
 import AppRouter from './components/AppRouter';
+import CapacityDashboard from './components/CapacityDashboard';
 import PredictiveOps from './components/PredictiveOps';
 import EngineeringBacklog from './components/EngineeringBacklog';
 import MonetizationStrategy from './components/MonetizationStrategy';
@@ -239,6 +240,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
         {activeTab === 'reviews' && <ReviewHub userRole={contextRole as any} />}
         {activeTab === 'tenant-admin' && <TenantAdministration />}
+        {activeTab === 'capacity' && <CapacityDashboard />}
         {activeTab === 'predictive' && <PredictiveOps mode={mode} />}
         {activeTab === 'workflow' && <MatterWorkflow />}
         {activeTab === 'conflict-check' && <ZkConflictSearch />}
