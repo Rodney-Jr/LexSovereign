@@ -544,7 +544,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                 <main className="flex-1 bg-slate-950 p-12 overflow-y-auto scrollbar-hide flex justify-center">
                     <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top">
                         {/* Watermark */}
-                        <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black whitespace-nowrap overflow-hidden">
+                        <div className="absolute inset-0 pointer-events-none opacity-10 flex items-center justify-center rotate-45 select-none text-6xl md:text-9xl font-black whitespace-nowrap overflow-hidden z-0">
                             {watermarkText}
                         </div>
 
