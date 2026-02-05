@@ -163,11 +163,28 @@ export class DocumentExportService {
                         font-size: 8pt;
                         color: #888;
                         border-top: 0.5pt solid #eee;
-                        padding-top: 5pt;
+                        /* Watermark Style */
+                    .watermark {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%) rotate(-45deg);
+                        font-size: 80pt;
+                        font-weight: 900;
+                        color: rgba(0, 0, 0, 0.05);
+                        z-index: -1;
+                        pointer-events: none;
+                        white-space: nowrap;
+                        text-transform: uppercase;
+                        user-select: none;
                     }
                 </style>
             </head>
             <body>
+                ${branding?.watermarkText || branding?.name ? `
+                    <div class="watermark">${branding.watermarkText || branding.name}</div>
+                ` : ''}
+
                 ${branding?.headerText ? `<div class="header">${branding.headerText}</div>` : ''}
                 
                 ${branding?.coverPageEnabled ? `

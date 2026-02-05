@@ -343,3 +343,18 @@ export interface TenantUser {
   credentials?: any[];
   attributes?: Record<string, any>;
 }
+
+export interface BrandingProfile {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  primaryFont: string;
+  headerText?: string;
+  footerText?: string;
+  coverPageEnabled: boolean;
+  watermarkText?: string;
+  version: number;
+  tenantId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

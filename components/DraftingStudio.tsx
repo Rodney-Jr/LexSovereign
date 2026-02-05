@@ -77,11 +77,31 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     const [isHydrating, setIsHydrating] = useState(false);
     const [isAssembling, setIsAssembling] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
+    const [watermarkText, setWatermarkText] = useState('LEX SOVEREIGN');
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     useEffect(() => {
         fetchTemplate();
+        fetchBranding();
     }, [templateId]);
+
+    const fetchBranding = async () => {
+        const session = getSavedSession();
+        if (!session?.token) return;
+        try {
+            const profiles = await authorizedFetch('/api/branding-profiles', { token: session.token });
+            if (Array.isArray(profiles) && profiles.length > 0) {
+                const profile = profiles[0];
+                if (profile.watermarkText) {
+                    setWatermarkText(profile.watermarkText);
+                } else if (profile.name) {
+                    setWatermarkText(profile.name.toUpperCase());
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load branding", e);
+        }
+    };
 
     const fetchTemplate = async () => {
         try {
@@ -524,8 +544,8 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                 <main className="flex-1 bg-slate-950 p-12 overflow-y-auto scrollbar-hide flex justify-center">
                     <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top">
                         {/* Watermark */}
-                        <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black">
-                            LEX SOVEREIGN
+                        <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black whitespace-nowrap overflow-hidden">
+                            {watermarkText}
                         </div>
 
                         <div className="relative z-10 whitespace-pre-wrap font-serif text-[15px] leading-relaxed">

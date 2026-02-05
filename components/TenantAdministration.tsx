@@ -24,7 +24,8 @@ import {
    CheckCircle2,
    X,
    Bot,
-   Trash2
+   Trash2,
+   Droplet,
 } from 'lucide-react';
 import { TenantUser, UserRole } from '../types';
 import SovereignBilling from './SovereignBilling';

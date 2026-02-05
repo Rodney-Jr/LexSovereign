@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Settings, Building2, Key, GitBranch, Plug, ClipboardList } from 'lucide-react';
+import { Settings, Building2, Key, GitBranch, Plug, Droplet } from 'lucide-react';
 import TenantAdministration from './TenantAdministration';
 import AccessGovernance from './AccessGovernance';
 import BridgeRegistry from './BridgeRegistry';
 import OrgChart from './OrgChart';
-import EngineeringBacklog from './EngineeringBacklog';
+import BrandingSettings from './BrandingSettings';
 import { UserRole } from '../types';
 
 interface TenantSettingsProps {
@@ -13,7 +13,7 @@ interface TenantSettingsProps {
     setUserRole: (role: UserRole) => void;
 }
 
-type SettingsTab = 'organization' | 'access' | 'integrations' | 'blueprint' | 'backlog';
+type SettingsTab = 'organization' | 'access' | 'integrations' | 'blueprint' | 'branding';
 
 const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }) => {
     const [activeTab, setActiveTab] = useState<SettingsTab>('organization');
@@ -60,10 +60,10 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                     onClick={() => setActiveTab('blueprint')}
                 />
                 <TabButton
-                    icon={<ClipboardList size={16} />}
-                    label="Eng Backlog"
-                    active={activeTab === 'backlog'}
-                    onClick={() => setActiveTab('backlog')}
+                    icon={<Droplet size={16} />}
+                    label="White Label"
+                    active={activeTab === 'branding'}
+                    onClick={() => setActiveTab('branding')}
                 />
             </div>
 
@@ -73,7 +73,7 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                 {activeTab === 'access' && <AccessGovernance userRole={userRole} setUserRole={setUserRole} />}
                 {activeTab === 'integrations' && <BridgeRegistry />}
                 {activeTab === 'blueprint' && <OrgChart />}
-                {activeTab === 'backlog' && <EngineeringBacklog />}
+                {activeTab === 'branding' && <BrandingSettings />}
             </div>
         </div>
     );
