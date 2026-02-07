@@ -42,11 +42,19 @@ const ChatbotStudio: React.FC = () => {
     systemInstruction: 'You are a lead generation bot for a premium law firm.'
   });
 
+  // Load config on mount
+  React.useEffect(() => {
+    gemini.getChatbotConfig()
+      .then(saved => setConfig(prev => ({ ...prev, ...saved })))
+      .catch(err => console.error("Failed to load bot config", err));
+  }, []);
+
   const [knowledge, setKnowledge] = useState<KnowledgeArtifact[]>(INITIAL_KNOWLEDGE);
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot', text: string }[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isIndexing, setIsIndexing] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
 
   const gemini = new LexGeminiService();
 
@@ -67,9 +75,23 @@ const ChatbotStudio: React.FC = () => {
     }
   };
 
-  const startIndexing = () => {
+  const startIndexing = async () => {
     setIsIndexing(true);
+    // Persist knowledge selection
+    await gemini.saveChatbotConfig(config);
     setTimeout(() => setIsIndexing(false), 2000);
+  };
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+    try {
+      await gemini.deployChatbot(config);
+      // alert("Bot successfully deployed to edge nodes."); // Optional: Replace with toast if available
+    } catch (e) {
+      console.error("Deployment failed", e);
+    } finally {
+      setIsDeploying(false);
+    }
   };
 
   return (
@@ -92,8 +114,13 @@ const ChatbotStudio: React.FC = () => {
             {isIndexing ? <RefreshCw className="animate-spin" size={16} /> : <Database size={16} />}
             Sync Knowledge Base
           </button>
-          <button className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-xs flex items-center gap-2 shadow-xl shadow-emerald-900/20 transition-all">
-            <Save size={16} /> Push to Production
+          <button
+            onClick={handleDeploy}
+            disabled={isDeploying}
+            className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-xs flex items-center gap-2 shadow-xl shadow-emerald-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isDeploying ? <RefreshCw className="animate-spin" size={16} /> : <Save size={16} />}
+            {isDeploying ? 'Deploying...' : 'Push to Production'}
           </button>
         </div>
       </div>

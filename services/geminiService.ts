@@ -100,11 +100,40 @@ export class LexGeminiService {
   }
 
   // Stubs for other methods to keep type safety
-  async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]) {
-    const response = await fetch(`${this.baseUrl}/public-chat`, {
+  // Chatbot Management Methods
+  async getChatbotConfig(): Promise<ChatbotConfig> {
+    const response = await fetch(`${this.baseUrl}/chatbot/config`, {
+      headers: this.getHeaders()
+    });
+    if (!response.ok) throw new Error("Failed to load config");
+    return response.json();
+  }
+
+  async saveChatbotConfig(config: ChatbotConfig): Promise<ChatbotConfig> {
+    const response = await fetch(`${this.baseUrl}/chatbot/config`, {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify({ input, config, knowledge })
+      body: JSON.stringify(config)
+    });
+    if (!response.ok) throw new Error("Failed to save config");
+    return response.json();
+  }
+
+  async deployChatbot(config: ChatbotConfig): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/chatbot/deploy`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(config)
+    });
+    if (!response.ok) throw new Error("Deployment failed");
+    return response.json();
+  }
+
+  async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]) {
+    const response = await fetch(`${this.baseUrl}/chatbot/chat`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ message: input, config })
     });
     return response.json();
   }
