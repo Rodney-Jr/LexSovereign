@@ -37,6 +37,30 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
    const [activeTab, setActiveTab] = useState<'telemetry' | 'admins'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
+   const [stats, setStats] = useState<any>({
+      tenants: 142,
+      silos: 108,
+      margin: '62.4%',
+      egress: '0.00kb'
+   });
+
+   React.useEffect(() => {
+      const fetchStats = async () => {
+         try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/platform/stats', {
+               headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.error) {
+               setStats((prev: any) => ({ ...prev, ...data }));
+            }
+         } catch (e) {
+            console.error("Failed to fetch platform stats", e);
+         }
+      };
+      fetchStats();
+   }, []);
 
    const [platformAdmins, setPlatformAdmins] = useState<GlobalAdminIdentity[]>([
       { id: 'adm_01', name: 'Lead Architect', email: 'architect@lexsovereign.io', hardwareEnclaveId: 'FIPS-140-HSM-A99', mfaMethod: 'ZK-Proof Hardware', status: 'Active', lastHandshake: '12s ago', accessLevel: 'PLATFORM_OWNER' },
@@ -102,10 +126,10 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                <>
                   {/* Global Telemetry Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                     <GlobalMetric label="Total Sovereign Tenants" value="142" sub="+12 this month" icon={<Users className="text-blue-400" />} />
-                     <GlobalMetric label="Infrastructure Margin" value="62.4%" sub="Target: 65.0%" icon={<TrendingUp className="text-emerald-400" />} />
-                     <GlobalMetric label="Active Compute Silos" value="108" sub="Global TEE instances" icon={<Cpu className="text-purple-400" />} />
-                     <GlobalMetric label="Cross-Border Egress" value="0.00kb" sub="Policy Enforcement: 100%" icon={<ShieldCheck className="text-cyan-400" />} />
+                     <GlobalMetric label="Total Sovereign Tenants" value={stats.tenants} sub="+12 this month" icon={<Users className="text-blue-400" />} />
+                     <GlobalMetric label="Infrastructure Margin" value={stats.margin} sub="Target: 65.0%" icon={<TrendingUp className="text-emerald-400" />} />
+                     <GlobalMetric label="Active Compute Silos" value={stats.silos} sub="Global TEE instances" icon={<Cpu className="text-purple-400" />} />
+                     <GlobalMetric label="Cross-Border Egress" value={stats.egress} sub="Policy Enforcement: 100%" icon={<ShieldCheck className="text-cyan-400" />} />
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

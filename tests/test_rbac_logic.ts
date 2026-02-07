@@ -1,6 +1,6 @@
 
-import { TAB_REQUIRED_PERMISSIONS, ROLE_DEFAULT_PERMISSIONS } from '../constants';
-import { UserRole } from '../types';
+import { TAB_REQUIRED_PERMISSIONS, ROLE_DEFAULT_PERMISSIONS } from '../constants.ts';
+import { UserRole } from '../types.ts';
 
 console.log("Running RBAC Logic Verification (Permission-Based)...");
 
