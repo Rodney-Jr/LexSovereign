@@ -26,7 +26,7 @@ export class LexGeminiService {
 
         const ai = this.getAI();
         // Use environmental config for model
-        const modelName = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+        const modelName = process.env.GEMINI_MODEL || 'gemini-flash-latest';
         const model = usePrivateModel ? modelName : modelName;
         const contextDocs = matterId
             ? documents.filter(d => d.matterId === matterId)
