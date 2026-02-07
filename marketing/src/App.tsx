@@ -14,6 +14,8 @@ import {
     Link as LinkIcon
 } from 'lucide-react';
 
+const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000';
+
 const App = () => {
     const [scrolled, setScrolled] = useState(false);
 
@@ -39,7 +41,7 @@ const App = () => {
                         <a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a>
                         <a href="#security" className="text-slate-400 hover:text-white transition-colors">Security</a>
                         <a href="#industries" className="text-slate-400 hover:text-white transition-colors">Industries</a>
-                        <a href="http://localhost:5173" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold transition-all flex items-center gap-2">
+                        <a href={PLATFORM_URL} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold transition-all flex items-center gap-2">
                             Launch Platform <LinkIcon size={16} />
                         </a>
                     </div>
@@ -63,7 +65,7 @@ const App = () => {
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                        <a href="http://localhost:5173" className="px-10 py-5 bg-gradient-to-r from-blue-600 to-violet-600 text-white rounded-xl font-bold text-xl hover:scale-105 transition-all shadow-xl shadow-blue-500/20 flex items-center gap-2">
+                        <a href={PLATFORM_URL} className="px-10 py-5 bg-gradient-to-r from-blue-600 to-violet-600 text-white rounded-xl font-bold text-xl hover:scale-105 transition-all shadow-xl shadow-blue-500/20 flex items-center gap-2">
                             Access the Protocol <ArrowRight />
                         </a>
                         <a href="#features" className="px-8 py-4 text-slate-300 font-semibold hover:text-white transition-colors flex items-center gap-2">

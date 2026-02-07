@@ -1,6 +1,28 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+    --font-inter: "Inter", sans-serif;
+    --font-outfit: "Outfit", sans-serif;
+
+    --color-brand-primary: #3b82f6;
+    --color-brand-secondary: #10b981;
+    --color-brand-accent: #8b5cf6;
+    --color-brand-dark: #020617;
+
+    --animate-float: float 6s ease-in-out infinite;
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+}
 
 :root {
     --bg-dark: #020617;
@@ -22,22 +44,4 @@ body {
 
 .hero-gradient {
     background: radial-gradient(circle at top center, rgba(59, 130, 246, 0.15) 0%, transparent 80%), #020617;
-}
-
-@keyframes float {
-    0% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-20px);
-    }
-
-    100% {
-        transform: translateY(0px);
-    }
-}
-
-.animate-float {
-    animation: float 6s ease-in-out infinite;
 }

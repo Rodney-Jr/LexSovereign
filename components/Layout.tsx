@@ -108,7 +108,7 @@ const Layout: React.FC<LayoutProps> = ({
     return hasAnyPermission(required);
   };
   return (
-    <div className="flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500">
+    <div className={`flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500 theme-${theme}`}>
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
