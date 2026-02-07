@@ -23,6 +23,7 @@ import pricingRouter from './routes/pricing';
 import exportRouter from './routes/export';
 import brandingRouter from './routes/branding';
 import chatbotRouter from './routes/chatbot';
+import tenantRouter from './routes/tenant';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 
@@ -73,6 +74,7 @@ app.use('/api/analytics', authenticateToken, analyticsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/branding-profiles', brandingRouter);
 app.use('/api/chatbot', chatbotRouter);
+app.use('/api/tenant', tenantRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));

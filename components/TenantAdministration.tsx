@@ -33,12 +33,9 @@ import ChatbotStudio from './ChatbotStudio';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 const TenantAdministration: React.FC = () => {
-   const [users, setUsers] = useState<TenantUser[]>([
-      { id: 'u1', name: 'Admin User', email: 'admin@organization.internal', role: UserRole.TENANT_ADMIN, lastActive: '2m ago', mfaEnabled: true },
-      { id: 'u2', name: 'Senior Associate', email: 'associate.sr@organization.internal', role: UserRole.INTERNAL_COUNSEL, lastActive: '1h ago', mfaEnabled: true },
-      { id: 'u3', name: 'Legal Operations', email: 'ops@organization.internal', role: UserRole.LEGAL_OPS, lastActive: '2d ago', mfaEnabled: false },
-      { id: 'u4', name: 'Compliance Officer', email: 'compliance@organization.internal', role: UserRole.INTERNAL_COUNSEL, lastActive: '5h ago', mfaEnabled: true },
-   ]);
+   const [users, setUsers] = useState<TenantUser[]>([]);
+   const [stats, setStats] = useState({ users: 0, matters: 0, documents: 0, siloHealth: 'NOMINAL' });
+   const [settings, setSettings] = useState({ matterPrefix: 'MAT-SOV-', numberingPadding: 4, requiredFields: [] as string[] });
 
    const [activeTab, setActiveTab] = useState<'users' | 'oidc' | 'templates' | 'billing' | 'chatbot'>('users');
    const [showInviteModal, setShowInviteModal] = useState(false);
@@ -86,6 +83,22 @@ const TenantAdministration: React.FC = () => {
          setPendingInvites(invites);
       } catch (e) {
          console.error("[TenantAdmin] Invite discovery failed:", e);
+      }
+
+      // Fetch Stats
+      try {
+         const statsData = await authorizedFetch('/api/tenant/admin-stats', { token: session.token });
+         setStats(statsData);
+      } catch (e) {
+         console.error("[TenantAdmin] Stats discovery failed:", e);
+      }
+
+      // Fetch Settings
+      try {
+         const settingsData = await authorizedFetch('/api/tenant/settings', { token: session.token });
+         setSettings(settingsData);
+      } catch (e) {
+         console.error("[TenantAdmin] Settings discovery failed:", e);
       }
    };
 
@@ -444,11 +457,11 @@ const TenantAdministration: React.FC = () => {
                               <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
                                  <div className="flex items-center justify-between">
                                     <span className="text-xs text-slate-300">Matter Prefix</span>
-                                    <span className="text-xs font-mono text-emerald-400 font-bold">MAT-ORG-</span>
+                                    <span className="text-xs font-mono text-emerald-400 font-bold">{settings.matterPrefix}</span>
                                  </div>
                                  <div className="flex items-center justify-between">
                                     <span className="text-xs text-slate-300">Sequential Padding</span>
-                                    <span className="text-xs font-mono text-slate-500">4-Digits (0001)</span>
+                                    <span className="text-xs font-mono text-slate-500">{settings.numberingPadding}-Digits</span>
                                  </div>
                                  <div className="pt-4 border-t border-slate-800 flex justify-end">
                                     <button title="Edit Prefix" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Edit Logic</button>
@@ -459,14 +472,14 @@ const TenantAdministration: React.FC = () => {
                            <div className="space-y-4">
                               <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1">Required Silo Fieldset</h5>
                               <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs text-slate-300 font-bold">Jurisdiction Pin</span>
-                                    <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded uppercase font-bold">Mandatory</span>
-                                 </div>
-                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs text-slate-300">Client Reference</span>
-                                    <span className="text-[9px] bg-slate-800 text-slate-500 px-2 py-0.5 rounded uppercase font-bold">Optional</span>
-                                 </div>
+                                 {settings.requiredFields.length > 0 ? settings.requiredFields.map((field, idx) => (
+                                    <div key={idx} className="flex items-center justify-between">
+                                       <span className="text-xs text-slate-300 font-bold">{field}</span>
+                                       <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded uppercase font-bold">Mandatory</span>
+                                    </div>
+                                 )) : (
+                                    <p className="text-[10px] text-slate-600 italic">No mandatory fields defined.</p>
+                                 )}
                                  <div className="pt-4 border-t border-slate-800 flex justify-end">
                                     <button title="Configure Fields" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Configure Fields</button>
                                  </div>

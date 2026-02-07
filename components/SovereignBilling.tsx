@@ -19,9 +19,26 @@ import {
    AlertCircle
 } from 'lucide-react';
 import { SaaSPlan } from '../types';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 const SovereignBilling: React.FC = () => {
    const [isSyncing, setIsSyncing] = useState(false);
+   const [billingData, setBillingData] = useState<any>(null);
+
+   const fetchBilling = async () => {
+      const session = getSavedSession();
+      if (!session?.token) return;
+      try {
+         const data = await authorizedFetch('/api/tenant/billing', { token: session.token });
+         setBillingData(data);
+      } catch (e) {
+         console.error("[Billing] Failed to fetch:", e);
+      }
+   };
+
+   React.useEffect(() => {
+      fetchBilling();
+   }, []);
 
    const handleSync = () => {
       setIsSyncing(true);
@@ -52,9 +69,28 @@ const SovereignBilling: React.FC = () => {
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <UsageMeter label="AI Credits (Inference)" current={4200} max={10000} color="emerald" sub="~840 Document Summaries" />
-                  <UsageMeter label="Vault Storage (Pinned)" current={4.2} max={10} unit="TB" color="blue" sub="Primary Silo Residency Limit" />
-                  <UsageMeter label="Active Team Slots" current={14} max={50} color="purple" sub="Sovereign Chambers Tier" />
+                  <UsageMeter
+                     label="AI Credits (Inference)"
+                     current={billingData?.usage?.aiCredits?.current || 0}
+                     max={billingData?.usage?.aiCredits?.max || 10000}
+                     color="emerald"
+                     sub="Sovereign Core Inference"
+                  />
+                  <UsageMeter
+                     label="Vault Storage (Pinned)"
+                     current={billingData?.usage?.storage?.current || 0}
+                     max={billingData?.usage?.storage?.max || 50}
+                     unit={billingData?.usage?.storage?.unit || 'GB'}
+                     color="blue"
+                     sub="Primary Silo Residency Limit"
+                  />
+                  <UsageMeter
+                     label="Active Team Slots"
+                     current={billingData?.usage?.users?.current || 0}
+                     max={billingData?.usage?.users?.max || 100}
+                     color="purple"
+                     sub="Sovereign Chambers Tier"
+                  />
                </div>
 
                <div className="mt-12 p-6 bg-slate-950/80 border border-slate-800 rounded-[2rem] flex items-center justify-between">
@@ -127,9 +163,11 @@ const SovereignBilling: React.FC = () => {
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/50 text-xs">
-                     <InvoiceRow cycle="May 2024 (Current)" delta="+12.4k Credits" amount="$499.00" status="DRAFT" />
-                     <InvoiceRow cycle="April 2024" delta="+10.0k Credits" amount="$499.00" status="PAID" />
-                     <InvoiceRow cycle="March 2024" delta="+15.2k Credits" amount="$582.40" status="PAID" />
+                     {billingData?.history?.map((row: any) => (
+                        <InvoiceRow key={row.id} cycle={row.cycle} delta={row.delta} amount={row.amount} status={row.status} />
+                     )) || (
+                           <tr><td colSpan={4} className="px-8 py-4 text-center text-slate-500">Retrieving ledger...</td></tr>
+                        )}
                   </tbody>
                </table>
             </div>
