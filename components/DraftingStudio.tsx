@@ -18,6 +18,7 @@ import {
     DollarSign,
     Type
 } from 'lucide-react';
+import { BrandingProfile } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface FormField {
@@ -67,6 +68,12 @@ interface DraftingStudioProps {
 
 const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, onClose, onSave }) => {
     const [template, setTemplate] = useState<Template | null>(null);
+    const [branding, setBranding] = useState<Partial<BrandingProfile>>({
+        watermarkText: 'LEX SOVEREIGN',
+        primaryFont: 'serif',
+        headerText: '',
+        footerText: ''
+    });
 
     // State for Variable Fields
     const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
@@ -77,7 +84,6 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     const [isHydrating, setIsHydrating] = useState(false);
     const [isAssembling, setIsAssembling] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
-    const [watermarkText, setWatermarkText] = useState('LEX SOVEREIGN');
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     useEffect(() => {
@@ -92,11 +98,12 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             const profiles = await authorizedFetch('/api/branding-profiles', { token: session.token });
             if (Array.isArray(profiles) && profiles.length > 0) {
                 const profile = profiles[0];
-                if (profile.watermarkText) {
-                    setWatermarkText(profile.watermarkText);
-                } else if (profile.name) {
-                    setWatermarkText(profile.name.toUpperCase());
-                }
+                setBranding({
+                    watermarkText: profile.watermarkText || profile.name?.toUpperCase() || 'LEX SOVEREIGN',
+                    primaryFont: profile.primaryFont || 'serif',
+                    headerText: profile.headerText || '',
+                    footerText: profile.footerText || ''
+                });
             }
         } catch (e) {
             console.error("Failed to load branding", e);
@@ -341,9 +348,9 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     };
 
     return (
-        <div className="fixed inset-0 z-[120] bg-slate-950 flex flex-col animate-in slide-in-from-bottom-6 duration-500">
+        <div className="fixed inset-0 z-[120] bg-brand-bg flex flex-col animate-in slide-in-from-bottom-6 duration-500">
             {/* Top Bar */}
-            <header className="h-20 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-8">
+            <header className="h-20 border-b border-brand-border bg-brand-sidebar/50 flex items-center justify-between px-8">
                 <div className="flex items-center gap-6">
                     <button onClick={onClose} title="Back" className="p-2 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
                         <ArrowLeft size={20} />
@@ -377,7 +384,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             {/* Main Workspace */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left: Input Sidebar */}
-                <aside className="w-[400px] border-r border-slate-800 bg-slate-900/30 overflow-y-auto p-8 scrollbar-hide">
+                <aside className="w-[400px] border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-8 scrollbar-hide">
                     {/* Sections (Toggles) */}
                     {((template.structure as any).sections?.length > 0 || (Array.isArray(template.structure) && template.structure.some(c => c.clause_type === 'optional'))) && (
                         <div className="mb-8 space-y-4">
@@ -390,8 +397,8 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                         key={clause.clause_key}
                                         onClick={() => handleSectionToggle(clause.clause_key)}
                                         className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[clause.clause_key]
-                                            ? 'bg-emerald-500/10 border-emerald-500/30'
-                                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                            ? 'bg-brand-primary/10 border-brand-primary/30'
+                                            : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
                                             }`}
                                     >
                                         <span className={`text-xs font-bold transition-colors ${sectionValues[clause.clause_key] ? 'text-emerald-400' : 'text-slate-400'}`}>
@@ -410,8 +417,8 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                         key={section.key}
                                         onClick={() => handleSectionToggle(section.key)}
                                         className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
-                                            ? 'bg-emerald-500/10 border-emerald-500/30'
-                                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                            ? 'bg-brand-primary/10 border-brand-primary/30'
+                                            : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
                                             }`}
                                     >
                                         <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
@@ -441,7 +448,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                     setFieldValues(reset);
                                     setPreviewContent(compileTemplate(template?.content || '', reset, sectionValues));
                                 }}
-                                className="text-[9px] text-slate-600 hover:text-red-400 uppercase font-bold transition-colors flex items-center gap-1"
+                                className="text-[9px] text-brand-muted hover:text-red-400 uppercase font-bold transition-colors flex items-center gap-1"
                             >
                                 <Eraser size={10} /> Clear
                             </button>
@@ -451,13 +458,13 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                             {Array.isArray(template.structure) ? (
                                 Object.keys(fieldValues).map(key => (
                                     <div key={key} className="space-y-2 group">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-500 transition-colors flex items-center gap-1.5 text-ellipsis overflow-hidden">
+                                        <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5 text-ellipsis overflow-hidden">
                                             {getFieldIcon(key.includes('date') ? 'date' : key.includes('currency') || key.includes('amount') ? 'currency' : 'text')}
                                             {key.replace(/_/g, ' ')}
                                         </label>
                                         <input
                                             type={key.includes('date') ? 'date' : 'text'}
-                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-slate-800"
+                                            className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
                                             placeholder={`Enter ${key.replace(/_/g, ' ')}...`}
                                             value={fieldValues[key]}
                                             onChange={e => handleFieldChange(key, e.target.value)}
@@ -467,14 +474,14 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                             ) : template.structure?.fields ? (
                                 template.structure.fields.map(field => (
                                     <div key={field.key} className="space-y-2 group">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-500 transition-colors flex items-center gap-1.5">
+                                        <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5">
                                             {getFieldIcon(field.type)}
                                             {field.label}
                                         </label>
 
                                         {field.multiline ? (
                                             <textarea
-                                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-slate-800 min-h-[80px]"
+                                                className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20 min-h-[80px]"
                                                 placeholder={field.placeholder || `Enter ${field.label}...`}
                                                 value={fieldValues[field.key]}
                                                 onChange={e => handleFieldChange(field.key, e.target.value)}
@@ -483,7 +490,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                             <div className="relative">
                                                 <input
                                                     type={field.type === 'date' ? 'date' : 'text'}
-                                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-slate-800"
+                                                    className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
                                                     placeholder={field.placeholder || `Enter ${field.label}...`}
                                                     value={fieldValues[field.key]}
                                                     onChange={e => handleFieldChange(field.key, e.target.value)}
@@ -496,12 +503,12 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                                 // Legacy Fallback
                                 template.placeholders?.map(key => (
                                     <div key={key} className="space-y-2 group">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+                                        <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1">
                                             {key.replace('_', ' ')}
                                         </label>
                                         <input
                                             aria-label={key}
-                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200"
+                                            className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text"
                                             value={fieldValues[key]}
                                             onChange={e => handleFieldChange(key, e.target.value)}
                                         />
@@ -529,27 +536,40 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         </div>
                     )}
 
-                    <div className="p-6 bg-slate-950 border border-slate-800 rounded-[2rem] space-y-4 shadow-inner mt-8">
+                    <div className="p-6 bg-brand-bg border border-brand-border rounded-[2rem] space-y-4 shadow-inner mt-8">
                         <div className="flex items-center gap-2 text-amber-500">
                             <AlertTriangle size={14} />
                             <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
                         </div>
-                        <p className="text-[10px] text-slate-500 leading-relaxed italic">
+                        <p className="text-[10px] text-brand-muted leading-relaxed italic">
                             Core clauses in this template are locked. Only the variables and optional sections above can be modified to ensure compliance.
                         </p>
                     </div>
                 </aside>
 
                 {/* Right: Live Preview */}
-                <main className="flex-1 bg-slate-950 p-12 overflow-y-auto scrollbar-hide flex justify-center">
-                    <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top">
-                        {/* Watermark */}
-                        <div className="absolute inset-0 pointer-events-none opacity-10 flex items-center justify-center rotate-45 select-none text-6xl md:text-9xl font-black whitespace-nowrap overflow-hidden z-0">
-                            {watermarkText}
+                <main className="flex-1 bg-brand-bg p-12 overflow-y-auto scrollbar-hide flex justify-center">
+                    <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1120px]">
+                        {/* Header Branding */}
+                        <div className="absolute top-8 right-8 text-slate-300 text-[10px] font-mono uppercase text-right leading-tight">
+                            {branding.headerText}
                         </div>
 
-                        <div className="relative z-10 whitespace-pre-wrap font-serif text-[15px] leading-relaxed">
+                        {/* Watermark */}
+                        <div className="absolute inset-0 pointer-events-none opacity-[0.04] flex items-center justify-center rotate-45 select-none text-6xl md:text-[10rem] font-black whitespace-nowrap overflow-hidden z-0 pointer-events-none">
+                            {branding.watermarkText}
+                        </div>
+
+                        <div
+                            className="relative z-10 whitespace-pre-wrap flex-1 text-[15px] leading-relaxed"
+                            style={{ fontFamily: branding.primaryFont }}
+                        >
                             {previewContent}
+                        </div>
+
+                        {/* Footer Branding */}
+                        <div className="mt-20 pt-8 border-t border-slate-100 text-center text-slate-300 text-[10px] font-mono uppercase tracking-[0.2em]">
+                            {branding.footerText}
                         </div>
                     </div>
                 </main>

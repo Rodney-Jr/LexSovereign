@@ -9,10 +9,11 @@ import {
     Box,
     Search,
     Lock,
+    Link as LinkIcon,
     Sparkles,
-    Database,
-    Link as LinkIcon
+    Database
 } from 'lucide-react';
+import MarketingChatbot from './MarketingChatbot';
 
 const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000';
 
@@ -237,6 +238,8 @@ const App = () => {
                     </div>
                 </div>
             </footer>
+
+            <MarketingChatbot />
         </div>
     );
 };
