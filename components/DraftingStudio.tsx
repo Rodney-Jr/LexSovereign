@@ -365,6 +365,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                     <button
                         onClick={handleAIHydrate}
                         disabled={!matterId || isHydrating}
+                        title={!matterId ? "Select a matter in the Vault to enable AI hydration" : "Automatically fill variables using AI"}
                         className="px-6 py-2.5 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/30 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all disabled:opacity-40"
                     >
                         {isHydrating ? <Loader2 className="animate-spin" size={14} /> : <Sparkles size={14} />}

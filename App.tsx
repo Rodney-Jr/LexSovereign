@@ -249,7 +249,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'pricing-calib' && <PricingGovernance />}
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
-        {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} />}
+        {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} matterId={selectedMatter} />}
         {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
 
         {activeTab === 'vault' && (

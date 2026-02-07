@@ -8,9 +8,10 @@ import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
 interface LegalDraftingProps {
     onAddDocument: (doc: DocumentMetadata) => Promise<any> | void;
+    matterId?: string | null;
 }
 
-const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
+const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument, matterId }) => {
     const [showMarketplace, setShowMarketplace] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
     const [showBlankEditor, setShowBlankEditor] = useState(false);
@@ -74,7 +75,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument }) => {
             {selectedTemplateId && (
                 <DraftingStudio
                     templateId={selectedTemplateId}
-                    matterId={null}
+                    matterId={matterId || null}
                     onClose={() => setSelectedTemplateId(null)}
                     onSave={(name, content) => {
                         onAddDocument({
