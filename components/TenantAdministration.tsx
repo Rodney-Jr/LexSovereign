@@ -581,6 +581,7 @@ const TenantAdministration: React.FC = () => {
                                        <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>
                                     ))
                                  )}
+                                 <option value="CLIENT">CLIENT</option>
                               </select>
                            </div>
                            <button

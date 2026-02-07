@@ -139,227 +139,241 @@ const Layout: React.FC<LayoutProps> = ({
         </div>
 
         <nav className="flex-1 px-4 space-y-1.5 mt-4 overflow-y-auto scrollbar-hide">
-          {/* Intelligence Hub - Public/Common */}
-          {isAllowed('dashboard') && (
+          {/* CLIENT PORTAL VIEW */}
+          {userRole === UserRole.CLIENT ? (
             <NavItem
               icon={<LayoutDashboard size={18} />}
-              label="Intelligence Hub"
-              isActive={activeTab === 'dashboard'}
-              onClick={() => setActiveTab('dashboard')}
+              label="Client Portal"
+              isActive={activeTab === 'client-portal'}
+              onClick={() => setActiveTab('client-portal')}
               setIsSidebarOpen={setIsSidebarOpen}
             />
-          )}
+          ) : (
+            <>
+              {/* Intelligence Hub - Public/Common */}
+              {isAllowed('dashboard') && (
+                <NavItem
+                  icon={<LayoutDashboard size={18} />}
+                  label="Intelligence Hub"
+                  isActive={activeTab === 'dashboard'}
+                  onClick={() => setActiveTab('dashboard')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
 
-          {/* Platform Owner Section */}
-          {(isAllowed('platform-ops') || isAllowed('governance')) && (
-            <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Platform Owner</span>
-            </div>
-          )}
-          {isAllowed('platform-ops') && (
-            <NavItem
-              icon={<Globe size={18} className="text-brand-secondary" />}
-              label="Global Plane"
-              isActive={activeTab === 'platform-ops'}
-              onClick={() => setActiveTab('platform-ops')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('governance') && (
-            <NavItem
-              icon={<LayoutGrid size={18} />}
-              label="Global Governance"
-              isActive={activeTab === 'governance'}
-              onClick={() => setActiveTab('governance')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
+              {/* Platform Owner Section */}
+              {(isAllowed('platform-ops') || isAllowed('governance')) && (
+                <div className="pt-4 pb-2 px-4 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Platform Owner</span>
+                </div>
+              )}
+              {isAllowed('platform-ops') && (
+                <NavItem
+                  icon={<Globe size={18} className="text-brand-secondary" />}
+                  label="Global Plane"
+                  isActive={activeTab === 'platform-ops'}
+                  onClick={() => setActiveTab('platform-ops')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('governance') && (
+                <NavItem
+                  icon={<LayoutGrid size={18} />}
+                  label="Global Governance"
+                  isActive={activeTab === 'governance'}
+                  onClick={() => setActiveTab('governance')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
 
 
-          {/* Firm Management Section */}
-          {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity')) && (
-            <div className="pt-4 pb-2 px-4">
-              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Firm Management</span>
-            </div>
-          )}
+              {/* Firm Management Section */}
+              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity')) && (
+                <div className="pt-4 pb-2 px-4">
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Firm Management</span>
+                </div>
+              )}
 
-          {/* Capacity - Promoted to top of Firm Mgmt */}
-          {isAllowed('capacity') && (
-            <NavItem
-              icon={<Activity size={18} className="text-brand-secondary" />}
-              label="Workload & Capacity"
-              isActive={activeTab === 'capacity'}
-              onClick={() => setActiveTab('capacity')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
+              {/* Capacity - Promoted to top of Firm Mgmt */}
+              {isAllowed('capacity') && (
+                <NavItem
+                  icon={<Activity size={18} className="text-brand-secondary" />}
+                  label="Workload & Capacity"
+                  isActive={activeTab === 'capacity'}
+                  onClick={() => setActiveTab('capacity')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
 
-          {isAllowed('identity') && (
-            <NavItem
-              icon={<Fingerprint size={18} />}
-              label="User Management"
-              isActive={activeTab === 'identity'}
-              onClick={() => setActiveTab('identity')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('tenant-admin') && (
-            <NavItem
-              icon={<UserPlus size={18} />}
-              label="Firm Directory"
-              isActive={activeTab === 'tenant-admin'}
-              onClick={() => setActiveTab('tenant-admin')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
+              {isAllowed('identity') && (
+                <NavItem
+                  icon={<Fingerprint size={18} />}
+                  label="User Management"
+                  isActive={activeTab === 'identity'}
+                  onClick={() => setActiveTab('identity')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('tenant-admin') && (
+                <NavItem
+                  icon={<UserPlus size={18} />}
+                  label="Firm Directory"
+                  isActive={activeTab === 'tenant-admin'}
+                  onClick={() => setActiveTab('tenant-admin')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
 
-          {/* Technical Items - Moved to Advanced */}
-          {isAllowed('org-blueprint') && showAdvanced && (
-            <NavItem
-              icon={<GitBranch size={18} />}
-              label="Organization Blueprint"
-              isActive={activeTab === 'org-blueprint'}
-              onClick={() => setActiveTab('org-blueprint')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('integration-bridge') && showAdvanced && (
-            <NavItem
-              icon={<Plug size={18} />}
-              label="Bridge Registry"
-              isActive={activeTab === 'integration-bridge'}
-              onClick={() => setActiveTab('integration-bridge')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
+              {/* Technical Items - Moved to Advanced */}
+              {isAllowed('org-blueprint') && showAdvanced && (
+                <NavItem
+                  icon={<GitBranch size={18} />}
+                  label="Organization Blueprint"
+                  isActive={activeTab === 'org-blueprint'}
+                  onClick={() => setActiveTab('org-blueprint')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('integration-bridge') && showAdvanced && (
+                <NavItem
+                  icon={<Plug size={18} />}
+                  label="Bridge Registry"
+                  isActive={activeTab === 'integration-bridge'}
+                  onClick={() => setActiveTab('integration-bridge')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
 
-          {/* Operations Section */}
-          {(isAllowed('conflict-check') || isAllowed('reviews') || isAllowed('workflow') || isAllowed('vault') || isAllowed('chat')) && (
-            <div className="pt-4 pb-2 px-4">
-              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Operations</span>
-            </div>
-          )}
-          {isAllowed('conflict-check') && (
-            <NavItem
-              icon={<Search size={18} className="text-brand-secondary" />}
-              label="ZK Conflict Check"
-              isActive={activeTab === 'conflict-check'}
-              onClick={() => setActiveTab('conflict-check')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('reviews') && (
-            <NavItem
-              icon={<Scale size={18} />}
-              label="Review Hub"
-              isActive={activeTab === 'reviews'}
-              onClick={() => setActiveTab('reviews')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('marketplace') && (
-            <NavItem
-              icon={<ShoppingBag size={18} className="text-brand-primary" />}
-              label="Sovereign Marketplace"
-              isActive={activeTab === 'marketplace'}
-              onClick={() => setActiveTab('marketplace')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('workflow') && showAdvanced && (
-            <NavItem
-              icon={<Zap size={18} />}
-              label="Workflow Engine"
-              isActive={activeTab === 'workflow'}
-              onClick={() => setActiveTab('workflow')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('drafting') && (
-            <NavItem
-              icon={<Sparkles size={18} className="text-brand-secondary" />}
-              label="Legal Drafting"
-              isActive={activeTab === 'drafting'}
-              onClick={() => setActiveTab('drafting')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('vault') && (
-            <NavItem
-              icon={<FileLock size={18} />}
-              label="Sovereign Vault"
-              isActive={activeTab === 'vault'}
-              onClick={() => setActiveTab('vault')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('chat') && (
-            <NavItem
-              icon={<MessageSquare size={18} />}
-              label="Legal Chat"
-              isActive={activeTab === 'chat'}
-              onClick={() => setActiveTab('chat')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
+              {/* Operations Section */}
+              {(isAllowed('conflict-check') || isAllowed('reviews') || isAllowed('workflow') || isAllowed('vault') || isAllowed('chat')) && (
+                <div className="pt-4 pb-2 px-4">
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Operations</span>
+                </div>
+              )}
+              {isAllowed('conflict-check') && (
+                <NavItem
+                  icon={<Search size={18} className="text-brand-secondary" />}
+                  label="ZK Conflict Check"
+                  isActive={activeTab === 'conflict-check'}
+                  onClick={() => setActiveTab('conflict-check')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('reviews') && (
+                <NavItem
+                  icon={<Scale size={18} />}
+                  label="Review Hub"
+                  isActive={activeTab === 'reviews'}
+                  onClick={() => setActiveTab('reviews')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('marketplace') && (
+                <NavItem
+                  icon={<ShoppingBag size={18} className="text-brand-primary" />}
+                  label="Sovereign Marketplace"
+                  isActive={activeTab === 'marketplace'}
+                  onClick={() => setActiveTab('marketplace')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('workflow') && showAdvanced && (
+                <NavItem
+                  icon={<Zap size={18} />}
+                  label="Workflow Engine"
+                  isActive={activeTab === 'workflow'}
+                  onClick={() => setActiveTab('workflow')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('drafting') && (
+                <NavItem
+                  icon={<Sparkles size={18} className="text-brand-secondary" />}
+                  label="Legal Drafting"
+                  isActive={activeTab === 'drafting'}
+                  onClick={() => setActiveTab('drafting')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('vault') && (
+                <NavItem
+                  icon={<FileLock size={18} />}
+                  label="Sovereign Vault"
+                  isActive={activeTab === 'vault'}
+                  onClick={() => setActiveTab('vault')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('chat') && (
+                <NavItem
+                  icon={<MessageSquare size={18} />}
+                  label="Legal Chat"
+                  isActive={activeTab === 'chat'}
+                  onClick={() => setActiveTab('chat')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
 
-          {/* Enterprise Tier Section */}
-          {(isAllowed('enclave') || isAllowed('growth') || (isAllowed('audit') && showAdvanced)) && (
-            <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Enterprise Tier</span>
-            </div>
-          )}
-          {isAllowed('growth') && (
-            <NavItem
-              icon={<Coins size={18} />}
-              label="Business Growth"
-              isActive={activeTab === 'growth'}
-              onClick={() => setActiveTab('growth')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('audit') && showAdvanced && (
-            <NavItem
-              icon={<Activity size={18} />}
-              label="Forensic Traces"
-              isActive={activeTab === 'audit'}
-              onClick={() => setActiveTab('audit')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
+              {/* Enterprise Tier Section */}
+              {(isAllowed('enclave') || isAllowed('growth') || (isAllowed('audit') && showAdvanced)) && (
+                <div className="pt-4 pb-2 px-4 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Enterprise Tier</span>
+                </div>
+              )}
+              {isAllowed('growth') && (
+                <NavItem
+                  icon={<Coins size={18} />}
+                  label="Business Growth"
+                  isActive={activeTab === 'growth'}
+                  onClick={() => setActiveTab('growth')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('audit') && showAdvanced && (
+                <NavItem
+                  icon={<Activity size={18} />}
+                  label="Forensic Traces"
+                  isActive={activeTab === 'audit'}
+                  onClick={() => setActiveTab('audit')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
 
-          {/* System Section */}
-          {(isAllowed('status') || isAllowed('system-settings') || isAllowed('tenant-settings')) && (
-            <div className="pt-4 pb-2 px-4">
-              <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">System</span>
-            </div>
-          )}
-          {isAllowed('status') && (
-            <NavItem
-              icon={<Target size={18} />}
-              label="Project Roadmap"
-              isActive={activeTab === 'status'}
-              onClick={() => setActiveTab('status')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('system-settings') && (
-            <NavItem
-              icon={<Globe size={18} className="text-brand-secondary" />}
-              label="Infrastructure Plane"
-              isActive={activeTab === 'system-settings'}
-              onClick={() => setActiveTab('system-settings')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-          )}
-          {isAllowed('tenant-settings') && (
-            <NavItem
-              icon={<Settings size={18} className="text-purple-400" />}
-              label="Tenant Settings"
-              isActive={activeTab === 'tenant-settings'}
-              onClick={() => setActiveTab('tenant-settings')}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
+              {/* System Section */}
+              {(isAllowed('status') || isAllowed('system-settings') || isAllowed('tenant-settings')) && (
+                <div className="pt-4 pb-2 px-4">
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">System</span>
+                </div>
+              )}
+              {isAllowed('status') && (
+                <NavItem
+                  icon={<Target size={18} />}
+                  label="Project Roadmap"
+                  isActive={activeTab === 'status'}
+                  onClick={() => setActiveTab('status')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('system-settings') && (
+                <NavItem
+                  icon={<Globe size={18} className="text-brand-secondary" />}
+                  label="Infrastructure Plane"
+                  isActive={activeTab === 'system-settings'}
+                  onClick={() => setActiveTab('system-settings')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('tenant-settings') && (
+                <NavItem
+                  icon={<Settings size={18} className="text-purple-400" />}
+                  label="Tenant Settings"
+                  isActive={activeTab === 'tenant-settings'}
+                  onClick={() => setActiveTab('tenant-settings')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+
+            </>
           )}
         </nav>
 

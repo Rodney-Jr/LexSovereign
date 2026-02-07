@@ -40,6 +40,7 @@ import DecisionTraceLedger from './components/DecisionTraceLedger';
 import { PricingGovernance } from './components/PricingGovernance';
 import LegalDrafting from './components/LegalDrafting';
 import SovereignMarketplace from './components/SovereignMarketplace';
+import ClientPortal from './components/ClientPortal';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -280,6 +281,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'status' && <ProjectStatus />}
         {activeTab === 'tenant-settings' && <TenantSettings userRole={contextRole as any} setUserRole={() => { }} />}
         {activeTab === 'system-settings' && <GlobalSettings />}
+        {activeTab === 'client-portal' && <ClientPortal />}
       </div>
 
       {showMatterModal && (
