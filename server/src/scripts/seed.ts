@@ -231,8 +231,10 @@ async function main() {
         { id: 'REG-002', name: 'CCPA Consumer Rights', description: 'Enforce right to deletion for CA residents.', region: 'US', isActive: true, authority: 'California State', triggerKeywords: ['california', 'consumer'], blockThreshold: 0.7 },
         { id: 'REG-003', name: 'Banking Secrecy Act', description: 'Flag transactions over $10k for review.', region: 'US', isActive: false, authority: 'FinCEN', triggerKeywords: ['transaction', 'structuring'], blockThreshold: 0.9 },
         // Jurisdictional Specific Rules
-        { id: 'REG-SOV-001', name: 'Data Protection Act (Section A)', description: 'Mandates registration of data controllers and protects personal data.', region: 'SOV_ENCLAVE_1', isActive: true, authority: 'Regulator Alpha', triggerKeywords: ['national id', 'digital address', 'personal data'], blockThreshold: 0.85 },
-        { id: 'REG-SOV-002', name: 'AML/CFT Guidelines', description: 'Anti-Money Laundering monitoring for suspicious transactions.', region: 'SOV_ENCLAVE_1', isActive: true, authority: 'Regulator Beta', triggerKeywords: ['laundering', 'structuring', 'suspicious'], blockThreshold: 0.9 }
+        { id: 'REG-SOV-001', name: 'Data Protection Act (Section A)', description: 'Mandates registration of data controllers and protects personal data.', region: 'GH_ACC_1', isActive: true, authority: 'Ghana Data Protection Commission', triggerKeywords: ['digital address', 'ghana card', 'voters id'], blockThreshold: 0.8 },
+        { id: 'REG-SOV-002', name: 'POPIA Compliance Sentinel', description: 'Enforces Protection of Personal Information Act for South African subjects.', region: 'ZA_JNB_1', isActive: true, authority: 'Information Regulator (South Africa)', triggerKeywords: ['id number', 'biometric', 'account number', 'political persuasion'], blockThreshold: 0.85 },
+        { id: 'REG-SOV-003', name: 'NDPR Data Privacy Framework', description: 'Nigeria Data Protection Regulation compliance layer.', region: 'NG_LOS_1', isActive: true, authority: 'NITDA', triggerKeywords: ['national identity number', 'nin', 'health data', 'bvnt'], blockThreshold: 0.8 },
+        { id: 'REG-SOV-004', name: 'AML/CFT Africa Cluster', description: 'Anti-Money Laundering monitoring for regional suspicious transactions.', region: 'PRIMARY', isActive: true, authority: 'Financial Intelligence Centre', triggerKeywords: ['laundering', 'structuring', 'suspicious deposit', 'terrorist financing'], blockThreshold: 0.9 }
     ];
 
     console.log('🌱 Seeding Regulatory Rules...');

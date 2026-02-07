@@ -1,8 +1,4 @@
-/**
- * Auditor Service (The "Red Team" Sentinel)
- * Analyzes Generative AI output for "Unauthorized Practice of Law" (UPL) triggers
- * and high-risk advice that requires human sign-off.
- */
+import { prisma } from '../db';
 
 interface AuditResult {
     flagged: boolean;
@@ -12,9 +8,8 @@ interface AuditResult {
 
 export class AuditorService {
 
-    // Keywords determining definitive legal advice vs legal information
-    // In production, this would be a specialized LLM (e.g. BERT classifier)
-    static readonly UPL_TRIGGERS = [
+    // Core UPL Triggers (Still hard-pinned as safety defaults)
+    static readonly SYSTEM_TRIGGERS = [
         "you should file",
         "i advise you to",
         "legally you must",
@@ -24,28 +19,46 @@ export class AuditorService {
     ];
 
     /**
-     * Scans the provided text for regulatory violations.
+     * Scans the provided text for regulatory violations using live RRE tokens.
      */
-    static async scan(text: string, jurisdiction: string = 'GH'): Promise<AuditResult> {
+    static async scan(text: string, jurisdiction: string = 'GH_ACC_1'): Promise<AuditResult> {
         console.log(`[Auditor] Scanning output for jurisdiction: ${jurisdiction}`);
 
         const lowerText = text.toLowerCase();
         let riskScore = 0;
         let reasons: string[] = [];
 
-        // 1. Basic Keyword Heuristics
-        this.UPL_TRIGGERS.forEach(trigger => {
+        // 1. System Safety Defaults
+        this.SYSTEM_TRIGGERS.forEach(trigger => {
             if (lowerText.includes(trigger)) {
                 riskScore += 25;
-                reasons.push(`Detected definitive advice trigger: "${trigger}"`);
+                reasons.push(`UPL Trigger: "${trigger}"`);
             }
         });
 
-        // 2. Jurisdiction Lock Check (Mock)
-        // If the text references laws outside the pinned silo
-        if (jurisdiction === 'GH' && (lowerText.includes('gdpr') || lowerText.includes('california penal code'))) {
-            riskScore += 15;
-            reasons.push("Potential cross-jurisdictional reference (Contamination Risk)");
+        // 2. Dynamic Regulatory Rules from Enclave Database
+        try {
+            const activeRules = await prisma.regulatoryRule.findMany({
+                where: { isActive: true }
+            });
+
+            for (const rule of activeRules) {
+                const matchCount = rule.triggerKeywords.filter(k => lowerText.includes(k.toLowerCase())).length;
+
+                if (matchCount > 0) {
+                    const contribution = (matchCount * 15);
+                    riskScore += contribution;
+                    reasons.push(`Rule violation: ${rule.name} (Matched ${matchCount} keys)`);
+
+                    // Critical Block: If rule is region-specific and context matches
+                    if (rule.region === jurisdiction && riskScore >= (rule.blockThreshold * 100)) {
+                        riskScore = 100;
+                        reasons.push(`CRITICAL PINNED VIOLATION: ${rule.authority} enforcement.`);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("[Auditor] Rule DB lookup failed, falling back to system defaults.", e);
         }
 
         const flagged = riskScore > 40;
