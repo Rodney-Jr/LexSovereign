@@ -218,9 +218,7 @@ async function main() {
                 name: 'Sovereign Acquisition Memo (Encrypted)',
                 uri: 'local://vault/acme/memo_encrypted.pdf',
                 jurisdiction: 'GH_ACC_1',
-                matterId: matter1.id,
-                encryptionKeyId: 'KMS-SOV-DEMO-001',
-                encryptionIV: 'v7e8a9d0c1b2a3f4e5d6c7b=='
+                matterId: matter1.id
             }
         });
         console.log('✅ Seeded Encrypted Mock Document');
