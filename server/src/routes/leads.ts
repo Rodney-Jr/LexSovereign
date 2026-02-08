@@ -1,0 +1,62 @@
+import express from 'express';
+import { prisma } from '../db';
+import { authenticateToken, requireRole } from '../middleware/auth';
+
+const router = express.Router();
+
+// Public: Submit a new lead
+router.post('/', async (req, res) => {
+    try {
+        const { email, name, company, source } = req.body;
+
+        if (!email || !name) {
+            return res.status(400).json({ error: "Name and Email are required." });
+        }
+
+        const lead = await prisma.lead.create({
+            data: {
+                email,
+                name,
+                company,
+                source: source || 'WEB_MODAL',
+                status: 'NEW'
+            }
+        });
+
+        res.status(201).json(lead);
+    } catch (error: any) {
+        console.error("Lead capture error:", error);
+        res.status(500).json({ error: "Failed to capture lead." });
+    }
+});
+
+// Admin: Get all leads
+router.get('/', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const leads = await prisma.lead.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(leads);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Admin: Update lead status
+router.patch('/:id/status', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const lead = await prisma.lead.update({
+            where: { id },
+            data: { status }
+        });
+
+        res.json(lead);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+export default router;

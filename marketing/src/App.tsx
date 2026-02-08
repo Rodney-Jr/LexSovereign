@@ -15,6 +15,7 @@ import {
     CheckCircle
 } from 'lucide-react';
 import MarketingChatbot from './MarketingChatbot';
+import BookDemoModal from './BookDemoModal';
 
 const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000';
 
@@ -22,6 +23,7 @@ const App = () => {
     const [scrolled, setScrolled] = useState(false);
     const [activeModal, setActiveModal] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState('hero');
+    const [isDemoOpen, setIsDemoOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -228,9 +230,9 @@ const App = () => {
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <a href={PLATFORM_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-2xl font-bold text-xl hover:shadow-[0_0_40px_rgba(59,130,246,0.4)] transition-all flex items-center justify-center gap-3 active:scale-95">
+                            <button onClick={() => setIsDemoOpen(true)} className="w-full sm:w-auto px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-2xl font-bold text-xl hover:shadow-[0_0_40px_rgba(59,130,246,0.4)] transition-all flex items-center justify-center gap-3 active:scale-95">
                                 Launch Enclave <ArrowRight size={24} />
-                            </a>
+                            </button>
                             <div className="text-slate-500 text-sm font-mono flex items-center gap-2">
                                 <Cpu size={16} /> SYSTEM STATUS: OPERATIONAL
                             </div>
@@ -458,9 +460,9 @@ const App = () => {
 
                         <div className="mt-20 text-center">
                             <div className="inline-block p-1 rounded-2xl bg-gradient-to-r from-blue-600 to-emerald-500">
-                                <a href={PLATFORM_URL} target="_blank" rel="noopener noreferrer" className="px-12 py-5 bg-slate-950 rounded-[14px] text-white font-black text-xl hover:bg-transparent transition-all flex items-center gap-4 group">
+                                <button onClick={() => setIsDemoOpen(true)} className="px-12 py-5 bg-slate-950 rounded-[14px] text-white font-black text-xl hover:bg-transparent transition-all flex items-center gap-4 group">
                                     BOOK A SOVEREIGN DEMO <ChevronRight className="group-hover:translate-x-1 transition-transform" />
-                                </a>
+                                </button>
                             </div>
                             <p className="mt-6 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Limited Enclave Openings Available for Q1 2026</p>
                         </div>
@@ -607,11 +609,11 @@ const App = () => {
                 </footer>
             </div>
 
-            <MarketingChatbot />
+            <MarketingChatbot onBookDemo={() => setIsDemoOpen(true)} />
             {activeModal && <Modal id={activeModal} />}
+            <BookDemoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
         </div>
     );
 };
 
 export default App;
-

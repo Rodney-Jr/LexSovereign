@@ -34,7 +34,7 @@ interface GlobalControlPlaneProps {
 }
 
 const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) => {
-   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins'>('telemetry');
+   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
    const [stats, setStats] = useState<any>({
@@ -105,6 +105,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                      className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'admins' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                      Admin Fleet
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('leads')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'leads' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                     Leads
                   </button>
                   <button
                      onClick={() => onNavigate?.('pricing-calib')}
@@ -375,9 +381,126 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                      </div>
                   </div>
                </div>
-            )
+            ) : (
+         <LeadsTab />
+         )
          }
       </div >
+   );
+};
+
+const LeadsTab = () => {
+   const [leads, setLeads] = useState<any[]>([]);
+
+   React.useEffect(() => {
+      const fetchLeads = async () => {
+         try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/leads', {
+               headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (Array.isArray(data)) setLeads(data);
+         } catch (e) {
+            console.error("Failed to fetch leads", e);
+         }
+      };
+      fetchLeads();
+   }, []);
+
+   const updateStatus = async (id: string, status: string) => {
+      try {
+         const token = localStorage.getItem('token');
+         await fetch(`/api/leads/${id}/status`, {
+            method: 'PATCH',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+         });
+         setLeads(leads.map(l => l.id === id ? { ...l, status } : l));
+      } catch (e) {
+         console.error("Failed to update status", e);
+      }
+   };
+
+   return (
+      <div className="grid grid-cols-1 gap-10 animate-in slide-in-from-right-4 duration-500">
+         <div className="space-y-6">
+            <div className="flex items-center justify-between px-2">
+               <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <UserPlus size={14} className="text-emerald-400" /> Demo Requests (Leads)
+               </h4>
+               <button onClick={() => window.location.reload()} className="text-slate-500 hover:text-white transition-colors">
+                  <RefreshCw size={14} />
+               </button>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+               <table className="w-full text-left">
+                  <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                     <tr>
+                        <th className="px-8 py-5">Contact</th>
+                        <th className="px-8 py-5">Company</th>
+                        <th className="px-8 py-5">Source</th>
+                        <th className="px-8 py-5">Date</th>
+                        <th className="px-8 py-5 text-right">Status</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50">
+                     {leads.map(lead => (
+                        <tr key={lead.id} className="hover:bg-slate-800/20 transition-all group">
+                           <td className="px-8 py-6">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-emerald-400 font-bold border border-slate-700">
+                                    <Users size={20} />
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-bold text-white">{lead.name}</p>
+                                    <p className="text-[10px] text-slate-500 font-mono">{lead.email}</p>
+                                 </div>
+                              </div>
+                           </td>
+                           <td className="px-8 py-6">
+                              <span className="text-slate-300 font-bold text-xs">{lead.company || '--'}</span>
+                           </td>
+                           <td className="px-8 py-6">
+                              <span className="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-bold uppercase">
+                                 {lead.source}
+                              </span>
+                           </td>
+                           <td className="px-8 py-6">
+                              <span className="text-[10px] font-mono text-slate-500">
+                                 {new Date(lead.createdAt).toLocaleDateString()}
+                              </span>
+                           </td>
+                           <td className="px-8 py-6 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                 <select
+                                    value={lead.status}
+                                    onChange={(e) => updateStatus(lead.id, e.target.value)}
+                                    className="bg-slate-950 border border-slate-800 text-xs font-bold uppercase rounded-lg px-2 py-1 text-slate-300 focus:outline-none focus:border-emerald-500"
+                                 >
+                                    <option value="NEW">NEW</option>
+                                    <option value="CONTACTED">CONTACTED</option>
+                                    <option value="CONVERTED">CONVERTED</option>
+                                    <option value="ARCHIVED">ARCHIVED</option>
+                                 </select>
+                              </div>
+                           </td>
+                        </tr>
+                     ))}
+                     {leads.length === 0 && (
+                        <tr>
+                           <td colSpan={5} className="text-center py-10 text-slate-500 text-sm">No leads yet.</td>
+                        </tr>
+                     )}
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
    );
 };
 

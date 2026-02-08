@@ -7,7 +7,11 @@ interface Message {
     timestamp: Date;
 }
 
-const MarketingChatbot: React.FC = () => {
+interface MarketingChatbotProps {
+    onBookDemo?: () => void;
+}
+
+const MarketingChatbot: React.FC<MarketingChatbotProps> = ({ onBookDemo }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -174,7 +178,7 @@ const MarketingChatbot: React.FC = () => {
                         </div>
 
                         <div className="mt-4 flex flex-wrap gap-2">
-                            <QuickAction label="Book Demo" onClick={() => setInput("I'd like to book a demo of the Legal Drafting Studio.")} />
+                            <QuickAction label="Book Demo" onClick={() => onBookDemo?.()} />
                             <QuickAction label="Pricing" onClick={() => setInput("What are the sovereign pricing tiers?")} />
                             <QuickAction label="Compliance" onClick={() => setInput("How do you ensure NDPR/POPIA compliance?")} />
                         </div>

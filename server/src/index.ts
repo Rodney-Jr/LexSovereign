@@ -75,6 +75,7 @@ app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/branding-profiles', brandingRouter);
 app.use('/api/chatbot', chatbotRouter);
 app.use('/api/tenant', tenantRouter);
+app.use('/api/leads', leadsRouter); // Added leadsRouter
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));
