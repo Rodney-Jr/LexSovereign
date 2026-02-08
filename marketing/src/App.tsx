@@ -11,7 +11,8 @@ import {
     Lock,
     Link as LinkIcon,
     Sparkles,
-    Database
+    Database,
+    CheckCircle
 } from 'lucide-react';
 import MarketingChatbot from './MarketingChatbot';
 
@@ -59,12 +60,12 @@ const App = () => {
                     </div>
 
                     <h1 className="text-6xl md:text-[7rem] font-black tracking-tighter mb-10 leading-[0.9] font-outfit">
-                        Sovereign <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-emerald-400 to-white">Legal Ops Frontier.</span>
+                        The Sovereign Enclave <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-emerald-400 to-white">for African Legal Excellence.</span>
                     </h1>
 
                     <p className="max-w-3xl mx-auto text-lg md:text-xl text-slate-400 mb-14 leading-relaxed font-medium">
-                        LexSovereign is the high-fidelity Legal Operating System designed for elite firms in <span className="text-white">Ghana, Nigeria, Kenya, and South Africa</span>. Physical data residency, jurisdictional pinning, and hardware root of trust.
+                        Stop sacrificing data integrity for AI speed. LexSovereign is the high-fidelity operating system for elite firms in <span className="text-white">Ghana, Nigeria, Kenya, and South Africa</span>. Built for regional enclaves, jurisdictional pinning, and total data sanctity.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -128,11 +129,75 @@ const App = () => {
                 </div>
             </section>
 
+            {/* Value Pillars Section */}
+            <section className="max-w-7xl mx-auto px-6 py-24 border-y border-white/5 bg-slate-900/10">
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-bold text-white mb-4 font-outfit italic tracking-tight">The LexSovereign Pillars</h2>
+                    <p className="text-slate-500 font-medium">Elite legal technology, hard-pinned to your borders.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    {[
+                        { title: "Sovereignty", desc: "Your data stays in your country. Full stop. No cross-border leakage.", icon: <Shield size={24} /> },
+                        { title: "Velocity", desc: "Drafts that took 3 hours now take 3 minutes with AI Auto-Hydrate.", icon: <Zap size={24} /> },
+                        { title: "Certainty", desc: "Rule-based AI that refuses to quote foreign laws or hallucinate advice.", icon: <CheckCircle size={24} /> },
+                        { title: "Sanctity", desc: "Client privacy protected by hardware-level security and encryption.", icon: <Lock size={24} /> }
+                    ].map((pillar, i) => (
+                        <div key={i} className="text-center p-8 rounded-3xl bg-slate-950/50 border border-white/5 hover:border-blue-500/20 transition-all group">
+                            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-400 group-hover:scale-110 transition-transform">
+                                {pillar.icon}
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-3 font-outfit uppercase tracking-wider">{pillar.title}</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed font-medium">{pillar.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Targeted Solutions */}
+            <section className="max-w-7xl mx-auto px-6 py-32">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="p-12 rounded-[3rem] bg-gradient-to-br from-blue-900/20 to-blue-950/10 border border-blue-500/10">
+                        <h3 className="text-3xl font-bold text-white mb-6 font-outfit">Private Law Firms</h3>
+                        <p className="text-slate-300 mb-8 leading-relaxed">Optimize your Senior expertise and Junior speed. Move from "Blank Page" to "Review Ready" in 90 seconds while fulfilling your ethical duties.</p>
+                        <ul className="space-y-4 mb-8">
+                            {[
+                                "90-Second First Drafts",
+                                "Zero-Knowledge Conflict Checks",
+                                "Institutional Knowledge Vault"
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-center gap-3 text-slate-400 text-sm font-bold uppercase tracking-widest">
+                                    <Sparkles size={16} className="text-blue-500" /> {item}
+                                </li>
+                            ))}
+                        </ul>
+                        <a href={PLATFORM_URL} className="text-blue-400 font-bold flex items-center gap-2 hover:gap-4 transition-all">Enable Your Practice <ArrowRight size={16} /></a>
+                    </div>
+                    <div className="p-12 rounded-[3rem] bg-gradient-to-br from-emerald-900/20 to-emerald-950/10 border border-emerald-500/10">
+                        <h3 className="text-3xl font-bold text-white mb-6 font-outfit">Corporate Legal</h3>
+                        <p className="text-slate-300 mb-8 leading-relaxed">The guardian of your company’s risk. LexSovereign acts as your 24/7 compliance officer, hard-pinned to regional data protection laws.</p>
+                        <ul className="space-y-4 mb-8">
+                            {[
+                                "Live Compliance Scrutiny",
+                                "POPIA / NDPR / DPA Sentinel",
+                                "External Counsel Oversight"
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-center gap-3 text-slate-400 text-sm font-bold uppercase tracking-widest">
+                                    <Lock size={16} className="text-emerald-500" /> {item}
+                                </li>
+                            ))}
+                        </ul>
+                        <a href={PLATFORM_URL} className="text-emerald-400 font-bold flex items-center gap-2 hover:gap-4 transition-all">Secure Your Department <ArrowRight size={16} /></a>
+                    </div>
+                </div>
+            </section>
+
             {/* Compliance Matrix */}
             <section id="compliance" className="bg-slate-900/30 py-32 border-y border-white/5">
                 <div className="max-w-7xl mx-auto px-6 text-center mb-16">
                     <h2 className="text-4xl font-bold text-white mb-6 font-outfit">Hard-Pinnned Compliance</h2>
-                    <p className="text-slate-400 max-w-2xl mx-auto">LexSovereign's Regulatory Rules Engine is pre-configured for African data protection frameworks.</p>
+                    <p className="text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
+                        LexSovereign's Regulatory Rules Engine is pre-configured for African data protection frameworks. We don't just follow policies—we build them into the hardware of your enclave.
+                    </p>
                 </div>
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {[
@@ -145,10 +210,10 @@ const App = () => {
                             <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-6">
                                 <Lock size={20} className="text-emerald-500" />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">{item.title}</h3>
-                            <p className="text-sm text-slate-400 mb-6 leading-relaxed">{item.desc}</p>
-                            <div className="text-[10px] font-mono text-slate-600 bg-slate-950 px-3 py-1.5 rounded-md inline-block">
-                                REF: {item.law}
+                            <h3 className="text-lg font-bold text-white mb-3 font-outfit">{item.title}</h3>
+                            <p className="text-sm text-slate-400 mb-6 leading-relaxed font-medium">{item.desc}</p>
+                            <div className="text-[10px] font-mono text-slate-600 bg-slate-950 px-3 py-1.5 rounded-md inline-block font-bold">
+                                JURISDICTIONAL REF: {item.law}
                             </div>
                         </div>
                     ))}
