@@ -203,7 +203,7 @@ async function main() {
             update: {},
             create: {
                 id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH',
-                tenantId: tenant.id, internalCounselId: counsel.id
+                tenantId: tenantId!, internalCounselId: counselId!
             }
         });
 
@@ -219,7 +219,6 @@ async function main() {
                 uri: 'local://vault/acme/memo_encrypted.pdf',
                 jurisdiction: 'GH_ACC_1',
                 matterId: matter1.id,
-                isEncrypted: true,
                 encryptionKeyId: 'KMS-SOV-DEMO-001',
                 encryptionIV: 'v7e8a9d0c1b2a3f4e5d6c7b=='
             }
