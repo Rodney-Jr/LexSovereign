@@ -378,6 +378,57 @@ const App = () => {
                 </div>
             </section>
 
+            {/* Operational Workflow Mastery */}
+            <section className="bg-slate-900/50 py-32 border-y border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] translate-y-1/2 -translate-x-1/2" />
+
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="text-center mb-24">
+                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-outfit">Sovereign Operational Mastery</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed font-medium">
+                            LexSovereign isn't just a research tool—it's the internal OS for elite legal operations in Africa. Automate your daily friction points within a protected logical enclave.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        {[
+                            {
+                                title: "Conflict & Intake",
+                                desc: "Zero-conflict onboarding. Cross-reference matters and adverse parties in real-time within your enclave.",
+                                icon: <Search className="text-blue-500" size={32} />
+                            },
+                            {
+                                title: "Document Vault",
+                                desc: "90-second drafting studio. Auto-hydrate precedents with matter-specific data using high-fidelity AI.",
+                                icon: <Sparkles className="text-emerald-500" size={32} />
+                            },
+                            {
+                                title: "Compliance Sentinel",
+                                desc: "Hard-pinned auditing. Every draft is automatically scrubbed and verified against regional statutes (GH/NG/SA).",
+                                icon: <Lock className="text-purple-500" size={32} />
+                            },
+                            {
+                                title: "Billing Governance",
+                                desc: "Transparent time-ledgers. Track billable intensity and resource utilization with tenant-wide fiscal oversight.",
+                                icon: <Database className="text-amber-500" size={32} />
+                            },
+                            {
+                                title: "Sovereign Portal",
+                                desc: "Secure client collaboration. Share work-product and executed deeds within a cryptographically isolated BYOK environment.",
+                                icon: <Shield className="text-white" size={32} />
+                            }
+                        ].map((workflow, i) => (
+                            <div key={i} className="p-8 bg-slate-900/40 border border-white/5 rounded-[2rem] hover:border-blue-500/30 transition-all group">
+                                <div className="mb-6 group-hover:scale-110 transition-transform">{workflow.icon}</div>
+                                <h4 className="text-lg font-bold text-white mb-3 font-outfit">{workflow.title}</h4>
+                                <p className="text-slate-400 text-sm leading-relaxed">{workflow.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* Governance Section */}
             <section className="max-w-7xl mx-auto px-6 py-24">
                 <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/10 rounded-[3rem] p-12 md:p-20 relative overflow-hidden">
