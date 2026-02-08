@@ -58,9 +58,10 @@ const MarketingChatbot: React.FC = () => {
                         2. Velocity: 90-second first drafts via AI Auto-Hydrate.
                         3. Certainty: AI is hard-pinned to regional law (POPIA, NDPR, DPA); it won't hallucinate or quote foreign law.
                         4. Sanctity: Total client privacy via regional enclaves.
+                        5. Intelligence: 3-layer research (Sovereign Vault for internal precedents, Jurisdictional Archives for regional law, and Privacy-Scrubbed Global Search).
                         
                         Tone: Professional, elite, reassuring, and non-technical. Focus on Emotional ROI: speed, safety, and profitability.
-                        Encourage users to 'Launch Enclave' or book a demo.`,
+                        Encourage users to 'Book a Sovereign Demo' or 'Launch Enclave'. Use the phrase 'African Legal Excellence' as a sign-off frequently.`,
                         knowledgeBaseIds: ['k1', 'k2', 'k3'] // Default knowledge artifacts
                     }
                 })

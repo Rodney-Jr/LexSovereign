@@ -220,6 +220,69 @@ const App = () => {
                 </div>
             </section>
 
+            {/* Sovereign Intelligence Layer */}
+            <section className="py-32 bg-slate-950 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-20">
+                        <h2 className="text-5xl font-black text-white mb-6 font-outfit uppercase tracking-tighter">The Intelligence Tier</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                            LexSovereign doesn't just store documents. It transforms your collective experience into an active, searchable brain.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                        {[
+                            {
+                                title: "Sovereign Vault",
+                                subtitle: "Internal Institutional Intelligence",
+                                desc: "Every case, trial, and contract your firm has ever handled—indexed and ready. Use Zero-Knowledge search to find previous solutions without sensitive data ever leaving your enclave.",
+                                icon: <Database size={32} className="text-blue-500" />,
+                                benefit: "ジュニア speed with Senior expertise."
+                            },
+                            {
+                                title: "Jurisdictional Archives",
+                                subtitle: "Official Legal Knowledge Base",
+                                desc: "A cryptographically locked repository of local statutes, gazettes, and case law. Hard-pinned to your region (Ghana, Nigeria, SA) so your AI never quotes foreign law.",
+                                icon: <Box size={32} className="text-emerald-500" />,
+                                benefit: "Always grounded in local law."
+                            },
+                            {
+                                title: "Global Research Stream",
+                                subtitle: "Privacy-Scrubbed Discovery",
+                                desc: "Need to verify a cross-border precedent? Toggle Global Search to query legal markets via a privacy proxy. High-fidelity results with full Sovereign Citations.",
+                                icon: <Globe size={32} className="text-purple-500" />,
+                                benefit: "82% reduction in manual verification."
+                            }
+                        ].map((layer, i) => (
+                            <div key={i} className="group relative">
+                                <div className="absolute inset-0 bg-white/5 blur-xl group-hover:bg-blue-500/5 transition-all rounded-[3rem]" />
+                                <div className="relative p-10 bg-slate-900/40 border border-white/5 rounded-[3rem] h-full flex flex-col hover:border-blue-500/30 transition-all">
+                                    <div className="mb-8">{layer.icon}</div>
+                                    <h3 className="text-2xl font-bold text-white mb-2 font-outfit">{layer.title}</h3>
+                                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-6">{layer.subtitle}</p>
+                                    <p className="text-slate-400 text-sm leading-relaxed mb-10 flex-1">{layer.desc}</p>
+                                    <div className="pt-6 border-t border-white/5">
+                                        <div className="text-xs font-bold text-slate-200 flex items-center gap-2 italic">
+                                            <Zap size={14} className="text-emerald-500" /> ROI: {layer.benefit}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-20 text-center">
+                        <div className="inline-block p-1 rounded-2xl bg-gradient-to-r from-blue-600 to-emerald-500">
+                            <a href={PLATFORM_URL} className="px-12 py-5 bg-slate-950 rounded-[14px] text-white font-black text-xl hover:bg-transparent transition-all flex items-center gap-4 group">
+                                BOOK A SOVEREIGN DEMO <ChevronRight className="group-hover:translate-x-1 transition-transform" />
+                            </a>
+                        </div>
+                        <p className="mt-6 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Limited Enclave Openings Available for Q1 2026</p>
+                    </div>
+                </div>
+            </section>
+
             {/* Governance Section */}
             <section className="max-w-7xl mx-auto px-6 py-24">
                 <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/10 rounded-[3rem] p-12 md:p-20 relative overflow-hidden">
