@@ -1,17 +1,10 @@
-import fs from 'fs';
-import path from 'path';
+import { PrismaClient } from '@prisma/client';
 import { ChatbotConfig } from '../types';
 
-const DATA_DIR = path.join(__dirname, '../../data');
-const CONFIG_FILE = path.join(DATA_DIR, 'chatbot_config.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+const prisma = new PrismaClient();
 
 const DEFAULT_CONFIG: ChatbotConfig = {
-    id: 'bot_01',
+    id: 'bot_default', // Will be overwritten by DB ID
     botName: 'SovereignAssistant',
     welcomeMessage: 'Welcome. I am your Sovereign Assistant. How can I help you onboard today?',
     isEnabled: true,
@@ -21,26 +14,87 @@ const DEFAULT_CONFIG: ChatbotConfig = {
 };
 
 export class ChatbotService {
-    static getConfig(): ChatbotConfig {
+    static async getConfig(tenantId: string): Promise<ChatbotConfig> {
         try {
-            if (!fs.existsSync(CONFIG_FILE)) {
-                return DEFAULT_CONFIG;
+            const config = await prisma.chatbotConfig.findUnique({
+                where: { tenantId }
+            });
+
+            if (!config) {
+                return { ...DEFAULT_CONFIG, id: 'new' };
             }
-            const data = fs.readFileSync(CONFIG_FILE, 'utf-8');
-            return JSON.parse(data);
+
+            return {
+                id: config.id,
+                botName: config.botName,
+                welcomeMessage: config.welcomeMessage,
+                isEnabled: config.isEnabled,
+                channels: config.channels as any,
+                knowledgeBaseIds: config.knowledgeBaseIds as any,
+                systemInstruction: config.systemInstruction
+            };
         } catch (error) {
             console.error("Failed to read chatbot config:", error);
             return DEFAULT_CONFIG;
         }
     }
 
-    static saveConfig(config: ChatbotConfig): ChatbotConfig {
+    static async saveConfig(tenantId: string, config: Partial<ChatbotConfig>): Promise<ChatbotConfig> {
         try {
-            fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
-            return config;
+            const upserted = await prisma.chatbotConfig.upsert({
+                where: { tenantId },
+                update: {
+                    botName: config.botName,
+                    welcomeMessage: config.welcomeMessage,
+                    isEnabled: config.isEnabled,
+                    channels: config.channels as any,
+                    knowledgeBaseIds: config.knowledgeBaseIds as any,
+                    systemInstruction: config.systemInstruction
+                },
+                create: {
+                    tenantId,
+                    botName: config.botName || DEFAULT_CONFIG.botName,
+                    welcomeMessage: config.welcomeMessage || DEFAULT_CONFIG.welcomeMessage,
+                    isEnabled: config.isEnabled ?? DEFAULT_CONFIG.isEnabled,
+                    channels: (config.channels || DEFAULT_CONFIG.channels) as any,
+                    knowledgeBaseIds: (config.knowledgeBaseIds || DEFAULT_CONFIG.knowledgeBaseIds) as any,
+                    systemInstruction: config.systemInstruction || DEFAULT_CONFIG.systemInstruction
+                }
+            });
+
+            return {
+                id: upserted.id,
+                botName: upserted.botName,
+                welcomeMessage: upserted.welcomeMessage,
+                isEnabled: upserted.isEnabled,
+                channels: upserted.channels as any,
+                knowledgeBaseIds: upserted.knowledgeBaseIds as any,
+                systemInstruction: upserted.systemInstruction
+            };
         } catch (error) {
             console.error("Failed to save chatbot config:", error);
             throw new Error("Failed to persist configuration");
+        }
+    }
+
+    static async getPublicConfig(botId: string): Promise<Partial<ChatbotConfig> | null> {
+        try {
+            const config = await prisma.chatbotConfig.findUnique({
+                where: { id: botId, isEnabled: true }
+            });
+
+            if (!config) return null;
+
+            // Only return safe public fields
+            return {
+                id: config.id,
+                botName: config.botName,
+                welcomeMessage: config.welcomeMessage,
+                channels: config.channels as any
+            };
+        } catch (error) {
+            console.error("Error fetching public bot config:", error);
+            return null;
         }
     }
 }

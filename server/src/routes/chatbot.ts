@@ -13,22 +13,41 @@ const MOCK_KNOWLEDGE: KnowledgeArtifact[] = [
     { id: 'k3', title: 'Fee Structure', category: 'Faq', content: 'Initial consultation is standard. We use statutory Scale of Fees for litigation.', lastIndexed: '3d ago' }
 ];
 
-router.get('/config', (req, res) => {
+router.get('/config/public/:botId', async (req, res) => {
     try {
-        const config = ChatbotService.getConfig();
+        const { botId } = req.params;
+        const config = await ChatbotService.getPublicConfig(botId);
+        if (!config) {
+            return res.status(404).json({ error: "Bot not found or disabled" });
+        }
         res.json(config);
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 });
 
-router.post('/config', (req, res) => {
+router.get('/config', async (req, res) => {
+    try {
+        // TODO: Get tenantId from authenticated user session
+        // For MVP/Demo, using a default hardcoded tenant ID or the one from the first config found
+        // This should be updated to req.user.tenantId once auth middleware is fully integrated here
+        const tenantId = 'demo-tenant-id'; // Placeholder
+        const config = await ChatbotService.getConfig(tenantId);
+        res.json(config);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/config', async (req, res) => {
     try {
         const newConfig = req.body;
         if (!newConfig.botName || !newConfig.systemInstruction) {
             return res.status(400).json({ error: "Missing required fields: botName, systemInstruction" });
         }
-        const saved = ChatbotService.saveConfig(newConfig);
+        // TODO: Get tenantId from session
+        const tenantId = 'demo-tenant-id';
+        const saved = await ChatbotService.saveConfig(tenantId, newConfig);
         res.json(saved);
     } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -36,7 +55,7 @@ router.post('/config', (req, res) => {
 });
 
 // Deployment Stub - In a real app, this would push config to a CDN or edge function
-router.post('/deploy', (req, res) => {
+router.post('/deploy', async (req, res) => {
     try {
         const config = req.body;
         // Verify config integrity
@@ -45,19 +64,27 @@ router.post('/deploy', (req, res) => {
         }
 
         // Save state as 'production' version
-        ChatbotService.saveConfig(config);
+        // TODO: Get tenantId from session
+        const tenantId = 'demo-tenant-id';
+        await ChatbotService.saveConfig(tenantId, config);
 
         // Return success with deployment metadata
         res.json({
             status: 'DEPLOYED',
             version: `v${Date.now()}`,
-            url: `https://widget.lexsovereign.com/${config.id}`,
+            url: `https://widget.lexsovereign.com/${config.id || 'bot_default'}`,
+            scriptTag: `<script src="${generateWidgetScriptUrl()}" data-bot-id="${config.id || 'bot_default'}"></script>`,
             timestamp: new Date().toISOString()
         });
     } catch (err: any) {
         res.status(500).json({ error: "Deployment failed: " + err.message });
     }
 });
+
+function generateWidgetScriptUrl() {
+    const baseUrl = process.env.PLATFORM_URL || 'http://localhost:3000';
+    return `${baseUrl}/widget.js`;
+}
 
 // Public Chat Endpoint (Sandbox)
 router.post('/chat', async (req, res) => {

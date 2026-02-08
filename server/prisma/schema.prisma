@@ -110,9 +110,26 @@ model Tenant {
   policies          Policy[]
   invitations       Invitation[]
   brandingProfiles  BrandingProfile[]
+  chatbotConfig     ChatbotConfig?
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+}
+
+model ChatbotConfig {
+  id                String   @id @default(uuid())
+  tenantId          String   @unique
+  tenant            Tenant   @relation(fields: [tenantId], references: [id])
+  
+  botName           String
+  welcomeMessage    String
+  isEnabled         Boolean  @default(true)
+  channels          Json     // { whatsapp: boolean, webWidget: boolean }
+  knowledgeBaseIds  Json     // String[]
+  systemInstruction String
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Matter {

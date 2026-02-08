@@ -125,6 +125,24 @@ const ChatbotStudio: React.FC = () => {
         </div>
       </div>
 
+      {/* Embed Code Display */}
+      {config.id && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col gap-4">
+          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+            <Globe size={16} className="text-emerald-400" /> Public Widget Embed Code
+          </h4>
+          <div className="bg-black p-4 rounded-xl border border-slate-800 font-mono text-[10px] text-slate-400 overflow-x-auto relative group">
+            {`<script src="${import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000'}/widget.js" data-bot-id="${config.id}"></script>`}
+            <button
+              onClick={() => navigator.clipboard.writeText(`<script src="${import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000'}/widget.js" data-bot-id="${config.id}"></script>`)}
+              className="absolute right-2 top-2 px-3 py-1.5 bg-slate-800 text-white rounded-lg text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              COPY
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Left: Configuration & Knowledge */}
         <div className="lg:col-span-7 space-y-8">
