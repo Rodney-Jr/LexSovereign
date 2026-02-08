@@ -127,165 +127,184 @@ async function main() {
         });
     }
 
-    // Tenant
-    const tenant = await prisma.tenant.upsert({
-        where: { id: 'default-demo-tenant-id' }, // Use a stable ID for seeding
-        update: {
-            encryptionMode: 'SYSTEM_MANAGED'
-        },
-        create: {
-            id: 'default-demo-tenant-id',
+    import { TenantService } from '../services/TenantService';
+
+    // ... (existing imports, but remove direct bcrypt/uuid if not needed for other things)
+
+    // ... inside main() function ...
+
+    // Tenant & User Seeding using Service
+    console.log('🌱 Provisioning Default Tenant via Service...');
+
+    // Check if tenant exists first
+    const existingTenant = await prisma.tenant.findUnique({ where: { id: 'default-demo-tenant-id' } });
+
+    let tenantId;
+    let counselId;
+
+    if (!existingTenant) {
+        const result = await TenantService.provisionTenant({
             name: 'LexSovereign Demo',
+            adminEmail: 'admin@lexsovereign.com',
+            adminName: 'Sovereign Admin',
             plan: 'ENTERPRISE',
-            appMode: 'LAW_FIRM',
-            primaryRegion: 'GH_ACC_1',
-            encryptionMode: 'SYSTEM_MANAGED'
-        }
-    });
-
-    const passwordHash = await bcrypt.hash('password123', 10);
-
-    // Fetch generic IDs for roles
-    const globalAdminRole = await prisma.role.findUnique({ where: { name: 'GLOBAL_ADMIN' } });
-    const seniorCounselRole = await prisma.role.findUnique({ where: { name: 'SENIOR_COUNSEL' } });
-
-    // Users
-    const admin = await prisma.user.upsert({
-        where: { email: 'admin@lexsovereign.com' },
-        update: {},
-        create: {
-            email: 'admin@lexsovereign.com',
-            passwordHash,
-            name: 'Sovereign Admin',
-            roleId: globalAdminRole?.id,
-            roleString: 'GLOBAL_ADMIN',
             region: 'GH_ACC_1',
-            tenantId: tenant.id,
-            maxWeeklyHours: 40.0,
-            jurisdictionPins: ['GH_ACC_1'],
-            credentials: [{ type: 'SYSTEM_ADMIN', id: 'SA-001' }]
-        }
-    });
-
-    const counsel = await prisma.user.upsert({
-        where: { email: 'counsel@lexsovereign.com' },
-        update: {},
-        create: {
-            email: 'counsel@lexsovereign.com',
-            passwordHash,
-            name: 'Internal Counsel',
-            roleId: seniorCounselRole?.id,
-            roleString: 'INTERNAL_COUNSEL',
-            region: 'GH_ACC_1',
-            tenantId: tenant.id
-        }
-    });
-
-    console.log(`✅ Seeded Users: ${admin.email}, ${counsel.email}`);
-
-    // Matters
-    const matter1 = await prisma.matter.upsert({
-        where: { id: 'MT-772' },
-        update: {},
-        create: {
-            id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH',
-            tenantId: tenant.id, internalCounselId: counsel.id
-        }
-    });
-
-    console.log('✅ Seeded Matter 1');
-
-    // Create a mock encrypted document to verify BYOK logic
-    await prisma.document.upsert({
-        where: { id: 'DOC-SOV-ENCRYPTED' },
-        update: {},
-        create: {
-            id: 'DOC-SOV-ENCRYPTED',
-            name: 'Sovereign Acquisition Memo (Encrypted)',
-            uri: 'local://vault/acme/memo_encrypted.pdf',
-            jurisdiction: 'GH_ACC_1',
-            matterId: matter1.id,
-            isEncrypted: true,
-            encryptionKeyId: 'KMS-SOV-DEMO-001',
-            encryptionIV: 'v7e8a9d0c1b2a3f4e5d6c7b=='
-        }
-    });
-    console.log('✅ Seeded Encrypted Mock Document');
-
-    console.log('🌱 Seeding Pricing Configurations...');
-    const pricingConfigs = [
-        {
-            id: 'Standard',
-            basePrice: 99,
-            pricePerUser: 10,
-            creditsIncluded: 500,
-            features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits']
-        },
-        {
-            id: 'Sovereign',
-            basePrice: 499,
-            pricePerUser: 15,
-            creditsIncluded: 10000,
-            features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready']
-        },
-        {
-            id: 'Enclave Exclusive',
-            basePrice: 1999,
-            pricePerUser: 25,
-            creditsIncluded: 0, // Unlimited or specific
-            features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits']
-        }
-    ];
-
-    for (const config of pricingConfigs) {
-        await prisma.pricingConfig.upsert({
-            where: { id: config.id },
-            update: {},
-            create: config
+            appMode: 'LAW_FIRM'
         });
+
+        tenantId = result.tenantId;
+
+        // Manually update ID to keep it stable for seeding references if needed, 
+        // OR just rely on the returned ID.
+        // For seeding stability, we might want to enforce the ID, but TenantService generates random UUID.
+        // Let's just use the returned ID for subsequent relations.
+        console.log(`✅ Provisioned Tenant: ${result.tenantId}`);
+        console.log(`✅ Admin Credentials: ${result.tempPassword}`);
+
+        // Update the admin user to have specific properties not covered by provisioner (like credentials)
+        await prisma.user.update({
+            where: { id: result.adminId },
+            data: {
+                roleString: 'GLOBAL_ADMIN', // Check if we want this? Seed says GLOBAL_ADMIN.
+                // Provisioner creates TENANT_ADMIN. We should upgrade him.
+                role: { connect: { name: 'GLOBAL_ADMIN' } },
+                jurisdictionPins: ['GH_ACC_1'],
+                credentials: [{ type: 'SYSTEM_ADMIN', id: 'SA-001' }]
+            }
+        });
+
+        // Create secondary user (Internal Counsel)
+        // Provisioner doesn't create secondary users.
+        const counselRole = await prisma.role.findFirst({ where: { tenantId: result.tenantId, name: 'INTERNAL_COUNSEL' } });
+
+        const counsel = await prisma.user.create({
+            data: {
+                email: 'counsel@lexsovereign.com',
+                passwordHash: await bcrypt.hash('password123', 10),
+                name: 'Internal Counsel',
+                roleId: counselRole?.id,
+                roleString: 'INTERNAL_COUNSEL',
+                region: 'GH_ACC_1',
+                tenantId: result.tenantId
+            }
+        });
+        counselId = counsel.id;
+        tenantId = result.tenantId; // Ensure available for scope
+
+    } else {
+        console.log('ℹ️ Default tenant already exists. Skipping provisioning.');
+        tenantId = existingTenant.id;
+        const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@lexsovereign.com' } });
+        counselId = counselUser?.id;
     }
 
-    // Regulatory Rules
-    const rules = [
-        { id: 'REG-001', name: 'GDPR Data Sovereignty', description: 'Ensure EU user data remains within EU enclaves.', region: 'EU', isActive: true, authority: 'EU Commission', triggerKeywords: ['personal data', 'eu citizen'], blockThreshold: 0.8 },
-        { id: 'REG-002', name: 'CCPA Consumer Rights', description: 'Enforce right to deletion for CA residents.', region: 'US', isActive: true, authority: 'California State', triggerKeywords: ['california', 'consumer'], blockThreshold: 0.7 },
-        { id: 'REG-003', name: 'Banking Secrecy Act', description: 'Flag transactions over $10k for review.', region: 'US', isActive: false, authority: 'FinCEN', triggerKeywords: ['transaction', 'structuring'], blockThreshold: 0.9 },
-        // Jurisdictional Specific Rules
-        { id: 'REG-SOV-001', name: 'Data Protection Act (Section A)', description: 'Mandates registration of data controllers and protects personal data.', region: 'GH_ACC_1', isActive: true, authority: 'Ghana Data Protection Commission', triggerKeywords: ['digital address', 'ghana card', 'voters id'], blockThreshold: 0.8 },
-        { id: 'REG-SOV-002', name: 'POPIA Compliance Sentinel', description: 'Enforces Protection of Personal Information Act for South African subjects.', region: 'ZA_JNB_1', isActive: true, authority: 'Information Regulator (South Africa)', triggerKeywords: ['id number', 'biometric', 'account number', 'political persuasion'], blockThreshold: 0.85 },
-        { id: 'REG-SOV-003', name: 'NDPR Data Privacy Framework', description: 'Nigeria Data Protection Regulation compliance layer.', region: 'NG_LOS_1', isActive: true, authority: 'NITDA', triggerKeywords: ['national identity number', 'nin', 'health data', 'bvnt'], blockThreshold: 0.8 },
-        { id: 'REG-SOV-004', name: 'AML/CFT Africa Cluster', description: 'Anti-Money Laundering monitoring for regional suspicious transactions.', region: 'PRIMARY', isActive: true, authority: 'Financial Intelligence Centre', triggerKeywords: ['laundering', 'structuring', 'suspicious deposit', 'terrorist financing'], blockThreshold: 0.9 }
-    ];
+    // Update Matter creation to use dynamic IDs
+    if (counselId) {
+        // Matters ...
 
-    console.log('🌱 Seeding Regulatory Rules...');
-    for (const rule of rules) {
-        await prisma.regulatoryRule.upsert({
-            where: { id: rule.id },
+        // Matters
+        const matter1 = await prisma.matter.upsert({
+            where: { id: 'MT-772' },
             update: {},
-            create: rule
+            create: {
+                id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH',
+                tenantId: tenant.id, internalCounselId: counsel.id
+            }
         });
-    }
-    // Locked scope: 10 specific templates
-    const docTemplates = [
-        {
-            name: 'Mutual Non-Disclosure Agreement',
-            description: 'Standard NDA for mutual exchange of confidential business information between two parties.',
-            category: 'Corporate',
-            jurisdiction: 'GLOBAL',
-            version: '1.2.0',
-            structure: {
-                fields: [
-                    { key: 'effective_date', label: 'Effective Date', type: 'date', required: true },
-                    { key: 'party_a_name', label: 'Party A Name', type: 'text', placeholder: 'e.g. Acme Corp', required: true },
-                    { key: 'party_b_name', label: 'Party B Name', type: 'text', placeholder: 'e.g. Beta Ltd', required: true },
-                    { key: 'governing_law', label: 'Governing Law', type: 'text', placeholder: 'e.g. State of New York', required: true },
-                    { key: 'purpose_description', label: 'Purpose', type: 'text', multiline: true, placeholder: 'Describe the business purpose...', required: true }
-                ],
-                sections: [
-                    { key: 'include_non_solicit', label: 'Include Non-Solicitation Clause?', default: false }
-                ]
+
+        console.log('✅ Seeded Matter 1');
+
+        // Create a mock encrypted document to verify BYOK logic
+        await prisma.document.upsert({
+            where: { id: 'DOC-SOV-ENCRYPTED' },
+            update: {},
+            create: {
+                id: 'DOC-SOV-ENCRYPTED',
+                name: 'Sovereign Acquisition Memo (Encrypted)',
+                uri: 'local://vault/acme/memo_encrypted.pdf',
+                jurisdiction: 'GH_ACC_1',
+                matterId: matter1.id,
+                isEncrypted: true,
+                encryptionKeyId: 'KMS-SOV-DEMO-001',
+                encryptionIV: 'v7e8a9d0c1b2a3f4e5d6c7b=='
+            }
+        });
+        console.log('✅ Seeded Encrypted Mock Document');
+
+        console.log('🌱 Seeding Pricing Configurations...');
+        const pricingConfigs = [
+            {
+                id: 'Standard',
+                basePrice: 99,
+                pricePerUser: 10,
+                creditsIncluded: 500,
+                features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits']
             },
-            content: `
+            {
+                id: 'Sovereign',
+                basePrice: 499,
+                pricePerUser: 15,
+                creditsIncluded: 10000,
+                features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready']
+            },
+            {
+                id: 'Enclave Exclusive',
+                basePrice: 1999,
+                pricePerUser: 25,
+                creditsIncluded: 0, // Unlimited or specific
+                features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits']
+            }
+        ];
+
+        for (const config of pricingConfigs) {
+            await prisma.pricingConfig.upsert({
+                where: { id: config.id },
+                update: {},
+                create: config
+            });
+        }
+
+        // Regulatory Rules
+        const rules = [
+            { id: 'REG-001', name: 'GDPR Data Sovereignty', description: 'Ensure EU user data remains within EU enclaves.', region: 'EU', isActive: true, authority: 'EU Commission', triggerKeywords: ['personal data', 'eu citizen'], blockThreshold: 0.8 },
+            { id: 'REG-002', name: 'CCPA Consumer Rights', description: 'Enforce right to deletion for CA residents.', region: 'US', isActive: true, authority: 'California State', triggerKeywords: ['california', 'consumer'], blockThreshold: 0.7 },
+            { id: 'REG-003', name: 'Banking Secrecy Act', description: 'Flag transactions over $10k for review.', region: 'US', isActive: false, authority: 'FinCEN', triggerKeywords: ['transaction', 'structuring'], blockThreshold: 0.9 },
+            // Jurisdictional Specific Rules
+            { id: 'REG-SOV-001', name: 'Data Protection Act (Section A)', description: 'Mandates registration of data controllers and protects personal data.', region: 'GH_ACC_1', isActive: true, authority: 'Ghana Data Protection Commission', triggerKeywords: ['digital address', 'ghana card', 'voters id'], blockThreshold: 0.8 },
+            { id: 'REG-SOV-002', name: 'POPIA Compliance Sentinel', description: 'Enforces Protection of Personal Information Act for South African subjects.', region: 'ZA_JNB_1', isActive: true, authority: 'Information Regulator (South Africa)', triggerKeywords: ['id number', 'biometric', 'account number', 'political persuasion'], blockThreshold: 0.85 },
+            { id: 'REG-SOV-003', name: 'NDPR Data Privacy Framework', description: 'Nigeria Data Protection Regulation compliance layer.', region: 'NG_LOS_1', isActive: true, authority: 'NITDA', triggerKeywords: ['national identity number', 'nin', 'health data', 'bvnt'], blockThreshold: 0.8 },
+            { id: 'REG-SOV-004', name: 'AML/CFT Africa Cluster', description: 'Anti-Money Laundering monitoring for regional suspicious transactions.', region: 'PRIMARY', isActive: true, authority: 'Financial Intelligence Centre', triggerKeywords: ['laundering', 'structuring', 'suspicious deposit', 'terrorist financing'], blockThreshold: 0.9 }
+        ];
+
+        console.log('🌱 Seeding Regulatory Rules...');
+        for (const rule of rules) {
+            await prisma.regulatoryRule.upsert({
+                where: { id: rule.id },
+                update: {},
+                create: rule
+            });
+        }
+        // Locked scope: 10 specific templates
+        const docTemplates = [
+            {
+                name: 'Mutual Non-Disclosure Agreement',
+                description: 'Standard NDA for mutual exchange of confidential business information between two parties.',
+                category: 'Corporate',
+                jurisdiction: 'GLOBAL',
+                version: '1.2.0',
+                structure: {
+                    fields: [
+                        { key: 'effective_date', label: 'Effective Date', type: 'date', required: true },
+                        { key: 'party_a_name', label: 'Party A Name', type: 'text', placeholder: 'e.g. Acme Corp', required: true },
+                        { key: 'party_b_name', label: 'Party B Name', type: 'text', placeholder: 'e.g. Beta Ltd', required: true },
+                        { key: 'governing_law', label: 'Governing Law', type: 'text', placeholder: 'e.g. State of New York', required: true },
+                        { key: 'purpose_description', label: 'Purpose', type: 'text', multiline: true, placeholder: 'Describe the business purpose...', required: true }
+                    ],
+                    sections: [
+                        { key: 'include_non_solicit', label: 'Include Non-Solicitation Clause?', default: false }
+                    ]
+                },
+                content: `
 # MUTUAL NON-DISCLOSURE AGREEMENT
 
 This Mutual Non-Disclosure Agreement (the "Agreement") is entered into as of **{{effective_date}}** (the "Effective Date") by and between:
@@ -315,26 +334,26 @@ Signed:
 
 **For {{party_b_name}}:** ____________________ Date: _________
 `
-        },
-        {
-            name: 'Service Agreement',
-            description: 'Agreement defining the relationship between a service provider and a client.',
-            category: 'Corporate',
-            jurisdiction: 'GLOBAL',
-            version: '1.0.0',
-            structure: {
-                fields: [
-                    { key: 'start_date', label: 'Agreement Start Date', type: 'date', required: true },
-                    { key: 'provider_name', label: 'Provider Name', type: 'text', required: true },
-                    { key: 'client_name', label: 'Client Name', type: 'text', required: true },
-                    { key: 'service_description', label: 'Services Description', type: 'text', multiline: true, required: true },
-                    { key: 'payment_terms', label: 'Payment Terms', type: 'text', placeholder: 'e.g. Net 30', required: true }
-                ],
-                sections: [
-                    { key: 'include_indemnification', label: 'Include Indemnification Clause?', default: true }
-                ]
             },
-            content: `
+            {
+                name: 'Service Agreement',
+                description: 'Agreement defining the relationship between a service provider and a client.',
+                category: 'Corporate',
+                jurisdiction: 'GLOBAL',
+                version: '1.0.0',
+                structure: {
+                    fields: [
+                        { key: 'start_date', label: 'Agreement Start Date', type: 'date', required: true },
+                        { key: 'provider_name', label: 'Provider Name', type: 'text', required: true },
+                        { key: 'client_name', label: 'Client Name', type: 'text', required: true },
+                        { key: 'service_description', label: 'Services Description', type: 'text', multiline: true, required: true },
+                        { key: 'payment_terms', label: 'Payment Terms', type: 'text', placeholder: 'e.g. Net 30', required: true }
+                    ],
+                    sections: [
+                        { key: 'include_indemnification', label: 'Include Indemnification Clause?', default: true }
+                    ]
+                },
+                content: `
 # SERVICE AGREEMENT
 
 This Service Agreement is made between **{{provider_name}}** ("Provider") and **{{client_name}}** ("Client") as of **{{start_date}}**.
@@ -355,27 +374,27 @@ Provider agrees to indemnify and hold harmless Client from any claims arising ou
 
 ---
 `
-        },
-        {
-            name: 'Employment Contract',
-            description: 'Standard full-time employment contract outlining duties, compensation, and benefits.',
-            category: 'Employment',
-            jurisdiction: 'Local',
-            version: '2.1.0',
-            structure: {
-                fields: [
-                    { key: 'start_date', label: 'Start Date', type: 'date', required: true },
-                    { key: 'company_name', label: 'Company Name', type: 'text', required: true },
-                    { key: 'employee_name', label: 'Employee Name', type: 'text', required: true },
-                    { key: 'position_title', label: 'Job Title', type: 'text', required: true },
-                    { key: 'salary_amount', label: 'Annual Salary', type: 'currency', currency: 'USD', required: true },
-                    { key: 'probation_period_months', label: 'Probation Period (Months)', type: 'number', default: 3 }
-                ],
-                sections: [
-                    { key: 'include_ip_assignment', label: 'Include IP Assignment Clause?', default: true }
-                ]
             },
-            content: `
+            {
+                name: 'Employment Contract',
+                description: 'Standard full-time employment contract outlining duties, compensation, and benefits.',
+                category: 'Employment',
+                jurisdiction: 'Local',
+                version: '2.1.0',
+                structure: {
+                    fields: [
+                        { key: 'start_date', label: 'Start Date', type: 'date', required: true },
+                        { key: 'company_name', label: 'Company Name', type: 'text', required: true },
+                        { key: 'employee_name', label: 'Employee Name', type: 'text', required: true },
+                        { key: 'position_title', label: 'Job Title', type: 'text', required: true },
+                        { key: 'salary_amount', label: 'Annual Salary', type: 'currency', currency: 'USD', required: true },
+                        { key: 'probation_period_months', label: 'Probation Period (Months)', type: 'number', default: 3 }
+                    ],
+                    sections: [
+                        { key: 'include_ip_assignment', label: 'Include IP Assignment Clause?', default: true }
+                    ]
+                },
+                content: `
 # EMPLOYMENT CONTRACT
 
 **THIS AGREEMENT** is made on **{{start_date}}** BETWEEN **{{company_name}}** (the "Employer") AND **{{employee_name}}** (the "Employee").
@@ -399,24 +418,24 @@ Any intellectual property created by the Employee during the course of employmen
 
 ---
 `
-        },
-        {
-            name: 'Offer Letter',
-            description: 'Formal letter offering employment to a candidate.',
-            category: 'Employment',
-            jurisdiction: 'Local',
-            version: '1.0.0',
-            structure: {
-                fields: [
-                    { key: 'start_date', label: 'Start Date', type: 'date', required: true },
-                    { key: 'candidate_name', label: 'Candidate Name', type: 'text', required: true },
-                    { key: 'company_name', label: 'Company Name', type: 'text', required: true },
-                    { key: 'offer_position', label: 'Position Offered', type: 'text', required: true },
-                    { key: 'supervisor_name', label: 'Reporting To', type: 'text', required: true }
-                ],
-                sections: []
             },
-            content: `
+            {
+                name: 'Offer Letter',
+                description: 'Formal letter offering employment to a candidate.',
+                category: 'Employment',
+                jurisdiction: 'Local',
+                version: '1.0.0',
+                structure: {
+                    fields: [
+                        { key: 'start_date', label: 'Start Date', type: 'date', required: true },
+                        { key: 'candidate_name', label: 'Candidate Name', type: 'text', required: true },
+                        { key: 'company_name', label: 'Company Name', type: 'text', required: true },
+                        { key: 'offer_position', label: 'Position Offered', type: 'text', required: true },
+                        { key: 'supervisor_name', label: 'Reporting To', type: 'text', required: true }
+                    ],
+                    sections: []
+                },
+                content: `
 # EMPLOYMENT OFFER LETTER
 
 **Date:** {{start_date}}
@@ -437,25 +456,25 @@ Sincerely,
 Hiring Manager
 **{{company_name}}**
 `
-        },
-        {
-            name: 'Memorandum of Understanding (MoU)',
-            description: 'Non-binding agreement outlining the terms of a new relationship.',
-            category: 'Corporate',
-            jurisdiction: 'GLOBAL',
-            version: '1.1.0',
-            structure: {
-                fields: [
-                    { key: 'signing_date', label: 'Signing Date', type: 'date', required: true },
-                    { key: 'party_a', label: 'Party A', type: 'text', required: true },
-                    { key: 'party_b', label: 'Party B', type: 'text', required: true },
-                    { key: 'mutual_goal', label: 'Mutual Goal', type: 'text', multiline: true, required: true }
-                ],
-                sections: [
-                    { key: 'include_confidentiality', label: 'Include Confidentiality Section?', default: false }
-                ]
             },
-            content: `
+            {
+                name: 'Memorandum of Understanding (MoU)',
+                description: 'Non-binding agreement outlining the terms of a new relationship.',
+                category: 'Corporate',
+                jurisdiction: 'GLOBAL',
+                version: '1.1.0',
+                structure: {
+                    fields: [
+                        { key: 'signing_date', label: 'Signing Date', type: 'date', required: true },
+                        { key: 'party_a', label: 'Party A', type: 'text', required: true },
+                        { key: 'party_b', label: 'Party B', type: 'text', required: true },
+                        { key: 'mutual_goal', label: 'Mutual Goal', type: 'text', multiline: true, required: true }
+                    ],
+                    sections: [
+                        { key: 'include_confidentiality', label: 'Include Confidentiality Section?', default: false }
+                    ]
+                },
+                content: `
 # MEMORANDUM OF UNDERSTANDING
 
 This Memorandum of Understanding (MoU) is made on **{{signing_date}}** between **{{party_a}}** and **{{party_b}}**.
@@ -473,24 +492,24 @@ Both parties agree to keep the discussions regarding this MoU confidential.
 
 ---
 `
-        },
-        {
-            name: 'Demand Letter',
-            description: 'Formal letter demanding payment or action to resolve a dispute.',
-            category: 'Disputes',
-            jurisdiction: 'Local',
-            version: '1.0.0',
-            structure: {
-                fields: [
-                    { key: 'deadline_date', label: 'Payment Deadline', type: 'date', required: true },
-                    { key: 'recipient_name', label: 'Recipient Name', type: 'text', required: true },
-                    { key: 'sender_name', label: 'Sender Name', type: 'text', required: true },
-                    { key: 'breach_details', label: 'Details of Breach/Issue', type: 'text', multiline: true, required: true },
-                    { key: 'amount_due', label: 'Amount Due', type: 'currency', currency: 'USD', required: true }
-                ],
-                sections: []
             },
-            content: `
+            {
+                name: 'Demand Letter',
+                description: 'Formal letter demanding payment or action to resolve a dispute.',
+                category: 'Disputes',
+                jurisdiction: 'Local',
+                version: '1.0.0',
+                structure: {
+                    fields: [
+                        { key: 'deadline_date', label: 'Payment Deadline', type: 'date', required: true },
+                        { key: 'recipient_name', label: 'Recipient Name', type: 'text', required: true },
+                        { key: 'sender_name', label: 'Sender Name', type: 'text', required: true },
+                        { key: 'breach_details', label: 'Details of Breach/Issue', type: 'text', multiline: true, required: true },
+                        { key: 'amount_due', label: 'Amount Due', type: 'currency', currency: 'USD', required: true }
+                    ],
+                    sections: []
+                },
+                content: `
 # CEASE AND DESIST / DEMAND LETTER
 
 **DATE:** {{deadline_date}}
@@ -512,23 +531,23 @@ Governed yourself accordingly.
 Sincerely,
 **{{sender_name}}**
 `
-        },
-        {
-            name: 'Board Resolution',
-            description: 'Record of decisions made by the Board of Directors.',
-            category: 'Corporate',
-            jurisdiction: 'GLOBAL',
-            version: '1.0.0',
-            structure: {
-                fields: [
-                    { key: 'meeting_date', label: 'Meeting Date', type: 'date', required: true },
-                    { key: 'company_name', label: 'Company Name', type: 'text', required: true },
-                    { key: 'resolution_topic', label: 'Resolution Topic', type: 'text', required: true },
-                    { key: 'decision_details', label: 'Decision Details', type: 'text', multiline: true, required: true }
-                ],
-                sections: []
             },
-            content: `
+            {
+                name: 'Board Resolution',
+                description: 'Record of decisions made by the Board of Directors.',
+                category: 'Corporate',
+                jurisdiction: 'GLOBAL',
+                version: '1.0.0',
+                structure: {
+                    fields: [
+                        { key: 'meeting_date', label: 'Meeting Date', type: 'date', required: true },
+                        { key: 'company_name', label: 'Company Name', type: 'text', required: true },
+                        { key: 'resolution_topic', label: 'Resolution Topic', type: 'text', required: true },
+                        { key: 'decision_details', label: 'Decision Details', type: 'text', multiline: true, required: true }
+                    ],
+                    sections: []
+                },
+                content: `
 # BOARD RESOLUTION OF {{company_name}}
 
 **DATE:** {{meeting_date}}
@@ -544,26 +563,26 @@ The undersigned certify that the foregoing resolution was duly adopted by the Bo
 
 ---
 `
-        },
-        {
-            name: 'Lease Agreement',
-            description: 'Contract for renting residential or commercial property.',
-            category: 'Property',
-            jurisdiction: 'Local',
-            version: '1.3.0',
-            structure: {
-                fields: [
-                    { key: 'landlord_name', label: 'Landlord Name', type: 'text', required: true },
-                    { key: 'tenant_name', label: 'Tenant Name', type: 'text', required: true },
-                    { key: 'property_address', label: 'Property Address', type: 'text', required: true },
-                    { key: 'lease_term_months', label: 'Term (Months)', type: 'number', required: true },
-                    { key: 'monthly_rent', label: 'Monthly Rent', type: 'currency', currency: 'USD', required: true }
-                ],
-                sections: [
-                    { key: 'include_pets_clause', label: 'Include Pets Clause?', default: false }
-                ]
             },
-            content: `
+            {
+                name: 'Lease Agreement',
+                description: 'Contract for renting residential or commercial property.',
+                category: 'Property',
+                jurisdiction: 'Local',
+                version: '1.3.0',
+                structure: {
+                    fields: [
+                        { key: 'landlord_name', label: 'Landlord Name', type: 'text', required: true },
+                        { key: 'tenant_name', label: 'Tenant Name', type: 'text', required: true },
+                        { key: 'property_address', label: 'Property Address', type: 'text', required: true },
+                        { key: 'lease_term_months', label: 'Term (Months)', type: 'number', required: true },
+                        { key: 'monthly_rent', label: 'Monthly Rent', type: 'currency', currency: 'USD', required: true }
+                    ],
+                    sections: [
+                        { key: 'include_pets_clause', label: 'Include Pets Clause?', default: false }
+                    ]
+                },
+                content: `
 # RESIDENTIAL LEASE AGREEMENT
 
 This Lease Agreement is made between **{{landlord_name}}** ("Landlord") and **{{tenant_name}}** ("Tenant").
@@ -584,26 +603,26 @@ Tenant is permitted to keep up to two (2) domestic pets on the premises, subject
 
 ---
 `
-        },
-        {
-            name: 'Privacy Policy',
-            description: 'Policy outlining how an organization collects and handles data.',
-            category: 'Compliance',
-            jurisdiction: 'GLOBAL',
-            version: '2.0.0',
-            structure: {
-                fields: [
-                    { key: 'effective_date', label: 'Effective Date', type: 'date', required: true },
-                    { key: 'company_name', label: 'Company Name', type: 'text', required: true },
-                    { key: 'website_url', label: 'Website URL', type: 'text', required: true },
-                    { key: 'contact_email', label: 'Contact Email', type: 'text', required: true },
-                    { key: 'data_types_collected', label: 'Data Collected', type: 'text', multiline: true, placeholder: 'e.g. name, email, IP address...', required: true }
-                ],
-                sections: [
-                    { key: 'include_cookie_policy', label: 'Include Cookie Policy Section?', default: true }
-                ]
             },
-            content: `
+            {
+                name: 'Privacy Policy',
+                description: 'Policy outlining how an organization collects and handles data.',
+                category: 'Compliance',
+                jurisdiction: 'GLOBAL',
+                version: '2.0.0',
+                structure: {
+                    fields: [
+                        { key: 'effective_date', label: 'Effective Date', type: 'date', required: true },
+                        { key: 'company_name', label: 'Company Name', type: 'text', required: true },
+                        { key: 'website_url', label: 'Website URL', type: 'text', required: true },
+                        { key: 'contact_email', label: 'Contact Email', type: 'text', required: true },
+                        { key: 'data_types_collected', label: 'Data Collected', type: 'text', multiline: true, placeholder: 'e.g. name, email, IP address...', required: true }
+                    ],
+                    sections: [
+                        { key: 'include_cookie_policy', label: 'Include Cookie Policy Section?', default: true }
+                    ]
+                },
+                content: `
 # PRIVACY POLICY
 
 **Last Updated:** {{effective_date}}
@@ -624,23 +643,23 @@ We use cookies to enhance your experience. By using our website, you consent to 
 ### Contact Us
 If you have questions, please contact us at **{{contact_email}}**.
 `
-        },
-        {
-            name: 'Termination Letter',
-            description: 'Formal notice of contract or employment termination.',
-            category: 'Employment',
-            jurisdiction: 'Local',
-            version: '1.0.0',
-            structure: {
-                fields: [
-                    { key: 'termination_date', label: 'Effective Date', type: 'date', required: true },
-                    { key: 'recipient_name', label: 'Recipient Name', type: 'text', required: true },
-                    { key: 'company_name', label: 'Company Name', type: 'text', required: true },
-                    { key: 'reason_for_termination', label: 'Reason', type: 'text', multiline: true, required: true }
-                ],
-                sections: []
             },
-            content: `
+            {
+                name: 'Termination Letter',
+                description: 'Formal notice of contract or employment termination.',
+                category: 'Employment',
+                jurisdiction: 'Local',
+                version: '1.0.0',
+                structure: {
+                    fields: [
+                        { key: 'termination_date', label: 'Effective Date', type: 'date', required: true },
+                        { key: 'recipient_name', label: 'Recipient Name', type: 'text', required: true },
+                        { key: 'company_name', label: 'Company Name', type: 'text', required: true },
+                        { key: 'reason_for_termination', label: 'Reason', type: 'text', multiline: true, required: true }
+                    ],
+                    sections: []
+                },
+                content: `
 # NOTICE OF TERMINATION
 
 **TO:** {{recipient_name}}
@@ -664,34 +683,34 @@ Sincerely,
 Human Resources
 **{{company_name}}**
 `
-        },
-        {
-            name: 'Standard Non-Disclosure Agreement',
-            description: 'A neutral, low-risk mutual NDA suitable for standard business transactions.',
-            category: 'Corporate',
-            jurisdiction: 'GLOBAL',
-            version: '1.0.0',
-            structure: {
-                fields: [
-                    { key: 'effective_date', label: 'Effective Date', type: 'date', required: true, placeholder: 'Select the date the agreement becomes active' },
-                    { key: 'disclosing_party_name', label: 'Disclosing Party Name', type: 'text', required: true, placeholder: 'Full legal name of the entity disclosing information' },
-                    { key: 'disclosing_party_address', label: 'Disclosing Party Address', type: 'text', multiline: true, required: true, placeholder: 'Full registered address including city and country' },
-                    { key: 'receiving_party_name', label: 'Receiving Party Name', type: 'text', required: true, placeholder: 'Full legal name of the entity receiving information' },
-                    { key: 'receiving_party_address', label: 'Receiving Party Address', type: 'text', multiline: true, required: true, placeholder: 'Full registered address including city and country' },
-                    { key: 'business_purpose', label: 'Business Purpose', type: 'text', multiline: true, required: true, placeholder: 'Brief description of why information is being shared' },
-                    { key: 'term_years', label: 'Term (Years)', type: 'number', default: 2, required: true, placeholder: 'Number of years the agreement remains active' },
-                    { key: 'survival_years', label: 'Survival Period (Years)', type: 'number', default: 5, required: true, placeholder: 'Years confidentiality lasts after agreement ends' },
-                    { key: 'governing_jurisdiction', label: 'Governing Jurisdiction', type: 'text', default: 'New York', required: true, placeholder: 'State or Country law that governs the agreement' },
-                    { key: 'disclosing_party_signer_name', label: 'Disclosing Party Signer', type: 'text', required: true, placeholder: 'Name of person signing for Disclosing Party' },
-                    { key: 'disclosing_party_signer_title', label: 'Disclosing Party Title', type: 'text', required: true, placeholder: 'Check signer has authority (e.g. Director, CEO)' },
-                    { key: 'receiving_party_signer_name', label: 'Receiving Party Signer', type: 'text', required: true, placeholder: 'Name of person signing for Receiving Party' },
-                    { key: 'receiving_party_signer_title', label: 'Receiving Party Title', type: 'text', required: true, placeholder: 'Check signer has authority (e.g. Director, CEO)' }
-                ],
-                sections: [
-                    { key: 'include_non_solicitation', label: 'Include Non-Solicitation Clause?', default: false }
-                ]
             },
-            content: `
+            {
+                name: 'Standard Non-Disclosure Agreement',
+                description: 'A neutral, low-risk mutual NDA suitable for standard business transactions.',
+                category: 'Corporate',
+                jurisdiction: 'GLOBAL',
+                version: '1.0.0',
+                structure: {
+                    fields: [
+                        { key: 'effective_date', label: 'Effective Date', type: 'date', required: true, placeholder: 'Select the date the agreement becomes active' },
+                        { key: 'disclosing_party_name', label: 'Disclosing Party Name', type: 'text', required: true, placeholder: 'Full legal name of the entity disclosing information' },
+                        { key: 'disclosing_party_address', label: 'Disclosing Party Address', type: 'text', multiline: true, required: true, placeholder: 'Full registered address including city and country' },
+                        { key: 'receiving_party_name', label: 'Receiving Party Name', type: 'text', required: true, placeholder: 'Full legal name of the entity receiving information' },
+                        { key: 'receiving_party_address', label: 'Receiving Party Address', type: 'text', multiline: true, required: true, placeholder: 'Full registered address including city and country' },
+                        { key: 'business_purpose', label: 'Business Purpose', type: 'text', multiline: true, required: true, placeholder: 'Brief description of why information is being shared' },
+                        { key: 'term_years', label: 'Term (Years)', type: 'number', default: 2, required: true, placeholder: 'Number of years the agreement remains active' },
+                        { key: 'survival_years', label: 'Survival Period (Years)', type: 'number', default: 5, required: true, placeholder: 'Years confidentiality lasts after agreement ends' },
+                        { key: 'governing_jurisdiction', label: 'Governing Jurisdiction', type: 'text', default: 'New York', required: true, placeholder: 'State or Country law that governs the agreement' },
+                        { key: 'disclosing_party_signer_name', label: 'Disclosing Party Signer', type: 'text', required: true, placeholder: 'Name of person signing for Disclosing Party' },
+                        { key: 'disclosing_party_signer_title', label: 'Disclosing Party Title', type: 'text', required: true, placeholder: 'Check signer has authority (e.g. Director, CEO)' },
+                        { key: 'receiving_party_signer_name', label: 'Receiving Party Signer', type: 'text', required: true, placeholder: 'Name of person signing for Receiving Party' },
+                        { key: 'receiving_party_signer_title', label: 'Receiving Party Title', type: 'text', required: true, placeholder: 'Check signer has authority (e.g. Director, CEO)' }
+                    ],
+                    sections: [
+                        { key: 'include_non_solicitation', label: 'Include Non-Solicitation Clause?', default: false }
+                    ]
+                },
+                content: `
 # NON-DISCLOSURE AGREEMENT
 
 ### 1. Parties and Effective Date
@@ -746,78 +765,78 @@ Title: **{{disclosing_party_signer_title}}**
 Name: **{{receiving_party_signer_name}}**
 Title: **{{receiving_party_signer_title}}**
 `
-        }
-    ];
-
-    console.log('🌱 Seeding Document Templates...');
-    for (const t of docTemplates) {
-        console.log(`Working on: ${t.name}`);
-        await prisma.documentTemplate.upsert({
-            where: { id: `template-${t.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}` },
-            update: {
-                content: t.content,
-                structure: t.structure,
-                description: t.description,
-                category: t.category,
-                jurisdiction: t.jurisdiction,
-                version: t.version
-            },
-            create: {
-                id: `template-${t.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-                name: t.name,
-                description: t.description,
-                category: t.category,
-                jurisdiction: t.jurisdiction,
-                content: t.content,
-                structure: t.structure,
-                version: t.version
             }
-        });
-    }
+        ];
 
-    console.log(`✅ Seeded ${docTemplates.length} Document Templates`);
-
-    // Dynamic Template Loading from JSON files
-    console.log('🌱 Seeding Dynamic JSON Templates...');
-    const templatesDir = path.join(process.cwd(), 'prisma', 'templates');
-    if (fs.existsSync(templatesDir)) {
-        const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
-        for (const file of files) {
-            const filePath = path.join(templatesDir, file);
-            const templateData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-
+        console.log('🌱 Seeding Document Templates...');
+        for (const t of docTemplates) {
+            console.log(`Working on: ${t.name}`);
             await prisma.documentTemplate.upsert({
-                where: { id: file.replace('.json', '') },
+                where: { id: `template-${t.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}` },
                 update: {
-                    name: templateData.template_name,
-                    description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
-                    category: templateData.category,
-                    jurisdiction: templateData.jurisdiction,
-                    content: '', // Re-purposed for structure in modern templates
-                    structure: templateData.clauses || templateData.structure,
-                    version: templateData.version
+                    content: t.content,
+                    structure: t.structure,
+                    description: t.description,
+                    category: t.category,
+                    jurisdiction: t.jurisdiction,
+                    version: t.version
                 },
                 create: {
-                    id: file.replace('.json', ''),
-                    name: templateData.template_name,
-                    description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
-                    category: templateData.category,
-                    jurisdiction: templateData.jurisdiction,
-                    content: '',
-                    structure: templateData.clauses || templateData.structure,
-                    version: templateData.version
+                    id: `template-${t.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+                    name: t.name,
+                    description: t.description,
+                    category: t.category,
+                    jurisdiction: t.jurisdiction,
+                    content: t.content,
+                    structure: t.structure,
+                    version: t.version
                 }
             });
-            console.log(`   - Seeded Dynamic Template: ${templateData.template_name}`);
+        }
+
+        console.log(`✅ Seeded ${docTemplates.length} Document Templates`);
+
+        // Dynamic Template Loading from JSON files
+        console.log('🌱 Seeding Dynamic JSON Templates...');
+        const templatesDir = path.join(process.cwd(), 'prisma', 'templates');
+        if (fs.existsSync(templatesDir)) {
+            const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
+            for (const file of files) {
+                const filePath = path.join(templatesDir, file);
+                const templateData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+                await prisma.documentTemplate.upsert({
+                    where: { id: file.replace('.json', '') },
+                    update: {
+                        name: templateData.template_name,
+                        description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
+                        category: templateData.category,
+                        jurisdiction: templateData.jurisdiction,
+                        content: '', // Re-purposed for structure in modern templates
+                        structure: templateData.clauses || templateData.structure,
+                        version: templateData.version
+                    },
+                    create: {
+                        id: file.replace('.json', ''),
+                        name: templateData.template_name,
+                        description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
+                        category: templateData.category,
+                        jurisdiction: templateData.jurisdiction,
+                        content: '',
+                        structure: templateData.clauses || templateData.structure,
+                        version: templateData.version
+                    }
+                });
+                console.log(`   - Seeded Dynamic Template: ${templateData.template_name}`);
+            }
         }
     }
-}
 
-main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+    main()
+        .catch((e) => {
+            console.error(e);
+            process.exit(1);
+        })
+        .finally(async () => {
+            await prisma.$disconnect();
+        });

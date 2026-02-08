@@ -24,6 +24,7 @@ import exportRouter from './routes/export';
 import brandingRouter from './routes/branding';
 import chatbotRouter from './routes/chatbot';
 import tenantRouter from './routes/tenant';
+import leadsRouter from './routes/leads';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 

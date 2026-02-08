@@ -28,6 +28,7 @@ import {
    EyeOff
 } from 'lucide-react';
 import { Region, GlobalAdminIdentity } from '../types';
+import { ProvisionTenantModal } from './ProvisionTenantModal';
 
 interface GlobalControlPlaneProps {
    onNavigate?: (tab: string) => void;
@@ -37,11 +38,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
    const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
+   const [showProvisionModal, setShowProvisionModal] = useState(false);
    const [stats, setStats] = useState<any>({
-      tenants: 142,
-      silos: 108,
-      margin: '62.4%',
-      egress: '0.00kb'
+      totalTenants: 12, // Placeholder default
+      totalMatters: 148,
+      activeSilos: 12,
+      systemHealth: 99.9
    });
 
    React.useEffect(() => {
@@ -370,10 +372,18 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                            <p className="text-cyan-500/80">&gt; Discovery Resolver: Routing architect@lexsovereign.io...</p>
                         </div>
 
-                        <div className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-2xl space-y-2">
-                           <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                              <EyeOff size={14} /> Zero-Knowledge Guarantee
-                           </p>
+                        <div className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-2xl space-y-3">
+                           <div className="flex items-center justify-between">
+                              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                 <EyeOff size={14} /> Zero-Knowledge Guarantee
+                              </p>
+                              <button
+                                 onClick={() => setShowProvisionModal(true)}
+                                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase rounded-lg transition-colors flex items-center gap-2"
+                              >
+                                 <PlusCircle size={12} /> Provision Tenant
+                              </button>
+                           </div>
                            <p className="text-[10px] text-slate-500 leading-relaxed">
                               Platform Admins have zero visibility into legal artifact contents. All access is scoped to the infrastructure plane.
                            </p>
@@ -381,10 +391,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                      </div>
                   </div>
                </div>
-            ) : (
-         <LeadsTab />
-         )
-         }
+            )}
       </div >
    );
 };

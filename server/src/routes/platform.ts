@@ -1,114 +1,44 @@
+
 import express from 'express';
-import { prisma } from '../db';
-import bcrypt from 'bcryptjs';
-import { authenticateToken, authorizeRole } from '../middleware/auth';
+import { authenticateToken, requireRole } from '../middleware/auth';
+import { TenantService } from '../services/TenantService';
+import { z } from 'zod';
 
 const router = express.Router();
 
-// Provision New Tenant (Bypasses SaaS checkout)
-// Security: GLOBAL_ADMIN role only
-router.post('/provision-tenant', authenticateToken as any, authorizeRole(['GLOBAL_ADMIN']) as any, async (req, res) => {
-    const { name, plan, appMode, primaryRegion, adminEmail, adminPassword } = req.body;
+const provisionSchema = z.object({
+    name: z.string().min(3),
+    adminEmail: z.string().email(),
+    adminName: z.string().min(2),
+    plan: z.string().optional(),
+    region: z.string().optional(),
+    appMode: z.string().optional()
+});
 
+/**
+ * POST /api/platform/provision
+ * Trusted Global Admin endpoint to create new tenants.
+ */
+router.post('/provision', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
     try {
-        const result = await prisma.$transaction(async (tx) => {
-            // 1. Create Tenant
-            const tenant = await tx.tenant.create({
-                data: {
-                    name,
-                    plan: plan || 'STANDARD',
-                    appMode: appMode || 'LAW_FIRM',
-                    primaryRegion: primaryRegion || 'GH_ACC_1'
-                }
-            });
+        // Validate Input
+        const input = provisionSchema.parse(req.body);
 
-            // 2. Fetch appropriate role for the new admin (System-level TENANT_ADMIN)
-            const role = await tx.role.findUnique({
-                where: { name: 'TENANT_ADMIN' }
-            });
+        // Execute Provisioning
+        const result = await TenantService.provisionTenant(input);
 
-            if (!role) throw new Error("TENANT_ADMIN system role not found. Run seeds.");
-
-            // 3. Create First User (Admin)
-            const hashedPassword = await bcrypt.hash(adminPassword, 10);
-            const user = await tx.user.create({
-                data: {
-                    email: adminEmail,
-                    passwordHash: hashedPassword,
-                    name: `${name} Admin`,
-                    roleId: role.id,
-                    roleString: 'TENANT_ADMIN',
-                    tenantId: tenant.id,
-                    region: primaryRegion || 'GH_ACC_1'
-                }
-            });
-
-            return { tenant, userEmail: user.email };
-        });
-
+        // Return sensitive credentials (HTTPS required)
         res.status(201).json({
-            message: "Tenant provisioned successfully",
-            tenant: result.tenant,
-            adminEmail: result.userEmail
+            message: 'Tenant Provisioned Successfully',
+            details: result
         });
 
-    } catch (error: any) {
-        console.error("[Platform] Provisioning Failed:", error);
-        res.status(400).json({ error: error.message || "Manual provisioning failed." });
-    }
-});
-
-// List all tenants (Telemetry)
-router.get('/tenants', authenticateToken as any, authorizeRole(['GLOBAL_ADMIN']) as any, async (req, res) => {
-    try {
-        const tenants = await prisma.tenant.findMany({
-            include: {
-                _count: {
-                    select: { users: true, matters: true }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        // Map to metadata format expected by frontend
-        const mapped = tenants.map(t => ({
-            id: t.id,
-            name: t.name,
-            plan: t.plan,
-            primaryRegion: t.primaryRegion,
-            activeMatters: t._count.matters,
-            userCount: t._count.users,
-            createdAt: t.createdAt
-        }));
-
-        res.json(mapped);
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Platform Telemetry Stats
-router.get('/stats', authenticateToken as any, authorizeRole(['GLOBAL_ADMIN']) as any, async (req, res) => {
-    try {
-        const [tenantCount, matterCount, uniqueRegions] = await Promise.all([
-            prisma.tenant.count(),
-            prisma.matter.count(),
-            prisma.tenant.findMany({
-                select: { primaryRegion: true },
-                distinct: ['primaryRegion']
-            }).then(r => r.length)
-        ]);
-
-        res.json({
-            tenants: tenantCount,
-            matters: matterCount,
-            silos: uniqueRegions + 3, // +3 for Core System Silos (Primary, Secondary, Global)
-            health: 'NOMINAL',
-            margin: '64.2%',
-            egress: '1.2GB'
-        });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
+    } catch (err: any) {
+        if (err instanceof z.ZodError) {
+            return res.status(400).json({ error: err.errors });
+        }
+        console.error("Provisioning Error:", err);
+        res.status(500).json({ error: 'Failed to provision tenant' });
     }
 });
 
