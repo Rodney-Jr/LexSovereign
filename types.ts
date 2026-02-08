@@ -348,6 +348,8 @@ export interface BrandingProfile {
   id: string;
   name: string;
   logoUrl?: string;
+  primaryColor: string;
+  secondaryColor: string;
   primaryFont: string;
   headerText?: string;
   footerText?: string;

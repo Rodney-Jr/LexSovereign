@@ -30,6 +30,7 @@ import {
 import { TenantUser, UserRole } from '../types';
 import SovereignBilling from './SovereignBilling';
 import ChatbotStudio from './ChatbotStudio';
+import BrandingSettings from './BrandingSettings';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 const TenantAdministration: React.FC = () => {
@@ -42,7 +43,7 @@ const TenantAdministration: React.FC = () => {
       encryptionMode: 'SYSTEM_MANAGED' as 'SYSTEM_MANAGED' | 'BYOK'
    });
 
-   const [activeTab, setActiveTab] = useState<'users' | 'oidc' | 'templates' | 'billing' | 'chatbot'>('users');
+   const [activeTab, setActiveTab] = useState<'users' | 'oidc' | 'templates' | 'billing' | 'chatbot' | 'branding'>('users');
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
@@ -244,6 +245,7 @@ const TenantAdministration: React.FC = () => {
             <div className="flex flex-wrap gap-2 mt-4 lg:mt-0">
                <TabButton label="Users & RBAC" active={activeTab === 'users'} icon={<Users size={16} />} onClick={() => setActiveTab('users')} />
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
+               <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
                <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
                <TabButton label="Sovereign Credentials" active={activeTab === 'oidc'} icon={<Key size={16} />} onClick={() => setActiveTab('oidc')} />
                <TabButton label="Templates" active={activeTab === 'templates'} icon={<Database size={16} />} onClick={() => setActiveTab('templates')} />
@@ -417,6 +419,8 @@ const TenantAdministration: React.FC = () => {
                })()}
 
                {activeTab === 'chatbot' && <ChatbotStudio />}
+
+               {activeTab === 'branding' && <BrandingSettings />}
 
                {activeTab === 'billing' && <SovereignBilling />}
 

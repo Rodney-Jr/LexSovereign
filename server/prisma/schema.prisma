@@ -282,6 +282,8 @@ model BrandingProfile {
   id                String   @id @default(uuid())
   name              String
   logoUrl           String?
+  primaryColor      String   @default("#4F46E5")
+  secondaryColor    String   @default("#6366F1")
   primaryFont       String   @default("Times New Roman")
   headerText        String?
   footerText        String?
