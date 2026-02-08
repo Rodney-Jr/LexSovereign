@@ -43,7 +43,7 @@ const TenantAdministration: React.FC = () => {
       encryptionMode: 'SYSTEM_MANAGED' as 'SYSTEM_MANAGED' | 'BYOK'
    });
 
-   const [activeTab, setActiveTab] = useState<'users' | 'billing' | 'chatbot' | 'branding'>('users');
+   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'billing' | 'chatbot' | 'branding'>('users');
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
@@ -244,6 +244,7 @@ const TenantAdministration: React.FC = () => {
             </div>
             <div className="flex flex-wrap gap-2 mt-4 lg:mt-0">
                <TabButton label="Users & RBAC" active={activeTab === 'users'} icon={<Users size={16} />} onClick={() => setActiveTab('users')} />
+               <TabButton label="Roles" active={activeTab === 'roles'} icon={<Shield size={16} />} onClick={() => setActiveTab('roles')} />
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
                <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
                <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
@@ -415,6 +416,97 @@ const TenantAdministration: React.FC = () => {
                      </div>
                   );
                })()}
+
+               {activeTab === 'roles' && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4">
+                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl">
+                        <div className="flex items-center justify-between">
+                           <div className="space-y-2">
+                              <h4 className="text-lg font-bold text-white flex items-center gap-3">
+                                 <Shield className="text-purple-400" /> Role Governance
+                              </h4>
+                              <p className="text-sm text-slate-400">Manage custom roles and permissions for your organization.</p>
+                           </div>
+                           <button
+                              className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-purple-900/20 active:scale-95 transition-all"
+                              title="Create New Role"
+                           >
+                              <Plus size={16} />
+                              New Role
+                           </button>
+                        </div>
+
+                        {/* Roles List */}
+                        <div className="space-y-4">
+                           {isLoadingRoles ? (
+                              <div className="text-center py-12">
+                                 <RefreshCw className="animate-spin text-purple-400 mx-auto mb-4" size={32} />
+                                 <p className="text-sm text-slate-400">Loading roles...</p>
+                              </div>
+                           ) : availableRoles.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                 {availableRoles.map((role) => (
+                                    <div
+                                       key={role.id}
+                                       className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-purple-500/30 transition-all"
+                                    >
+                                       <div className="flex items-start justify-between">
+                                          <div className="space-y-1 flex-1">
+                                             <div className="flex items-center gap-2">
+                                                <h5 className="text-sm font-bold text-white">{role.name}</h5>
+                                                {role.isSystem && (
+                                                   <span className="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded uppercase font-bold">System</span>
+                                                )}
+                                             </div>
+                                             <p className="text-xs text-slate-500">Role ID: {role.id}</p>
+                                          </div>
+                                          {!role.isSystem && (
+                                             <button
+                                                className="text-slate-500 hover:text-purple-400 transition-colors"
+                                                title="Manage Role"
+                                             >
+                                                <MoreVertical size={16} />
+                                             </button>
+                                          )}
+                                       </div>
+
+                                       <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+                                          <span className="text-[10px] text-slate-600 uppercase tracking-widest">Permissions</span>
+                                          <button
+                                             className="text-[10px] font-bold text-purple-400 uppercase tracking-widest hover:underline"
+                                             title="View Permissions"
+                                          >
+                                             View Details
+                                          </button>
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+                           ) : (
+                              <div className="text-center py-12 bg-slate-950 border border-slate-800 rounded-2xl">
+                                 <Shield className="text-slate-700 mx-auto mb-4" size={48} />
+                                 <p className="text-sm text-slate-400 mb-2">No custom roles defined</p>
+                                 <p className="text-xs text-slate-600">Create your first role to get started</p>
+                              </div>
+                           )}
+                        </div>
+
+                        {/* System Roles Info */}
+                        <div className="pt-6 border-t border-slate-800">
+                           <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-6 space-y-3">
+                              <div className="flex items-center gap-3">
+                                 <ShieldCheck className="text-blue-400" size={20} />
+                                 <h5 className="text-sm font-bold text-white">System Roles</h5>
+                              </div>
+                              <p className="text-xs text-slate-400 leading-relaxed">
+                                 System roles (TENANT_ADMIN, INTERNAL_COUNSEL) are managed by the platform and cannot be modified.
+                                 Create custom roles to define specific permission sets for your organization.
+                              </p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
 
                {activeTab === 'chatbot' && <ChatbotStudio />}
 
