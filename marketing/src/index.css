@@ -62,3 +62,43 @@ body {
 .hero-gradient {
     background: radial-gradient(circle at top center, rgba(59, 130, 246, 0.15) 0%, transparent 80%), #020617;
 }
+
+/* Scroll Snap Implementation */
+.snap-container {
+    height: 100vh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    /* Hide scrollbar for cleaner look */
+}
+
+.snap-container::-webkit-scrollbar {
+    display: none;
+}
+
+.snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+/* Responsive fallback to normal scrolling for small/short screens */
+@media (max-height: 700px),
+(max-width: 1024px) {
+    .snap-container {
+        height: auto;
+        scroll-snap-type: none;
+        overflow-y: visible;
+    }
+
+    .snap-section {
+        min-height: auto;
+        padding-top: 6rem;
+        padding-bottom: 6rem;
+    }
+}

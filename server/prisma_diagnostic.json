@@ -1,13 +1,10 @@
 {
-  "tenantKeys": [
-    "id",
-    "name",
-    "plan",
-    "appMode",
-    "primaryRegion",
-    "createdAt",
-    "updatedAt"
-  ],
+  "tenantError": "\nInvalid `any)[model].findFirst()` invocation in\nC:\\Users\\LENOVO\\Desktop\\LexSovereign\\server\\src\\scripts\\check_prisma_sync.ts:15:57\n\n  12 \n  13 for (const model of models) {\n  14     try {\n→ 15         const record = await (prisma as any)[model].findFirst(\nAuthentication failed against database server at `localhost`, the provided database credentials for `postgres` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at `localhost`.",
+  "documentError": "\nInvalid `any)[model].findFirst()` invocation in\nC:\\Users\\LENOVO\\Desktop\\LexSovereign\\server\\src\\scripts\\check_prisma_sync.ts:15:57\n\n  12 \n  13 for (const model of models) {\n  14     try {\n→ 15         const record = await (prisma as any)[model].findFirst(\nAuthentication failed against database server at `localhost`, the provided database credentials for `postgres` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at `localhost`.",
+  "matterError": "\nInvalid `any)[model].findFirst()` invocation in\nC:\\Users\\LENOVO\\Desktop\\LexSovereign\\server\\src\\scripts\\check_prisma_sync.ts:15:57\n\n  12 \n  13 for (const model of models) {\n  14     try {\n→ 15         const record = await (prisma as any)[model].findFirst(\nAuthentication failed against database server at `localhost`, the provided database credentials for `postgres` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at `localhost`.",
+  "userError": "\nInvalid `any)[model].findFirst()` invocation in\nC:\\Users\\LENOVO\\Desktop\\LexSovereign\\server\\src\\scripts\\check_prisma_sync.ts:15:57\n\n  12 \n  13 for (const model of models) {\n  14     try {\n→ 15         const record = await (prisma as any)[model].findFirst(\nAuthentication failed against database server at `localhost`, the provided database credentials for `postgres` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at `localhost`.",
+  "roleError": "\nInvalid `any)[model].findFirst()` invocation in\nC:\\Users\\LENOVO\\Desktop\\LexSovereign\\server\\src\\scripts\\check_prisma_sync.ts:15:57\n\n  12 \n  13 for (const model of models) {\n  14     try {\n→ 15         const record = await (prisma as any)[model].findFirst(\nAuthentication failed against database server at `localhost`, the provided database credentials for `postgres` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at `localhost`.",
+  "policyError": "\nInvalid `any)[model].findFirst()` invocation in\nC:\\Users\\LENOVO\\Desktop\\LexSovereign\\server\\src\\scripts\\check_prisma_sync.ts:15:57\n\n  12 \n  13 for (const model of models) {\n  14     try {\n→ 15         const record = await (prisma as any)[model].findFirst(\nAuthentication failed against database server at `localhost`, the provided database credentials for `postgres` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at `localhost`.",
   "invitationDelegate": true,
   "invitationsDelegate": false
 }
