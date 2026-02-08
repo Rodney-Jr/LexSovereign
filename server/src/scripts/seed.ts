@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
+import { TenantService } from '../services/TenantService';
 
 const prisma = new PrismaClient();
 
@@ -126,12 +127,6 @@ async function main() {
             }
         });
     }
-
-    import { TenantService } from '../services/TenantService';
-
-    // ... (existing imports, but remove direct bcrypt/uuid if not needed for other things)
-
-    // ... inside main() function ...
 
     // Tenant & User Seeding using Service
     console.log('🌱 Provisioning Default Tenant via Service...');
