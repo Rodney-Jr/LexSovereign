@@ -130,13 +130,16 @@ async function main() {
     // Tenant
     const tenant = await prisma.tenant.upsert({
         where: { id: 'default-demo-tenant-id' }, // Use a stable ID for seeding
-        update: {},
+        update: {
+            encryptionMode: 'SYSTEM_MANAGED'
+        },
         create: {
             id: 'default-demo-tenant-id',
             name: 'LexSovereign Demo',
             plan: 'ENTERPRISE',
             appMode: 'LAW_FIRM',
-            primaryRegion: 'GH_ACC_1'
+            primaryRegion: 'GH_ACC_1',
+            encryptionMode: 'SYSTEM_MANAGED'
         }
     });
 
@@ -191,6 +194,23 @@ async function main() {
     });
 
     console.log('✅ Seeded Matter 1');
+
+    // Create a mock encrypted document to verify BYOK logic
+    await prisma.document.upsert({
+        where: { id: 'DOC-SOV-ENCRYPTED' },
+        update: {},
+        create: {
+            id: 'DOC-SOV-ENCRYPTED',
+            name: 'Sovereign Acquisition Memo (Encrypted)',
+            uri: 'local://vault/acme/memo_encrypted.pdf',
+            jurisdiction: 'GH_ACC_1',
+            matterId: matter1.id,
+            isEncrypted: true,
+            encryptionKeyId: 'KMS-SOV-DEMO-001',
+            encryptionIV: 'v7e8a9d0c1b2a3f4e5d6c7b=='
+        }
+    });
+    console.log('✅ Seeded Encrypted Mock Document');
 
     console.log('🌱 Seeding Pricing Configurations...');
     const pricingConfigs = [
