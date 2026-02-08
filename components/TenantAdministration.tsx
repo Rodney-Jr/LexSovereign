@@ -43,7 +43,7 @@ const TenantAdministration: React.FC = () => {
       encryptionMode: 'SYSTEM_MANAGED' as 'SYSTEM_MANAGED' | 'BYOK'
    });
 
-   const [activeTab, setActiveTab] = useState<'users' | 'oidc' | 'templates' | 'billing' | 'chatbot' | 'branding'>('users');
+   const [activeTab, setActiveTab] = useState<'users' | 'billing' | 'chatbot' | 'branding'>('users');
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
@@ -247,8 +247,6 @@ const TenantAdministration: React.FC = () => {
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
                <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
                <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
-               <TabButton label="Sovereign Credentials" active={activeTab === 'oidc'} icon={<Key size={16} />} onClick={() => setActiveTab('oidc')} />
-               <TabButton label="Templates" active={activeTab === 'templates'} icon={<Database size={16} />} onClick={() => setActiveTab('templates')} />
             </div>
          </div>
 
@@ -423,133 +421,6 @@ const TenantAdministration: React.FC = () => {
                {activeTab === 'branding' && <BrandingSettings />}
 
                {activeTab === 'billing' && <SovereignBilling />}
-
-               {activeTab === 'oidc' && (
-                  <div className="space-y-6 animate-in slide-in-from-right-4">
-                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-5">
-                           <Lock size={120} />
-                        </div>
-                        <div className="space-y-2">
-                           <h4 className="text-lg font-bold text-white flex items-center gap-3">
-                              <Key className="text-emerald-400" /> Unified Credential Protocol
-                           </h4>
-                           <p className="text-sm text-slate-400">Managing organization-wide login security and practitioner authentication.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                           <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
-                              <div className="flex items-center gap-3">
-                                 <ShieldCheck className="text-emerald-500" size={20} />
-                                 <h5 className="text-sm font-bold text-white">Direct Credential Logic</h5>
-                              </div>
-                              <p className="text-xs text-slate-500 leading-relaxed">LexSovereign manages cryptographic salts and hashes locally within your regional silo. OIDC handshakes have been disabled for direct accountability.</p>
-                           </div>
-                           <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-4">
-                              <div className="flex items-center gap-3">
-                                 <Fingerprint className="text-purple-500" size={20} />
-                                 <h5 className="text-sm font-bold text-white">Silo-Master Binding</h5>
-                              </div>
-                              <p className="text-xs text-slate-500 leading-relaxed">Admin and Practitioner passwords are bound to the Silo's HSM Master Key. Password recovery requires Counsel-level verification.</p>
-                           </div>
-                        </div>
-
-                        <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-3xl flex items-center justify-between">
-                           <div className="flex items-center gap-4">
-                              <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20">
-                                 <CheckCircle2 className="text-blue-400" size={24} />
-                              </div>
-                              <div>
-                                 <p className="text-sm font-bold text-white">Protocol: "Sovereign-Direct"</p>
-                                 <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Master Key: SOV-ORG-RSA4096-ACTIVE</p>
-                              </div>
-                           </div>
-                           <button title="Download Security Audit" className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] hover:underline">Download Security Audit</button>
-                        </div>
-
-                        {/* Encryption Protocol Selection */}
-                        <div className="pt-8 border-t border-slate-800 space-y-6">
-                           <div className="space-y-2">
-                              <h4 className="text-md font-bold text-white flex items-center gap-3">
-                                 <ShieldCheck className="text-blue-400" size={20} /> Organizational Encryption Protocol
-                              </h4>
-                              <p className="text-xs text-slate-400 tracking-tight">Choose how your firm's data is cryptographically protected at rest.</p>
-                           </div>
-
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <button
-                                 onClick={() => updateEncryptionMode('SYSTEM_MANAGED')}
-                                 className={`p-6 rounded-3xl border text-sm text-left transition-all relative overflow-hidden group ${settings.encryptionMode === 'SYSTEM_MANAGED' ? 'bg-blue-500/10 border-blue-500 shadow-lg shadow-blue-900/10' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
-                              >
-                                 <div className="flex items-center gap-3 mb-3 relative z-10">
-                                    <Database className={settings.encryptionMode === 'SYSTEM_MANAGED' ? 'text-blue-400' : 'text-slate-500'} size={18} />
-                                    <h5 className="font-bold text-white">Platform-Managed</h5>
-                                 </div>
-                                 <p className="text-[10px] text-slate-500 leading-relaxed relative z-10">Optimized for West/East African network latency. Salts and hashes are handled automatically within your regional silo.</p>
-                                 {settings.encryptionMode === 'SYSTEM_MANAGED' && <div className="absolute top-0 right-0 p-4"><CheckCircle2 className="text-blue-500" size={16} /></div>}
-                              </button>
-
-                              <button
-                                 onClick={() => updateEncryptionMode('BYOK')}
-                                 className={`p-6 rounded-3xl border text-sm text-left transition-all relative overflow-hidden group ${settings.encryptionMode === 'BYOK' ? 'bg-purple-500/10 border-purple-500 shadow-lg shadow-purple-900/10' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
-                              >
-                                 <div className="flex items-center gap-3 mb-3 relative z-10">
-                                    <Key className={settings.encryptionMode === 'BYOK' ? 'text-purple-400' : 'text-slate-500'} size={18} />
-                                    <h5 className="font-bold text-white">Sovereign-BYOK (Premium)</h5>
-                                 </div>
-                                 <p className="text-[10px] text-slate-500 leading-relaxed relative z-10">Bring Your Own Key. Data is encrypted using your firm's private keys. LexSovereign cannot read data without key-pinning.</p>
-                                 {settings.encryptionMode === 'BYOK' && <div className="absolute top-0 right-0 p-4"><CheckCircle2 className="text-purple-500" size={16} /></div>}
-                              </button>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               )}
-
-               {activeTab === 'templates' && (
-                  <div className="space-y-6 animate-in slide-in-from-right-4">
-                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl">
-                        <h4 className="text-lg font-bold text-white flex items-center gap-3">
-                           <Database className="text-emerald-400" /> Matter Metadata Templates
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                           <div className="space-y-4">
-                              <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1">Matter Numbering Strategy</h5>
-                              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs text-slate-300">Matter Prefix</span>
-                                    <span className="text-xs font-mono text-emerald-400 font-bold">{settings.matterPrefix}</span>
-                                 </div>
-                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs text-slate-300">Sequential Padding</span>
-                                    <span className="text-xs font-mono text-slate-500">{settings.numberingPadding}-Digits</span>
-                                 </div>
-                                 <div className="pt-4 border-t border-slate-800 flex justify-end">
-                                    <button title="Edit Prefix" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Edit Logic</button>
-                                 </div>
-                              </div>
-                           </div>
-
-                           <div className="space-y-4">
-                              <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1">Required Silo Fieldset</h5>
-                              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-                                 {settings.requiredFields.length > 0 ? settings.requiredFields.map((field, idx) => (
-                                    <div key={idx} className="flex items-center justify-between">
-                                       <span className="text-xs text-slate-300 font-bold">{field}</span>
-                                       <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded uppercase font-bold">Mandatory</span>
-                                    </div>
-                                 )) : (
-                                    <p className="text-[10px] text-slate-600 italic">No mandatory fields defined.</p>
-                                 )}
-                                 <div className="pt-4 border-t border-slate-800 flex justify-end">
-                                    <button title="Configure Fields" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:underline">Configure Fields</button>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               )}
             </div>
          </div>
 
