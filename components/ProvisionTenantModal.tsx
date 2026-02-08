@@ -178,3 +178,5 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
         </div>
     );
 };
+
+export default ProvisionTenantModal;
