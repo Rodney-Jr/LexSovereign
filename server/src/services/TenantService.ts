@@ -1,7 +1,7 @@
 
 import { prisma } from '../db';
 import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 interface ProvisionTenantInput {
     name: string;
@@ -35,8 +35,8 @@ export class TenantService {
         // Generate a temporary password
         const tempPassword = Math.random().toString(36).slice(-8) + "!Aa1";
         const passwordHash = await bcrypt.hash(tempPassword, 10);
-        const adminId = uuidv4();
-        const tenantId = uuidv4();
+        const adminId = randomUUID();
+        const tenantId = randomUUID();
 
         // Transaction ensures atomicity - no half-baked tenants
         await prisma.$transaction(async (tx) => {
