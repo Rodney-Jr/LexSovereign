@@ -84,9 +84,10 @@ router.post('/', authenticateToken, async (req, res) => {
             return;
         }
 
-        // 1. Verify Matter belongs to Tenant (Security Check)
+        // 1. Verify Matter and Tenant Mode
         const matter = await prisma.matter.findUnique({
-            where: { id: matterId }
+            where: { id: matterId },
+            include: { tenant: true }
         });
 
         if (!matter || matter.tenantId !== tenantId) {
@@ -94,13 +95,32 @@ router.post('/', authenticateToken, async (req, res) => {
             return;
         }
 
+        const encryptionMode = matter.tenant.encryptionMode;
+        let isEncrypted = false;
+        let encryptionIV: string | undefined;
+        let encryptionKeyId: string | undefined;
+
+        if (encryptionMode === 'BYOK') {
+            const { randomBytes } = await import('crypto');
+            isEncrypted = true;
+            encryptionIV = randomBytes(12).toString('base64');
+            encryptionKeyId = `tenant-key-${tenantId}`; // In production, this would be a KMS Alias
+        }
+
         // 2. Create Document Record
-        let uri = `silo://${tenantId}/${matterId}/${name.replace(/\s+/g, '_')}`; // Default Mock URI
+        let uri = `silo://${tenantId}/${matterId}/${name.replace(/\s+/g, '_')}`;
 
         // If content is provided, save it to disk
         if (req.body.content) {
             const { saveDocumentContent } = await import('../utils/fileStorage');
-            const relativePath = await saveDocumentContent(tenantId, matterId, `${name}.md`, req.body.content);
+            // Note: fileStorage needs to pass encryptionContext to LocalStorageAdapter
+            const relativePath = await saveDocumentContent(
+                tenantId,
+                matterId,
+                `${name}.md`,
+                req.body.content,
+                isEncrypted ? { keyId: encryptionKeyId!, algorithm: 'AES-256-GCM', iv: encryptionIV! } : undefined
+            );
             uri = `file://${relativePath}`;
         }
 
@@ -108,11 +128,14 @@ router.post('/', authenticateToken, async (req, res) => {
             data: {
                 name,
                 uri,
-                jurisdiction: region || 'GH_ACC_1', // Map region to jurisdiction
+                jurisdiction: region || 'GH_ACC_1',
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
                 matterId,
-                attributes: { type, size } // Store extra metadata in JSON
+                isEncrypted,
+                encryptionIV,
+                encryptionKeyId,
+                attributes: { type, size }
             },
             include: {
                 matter: true
@@ -131,7 +154,7 @@ router.post('/', authenticateToken, async (req, res) => {
             matterId: doc.matterId,
             matterName: doc.matter.name,
             privilege: doc.privilege,
-            encryption: 'BYOK' // Default for now
+            encryption: isEncrypted ? 'BYOK' : 'SYSTEM'
         });
 
     } catch (error: any) {

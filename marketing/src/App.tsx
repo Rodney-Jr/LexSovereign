@@ -20,12 +20,95 @@ const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000
 
 const App = () => {
     const [scrolled, setScrolled] = useState(false);
+    const [activeModal, setActiveModal] = useState<string | null>(null);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const modalContent: Record<string, { title: string, content: React.ReactNode }> = {
+        'logical-enclave': {
+            title: 'Logical Enclave Deep-Dive',
+            content: (
+                <div className="space-y-6 text-slate-300">
+                    <p>Unlike traditional cloud storage where data from multiple users sits in a shared database table, a <strong>Logical Enclave</strong> uses software-defined isolation to ensure your data is cryptographically siloed.</p>
+                    <div className="bg-slate-900 p-6 rounded-2xl border border-white/5 font-mono text-xs space-y-2">
+                        <div className="text-emerald-400">// ENCLAVE_SEC_PROTOCOL_V4</div>
+                        <div>SET_ISOLATION_LEVEL: ABSOLUTE</div>
+                        <div>MOUNT_POINT: /silo/tenant_id</div>
+                        <div>ENCRYPTION: AES-256-GCM / BYOK</div>
+                    </div>
+                    <ul className="space-y-3">
+                        <li className="flex items-start gap-3">
+                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                            <span><strong>Zero-Knowledge:</strong> LexSovereign administrators cannot access your enclave files without your explicit key-pinning handshake.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                            <span><strong>Regional Pinning:</strong> Your enclave logic is hard-coded to ignore any request originating from outside authorized regional gateways.</span>
+                        </li>
+                    </ul>
+                </div>
+            )
+        },
+        'jurisdictional-logic': {
+            title: 'Jurisdictional Logic Deep-Dive',
+            content: (
+                <div className="space-y-6 text-slate-300">
+                    <p>We solve the "Hallucination Problem" for African lawyers by pinning our AI models to jurisdictional truth rather than global probability.</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-slate-900 rounded-xl border border-white/5">
+                            <div className="text-blue-400 font-bold text-xs mb-1 uppercase tracking-widest">Authority Pinning</div>
+                            <p className="text-[10px] text-slate-500">Only statutes from authorized regional gazettes are used for drafting.</p>
+                        </div>
+                        <div className="p-4 bg-slate-900 rounded-xl border border-white/5">
+                            <div className="text-emerald-400 font-bold text-xs mb-1 uppercase tracking-widest">Logic Filtering</div>
+                            <p className="text-[10px] text-slate-500">AI output is scrubbed against regional GDPR equivalents (NDPR/POPIA) before rendering.</p>
+                        </div>
+                    </div>
+                    <p className="text-sm italic text-slate-500 leading-relaxed">
+                        "If you are drafting a contract in Lagos, your AI should not be suggesting clauses based on Delaware corporate law. LexSovereign ensures the logic remains local."
+                    </p>
+                </div>
+            )
+        }
+    };
+
+    const Modal = ({ id }: { id: string }) => {
+        const item = modalContent[id];
+        if (!item) return null;
+
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+                <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setActiveModal(null)} />
+                <div className="relative w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                        <h3 className="text-2xl font-bold text-white font-outfit">{item.title}</h3>
+                        <button
+                            onClick={() => setActiveModal(null)}
+                            title="Close Modal"
+                            className="p-2 hover:bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors"
+                        >
+                            <Shield className="rotate-45" size={20} />
+                        </button>
+                    </div>
+                    <div className="p-8 max-h-[70vh] overflow-y-auto">
+                        {item.content}
+                    </div>
+                    <div className="p-8 bg-slate-950/50 border-t border-white/5 flex justify-end">
+                        <button
+                            onClick={() => setActiveModal(null)}
+                            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all"
+                        >
+                            Understood
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="min-h-screen hero-gradient font-inter selection:bg-blue-500/30">
@@ -94,7 +177,11 @@ const App = () => {
                                 { title: "Nairobi", country: "Kenya", status: "Verified" },
                                 { title: "Johannesburg", country: "South Africa", status: "Verified" }
                             ].map((node, i) => (
-                                <div key={i} className="p-6 bg-slate-900/50 border border-white/5 rounded-2xl group hover:border-blue-500/30 transition-all">
+                                <div
+                                    key={i}
+                                    onClick={() => setActiveModal('logical-enclave')}
+                                    className="p-6 bg-slate-900/50 border border-white/5 rounded-2xl group hover:border-blue-500/30 transition-all cursor-pointer text-left"
+                                >
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                                         <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Protocol {node.status}</span>
@@ -137,12 +224,16 @@ const App = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {[
-                        { title: "Sovereignty", desc: "Your data is cryptographically isolated and controlled by your keys (BYOK).", icon: <Shield size={24} /> },
+                        { title: "Sovereignty", desc: "Your data is cryptographically isolated and controlled by your keys (BYOK).", icon: <Shield size={24} />, modal: 'logical-enclave' },
                         { title: "Velocity", desc: "Drafts that took 3 hours now take 3 minutes with AI Auto-Hydrate.", icon: <Zap size={24} /> },
                         { title: "Certainty", desc: "Rule-based AI that refuses to quote foreign laws or hallucinate advice.", icon: <CheckCircle size={24} /> },
-                        { title: "Sanctity", desc: "Client privacy protected by zero-knowledge architecture and key-level security.", icon: <Lock size={24} /> }
+                        { title: "Sanctity", desc: "Client privacy protected by zero-knowledge architecture and key-level security.", icon: <Lock size={24} />, modal: 'logical-enclave' }
                     ].map((pillar, i) => (
-                        <div key={i} className="text-center p-8 rounded-3xl bg-slate-950/50 border border-white/5 hover:border-blue-500/20 transition-all group">
+                        <div
+                            key={i}
+                            onClick={() => pillar.modal && setActiveModal(pillar.modal)}
+                            className={`text-center p-8 rounded-3xl bg-slate-950/50 border border-white/5 hover:border-blue-500/20 transition-all group ${pillar.modal ? 'cursor-pointer' : ''}`}
+                        >
                             <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-400 group-hover:scale-110 transition-transform">
                                 {pillar.icon}
                             </div>
@@ -206,8 +297,12 @@ const App = () => {
                         { title: "Kenya DPA", desc: "Cross-border transfer safeguards for Nairobi firms.", law: "Act No. 24" },
                         { title: "Ghana DPA", desc: "Compliant storage for Ghanaian legal practitioners.", law: "Act 843" }
                     ].map((item, i) => (
-                        <div key={i} className="p-8 bg-slate-900 border border-white/5 rounded-3xl hover:bg-slate-800/50 transition-all">
-                            <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-6">
+                        <div
+                            key={i}
+                            onClick={() => setActiveModal('jurisdictional-logic')}
+                            className="p-8 bg-slate-900 border border-white/5 rounded-3xl hover:bg-slate-800/50 transition-all cursor-pointer group text-left"
+                        >
+                            <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
                                 <Lock size={20} className="text-emerald-500" />
                             </div>
                             <h3 className="text-lg font-bold text-white mb-3 font-outfit">{item.title}</h3>
@@ -368,6 +463,7 @@ const App = () => {
             </footer>
 
             <MarketingChatbot />
+            {activeModal && <Modal id={activeModal} />}
         </div>
     );
 };

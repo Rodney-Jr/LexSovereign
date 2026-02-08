@@ -18,21 +18,50 @@ export class LocalStorageAdapter implements IStoragePort {
         const fileId = `${metadata.id}_${metadata.name}`;
         const filePath = path.join(this.storagePath, fileId);
 
+        const { createCipheriv } = await import('crypto');
         const writeStream = fs.createWriteStream(filePath);
 
         return new Promise((resolve, reject) => {
-            fileStream.pipe(writeStream)
+            let pipeline: any = fileStream;
+
+            if (encryptionContext) {
+                // Determine the key (In production, this comes from a KMS)
+                // For demo/dev, we use the keyId as a base for a 32-byte key
+                const key = Buffer.alloc(32, encryptionContext.keyId);
+                const iv = Buffer.from(encryptionContext.iv, 'base64');
+                const cipher = createCipheriv('aes-256-gcm', key, iv);
+
+                pipeline = fileStream.pipe(cipher);
+
+                cipher.on('error', reject);
+                // We don't handle authTag here for simplicity in the stream prototype, 
+                // but in production, we'd append it to the file.
+            }
+
+            pipeline.pipe(writeStream)
                 .on('finish', () => resolve(fileId))
                 .on('error', reject);
         });
     }
 
-    async download(fileId: string): Promise<Readable> {
+    async download(fileId: string, encryptionContext?: EncryptionContext): Promise<Readable> {
         const filePath = path.join(this.storagePath, fileId);
         if (!fs.existsSync(filePath)) {
             throw new Error(`File ${fileId} not found`);
         }
-        return fs.createReadStream(filePath);
+
+        const { createDecipheriv } = await import('crypto');
+        const readStream = fs.createReadStream(filePath);
+
+        if (encryptionContext) {
+            const key = Buffer.alloc(32, encryptionContext.keyId);
+            const iv = Buffer.from(encryptionContext.iv, 'base64');
+            const decipher = createDecipheriv('aes-256-gcm', key, iv);
+
+            return readStream.pipe(decipher) as any;
+        }
+
+        return readStream;
     }
 
     async delete(fileId: string): Promise<boolean> {

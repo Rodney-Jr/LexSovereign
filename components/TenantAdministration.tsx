@@ -35,7 +35,12 @@ import { authorizedFetch, getSavedSession } from '../utils/api';
 const TenantAdministration: React.FC = () => {
    const [users, setUsers] = useState<TenantUser[]>([]);
    const [stats, setStats] = useState({ users: 0, matters: 0, documents: 0, siloHealth: 'NOMINAL' });
-   const [settings, setSettings] = useState({ matterPrefix: 'MAT-SOV-', numberingPadding: 4, requiredFields: [] as string[] });
+   const [settings, setSettings] = useState({
+      matterPrefix: 'MAT-SOV-',
+      numberingPadding: 4,
+      requiredFields: [] as string[],
+      encryptionMode: 'SYSTEM_MANAGED' as 'SYSTEM_MANAGED' | 'BYOK'
+   });
 
    const [activeTab, setActiveTab] = useState<'users' | 'oidc' | 'templates' | 'billing' | 'chatbot'>('users');
    const [showInviteModal, setShowInviteModal] = useState(false);
@@ -205,6 +210,22 @@ const TenantAdministration: React.FC = () => {
          fetchData();
       } catch (e: any) {
          alert(`Revocation failed: ${e.message}`);
+      }
+   };
+
+   const updateEncryptionMode = async (mode: 'SYSTEM_MANAGED' | 'BYOK') => {
+      try {
+         const session = getSavedSession();
+         if (!session?.token) return;
+
+         await authorizedFetch('/api/tenant/settings', {
+            method: 'PATCH',
+            token: session.token,
+            body: JSON.stringify({ encryptionMode: mode })
+         });
+         setSettings(prev => ({ ...prev, encryptionMode: mode }));
+      } catch (e: any) {
+         alert(`Update failed: ${e.message}`);
       }
    };
 
@@ -440,6 +461,42 @@ const TenantAdministration: React.FC = () => {
                               </div>
                            </div>
                            <button title="Download Security Audit" className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] hover:underline">Download Security Audit</button>
+                        </div>
+
+                        {/* Encryption Protocol Selection */}
+                        <div className="pt-8 border-t border-slate-800 space-y-6">
+                           <div className="space-y-2">
+                              <h4 className="text-md font-bold text-white flex items-center gap-3">
+                                 <ShieldCheck className="text-blue-400" size={20} /> Organizational Encryption Protocol
+                              </h4>
+                              <p className="text-xs text-slate-400 tracking-tight">Choose how your firm's data is cryptographically protected at rest.</p>
+                           </div>
+
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <button
+                                 onClick={() => updateEncryptionMode('SYSTEM_MANAGED')}
+                                 className={`p-6 rounded-3xl border text-sm text-left transition-all relative overflow-hidden group ${settings.encryptionMode === 'SYSTEM_MANAGED' ? 'bg-blue-500/10 border-blue-500 shadow-lg shadow-blue-900/10' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                              >
+                                 <div className="flex items-center gap-3 mb-3 relative z-10">
+                                    <Database className={settings.encryptionMode === 'SYSTEM_MANAGED' ? 'text-blue-400' : 'text-slate-500'} size={18} />
+                                    <h5 className="font-bold text-white">Platform-Managed</h5>
+                                 </div>
+                                 <p className="text-[10px] text-slate-500 leading-relaxed relative z-10">Optimized for West/East African network latency. Salts and hashes are handled automatically within your regional silo.</p>
+                                 {settings.encryptionMode === 'SYSTEM_MANAGED' && <div className="absolute top-0 right-0 p-4"><CheckCircle2 className="text-blue-500" size={16} /></div>}
+                              </button>
+
+                              <button
+                                 onClick={() => updateEncryptionMode('BYOK')}
+                                 className={`p-6 rounded-3xl border text-sm text-left transition-all relative overflow-hidden group ${settings.encryptionMode === 'BYOK' ? 'bg-purple-500/10 border-purple-500 shadow-lg shadow-purple-900/10' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                              >
+                                 <div className="flex items-center gap-3 mb-3 relative z-10">
+                                    <Key className={settings.encryptionMode === 'BYOK' ? 'text-purple-400' : 'text-slate-500'} size={18} />
+                                    <h5 className="font-bold text-white">Sovereign-BYOK (Premium)</h5>
+                                 </div>
+                                 <p className="text-[10px] text-slate-500 leading-relaxed relative z-10">Bring Your Own Key. Data is encrypted using your firm's private keys. LexSovereign cannot read data without key-pinning.</p>
+                                 {settings.encryptionMode === 'BYOK' && <div className="absolute top-0 right-0 p-4"><CheckCircle2 className="text-purple-500" size={16} /></div>}
+                              </button>
+                           </div>
                         </div>
                      </div>
                   </div>

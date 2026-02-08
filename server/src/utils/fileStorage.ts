@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { EncryptionContext } from '../core/ports/IStoragePort';
+import { createCipheriv } from 'crypto';
 
 const UPLOAD_ROOT = path.join(__dirname, '../../uploads');
 
@@ -9,13 +11,15 @@ const UPLOAD_ROOT = path.join(__dirname, '../../uploads');
  * @param matterId The matter ID (used for folder structure)
  * @param fileName The name of the file
  * @param content The content to write
+ * @param encryptionContext Optional encryption context
  * @returns The relative path to the saved file
  */
 export const saveDocumentContent = async (
     tenantId: string,
     matterId: string,
     fileName: string,
-    content: string
+    content: string,
+    encryptionContext?: EncryptionContext
 ): Promise<string> => {
     // Sanitize inputs to prevent directory traversal
     const safeTenantId = tenantId.replace(/[^a-zA-Z0-9-]/g, '');
@@ -31,8 +35,20 @@ export const saveDocumentContent = async (
 
     const filePath = path.join(targetDir, safeFileName);
 
+    let finalData: string | Buffer = content;
+    if (encryptionContext) {
+        const key = Buffer.alloc(32, encryptionContext.keyId);
+        const iv = Buffer.from(encryptionContext.iv, 'base64');
+        const cipher = createCipheriv('aes-256-gcm', key, iv);
+
+        finalData = Buffer.concat([
+            cipher.update(content, 'utf8'),
+            cipher.final()
+        ]);
+    }
+
     // Write content
-    await fs.promises.writeFile(filePath, content, 'utf-8');
+    await fs.promises.writeFile(filePath, finalData);
 
     // Return relative path for database storage (platform independent format)
     return path.join(safeTenantId, safeMatterId, safeFileName).replace(/\\/g, '/');

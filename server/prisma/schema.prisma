@@ -102,6 +102,8 @@ model Tenant {
   appMode           String    @default("LAW_FIRM") // "LAW_FIRM" or "ENTERPRISE"
   primaryRegion     String    @default("GH_ACC_1")
   
+  encryptionMode    String    @default("SYSTEM_MANAGED") // "SYSTEM_MANAGED" or "BYOK"
+  
   users             User[]
   roles             Role[]
   matters           Matter[]
@@ -151,8 +153,14 @@ model Document {
   matterId          String
   matter            Matter    @relation(fields: [matterId], references: [id])
 
+  // Metadata for Optional BYOK
+  encryptionKeyId   String?   // External ID for BYOK
+  isEncrypted       Boolean   @default(false)
+  encryptionIV      String?   // Base64 IV for AES-GCM
+
   lastReviewed      DateTime  @default(now())
   createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt @default(now())
 }
 
 model TimeEntry {
