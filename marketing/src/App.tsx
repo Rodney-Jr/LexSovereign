@@ -65,7 +65,7 @@ const App = () => {
                     </h1>
 
                     <p className="max-w-3xl mx-auto text-lg md:text-xl text-slate-400 mb-14 leading-relaxed font-medium">
-                        Stop sacrificing data integrity for AI speed. LexSovereign is the high-fidelity operating system for elite firms in <span className="text-white">Ghana, Nigeria, Kenya, and South Africa</span>. Built for regional enclaves, jurisdictional pinning, and total data sanctity.
+                        Stop sacrificing data integrity for AI speed. LexSovereign is the high-fidelity operating system for elite firms in <span className="text-white">Ghana, Nigeria, Kenya, and South Africa</span>. Built for logical enclaves, jurisdictional pinning, and cryptographic data sanctity.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -83,24 +83,24 @@ const App = () => {
             <section id="enclaves" className="max-w-7xl mx-auto px-6 py-24">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="space-y-8">
-                        <h2 className="text-4xl md:text-5xl font-black text-white leading-tight font-outfit">The African <br />Sovereign Network</h2>
+                        <h2 className="text-4xl md:text-5xl font-black text-white leading-tight font-outfit">The African <br />Compliance Network</h2>
                         <p className="text-lg text-slate-400 leading-relaxed">
-                            Unlike traditional SaaS, LexSovereign enclaves are physically resident within your jurisdiction. We operate high-security nodes in the continent's major legal hubs.
+                            Unlike traditional SaaS, LexSovereign enclaves are logically isolated. We provide jurisdictional protection across the continent's major legal hubs through advanced encryption and software pinning.
                         </p>
                         <div className="grid grid-cols-2 gap-6">
                             {[
-                                { city: "Accra", country: "Ghana", status: "Active" },
-                                { city: "Lagos", country: "Nigeria", status: "Active" },
-                                { city: "Nairobi", country: "Kenya", status: "Active" },
-                                { city: "Johannesburg", country: "South Africa", status: "Active" }
+                                { title: "Accra", country: "Ghana", status: "Verified" },
+                                { title: "Lagos", country: "Nigeria", status: "Verified" },
+                                { title: "Nairobi", country: "Kenya", status: "Verified" },
+                                { title: "Johannesburg", country: "South Africa", status: "Verified" }
                             ].map((node, i) => (
                                 <div key={i} className="p-6 bg-slate-900/50 border border-white/5 rounded-2xl group hover:border-blue-500/30 transition-all">
                                     <div className="flex items-center justify-between mb-2">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">{node.status}</span>
+                                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Protocol {node.status}</span>
                                     </div>
-                                    <h4 className="text-lg font-bold text-white">{node.city}</h4>
-                                    <p className="text-xs text-slate-500">{node.country}</p>
+                                    <h4 className="text-lg font-bold text-white">{node.title}</h4>
+                                    <p className="text-xs text-slate-500">{node.country} Jurisdiction</p>
                                 </div>
                             ))}
                         </div>
@@ -137,10 +137,10 @@ const App = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {[
-                        { title: "Sovereignty", desc: "Your data stays in your country. Full stop. No cross-border leakage.", icon: <Shield size={24} /> },
+                        { title: "Sovereignty", desc: "Your data is cryptographically isolated and controlled by your keys (BYOK).", icon: <Shield size={24} /> },
                         { title: "Velocity", desc: "Drafts that took 3 hours now take 3 minutes with AI Auto-Hydrate.", icon: <Zap size={24} /> },
                         { title: "Certainty", desc: "Rule-based AI that refuses to quote foreign laws or hallucinate advice.", icon: <CheckCircle size={24} /> },
-                        { title: "Sanctity", desc: "Client privacy protected by hardware-level security and encryption.", icon: <Lock size={24} /> }
+                        { title: "Sanctity", desc: "Client privacy protected by zero-knowledge architecture and key-level security.", icon: <Lock size={24} /> }
                     ].map((pillar, i) => (
                         <div key={i} className="text-center p-8 rounded-3xl bg-slate-950/50 border border-white/5 hover:border-blue-500/20 transition-all group">
                             <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-400 group-hover:scale-110 transition-transform">
@@ -196,7 +196,7 @@ const App = () => {
                 <div className="max-w-7xl mx-auto px-6 text-center mb-16">
                     <h2 className="text-4xl font-bold text-white mb-6 font-outfit">Hard-Pinnned Compliance</h2>
                     <p className="text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
-                        LexSovereign's Regulatory Rules Engine is pre-configured for African data protection frameworks. We don't just follow policies—we build them into the hardware of your enclave.
+                        LexSovereign's Regulatory Rules Engine is pre-configured for African data protection frameworks. We don't just follow policies—we build them into the logic of your software enclave.
                     </p>
                 </div>
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
