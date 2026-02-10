@@ -53,8 +53,21 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
             }
 
             if (response.status === 401 || response.status === 403) {
-                console.error(`[API] Session invalidated (${response.status}): ${errorData.error}`);
-                // Optional: broadcast session revocation
+                console.error(`[API] Session invalidated (${response.status}): ${errorData.error} | URL: ${url}`);
+                if (url.includes('/pin')) {
+                    console.warn("[API] PIN handshake failed. Check if SOVEREIGN_PIN matches on server.");
+                }
+
+                // Clear the failing token to prevent loops during re-fetch
+                if (token && localStorage.getItem('lexSovereign_session')) {
+                    const session = JSON.parse(localStorage.getItem('lexSovereign_session')!);
+                    if (session.token === token) {
+                        console.warn("[API] Clearing invalid session from storage");
+                        localStorage.removeItem('lexSovereign_session');
+                        localStorage.removeItem('lexSovereign_pin');
+                    }
+                }
+
                 window.dispatchEvent(new CustomEvent('lex-sovereign-auth-failed', {
                     detail: { status: response.status, error: errorData.error }
                 }));

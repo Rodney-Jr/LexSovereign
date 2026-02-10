@@ -1,5 +1,6 @@
 
 import express from 'express';
+import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { TenantService } from '../services/TenantService';
 import { z } from 'zod';

@@ -124,7 +124,7 @@ const AppContent: React.FC = () => {
   }, [handleLogout]);
 
   // Security Policy
-  useInactivityLogout(handleLogout, 300000, isAuthenticated && !isOnboarding);
+  useInactivityLogout(handleLogout, 1800000, isAuthenticated && !isOnboarding);
 
   // RBAC Sentinel
   useEffect(() => {
@@ -323,7 +323,11 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 export default function WrappedApp() {
-  const googleClientId = (window as any).import?.meta?.env?.VITE_GOOGLE_CLIENT_ID || 'v0-google-client-id';
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || (window as any)._GOOGLE_CLIENT_ID;
+
+  if (!googleClientId || googleClientId === 'v0-google-client-id') {
+    console.error("[Security] Google Client ID is missing or invalid. Authentication will fail.");
+  }
 
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
