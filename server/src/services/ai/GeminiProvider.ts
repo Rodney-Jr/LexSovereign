@@ -1,10 +1,18 @@
-import { GoogleGenAI, Type } from "@google/genai";
-import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact } from "../types";
-import { prisma } from "../db";
-import { PiiService } from "./piiService";
-import { AuditorService } from "./auditorService";
 
-export class LexGeminiService {
+import { GoogleGenAI, Type } from "@google/genai";
+import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact } from "../../types";
+import { prisma } from "../../db";
+import { PiiService } from "../piiService";
+import { AuditorService } from "../auditorService";
+import { AIProvider, ChatParams, ChatResult } from "./types";
+
+export class GeminiProvider implements AIProvider {
+    id = "gemini";
+    name = "Google Gemini";
+
+    // Default model to use if not overridden
+    private defaultModel = "gemini-1.5-flash-001";
+
     private getAI() {
         if (!process.env.GEMINI_API_KEY) {
             throw new Error("GEMINI_API_KEY is not set in environment");
@@ -12,25 +20,18 @@ export class LexGeminiService {
         return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     }
 
-    async chat(
-        input: string,
-        matterId: string | null,
-        documents: DocumentMetadata[],
-        usePrivateModel: boolean,
-        killSwitchActive: boolean,
-        useGlobalSearch: boolean = false
-    ): Promise<{ text: string; confidence: number; provider: string; references?: string[]; groundingSources?: { title: string, uri: string }[] }> {
-        if (killSwitchActive) {
+    async chat(params: ChatParams): Promise<ChatResult> {
+        if (params.killSwitchActive) {
             throw new Error("KILL_SWITCH_ACTIVE");
         }
 
         const ai = this.getAI();
-        // Use environmental config for model
-        const modelName = process.env.GEMINI_MODEL || 'gemini-flash-latest';
-        const model = usePrivateModel ? modelName : modelName;
-        const contextDocs = matterId
-            ? documents.filter(d => d.matterId === matterId)
-            : documents;
+        const modelName = process.env.GEMINI_MODEL || this.defaultModel;
+        const model = params.usePrivateModel ? modelName : modelName;
+
+        const contextDocs = params.matterId
+            ? params.documents.filter(d => d.matterId === params.matterId)
+            : params.documents;
 
         const contextStr = contextDocs.map(d => `Doc: ${d.name} (${d.id}), Matter: ${d.matterId}`).join('\n');
 
@@ -48,18 +49,16 @@ export class LexGeminiService {
             }
         };
 
-        if (useGlobalSearch) {
+        if (params.useGlobalSearch) {
             config.tools = [{ googleSearch: {} }];
         }
 
         // 1. PII Sanitization (DAS Engine)
-        const { sanitized, entityMap } = PiiService.sanitize(input);
+        const { sanitized, entityMap } = PiiService.sanitize(params.input);
 
         // Search Jurisdictional Legal Knowledge Base
         let legalKnowledge = "";
         try {
-            // Naive search: Find docs containing the user query or key terms
-            // In production, use pgvector. Here we use basic text matching.
             const artifacts = await prisma.knowledgeArtifact.findMany({
                 where: {
                     OR: [
@@ -111,26 +110,23 @@ export class LexGeminiService {
 
             if (audit.flagged) {
                 finalText = `[AUDIT BLOCK] Content Redacted by Sovereign Governance Layer.\nReason: ${audit.reason}\nRisk Score: ${audit.riskScore}`;
-            } else {
-                // Restore PII for display if safe (optional, usually we keep it redacted or allow strictly mapped restoration)
-                // For MVP, strictly returning redacted text to prove it works.
-                // finalText = PiiService.desanitize(finalText, entityMap);
             }
 
             return {
                 text: finalText || "I am analyzing the sovereign research stream...",
-                confidence: audit.flagged ? 0.0 : (result.confidence || 0), // No fake confidence
+                confidence: audit.flagged ? 0.0 : (result.confidence || 0),
                 provider: `Gemini (${model})`,
                 references: result.references,
                 groundingSources: groundingSources.length > 0 ? groundingSources : undefined
             };
         } catch (error: any) {
             console.error("Gemini API Error (Chat):", error.message);
+            // Fallback for quota issues or errors
             return {
-                text: "API QUOTA/ERROR FALLBACK: I am operating in offline mode. Legal context suggests proceeding with standard governance checks.",
+                text: `API ERROR: ${error.message}. I am operating in offline mode.`,
                 confidence: 1.0,
                 provider: "LexSovereign Local (Offline)",
-                references: documents.slice(0, 1).map(d => d.id)
+                references: []
             }
         }
     }
@@ -139,7 +135,7 @@ export class LexGeminiService {
         const ai = this.getAI();
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: `Explain this legal clause to a junior lawyer: "${clauseText}"`,
                 config: {
                     systemInstruction: "You are a legal assistant explaining a contract clause. Rules: 1. Explain intent, not legal advice. 2. No jurisdiction-specific interpretation. 3. No recommendations to change the clause. 4. Keep explanation under 120 words. 5. Output plain English explanation only.",
@@ -149,8 +145,8 @@ export class LexGeminiService {
             });
             return response.text || "Unable to explain clause at this time.";
         } catch (error: any) {
-            console.error("Gemini API Error (ExplainClause):", error.message);
-            throw new Error("Clause explanation failed.");
+            console.error("Gemini API Error (ExplainClause):", error);
+            throw new Error(`Clause explanation failed: ${error.message}`);
         }
     }
 
@@ -158,7 +154,7 @@ export class LexGeminiService {
         const ai = this.getAI();
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: `Generate an audit log for: ${JSON.stringify(context)}`,
                 config: {
                     systemInstruction: "You are an audit logging system for a Legal Ops platform. Task: Generate a clear, immutable audit description suitable for regulators. Rules: 1. No opinions. 2. No assumptions. 3. Past tense. 4. Objective language. Output: Single sentence audit_log_message only.",
@@ -169,7 +165,6 @@ export class LexGeminiService {
             return response.text?.trim() || "Audit log generation failed.";
         } catch (error: any) {
             console.error("Gemini API Error (AuditLog):", error.message);
-            // Fallback to basic template if AI fails
             return `User ${context.userId} performed ${context.action} on ${context.resourceType} ${context.resourceId}.`;
         }
     }
@@ -178,7 +173,7 @@ export class LexGeminiService {
         const ai = this.getAI();
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: `Validate this legal document content: "${documentContent.substring(0, 10000)}..."`,
                 config: {
                     systemInstruction: "You are validating a legal document before export. Checklist: 1. All variables resolved (no {{brackets}}). 2. Clause numbering sequential. 3. No placeholder text (e.g. [INSERT DATE]). 4. Title present. 5. Footer metadata present. Output: JSON { status: 'PASS' | 'FAIL', issues: string[] }.",
@@ -198,7 +193,7 @@ export class LexGeminiService {
         const ai = this.getAI();
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: `Create pricing tiers for these features: ${JSON.stringify(features)}`,
                 config: {
                     systemInstruction: "You are designing pricing tiers for a Legal Ops SaaS. Target: small law firms, in-house teams. Task: 1. Propose Free, Pro, and Enterprise tiers. 2. Assign features logically. 3. Avoid feature cannibalization. 4. Ensure Free tier demonstrates value but enforces limits. Output: JSON structure with 'tiers' (array of {name, price, features, limits}) and 'justification' (string).",
@@ -220,7 +215,7 @@ export class LexGeminiService {
         const context = docs.map(d => `${d.name} (${d.jurisdiction})`).join(', ');
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: "gemini-1.5-flash", // Executive briefing might benefit from larger context if available, but stick to flash for speed/cost
             contents: `Generate a high-velocity executive briefing for Matter ${matterId} based on these artifacts: ${context}. Focus on: 1. Risk Heatmap 2. Key Deadlines 3. Critical Clause Anomalies.`,
             config: {
                 systemInstruction: "You are the Chief Legal Ops AI. Summarize the status of a legal matter for a Managing Partner. Use bullet points and a professional, sovereign tone. Max 300 words.",
@@ -254,7 +249,7 @@ export class LexGeminiService {
 
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: prompt,
                 config: { temperature: 0 }
             });
@@ -264,10 +259,10 @@ export class LexGeminiService {
             return { content: scrubbed, scrubbedEntities: entitiesRemoved };
         } catch (error) {
             console.error("Scrubbing API Failed:", error);
-            // Fail Closed: Return fully redacted placeholder
             return { content: "[SYSTEM_AUDIT: CONTENT REDACTED DUE TO ENCLAVE DISCONNECTION]", scrubbedEntities: 999 };
         }
     }
+
     async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
         const ai = this.getAI();
         const activeRules = rules.filter(r => r.isActive).map(r => `${r.name}: ${r.description}`).join('\n');
@@ -276,7 +271,7 @@ export class LexGeminiService {
 
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: `RULES:\n${activeRules}\n\nTEXT_TO_EVALUATE: ${text}\n\nAssess if the text violates any rules. Return JSON: { "isBlocked": boolean, "triggeredRule": string | null }. STRICT COMPLIANCE.`,
                 config: {
                     responseMimeType: "application/json",
@@ -290,8 +285,6 @@ export class LexGeminiService {
             console.error("Gemini API Error (EvaluateRRE):", error);
             return { isBlocked: false };
         }
-
-
     }
 
     async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }> {
@@ -301,7 +294,7 @@ export class LexGeminiService {
         const knowledgeContext = knowledge.map(k => `${k.title}: ${k.content}`).join('\n\n');
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: this.defaultModel,
             contents: `SYSTEM: ${config.systemInstruction}\n\nKNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}`,
             config: { temperature: 0.3 }
         });
@@ -313,7 +306,7 @@ export class LexGeminiService {
         const ai = this.getAI();
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: `Convert these raw notes into a professional legal billing narrative (max 1 sentence): "${rawNotes}"`,
                 config: { temperature: 0.2 }
             });
@@ -348,7 +341,7 @@ export class LexGeminiService {
             `;
 
             const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: this.defaultModel,
                 contents: prompt,
                 config: {
                     responseMimeType: "application/json",

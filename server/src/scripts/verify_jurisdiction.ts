@@ -7,7 +7,7 @@ const envPath = path.resolve(__dirname, '../../.env');
 console.log(`Loading .env from: ${envPath}`);
 dotenv.config({ path: envPath });
 
-import { LexGeminiService } from '../services/LexGeminiService';
+import { LexAIService } from '../services/LexAIService';
 import { prisma } from '../db';
 
 async function verify() {
@@ -42,7 +42,7 @@ async function verify() {
     }
 
     console.log("Verifying AI Service Integration...");
-    const service = new LexGeminiService();
+    const service = new LexAIService();
     const query = "qualifications of president";
 
     try {

@@ -1,10 +1,10 @@
 import express from 'express';
 import { ChatbotService } from '../services/ChatbotService';
-import { LexGeminiService } from '../services/LexGeminiService';
+import { LexAIService } from '../services/LexAIService';
 import { KnowledgeArtifact } from '../types';
 
 const router = express.Router();
-const gemini = new LexGeminiService();
+const gemini = new LexAIService();
 
 // Mock Knowledge Base until connected to DB or vector store
 const MOCK_KNOWLEDGE: KnowledgeArtifact[] = [

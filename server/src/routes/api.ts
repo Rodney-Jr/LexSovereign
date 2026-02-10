@@ -1,11 +1,11 @@
 import express, { Request } from 'express';
-import { LexGeminiService } from '../services/LexGeminiService';
+import { LexAIService } from '../services/LexAIService';
 import { DocumentAssemblyService } from '../services/DocumentAssemblyService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { prisma } from '../db';
 
 const router = express.Router();
-const geminiService = new LexGeminiService();
+const geminiService = new LexAIService();
 
 router.post('/chat', authenticateToken, async (req: Request, res) => {
     try {
@@ -165,6 +165,7 @@ router.post('/document-templates/:id/hydrate', authenticateToken, async (req: Re
     }
 });
 
+
 router.post('/documents/assemble', authenticateToken, async (req: Request, res) => {
     try {
         const { template, variables, selectedOptionalKeys, metadata } = req.body;
@@ -179,5 +180,20 @@ router.post('/documents/assemble', authenticateToken, async (req: Request, res) 
         res.status(500).json({ error: error.message });
     }
 });
+
+router.post('/explain-clause', authenticateToken, async (req: Request, res) => {
+    try {
+        const { clauseText } = req.body;
+        if (!clauseText) {
+            res.status(400).json({ error: 'clauseText is required' });
+            return;
+        }
+        const result = await geminiService.explainClause(clauseText);
+        res.json({ explanation: result });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 export default router;
