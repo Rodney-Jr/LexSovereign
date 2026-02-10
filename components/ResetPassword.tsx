@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Lock, RefreshCw, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { authorizedFetch } from '../utils/api';
 
 interface ResetPasswordProps {
     token: string;
@@ -20,13 +21,11 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ token, onComplete, onBack
     useEffect(() => {
         const verifyToken = async () => {
             try {
-                const response = await fetch('/api/auth/verify-reset-token', {
+                const data = await authorizedFetch('/api/auth/verify-reset-token', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token })
                 });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Invalid or expired token');
+                if (data.error) throw new Error(data.error);
                 setEmail(data.email);
             } catch (err: any) {
                 setError(err.message);
@@ -52,13 +51,11 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ token, onComplete, onBack
         setError(null);
 
         try {
-            const response = await fetch('/api/auth/reset-password', {
+            const data = await authorizedFetch('/api/auth/reset-password', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token, password })
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to reset password');
+            if (data.error) throw new Error(data.error);
             setSuccess(true);
             setTimeout(onComplete, 2000);
         } catch (err: any) {

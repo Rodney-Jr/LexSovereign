@@ -26,6 +26,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Region, SaaSPlan, AppMode } from '../types';
+import { authorizedFetch } from '../utils/api';
 
 interface PricingConfig {
   id: string;
@@ -72,9 +73,8 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
   useEffect(() => {
     const fetchPricing = async () => {
       try {
-        const res = await fetch('/api/pricing');
-        if (res.ok) {
-          const data = await res.json();
+        const data = await authorizedFetch('/api/pricing');
+        if (data && !data.error) {
           setPricingConfigs(data);
         }
       } catch (err) {
@@ -100,9 +100,8 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
 
     try {
       // Start the API call immediately
-      const apiCall = fetch('/api/auth/onboard-silo', {
+      const apiCall = authorizedFetch('/api/auth/onboard-silo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           plan: formData.plan,
@@ -129,19 +128,11 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
       }
 
       // Await the real result
-      const res = await apiCall;
+      const data = await apiCall;
 
-      if (!res.ok) {
-        const text = await res.text();
-        let errorMessage = 'Provisioning failed';
-        let isConflict = false;
-        try {
-          const json = JSON.parse(text);
-          errorMessage = json.error || errorMessage;
-          isConflict = json.code === 'CONFLICT';
-        } catch (e) {
-          errorMessage = text || errorMessage;
-        }
+      if (data.error) {
+        let errorMessage = data.error || 'Provisioning failed';
+        let isConflict = data.code === 'CONFLICT';
 
         if (isConflict) {
           throw new Error("IDENTITY CONFLICT: This email is already registered in a LexSovereign Enclave.");
@@ -149,7 +140,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         throw new Error(errorMessage);
       }
 
-      const session = await res.json();
+      const session = data;
 
       // Add success log and wait a tiny bit
       addLog("Silo Activation: CONFIRMED.");

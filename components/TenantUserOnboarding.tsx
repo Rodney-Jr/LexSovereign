@@ -15,6 +15,7 @@ import {
    User
 } from 'lucide-react';
 import { AppMode, UserRole } from '../types';
+import { authorizedFetch } from '../utils/api';
 
 interface TenantUserOnboardingProps {
    mode: AppMode;
@@ -57,25 +58,10 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
       setIsProcessing(true);
       const tokenToResolve = tokenOverride || inviteToken;
       try {
-         const res = await fetch('/api/auth/resolve-invite', {
+         const data = await authorizedFetch('/api/auth/resolve-invite', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: tokenToResolve })
          });
-
-         if (!res.ok) {
-            const text = await res.text();
-            let errorMessage = 'Invitation not found';
-            try {
-               const json = JSON.parse(text);
-               errorMessage = json.error || errorMessage;
-            } catch (e) {
-               errorMessage = text || errorMessage;
-            }
-            throw new Error(errorMessage);
-         }
-
-         const data = await res.json();
          setInviteContext(data);
          setStep(1.5);
       } catch (e: any) {
@@ -108,28 +94,11 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
       console.log('[Client] Name:', name, 'Password length:', password?.length);
 
       try {
-         const res = await fetch('/api/auth/join-silo', {
+         const data = await authorizedFetch('/api/auth/join-silo', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: inviteToken, name, password })
          });
 
-         console.log('[Client] Join response status:', res.status);
-
-         if (!res.ok) {
-            const text = await res.text();
-            console.error('[Client] Join failed. Response:', text);
-            let errorMessage = 'Join failed';
-            try {
-               const json = JSON.parse(text);
-               errorMessage = json.error || errorMessage;
-            } catch (e) {
-               errorMessage = text || errorMessage;
-            }
-            throw new Error(errorMessage);
-         }
-
-         const data = await res.json();
          console.log('[Client] Join successful! User ID:', data.user.id);
 
          localStorage.setItem('lexSovereign_session', JSON.stringify({

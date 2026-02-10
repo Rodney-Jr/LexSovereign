@@ -42,4 +42,33 @@ router.post('/provision', authenticateToken, requireRole(['GLOBAL_ADMIN']), asyn
     }
 });
 
+/**
+ * GET /api/platform/stats
+ * Aggregated metrics for the Global Control Plane.
+ */
+router.get('/stats', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const [tenantCount, userCount, matterCount, docCount] = await Promise.all([
+            prisma.tenant.count(),
+            prisma.user.count(),
+            prisma.matter.count(),
+            prisma.document.count()
+        ]);
+
+        res.json({
+            tenants: tenantCount,
+            users: userCount,
+            matters: matterCount,
+            documents: docCount,
+            silos: 4, // GH_ACC_1, US_EAST, EU_WEST, GLOBAL
+            margin: '64.2%', // Simulated financial metric
+            egress: 'Policy Enforced',
+            systemHealth: 99.98
+        });
+    } catch (err: any) {
+        console.error("Platform Stats Error:", err);
+        res.status(500).json({ error: 'Failed to fetch platform statistics' });
+    }
+});
+
 export default router;

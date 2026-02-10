@@ -13,6 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { UserRole } from '../types';
+import { authorizedFetch } from '../utils/api';
 
 interface PlatformGatewayProps {
   onAuthenticated: (role: UserRole, permissions: string[], userName?: string) => void;
@@ -38,17 +39,10 @@ const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBa
     addLog("INITIATING ROOT AUTHENTICATION...");
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const data = await authorizedFetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Root authentication failed');
-      }
 
       if (data.user.role !== 'GLOBAL_ADMIN') {
         throw new Error('UNAUTHORIZED: Insufficient privilege level for Root Shell');

@@ -44,6 +44,7 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "cdn.tailwindcss.com", "https://accounts.google.com/gsi/client"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "cdn.tailwindcss.com", "https://accounts.google.com/gsi/client"],
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "https://accounts.google.com/gsi/style"],
             fontSrc: ["'self'", "fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:", "https://lh3.googleusercontent.com"],
@@ -60,32 +61,44 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'LexSovereign Control Plane' });
 });
 
+// Public / Lead Generation
 app.use('/api/leads', leadsRouter);
+
+// Authentication (Handshake/Login)
 app.use('/api/auth', authRouter);
-app.use('/api/pricing', pricingRouter);
+
+// Protected Sovereign Routes (Require x-sov-pin)
+app.use('/api/pricing', sovereignGuard, pricingRouter);
+app.use('/api/platform', sovereignGuard, platformRouter);
+app.use('/api/document-templates', sovereignGuard, documentTemplatesRouter);
+app.use('/api/branding-profiles', sovereignGuard, brandingRouter);
+app.use('/api/documents', sovereignGuard, documentsRouter);
+app.use('/api/rules', sovereignGuard, rulesRouter);
+app.use('/api/users', sovereignGuard, usersRouter);
 app.use('/api', sovereignGuard, apiRouter);
+
+// Matter Management (Double Layer: Auth + Optional Sovereign Guard inside mattersRouter if needed)
 app.use('/api/matters', authenticateToken, mattersRouter);
-app.use('/api/bridges', bridgesRouter);
-app.use('/api/roles', rolesRouter);
-app.use('/api/webhooks', webhooksRouter);
-app.use('/api/platform', platformRouter);
-app.use('/api/document-templates', documentTemplatesRouter);
-app.use('/api/documents', documentsRouter);
-app.use('/api/rules', rulesRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/bridges', authenticateToken, bridgesRouter);
+app.use('/api/roles', authenticateToken, rolesRouter);
+app.use('/api/webhooks', authenticateToken, webhooksRouter);
 app.use('/api/analytics', authenticateToken, analyticsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
-app.use('/api/branding-profiles', brandingRouter);
-app.use('/api/chatbot', chatbotRouter);
-app.use('/api/tenant', tenantRouter);
+app.use('/api/chatbot', authenticateToken, chatbotRouter);
+app.use('/api/tenant', authenticateToken, tenantRouter);
 
 // Serve static files from the React app
+// Priority 1: Check root dist (Standard Vite)
+app.use(express.static(path.join(__dirname, '../../dist')));
+// Priority 2: Check server/public (Legacy/Fallback)
 app.use(express.static(path.join(__dirname, '../public')));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    // Try root dist first
+    const distPath = path.join(__dirname, '../../dist/index.html');
+    res.sendFile(distPath);
 });
 
 // Start server

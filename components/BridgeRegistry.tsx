@@ -22,6 +22,7 @@ import {
   Link2
 } from 'lucide-react';
 import { IntegrationBridge, IntegrationStatus, EncapsulationLevel } from '../types';
+import { authorizedFetch } from '../utils/api';
 
 const BridgeRegistry: React.FC = () => {
   const [bridges, setBridges] = useState<IntegrationBridge[]>([]);
@@ -32,9 +33,9 @@ const BridgeRegistry: React.FC = () => {
   useEffect(() => {
     const fetchBridges = async () => {
       try {
-        const res = await fetch('/api/bridges');
-        if (res.ok) {
-          const data = await res.json();
+        const token = localStorage.getItem('lexSovereign_token') || '';
+        const data = await authorizedFetch('/api/bridges', { token });
+        if (data && !data.error) {
           setBridges(data);
         }
       } catch (e) {

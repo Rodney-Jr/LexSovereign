@@ -243,17 +243,14 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             const session = getSavedSession();
             if (!session?.token) return;
 
-            const response = await fetch(`${process.env.VITE_API_URL || '/api'}/document-templates/${templateId}/hydrate`, {
+            const data = await authorizedFetch(`/api/document-templates/${templateId}/hydrate`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.token}`
-                },
+                token: session.token,
                 body: JSON.stringify({ matterId })
             });
 
-            if (!response.ok) throw new Error("Hydration Failed");
-            const aiFields = await response.json();
+            if (data.error) throw new Error(data.error);
+            const aiFields = data;
 
             const newFields = { ...fieldValues, ...aiFields };
             setFieldValues(newFields);
@@ -293,12 +290,9 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
 
             const selectedOptionalKeys = Object.keys(sectionValues).filter(k => sectionValues[k]);
 
-            const response = await fetch(`${process.env.VITE_API_URL || '/api'}/documents/assemble`, {
+            const result = await authorizedFetch('/api/documents/assemble', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.token}`
-                },
+                token: session.token,
                 body: JSON.stringify({
                     template: {
                         template_name: template?.name,
@@ -310,9 +304,6 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                     metadata
                 })
             });
-
-            if (!response.ok) throw new Error("Assembly Failed");
-            const result = await response.json();
 
             if (result.status === 'FAIL') {
                 setValidationErrors(result.validation_errors);

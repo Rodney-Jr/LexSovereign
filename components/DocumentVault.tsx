@@ -22,6 +22,7 @@ import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
+import { authorizedFetch } from '../utils/api';
 
 interface DocumentVaultProps {
   documents: DocumentMetadata[];
@@ -47,12 +48,9 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
   useEffect(() => {
     const fetchBranding = async () => {
       try {
-        const token = localStorage.getItem('lexSovereign_token');
-        const response = await fetch('/api/branding-profiles', { // Note: Assuming this route exists or will be added
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
+        const token = localStorage.getItem('lexSovereign_token') || '';
+        const data = await authorizedFetch('/api/branding-profiles', { token });
+        if (data && !data.error) {
           setBrandingProfiles(data);
         }
       } catch (err) {
@@ -64,8 +62,11 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
 
   const handleExport = async (id: string, format: 'DOCX' | 'PDF', name: string) => {
     try {
-      const token = localStorage.getItem('lexSovereign_token');
-      const sovPin = (window as any)._SOVEREIGN_PIN_ || '';
+      const token = localStorage.getItem('lexSovereign_token') || '';
+
+      // Use raw fetch for blob downloading, but manually add x-sov-pin if available
+      // authorizedFetch currently assumes JSON response
+      const sovPin = localStorage.getItem('lexSovereign_pin') || (window as any)._SOVEREIGN_PIN_ || '';
 
       const response = await fetch(`/api/export/${id}/export`, {
         method: 'POST',
@@ -88,6 +89,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
       a.download = `${name}.${format.toLowerCase()}`;
       document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a); // Cleanup
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export Error:', err);
@@ -208,7 +210,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
             <div className="flex items-center gap-2 px-4 py-3 bg-brand-bg border border-brand-border rounded-2xl transition-all hover:border-brand-primary/30">
               <Shield size={16} className="text-brand-secondary" />
               <select
-                title="Branding Profile"
+                title="Branding Profile Selection"
                 className="bg-transparent text-xs font-bold text-brand-text focus:outline-none cursor-pointer appearance-none pr-6 relative"
                 value={selectedBrandingId}
                 onChange={e => setSelectedBrandingId(e.target.value)}

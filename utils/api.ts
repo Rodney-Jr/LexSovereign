@@ -23,8 +23,10 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
-    // Add Sovereign Pin if available (Prioritize dynamic handshake, fallback to build-time)
-    const sovPin = localStorage.getItem('lexSovereign_pin') || (typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '');
+    // Add Sovereign Pin if available (Prioritize dynamic handshake, fallback to window/global)
+    const sovPin = localStorage.getItem('lexSovereign_pin') ||
+        (window as any)._SOVEREIGN_PIN_ ||
+        (typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '');
     if (sovPin) {
         headers.set('x-sov-pin', sovPin);
     }

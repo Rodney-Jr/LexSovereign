@@ -24,9 +24,9 @@ export const PricingGovernance: React.FC = () => {
     const fetchConfigs = async () => {
         try {
             setLoading(true);
-            const res = await fetch('/api/pricing'); // Public endpoint, but component is protected by guard
-            if (!res.ok) throw new Error('Failed to fetch pricing');
-            const data = await res.json();
+            const token = localStorage.getItem('lexSovereign_token') || '';
+            const data = await authorizedFetch('/api/pricing', { token });
+            if (data.error) throw new Error(data.error);
             setConfigs(data);
         } catch (err: any) {
             setError(err.message);
@@ -41,13 +41,14 @@ export const PricingGovernance: React.FC = () => {
             setError(null);
             setSuccess(null);
 
-            const res = await authorizedFetch(`/api/pricing/${config.id}`, {
+            const token = localStorage.getItem('lexSovereign_token') || '';
+            const data = await authorizedFetch(`/api/pricing/${config.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                token,
                 body: JSON.stringify(config)
             });
 
-            if (!res.ok) throw new Error('Failed to update pricing');
+            if (data.error) throw new Error(data.error);
 
             setSuccess(`Updated ${config.id} tier successfully`);
             setTimeout(() => setSuccess(null), 3000);

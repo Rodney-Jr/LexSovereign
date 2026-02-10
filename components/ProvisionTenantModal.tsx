@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { X, Server, Check, Loader2, Shield } from 'lucide-react';
+import { authorizedFetch } from '../utils/api';
 
 interface ProvisionTenantModalProps {
     onClose: () => void;
@@ -22,17 +23,13 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
         e.preventDefault();
         setIsLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/platform/provision', {
+            const token = localStorage.getItem('lexSovereign_token') || localStorage.getItem('token') || '';
+            const data = await authorizedFetch('/api/platform/provision', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                token,
                 body: JSON.stringify(formData)
             });
-            const data = await res.json();
-            if (res.ok) {
+            if (data && !data.error) {
                 setResult(data.details);
                 setStep(2);
             } else {
@@ -49,7 +46,7 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+                <button onClick={onClose} title="Close Provisioning Modal" className="absolute top-4 right-4 text-slate-500 hover:text-white">
                     <X size={20} />
                 </button>
 
@@ -105,6 +102,7 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
                                 <div>
                                     <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Plan Hierarchy</label>
                                     <select
+                                        title="Select Plan Hierarchy"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:border-cyan-500 outline-none uppercase text-xs font-bold"
                                         value={formData.plan}
                                         onChange={e => setFormData({ ...formData, plan: e.target.value })}
@@ -117,6 +115,7 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
                                 <div>
                                     <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Physical Region</label>
                                     <select
+                                        title="Select Physical Region"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:border-cyan-500 outline-none uppercase text-xs font-bold"
                                         value={formData.region}
                                         onChange={e => setFormData({ ...formData, region: e.target.value })}
