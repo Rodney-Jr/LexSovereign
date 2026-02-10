@@ -59,8 +59,9 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'LexSovereign Control Plane' });
 });
 
+app.use('/api/leads', leadsRouter);
 app.use('/api/auth', authRouter);
-app.use('/api/pricing', pricingRouter); // Public endpoint for onboarding
+app.use('/api/pricing', pricingRouter);
 app.use('/api', sovereignGuard, apiRouter);
 app.use('/api/matters', authenticateToken, mattersRouter);
 app.use('/api/bridges', bridgesRouter);
@@ -76,7 +77,6 @@ app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/branding-profiles', brandingRouter);
 app.use('/api/chatbot', chatbotRouter);
 app.use('/api/tenant', tenantRouter);
-app.use('/api/leads', leadsRouter); // Added leadsRouter
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../public')));

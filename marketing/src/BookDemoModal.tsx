@@ -20,7 +20,7 @@ const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose }) => {
         setLoading(true);
 
         try {
-            const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000';
+            const PLATFORM_URL = (import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000').replace(/\/+$/, '');
             const res = await fetch(`${PLATFORM_URL}/api/leads`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -51,6 +51,7 @@ const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose }) => {
                 {/* Close Button */}
                 <button
                     onClick={onClose}
+                    title="Close Modal"
                     className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors"
                 >
                     <X size={20} />
