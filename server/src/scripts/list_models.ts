@@ -19,9 +19,10 @@ async function listModels() {
         // The list method usually returns an async iterable or array depending on version
         // Let's try to iterate or print
         for await (const model of models) {
-            console.log(`- ${model.name}`);
-            console.log(`  Display Name: ${model.displayName}`);
-            console.log(`  Supported Generation Methods: ${model.supportedGenerationMethods}`);
+            const m = model as any;
+            console.log(`- ${m.name}`);
+            console.log(`  Display Name: ${m.displayName}`);
+            console.log(`  Supported Generation Methods: ${m.supportedGenerationMethods}`);
         }
     } catch (e: any) {
         console.error("Error listing models:", e);
