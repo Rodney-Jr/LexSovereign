@@ -319,67 +319,8 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                   onChange={(cfg: any) => setFormData({ ...formData, rbac: { ...formData.rbac, external: cfg } })}
                 />
               </div>
-            </div>
-          )}
 
-          {step === 4 && (
-            <div className="space-y-8 animate-in slide-in-from-right-8">
-              <h4 className="text-lg font-bold text-white flex items-center gap-3"><EyeOff className="text-purple-400" /> Intelligence Proxy (DAS) Setup</h4>
-              <div className="bg-slate-950 border border-slate-800 rounded-[2.5rem] p-8 space-y-10">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Privacy Shield Strength</label>
-                    <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full border ${formData.dasLevel === 3 ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-                      Level {formData.dasLevel}: {formData.dasLevel === 1 ? 'Standard' : formData.dasLevel === 2 ? 'Strict' : 'Aggressive (Zero-PII)'}
-                    </span>
-                  </div>
-                  <input
-                    type="range" min="1" max="3" step="1"
-                    value={formData.dasLevel}
-                    aria-label="Privacy Shield Strength"
-                    onChange={(e) => setFormData({ ...formData, dasLevel: parseInt(e.target.value) })}
-                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                  />
-                  <div className="flex justify-between text-[8px] font-mono text-slate-600 uppercase tracking-tighter">
-                    <span>Min Redaction</span>
-                    <span>Full Anonymization</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <PolicyToggle active={true} label="RAM-Only Inference" desc="Chunks never touch persistent AI cache." />
-                  <PolicyToggle active={formData.dasLevel > 1} label="Identity Masking" desc="All names/IDs replaced with deterministic tokens." />
-                  <PolicyToggle active={true} label="Regional Egress Lock" desc="Force block all cross-border inference calls." />
-                  <PolicyToggle active={formData.dasLevel === 3} label="Metadata-Only Mode" desc="LLM only sees file context, no body text." />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="space-y-8 animate-in slide-in-from-right-8">
-              <h4 className="text-lg font-bold text-white flex items-center gap-3"><Scale className="text-amber-400" /> Jurisdictional Guardrails</h4>
-              <div className="space-y-4">
-                <InterceptorCard
-                  active={true}
-                  label={isFirm ? "Ethical Intercept v2.4" : "Compliance Auditor"}
-                  desc={isFirm ? "Blocks definitive legal advice triggers for non-verified practitioners." : "Scans for AML/KYC trigger events automatically."}
-                />
-                <InterceptorCard
-                  active={true}
-                  label="Conflict-of-Interest Filter"
-                  desc="Zero-knowledge search for party collisions across all regional silos."
-                />
-                {isFirm && (
-                  <InterceptorCard
-                    active={true}
-                    label="Scale of Fees Enforcement"
-                    desc="Automated audit of time entries against statutory fee scales."
-                  />
-                )}
-              </div>
-
-              <div className="bg-emerald-500/5 border border-emerald-500/10 p-8 rounded-[2.5rem] flex items-center gap-6">
+              <div className="bg-emerald-500/5 border border-emerald-500/10 p-8 rounded-[2.5rem] flex items-center gap-6 mt-8">
                 <div className="p-4 bg-emerald-500/20 rounded-3xl"><Fingerprint size={48} className="text-emerald-400" /></div>
                 <div className="space-y-1">
                   <p className="text-base font-bold text-white">Sovereign Key Handshake Ready</p>
@@ -405,11 +346,11 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
           <div className="flex gap-4">
             <button onClick={onClose} className="px-8 py-3.5 text-slate-400 font-bold text-sm hover:text-white transition-all hover:bg-slate-900 rounded-2xl">Cancel</button>
             <button
-              onClick={() => step < 5 ? setStep(step + 1) : handleSubmit()}
+              onClick={() => step < 3 ? setStep(step + 1) : handleSubmit()}
               disabled={(step === 1 && !isStep1Valid) || isSubmitting}
               className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white px-10 py-3.5 rounded-2xl font-bold text-sm shadow-2xl shadow-blue-900/40 transition-all flex items-center gap-3 active:scale-95 group"
             >
-              {isSubmitting ? 'Incepting...' : step === 5 ? 'Incept Global Matter' : 'Continue to ' + ['', 'Pinning', 'RBAC', 'DAS', 'Rules'][step]}
+              {isSubmitting ? 'Incepting...' : step === 3 ? 'Incept Global Matter' : 'Continue to ' + ['', 'Pinning', 'RBAC'][step]}
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
