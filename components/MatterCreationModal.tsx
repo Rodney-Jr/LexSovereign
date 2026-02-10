@@ -196,6 +196,15 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                 <MetadataInput label="Matter Name" placeholder="e.g. Standard Corporate Restructure" value={formData.name} onChange={(v: string) => setFormData({ ...formData, name: v })} />
                 <MetadataInput label={isFirm ? "Client Entity" : "Internal Business Unit"} placeholder="Search verified directory..." value={formData.client} onChange={(v: string) => setFormData({ ...formData, client: v })} />
               </div>
+              <div className="space-y-2.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Matter Description</label>
+                <textarea
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-800 min-h-[100px] text-slate-300"
+                  placeholder="Describe the scope and objective of this matter..."
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-2.5">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1" htmlFor="internalCounsel">Assigned Practitioner</label>
