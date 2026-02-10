@@ -215,7 +215,17 @@ const App = () => {
             <div className="snap-container">
                 {/* Hero Section */}
                 <section id="hero" className="snap-section relative overflow-hidden text-white">
-                    <div className="max-w-7xl mx-auto px-6 text-center animate-fade-in">
+                    {/* Background Image Overlay */}
+                    <div className="absolute inset-0 z-0">
+                        <img
+                            src="/images/hero-bg.jpg"
+                            alt="Sovereign Enclave Background"
+                            className="w-full h-full object-cover opacity-80"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/80" />
+                    </div>
+
+                    <div className="max-w-7xl mx-auto px-6 text-center animate-fade-in relative z-10">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-10">
                             <Sparkles size={14} /> Powering West, East, and Southern African Legal Enclaves
                         </div>
