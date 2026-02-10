@@ -43,11 +43,12 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "cdn.tailwindcss.com"],
-            styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "cdn.tailwindcss.com", "https://accounts.google.com/gsi/client"],
+            styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "https://accounts.google.com/gsi/style"],
             fontSrc: ["'self'", "fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "https:"],
+            imgSrc: ["'self'", "data:", "https:", "https://lh3.googleusercontent.com"],
+            connectSrc: ["'self'", "https:", "https://accounts.google.com/gsi/"],
+            frameSrc: ["'self'", "https://accounts.google.com/"],
         },
     },
 }));

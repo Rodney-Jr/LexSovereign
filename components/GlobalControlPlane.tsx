@@ -20,6 +20,7 @@ import {
    CloudLightning,
    Fingerprint,
    Plus,
+   PlusCircle,
    Key,
    Terminal,
    UserPlus,
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react';
 import { Region, GlobalAdminIdentity } from '../types';
 import { ProvisionTenantModal } from './ProvisionTenantModal';
+import { authorizedFetch } from '../utils/api';
 
 interface GlobalControlPlaneProps {
    onNavigate?: (tab: string) => void;
@@ -49,11 +51,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
    React.useEffect(() => {
       const fetchStats = async () => {
          try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/platform/stats', {
-               headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const token = localStorage.getItem('token') || '';
+            const data = await authorizedFetch('/api/platform/stats', { token });
             if (!data.error) {
                setStats((prev: any) => ({ ...prev, ...data }));
             }
@@ -402,11 +401,8 @@ const LeadsTab = () => {
    React.useEffect(() => {
       const fetchLeads = async () => {
          try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/leads', {
-               headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const token = localStorage.getItem('token') || '';
+            const data = await authorizedFetch('/api/leads', { token });
             if (Array.isArray(data)) setLeads(data);
          } catch (e) {
             console.error("Failed to fetch leads", e);
@@ -417,13 +413,10 @@ const LeadsTab = () => {
 
    const updateStatus = async (id: string, status: string) => {
       try {
-         const token = localStorage.getItem('token');
-         await fetch(`/api/leads/${id}/status`, {
+         const token = localStorage.getItem('token') || '';
+         await authorizedFetch(`/api/leads/${id}/status`, {
             method: 'PATCH',
-            headers: {
-               'Authorization': `Bearer ${token}`,
-               'Content-Type': 'application/json'
-            },
+            token,
             body: JSON.stringify({ status })
          });
          setLeads(leads.map(l => l.id === id ? { ...l, status } : l));
@@ -439,7 +432,7 @@ const LeadsTab = () => {
                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <UserPlus size={14} className="text-emerald-400" /> Demo Requests (Leads)
                </h4>
-               <button onClick={() => window.location.reload()} className="text-slate-500 hover:text-white transition-colors">
+               <button onClick={() => window.location.reload()} className="text-slate-500 hover:text-white transition-colors" title="Reload Leads">
                   <RefreshCw size={14} />
                </button>
             </div>
@@ -488,6 +481,7 @@ const LeadsTab = () => {
                                     value={lead.status}
                                     onChange={(e) => updateStatus(lead.id, e.target.value)}
                                     className="bg-slate-950 border border-slate-800 text-xs font-bold uppercase rounded-lg px-2 py-1 text-slate-300 focus:outline-none focus:border-emerald-500"
+                                    title="Update Lead Status"
                                  >
                                     <option value="NEW">NEW</option>
                                     <option value="CONTACTED">CONTACTED</option>
