@@ -162,8 +162,8 @@ router.post('/join-silo', async (req, res) => {
 
             console.log(`[Join] Found invitation for ${invitation.email}, tenant: ${invitation.tenant.name}`);
 
-            const role = await tx.role.findUnique({
-                where: { name_tenantId: { name: invitation.roleName, tenantId: invitation.tenantId } }
+            const role = await tx.role.findFirst({
+                where: { name: invitation.roleName, tenantId: invitation.tenantId }
             });
 
             if (!role) {
@@ -278,7 +278,7 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const role = await prisma.role.findFirst({
-            where: { name_tenantId: { name: roleName || 'INTERNAL_COUNSEL', tenantId } }
+            where: { name: roleName || 'INTERNAL_COUNSEL', tenantId: tenantId || null }
         });
 
         if (!role) {
@@ -409,8 +409,8 @@ router.post('/google-login', async (req, res) => {
 
             if (invitation) {
                 // Provision user based on invitation
-                const role = await prisma.role.findUnique({
-                    where: { name_tenantId: { name: invitation.roleName, tenantId: invitation.tenantId } }
+                const role = await prisma.role.findFirst({
+                    where: { name: invitation.roleName, tenantId: invitation.tenantId }
                 });
 
                 if (role) {

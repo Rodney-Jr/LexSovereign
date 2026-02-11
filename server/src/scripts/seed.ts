@@ -112,20 +112,23 @@ async function main() {
 
     console.log('🌱 Seeding System Roles...');
     for (const r of ROLES) {
-        // Create role if not exists
-        const role = await prisma.role.upsert({
-            where: { name_tenantId: { name: r.name, tenantId: null } },
-            update: {}, // Don't overwrite existing perms to avoid resetting custom changes if we run seed again? 
-            // Actually for system roles strict sync might be better. Let's strict sync for now.
-            create: {
-                name: r.name,
-                description: `System Role: ${r.name}`,
-                isSystem: true,
-                permissions: {
-                    connect: r.permissions.map(id => ({ id }))
-                }
-            }
+        // Check if system role exists
+        let role = await prisma.role.findFirst({
+            where: { name: r.name, isSystem: true, tenantId: null }
         });
+
+        if (!role) {
+            role = await prisma.role.create({
+                data: {
+                    name: r.name,
+                    description: `System Role: ${r.name}`,
+                    isSystem: true,
+                    permissions: {
+                        connect: r.permissions.map(id => ({ id }))
+                    }
+                }
+            });
+        }
     }
 
     // Tenant & User Seeding using Service
@@ -162,7 +165,8 @@ async function main() {
             data: {
                 roleString: 'GLOBAL_ADMIN', // Check if we want this? Seed says GLOBAL_ADMIN.
                 // Provisioner creates TENANT_ADMIN. We should upgrade him.
-                role: { connect: { name_tenantId: { name: 'GLOBAL_ADMIN', tenantId: null } } },
+                // Upgrade to admin using found global admin role
+                role: { connect: { id: (await prisma.role.findFirst({ where: { name: 'GLOBAL_ADMIN', isSystem: true, tenantId: null } }))?.id } },
                 jurisdictionPins: ['GH_ACC_1'],
                 credentials: [{ type: 'SYSTEM_ADMIN', id: 'SA-001' }]
             }
@@ -170,8 +174,8 @@ async function main() {
 
         // Create secondary user (Internal Counsel)
         // Provisioner doesn't create secondary users.
-        const counselRole = await prisma.role.findUnique({
-            where: { name_tenantId: { name: 'INTERNAL_COUNSEL', tenantId: result.tenantId } }
+        const counselRole = await prisma.role.findFirst({
+            where: { name: 'INTERNAL_COUNSEL', tenantId: result.tenantId }
         });
 
         const counsel = await prisma.user.create({
