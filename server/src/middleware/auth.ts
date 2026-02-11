@@ -19,13 +19,14 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
             console.error(`[Auth] JWT Verification failed: ${err.message}`);
-            res.status(403).json({
+            return res.status(403).json({
                 error: 'Invalid session token',
                 code: 'FORBIDDEN',
                 reason: err.message === 'jwt expired' ? 'expired' : 'invalid'
             });
-            return;
         }
+
+        console.log(`[Auth] JWT Verified for user: ${user.email} (Role: ${user.role})`);
 
         // Deployment Adaptation: On-Premise Enclaves are Single Tenant
         if (!CONFIG.ENABLE_MULTI_TENANCY) {

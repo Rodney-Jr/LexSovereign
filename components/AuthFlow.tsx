@@ -14,13 +14,13 @@ import {
    AlertCircle,
    Link
 } from 'lucide-react';
-import { UserRole } from '../types';
+import { UserRole, SessionData } from '../types';
 
 // Declare the global constant injected by Vite
 declare const __SOVEREIGN_PIN__: string;
 
 interface AuthFlowProps {
-   onAuthenticated: (role: string, permissions: string[], userId: string, tenantId: string, token: string, userName?: string) => Promise<void> | void;
+   onAuthenticated: (session: SessionData) => Promise<void> | void;
    onStartOnboarding: () => void;
    onStartInvitation: () => void;
    onSecretTrigger?: () => void;
@@ -100,7 +100,14 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             throw new Error(data.error || 'Authentication failed');
          }
 
-         await onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId, data.token, data.user.name);
+         await onAuthenticated({
+            role: data.user.role,
+            permissions: data.user.permissions || [],
+            userId: data.user.id,
+            tenantId: data.user.tenantId,
+            token: data.token,
+            userName: data.user.name
+         });
       } catch (err: unknown) {
          setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
@@ -131,7 +138,14 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             throw new Error(data.error || 'Google Authentication failed');
          }
 
-         await onAuthenticated(data.user.role, data.user.permissions || [], data.user.id, data.user.tenantId, data.token, data.user.name);
+         await onAuthenticated({
+            role: data.user.role,
+            permissions: data.user.permissions || [],
+            userId: data.user.id,
+            tenantId: data.user.tenantId,
+            token: data.token,
+            userName: data.user.name
+         });
       } catch (err: unknown) {
          setError(err instanceof Error ? err.message : 'Google Authentication failed');
       } finally {

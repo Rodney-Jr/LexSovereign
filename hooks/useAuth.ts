@@ -31,6 +31,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         localStorage.setItem('lexSovereign_session', JSON.stringify(sessionToSave));
 
         // 2. Immediate Pin Handshake (Crucial for Railway enclave access)
+        console.log(`[Auth] Initiating PIN handshake for user: ${session.userId}...`);
         try {
             const data = await authorizedFetch('/api/auth/pin', {
                 token: session.token
@@ -38,9 +39,11 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
             if (data && data.pin) {
                 localStorage.setItem('lexSovereign_pin', data.pin);
                 console.log("[Auth] Sovereign Pin Handshake Successful");
+            } else {
+                console.warn("[Auth] PIN handshake returned no data");
             }
-        } catch (e) {
-            console.error("[Auth] Pin Handshake Failed during login", e);
+        } catch (e: any) {
+            console.error("[Auth] Pin Handshake Failed during login:", e.message);
         }
 
         // 3. Update state
