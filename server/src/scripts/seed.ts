@@ -101,14 +101,11 @@ const ROLES = [
 ];
 
 async function main() {
-    console.log('🌱 Seeding Permissions...');
-    for (const p of PERMISSIONS) {
-        await prisma.permission.upsert({
-            where: { id: p.id },
-            update: {},
-            create: p
-        });
-    }
+    console.log('🌱 Bulk Seeding Permissions...');
+    await prisma.permission.createMany({
+        data: PERMISSIONS,
+        skipDuplicates: true
+    });
     console.log('✅ Permissions seeded.');
 
     console.log('🌱 Seeding System Roles...');
@@ -262,13 +259,11 @@ async function main() {
             }
         ];
 
-        for (const config of pricingConfigs) {
-            await prisma.pricingConfig.upsert({
-                where: { id: config.id },
-                update: {},
-                create: config
-            });
-        }
+        console.log('🌱 Bulk Seeding Pricing Configurations...');
+        await prisma.pricingConfig.createMany({
+            data: pricingConfigs,
+            skipDuplicates: true
+        });
 
         // Regulatory Rules
         const rules = [
@@ -283,13 +278,11 @@ async function main() {
         ];
 
         console.log('🌱 Seeding Regulatory Rules...');
-        for (const rule of rules) {
-            await prisma.regulatoryRule.upsert({
-                where: { id: rule.id },
-                update: {},
-                create: rule
-            });
-        }
+        console.log('🌱 Bulk Seeding Regulatory Rules...');
+        await prisma.regulatoryRule.createMany({
+            data: rules,
+            skipDuplicates: true
+        });
         // Locked scope: 10 specific templates
         const docTemplates = [
             {
@@ -774,31 +767,22 @@ Title: **{{receiving_party_signer_title}}**
             }
         ];
 
-        console.log('🌱 Seeding Document Templates...');
-        for (const t of docTemplates) {
-            console.log(`Working on: ${t.name}`);
-            await prisma.documentTemplate.upsert({
-                where: { id: `template-${t.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}` },
-                update: {
-                    content: t.content,
-                    structure: t.structure,
-                    description: t.description,
-                    category: t.category,
-                    jurisdiction: t.jurisdiction,
-                    version: t.version
-                },
-                create: {
-                    id: `template-${t.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-                    name: t.name,
-                    description: t.description,
-                    category: t.category,
-                    jurisdiction: t.jurisdiction,
-                    content: t.content,
-                    structure: t.structure,
-                    version: t.version
-                }
-            });
-        }
+        console.log('🌱 Bulk Seeding Document Templates...');
+        const templateData = docTemplates.map(t => ({
+            id: `template-${t.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+            name: t.name,
+            description: t.description,
+            category: t.category,
+            jurisdiction: t.jurisdiction,
+            content: t.content,
+            structure: t.structure,
+            version: t.version
+        }));
+
+        await prisma.documentTemplate.createMany({
+            data: templateData as any,
+            skipDuplicates: true
+        });
 
         console.log(`✅ Seeded ${docTemplates.length} Document Templates`);
 
