@@ -17,7 +17,11 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const { recoverWork } = useWorkPersistence({ activeTab, selectedMatterId: selectedMatter });
 
     const handleAuthenticated = useCallback(async (session: SessionData) => {
-        const normalizedRole = session.role.toUpperCase();
+        // Safely extract role - handle both string and object types
+        const roleValue = typeof session.role === 'string'
+            ? session.role
+            : (session.role as any)?.name || 'UNKNOWN';
+        const normalizedRole = roleValue.toUpperCase();
 
         // Hydrate permissions from constants or session
         const activePermissions = ROLE_DEFAULT_PERMISSIONS[normalizedRole] || session.permissions || [];
