@@ -93,12 +93,40 @@ app.use(express.static(path.join(__dirname, '../../dist')));
 // Priority 2: Check server/public (Legacy/Fallback)
 app.use(express.static(path.join(__dirname, '../public')));
 
+import fs from 'fs';
+
 // The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
+// match one above, send back React's index.html file with runtime injections.
 app.get('*', (req, res) => {
-    // Try root dist first
     const distPath = path.join(__dirname, '../../dist/index.html');
-    res.sendFile(distPath);
+
+    if (fs.existsSync(distPath)) {
+        try {
+            let html = fs.readFileSync(distPath, 'utf8');
+
+            // Inject runtime variables (Fixes build-time environment variable issues)
+            const googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+            const sovereignPin = process.env.SOVEREIGN_PIN || '';
+
+            const injection = `
+    <script>
+      window._GOOGLE_CLIENT_ID = "${googleClientId}";
+      window._SOVEREIGN_PIN_ = "${sovereignPin}";
+      console.log("[Runtime] Credentials injected into client pulse.");
+    </script>`;
+
+            // Insert before closing head tag
+            html = html.replace('</head>', `${injection}</head>`);
+
+            res.send(html);
+        } catch (error) {
+            console.error("[Runtime Error] Failed to serve index.html:", error);
+            res.status(500).send("Internal Server Error");
+        }
+    } else {
+        // Fallback to simpler error or message if dist isn't built yet
+        res.status(404).send("Application dist not found. Please run 'npm run build' first.");
+    }
 });
 
 // Start server
