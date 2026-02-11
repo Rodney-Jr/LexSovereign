@@ -1,18 +1,9 @@
 
 import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact } from "../types";
+import { authorizedFetch, getSavedSession } from "../utils/api";
 
 export class LexGeminiService {
   private baseUrl = '/api';
-
-  private getHeaders() {
-    const saved = localStorage.getItem('lexSovereign_session');
-    const { token } = JSON.parse(saved || '{}');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      'x-sov-pin': 'SOV-PRIMARY-1'
-    };
-  }
 
   async chat(
     input: string,
@@ -24,65 +15,59 @@ export class LexGeminiService {
   ): Promise<{ text: string; confidence: number; provider: string; references?: string[]; groundingSources?: { title: string, uri: string }[] }> {
     if (killSwitchActive) throw new Error("KILL_SWITCH_ACTIVE");
 
-    const response = await fetch(`${this.baseUrl}/chat`, {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/chat`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch })
     });
-
-    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
-    return response.json();
   }
 
   async explainClause(clauseText: string): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/explain-clause`, {
+    const session = getSavedSession();
+    const data = await authorizedFetch(`${this.baseUrl}/explain-clause`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ clauseText })
     });
-    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
-    const data = await response.json();
     return data.explanation;
   }
 
   async generateAuditLog(context: { userId: string, firmId: string, action: string, resourceType: string, resourceId: string }): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/audit/generate`, {
+    const session = getSavedSession();
+    const data = await authorizedFetch(`${this.baseUrl}/audit/generate`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify(context)
     });
-    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
-    const data = await response.json();
     return data.message;
   }
 
   async validateDocumentExport(content: string): Promise<{ status: 'PASS' | 'FAIL', issues: string[] }> {
-    const response = await fetch(`${this.baseUrl}/documents/validate-export`, {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/documents/validate-export`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ content })
     });
-    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
-    return await response.json();
   }
 
   async generatePricingModel(features: string[]): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/pricing/generate`, {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/pricing/generate`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ features })
     });
-    if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
-    return await response.json();
   }
 
   async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/briefing`, {
+    const session = getSavedSession();
+    const data = await authorizedFetch(`${this.baseUrl}/briefing`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ matterId, documents })
     });
-    const data = await response.json();
     return data.briefing;
   }
 
@@ -91,72 +76,69 @@ export class LexGeminiService {
     role: UserRole,
     privilege: PrivilegeStatus
   ): Promise<{ content: string; scrubbedEntities: number }> {
-    const response = await fetch(`${this.baseUrl}/scrub`, {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/scrub`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ content: rawContent, role, privilege })
     });
-    return response.json();
   }
 
-  // Stubs for other methods to keep type safety
   // Chatbot Management Methods
   async getChatbotConfig(): Promise<ChatbotConfig> {
-    const response = await fetch(`${this.baseUrl}/chatbot/config`, {
-      headers: this.getHeaders()
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/chatbot/config`, {
+      token: session?.token
     });
-    if (!response.ok) throw new Error("Failed to load config");
-    return response.json();
   }
 
   async saveChatbotConfig(config: ChatbotConfig): Promise<ChatbotConfig> {
-    const response = await fetch(`${this.baseUrl}/chatbot/config`, {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/chatbot/config`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify(config)
     });
-    if (!response.ok) throw new Error("Failed to save config");
-    return response.json();
   }
 
   async deployChatbot(config: ChatbotConfig): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/chatbot/deploy`, {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/chatbot/deploy`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify(config)
     });
-    if (!response.ok) throw new Error("Deployment failed");
-    return response.json();
   }
 
   async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]) {
-    const response = await fetch(`${this.baseUrl}/chatbot/chat`, {
+    const session = getSavedSession();
+    // Public chat might not need token but authorizedFetch handles both cases gracefully
+    return authorizedFetch(`${this.baseUrl}/chatbot/chat`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ message: input, config })
     });
-    return response.json();
   }
 
   async generateBillingDescription(rawNotes: string) {
-    const response = await fetch(`${this.baseUrl}/billing-description`, {
+    const session = getSavedSession();
+    const data = await authorizedFetch(`${this.baseUrl}/billing-description`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ rawNotes })
     });
-    const data = await response.json();
     return data.description;
   }
 
   async validateTimeEntry(entry: Partial<TimeEntry>) { return { isSafe: true, feedback: "Backend pending." }; }
 
   async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
-    const response = await fetch(`${this.baseUrl}/evaluate-rre`, {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/evaluate-rre`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      token: session?.token,
       body: JSON.stringify({ text, rules })
     });
-    return response.json();
   }
 
   async verifyOutput(input: string, output: string) { return { isSafe: true }; }

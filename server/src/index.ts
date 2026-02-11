@@ -84,7 +84,7 @@ app.use('/api/roles', authenticateToken, rolesRouter);
 app.use('/api/webhooks', authenticateToken, webhooksRouter);
 app.use('/api/analytics', authenticateToken, analyticsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
-app.use('/api/chatbot', authenticateToken, chatbotRouter);
+app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 app.use('/api/tenant', authenticateToken, tenantRouter);
 
 // Serve static files from the React app
