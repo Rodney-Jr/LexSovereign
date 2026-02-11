@@ -30,17 +30,17 @@ RUN apk add --no-cache openssl
 # Copy server dependencies
 COPY --from=server-builder /app-server/package*.json ./
 COPY --from=server-builder /app-server/node_modules ./node_modules
-# Copy server build artifacts
-COPY --from=server-builder /app-server/dist ./dist
+# Copy server build artifacts to server/dist
+COPY --from=server-builder /app-server/dist ./server/dist
 # Copy Prisma schema and migrations
 COPY --from=server-builder /app-server/prisma ./prisma
-# Copy client build artifacts to 'public' folder served by Express
-COPY --from=client-builder /app-client/dist ./public
+# Copy client build artifacts to dist (expected by runtime injection in server/src/index.ts)
+COPY --from=client-builder /app-client/dist ./dist
 
 # Environment variables
 ENV NODE_ENV=production
 
 
 
-# Start the server directly (bypassing npm to avoid script caching issues)
-CMD ["npm", "start"]
+# Start the server with migrations and seeding
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node server/dist/index.js"]
