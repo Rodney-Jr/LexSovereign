@@ -137,27 +137,14 @@ const AppRouter: React.FC<AppRouterProps> = ({
         if (isPlatformMode) {
             return (
                 <PlatformGateway
-                    onAuthenticated={(role: UserRole, permissions: string[], uName?: string) => handleAuthenticated({
-                        role,
-                        userId: 'PLATFORM_OWNER',
-                        userName: uName || 'Platform Owner',
-                        tenantId: 'GLOBAL',
-                        permissions: permissions || []
-                    })}
+                    onAuthenticated={(session: SessionData) => handleAuthenticated(session)}
                     onBackToTenant={() => setIsPlatformMode(false)}
                 />
             );
         }
         return (
             <AuthFlow
-                onAuthenticated={(role: string, perms: string[], uId?: string, tId?: string, token?: string, uName?: string) => handleAuthenticated({
-                    role,
-                    permissions: perms,
-                    userId: uId || 'legacy-uid',
-                    userName: uName,
-                    tenantId: tId || 'legacy-tid',
-                    token
-                })}
+                onAuthenticated={(session: SessionData) => handleAuthenticated(session)}
                 onStartOnboarding={() => setIsOnboarding(true)}
                 onStartInvitation={() => setIsUserInvitation(true)}
                 onSecretTrigger={() => setIsPlatformMode(true)}

@@ -16,7 +16,7 @@ import { UserRole } from '../types';
 import { authorizedFetch } from '../utils/api';
 
 interface PlatformGatewayProps {
-  onAuthenticated: (role: UserRole, permissions: string[], userName?: string) => void;
+  onAuthenticated: (session: import('../types').SessionData) => void;
   onBackToTenant: () => void;
 }
 
@@ -60,7 +60,14 @@ const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBa
       addLog("AUTHORITY VERIFIED. PROJECTING IDENTITY...");
 
       setTimeout(() => {
-        onAuthenticated(data.user.role as UserRole, data.user.permissions || [], data.user.name);
+        onAuthenticated({
+          role: data.user.role,
+          token: data.token,
+          userId: data.user.id || 'PLATFORM_OWNER',
+          userName: data.user.name || 'Platform Owner',
+          tenantId: data.user.tenantId || 'GLOBAL',
+          permissions: data.user.permissions || []
+        });
       }, 1000);
 
     } catch (err: any) {

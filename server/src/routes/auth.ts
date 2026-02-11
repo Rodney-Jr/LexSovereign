@@ -336,7 +336,6 @@ router.post('/login', async (req, res) => {
     console.log(`[AuthFlow] Attempting login for: ${req.body?.email}`);
     try {
         const { email, password } = req.body;
-        console.log('[AuthFlow] Querying database for user...');
         const user = await prisma.user.findUnique({
             where: { email },
             include: {
@@ -345,9 +344,23 @@ router.post('/login', async (req, res) => {
             }
         });
 
-        if (!user || !user.passwordHash || !await bcrypt.compare(password, user.passwordHash)) {
+        if (!user) {
+            console.warn(`[AuthFlow] Login Failed: User not found for ${email}`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
+
+        if (!user.passwordHash) {
+            console.warn(`[AuthFlow] Login Failed: No password hash for user ${email}`);
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+            console.warn(`[AuthFlow] Login Failed: Password mismatch for ${email}`);
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        console.log(`[AuthFlow] Login Success for user: ${email} (Role: ${user.role?.name || 'UNKNOWN'})`);
 
         const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';

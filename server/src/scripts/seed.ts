@@ -134,13 +134,13 @@ async function main() {
     // Tenant & User Seeding using Service
     console.log('🌱 Provisioning Default Tenant via Service...');
 
-    // Check if tenant exists first
-    const existingTenant = await prisma.tenant.findUnique({ where: { id: 'default-demo-tenant-id' } });
+    // Check if admin user already exists to prevent duplicate seeding errors
+    const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@lexsovereign.com' } });
 
     let tenantId;
     let counselId;
 
-    if (!existingTenant) {
+    if (!existingAdmin) {
         const result = await TenantService.provisionTenant({
             name: 'LexSovereign Demo',
             adminEmail: 'admin@lexsovereign.com',
@@ -199,7 +199,7 @@ async function main() {
 
     } else {
         console.log('ℹ️ Default tenant already exists. Skipping provisioning.');
-        tenantId = existingTenant.id;
+        tenantId = existingAdmin.tenantId;
         const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@lexsovereign.com' } });
         counselId = counselUser?.id;
     }
