@@ -37,8 +37,11 @@ export class OIDCService {
             if (profile.groups?.includes('Legal_Counsel')) mappedRoleName = 'INTERNAL_COUNSEL';
             if (profile.groups?.includes('General_Counsel')) mappedRoleName = 'TENANT_ADMIN';
 
-            const role = await prisma.role.findUnique({ where: { name: mappedRoleName } })
-                || await prisma.role.findFirst({ where: { name: 'INTERNAL_COUNSEL' } }); // Fallback
+            const role = await prisma.role.findFirst({
+                where: { name: mappedRoleName, isSystem: true }
+            }) || await prisma.role.findFirst({
+                where: { name: 'INTERNAL_COUNSEL', isSystem: true }
+            });
 
             if (!role) throw new Error("Mapped Role not found during JIT provisioning");
 

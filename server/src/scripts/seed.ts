@@ -114,7 +114,7 @@ async function main() {
     for (const r of ROLES) {
         // Create role if not exists
         const role = await prisma.role.upsert({
-            where: { name: r.name },
+            where: { name_tenantId: { name: r.name, tenantId: null } },
             update: {}, // Don't overwrite existing perms to avoid resetting custom changes if we run seed again? 
             // Actually for system roles strict sync might be better. Let's strict sync for now.
             create: {
@@ -162,7 +162,7 @@ async function main() {
             data: {
                 roleString: 'GLOBAL_ADMIN', // Check if we want this? Seed says GLOBAL_ADMIN.
                 // Provisioner creates TENANT_ADMIN. We should upgrade him.
-                role: { connect: { name: 'GLOBAL_ADMIN' } },
+                role: { connect: { name_tenantId: { name: 'GLOBAL_ADMIN', tenantId: null } } },
                 jurisdictionPins: ['GH_ACC_1'],
                 credentials: [{ type: 'SYSTEM_ADMIN', id: 'SA-001' }]
             }
@@ -170,7 +170,9 @@ async function main() {
 
         // Create secondary user (Internal Counsel)
         // Provisioner doesn't create secondary users.
-        const counselRole = await prisma.role.findFirst({ where: { tenantId: result.tenantId, name: 'INTERNAL_COUNSEL' } });
+        const counselRole = await prisma.role.findUnique({
+            where: { name_tenantId: { name: 'INTERNAL_COUNSEL', tenantId: result.tenantId } }
+        });
 
         const counsel = await prisma.user.create({
             data: {

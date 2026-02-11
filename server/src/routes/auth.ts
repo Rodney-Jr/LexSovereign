@@ -26,7 +26,9 @@ router.post('/onboard-silo', async (req, res) => {
             });
 
             // Admin Role
-            const role = await tx.role.findUnique({ where: { name: 'TENANT_ADMIN' } });
+            const role = await tx.role.findFirst({
+                where: { name: 'TENANT_ADMIN', isSystem: true, tenantId: null }
+            });
             if (!role) throw new Error("Seed roles missing.");
 
             // Primary Admin User
@@ -160,8 +162,8 @@ router.post('/join-silo', async (req, res) => {
 
             console.log(`[Join] Found invitation for ${invitation.email}, tenant: ${invitation.tenant.name}`);
 
-            const role = await tx.role.findFirst({
-                where: { name: invitation.roleName, OR: [{ isSystem: true }, { tenantId: invitation.tenantId }] }
+            const role = await tx.role.findUnique({
+                where: { name_tenantId: { name: invitation.roleName, tenantId: invitation.tenantId } }
             });
 
             if (!role) {
@@ -276,7 +278,7 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const role = await prisma.role.findFirst({
-            where: { name: roleName || 'INTERNAL_COUNSEL', OR: [{ isSystem: true }, { tenantId }] }
+            where: { name_tenantId: { name: roleName || 'INTERNAL_COUNSEL', tenantId } }
         });
 
         if (!role) {
@@ -407,8 +409,8 @@ router.post('/google-login', async (req, res) => {
 
             if (invitation) {
                 // Provision user based on invitation
-                const role = await prisma.role.findFirst({
-                    where: { name: invitation.roleName, OR: [{ isSystem: true }, { tenantId: invitation.tenantId }] }
+                const role = await prisma.role.findUnique({
+                    where: { name_tenantId: { name: invitation.roleName, tenantId: invitation.tenantId } }
                 });
 
                 if (role) {
