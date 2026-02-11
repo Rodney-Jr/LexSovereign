@@ -8,6 +8,7 @@ export interface ChatParams {
     usePrivateModel: boolean;
     killSwitchActive: boolean;
     useGlobalSearch: boolean;
+    jurisdiction: string;
 }
 
 export interface ChatResult {

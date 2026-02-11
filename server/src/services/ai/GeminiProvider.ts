@@ -54,7 +54,7 @@ export class GeminiProvider implements AIProvider {
         }
 
         // 1. PII Sanitization (DAS Engine)
-        const { sanitized, entityMap } = PiiService.sanitize(params.input);
+        const { sanitized, entityMap } = await PiiService.sanitize(params.input, params.jurisdiction);
 
         // Search Jurisdictional Legal Knowledge Base
         let legalKnowledge = "";

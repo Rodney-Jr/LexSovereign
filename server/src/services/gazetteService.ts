@@ -9,11 +9,8 @@ import { RegulatoryRule, Region } from '../types';
  * This is the heart of "Hard-Pinned Compliance".
  */
 
-// Pinned Public Key of the regional authority (e.g. Ghana DPA or South Africa Info Regulator)
-// Any statutory update NOT signed by this key is rejected as "Shadow Law".
-const REGIONAL_AUTHORITY_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxz...PINNED_AUTHORITY...
------END PUBLIC KEY-----`;
+// Statutory Authority Public Key Logic
+// Now pulls dynamically from environment based on region (NG_GAZETTE_PUBLIC_KEY, GH_GAZETTE_PUBLIC_KEY, etc.)
 
 export class GazetteService {
 
@@ -70,7 +67,16 @@ export class GazetteService {
 
     private static verifyAuthority(payload: any, signature: string): boolean {
         try {
-            // Development override for demo purposes
+            const region = payload.region || 'GH';
+            const envKey = `${region}_GAZETTE_PUBLIC_KEY`;
+            const publicKey = process.env[envKey];
+
+            if (!publicKey) {
+                console.warn(`[Gazette] WARNING: Missing public key for region ${region} (${envKey}). Sync rejected.`);
+                return false;
+            }
+
+            // Development override for demo purposes (if needed)
             if (process.env.NODE_ENV === 'development' && signature.startsWith('sov_authority_')) {
                 return true;
             }
@@ -80,7 +86,7 @@ export class GazetteService {
             verify.update(JSON.stringify(payload));
             verify.end();
 
-            return verify.verify(REGIONAL_AUTHORITY_PUBLIC_KEY, signature, 'base64');
+            return verify.verify(publicKey, signature, 'base64');
         } catch (error) {
             console.error('[Gazette] Cryptographic Verification Engine Failure:', error);
             return false;

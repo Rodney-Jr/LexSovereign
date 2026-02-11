@@ -17,7 +17,8 @@ export class LexAIService {
         documents: DocumentMetadata[],
         usePrivateModel: boolean,
         killSwitchActive: boolean,
-        useGlobalSearch: boolean = false
+        useGlobalSearch: boolean = false,
+        jurisdiction: string = 'GH'
     ): Promise<ChatResult> {
         const params: ChatParams = {
             input,
@@ -25,7 +26,8 @@ export class LexAIService {
             documents,
             usePrivateModel,
             killSwitchActive,
-            useGlobalSearch
+            useGlobalSearch,
+            jurisdiction
         };
         return this.getProvider().chat(params);
     }

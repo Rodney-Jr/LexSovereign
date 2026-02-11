@@ -9,8 +9,8 @@ const geminiService = new LexAIService();
 
 router.post('/chat', authenticateToken, async (req: Request, res) => {
     try {
-        const { input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch } = req.body;
-        const result = await geminiService.chat(input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch);
+        const { input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch, jurisdiction } = req.body;
+        const result = await geminiService.chat(input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch, jurisdiction || 'GH');
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
