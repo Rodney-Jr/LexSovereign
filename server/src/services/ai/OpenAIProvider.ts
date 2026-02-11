@@ -5,6 +5,7 @@ import { AIProvider, ChatParams, ChatResult } from "./types";
 import { PiiService } from "../piiService";
 import { AuditorService } from "../auditorService";
 import { prisma } from "../../db";
+import { LegalQueryService } from "../legalQueryService";
 
 export class OpenAIProvider implements AIProvider {
     id = "openai";
@@ -31,27 +32,21 @@ export class OpenAIProvider implements AIProvider {
             : params.documents;
         const contextStr = contextDocs.map(d => `Doc: ${d.name} (${d.id})`).join('\n');
 
-        // Knowledge Base Search (Naive)
+        // 2. Search Jurisdictional Legal Knowledge Base (Vector RAG)
         let legalKnowledge = "";
         try {
-            const artifacts = await prisma.knowledgeArtifact.findMany({
-                where: {
-                    OR: [
-                        { title: { contains: sanitized, mode: 'insensitive' } },
-                        { content: { contains: sanitized, mode: 'insensitive' } }
-                    ]
-                },
-                take: 3
-            });
-            if (artifacts.length > 0) {
-                legalKnowledge = "LEGAL ARCHIVES (OFFICIAL):\n" +
-                    artifacts.map(a => `[Source: ${a.title}]\n${a.content.substring(0, 500)}...`).join('\n\n');
+            const region = params.jurisdiction || "GH";
+            const excerpts = await LegalQueryService.getRelevantStatutes(sanitized, region);
+
+            if (excerpts.length > 0) {
+                legalKnowledge = "REGION-SPECIFIC STATUTORY CONTEXT (OFFICIAL GAZETTE):\n" +
+                    excerpts.map((e: any) => `[Source: ${e.title} | URL: ${e.sourceUrl}]\n${e.contentChunk}`).join('\n\n');
             }
         } catch (e) {
-            console.warn("KB Search Failed", e);
+            console.warn("Gazette RAG Search Failed:", e);
         }
 
-        const systemPrompt = "You are a senior legal assistant specializing in Zero-Knowledge productivity. Provide concise, accurate legal information based on internal documents and global legal research. NEVER give definitive legal advice. Return a JSON object with 'text', 'confidence' (0-1), and 'references' (internal doc IDs).";
+        const systemPrompt = "You are a senior LexSovereign legal assistant. Task: Provide accurate legal information based ONLY on the provided Gazette excerpts. Rules: 1. If the information is not in the excerpts, state that you cannot find the specific statutory basis. 2. Always cite the Source URL for every claim. 3. Use a professional, sovereign tone. 4. Return JSON object with 'text', 'confidence', and 'references' (Source URLs).";
         const userPrompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${sanitized}`;
 
         try {

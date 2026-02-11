@@ -308,6 +308,21 @@ model Lead {
   status    String   @default("NEW") // NEW, CONTACTED, CONVERTED, ARCHIVED
   source    String   @default("WEB_MODAL") // WEB_MODAL, CHATBOT
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model GazetteEmbedding {
+  id              String   @id @default(uuid())
+  region          String   // GH, NG, KE
+  title           String
+  contentChunk    String   // The text excerpt
+  embedding       Unsupported("vector(1536)")? // pgvector embedding (1536 dims for OpenAI)
+  sourceUrl       String?  // Reference to original PDF
+  metadata        Json?    @default("{}")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([region])
 }

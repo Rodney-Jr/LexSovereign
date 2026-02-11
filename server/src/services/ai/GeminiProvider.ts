@@ -5,6 +5,7 @@ import { prisma } from "../../db";
 import { PiiService } from "../piiService";
 import { AuditorService } from "../auditorService";
 import { AIProvider, ChatParams, ChatResult } from "./types";
+import { LegalQueryService } from "../legalQueryService";
 
 export class GeminiProvider implements AIProvider {
     id = "gemini";
@@ -35,8 +36,25 @@ export class GeminiProvider implements AIProvider {
 
         const contextStr = contextDocs.map(d => `Doc: ${d.name} (${d.id}), Matter: ${d.matterId}`).join('\n');
 
+        // 1. PII Sanitization (DAS Engine)
+        const { sanitized, entityMap } = await PiiService.sanitize(params.input, params.jurisdiction);
+
+        // 2. Search Jurisdictional Legal Knowledge Base (Vector RAG)
+        let legalKnowledge = "";
+        try {
+            const region = params.jurisdiction || "GH"; // Default to GH if not specified
+            const excerpts = await LegalQueryService.getRelevantStatutes(sanitized, region);
+
+            if (excerpts.length > 0) {
+                legalKnowledge = "REGION-SPECIFIC STATUTORY CONTEXT (OFFICIAL GAZETTE):\n" +
+                    excerpts.map(e => `[Source: ${e.title} | URL: ${e.sourceUrl}]\n${e.contentChunk}`).join('\n\n');
+            }
+        } catch (e) {
+            console.warn("Gazette RAG Search Failed:", e);
+        }
+
         const config: any = {
-            systemInstruction: "You are a senior legal assistant specializing in Zero-Knowledge productivity. Provide concise, accurate legal information based on internal documents and global legal research. NEVER give definitive legal advice. Return a JSON object with 'text', 'confidence' (0-1), and 'references' (internal doc IDs).",
+            systemInstruction: "You are a senior LexSovereign legal assistant. Task: Provide accurate legal information based ONLY on the provided Gazette excerpts. Rules: 1. If the information is not in the excerpts, state that you cannot find the specific statutory basis. 2. Always cite the Source URL for every claim. 3. Use a professional, sovereign tone. 4. Return JSON object with 'text', 'confidence', and 'references' (Source URLs).",
             responseMimeType: "application/json",
             responseSchema: {
                 type: Type.OBJECT,
@@ -48,34 +66,6 @@ export class GeminiProvider implements AIProvider {
                 required: ["text", "confidence"]
             }
         };
-
-        if (params.useGlobalSearch) {
-            config.tools = [{ googleSearch: {} }];
-        }
-
-        // 1. PII Sanitization (DAS Engine)
-        const { sanitized, entityMap } = await PiiService.sanitize(params.input, params.jurisdiction);
-
-        // Search Jurisdictional Legal Knowledge Base
-        let legalKnowledge = "";
-        try {
-            const artifacts = await prisma.knowledgeArtifact.findMany({
-                where: {
-                    OR: [
-                        { title: { contains: sanitized, mode: 'insensitive' } },
-                        { content: { contains: sanitized, mode: 'insensitive' } }
-                    ]
-                },
-                take: 3
-            });
-
-            if (artifacts.length > 0) {
-                legalKnowledge = "LEGAL ARCHIVES (OFFICIAL):\n" +
-                    artifacts.map(a => `[Source: ${a.title} (${a.category})]\n${a.content.substring(0, 2000)}...`).join('\n\n');
-            }
-        } catch (e) {
-            console.warn("Knowledge Base Search Failed:", e);
-        }
 
         const prompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${sanitized}`;
 
