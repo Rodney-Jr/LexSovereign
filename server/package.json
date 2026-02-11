@@ -4,10 +4,10 @@
     "description": "Sovereign Control Plane API",
     "main": "dist/index.js",
     "prisma": {
-        "seed": "node dist/scripts/seed.js"
+        "seed": "node dist/scripts/seed.js || node server/dist/scripts/seed.js"
     },
     "scripts": {
-        "start": "npx prisma migrate deploy && npx prisma db seed && node dist/index.js",
+        "start": "npx prisma migrate deploy && (node server/dist/scripts/seed.js || node dist/scripts/seed.js) && (node server/dist/index.js || node dist/index.js)",
         "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
         "build": "npx prisma generate && tsc",
         "seed": "npx prisma db seed",

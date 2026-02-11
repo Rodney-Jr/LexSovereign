@@ -43,4 +43,4 @@ ENV NODE_ENV=production
 
 
 # Start the server with migrations and seeding
-CMD ["sh", "-c", "npx prisma migrate deploy && node server/dist/scripts/seed.js && node server/dist/index.js"]
+CMD ["npm", "start"]
