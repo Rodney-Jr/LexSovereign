@@ -23,7 +23,7 @@ export class AnthropicProvider implements AIProvider {
         if (params.killSwitchActive) throw new Error("KILL_SWITCH_ACTIVE");
 
         const anthropic = this.getClient();
-        const { sanitized } = PiiService.sanitize(params.input);
+        const { sanitized } = await PiiService.sanitize(params.input, params.jurisdiction);
 
         const contextDocs = params.matterId
             ? params.documents.filter(d => d.matterId === params.matterId)

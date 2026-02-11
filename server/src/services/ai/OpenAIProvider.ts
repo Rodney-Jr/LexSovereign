@@ -23,7 +23,7 @@ export class OpenAIProvider implements AIProvider {
         if (params.killSwitchActive) throw new Error("KILL_SWITCH_ACTIVE");
 
         const openai = this.getClient();
-        const { sanitized } = PiiService.sanitize(params.input);
+        const { sanitized } = await PiiService.sanitize(params.input, params.jurisdiction);
 
         // Context Building (Similar to Gemini but adapted for OpenAI layout)
         const contextDocs = params.matterId
