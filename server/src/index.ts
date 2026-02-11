@@ -88,10 +88,10 @@ app.use('/api/chatbot', authenticateToken, chatbotRouter);
 app.use('/api/tenant', authenticateToken, tenantRouter);
 
 // Serve static files from the React app
-// Priority 1: Check root dist (Standard Vite)
-app.use(express.static(path.join(__dirname, '../../dist')));
+// Priority 1: Check root dist (Standard Vite) - DISABLE default index.html serving here
+app.use(express.static(path.join(__dirname, '../../dist'), { index: false }));
 // Priority 2: Check server/public (Legacy/Fallback)
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public'), { index: false }));
 
 import fs from 'fs';
 
@@ -105,8 +105,10 @@ app.get('*', (req, res) => {
             let html = fs.readFileSync(distPath, 'utf8');
 
             // Inject runtime variables (Fixes build-time environment variable issues)
-            const googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+            const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
             const sovereignPin = process.env.SOVEREIGN_PIN || '';
+
+            console.log(`[Runtime Injection] URL: ${req.url} | ClientID: ${googleClientId ? 'PRESENT' : 'MISSING'}`);
 
             const injection = `
     <script>
@@ -115,8 +117,8 @@ app.get('*', (req, res) => {
       console.log("[Runtime] Credentials injected into client pulse.");
     </script>`;
 
-            // Insert before closing head tag
-            html = html.replace('</head>', `${injection}</head>`);
+            // Insert into head using regex for robustness
+            html = html.replace(/<head>/i, `<head>${injection}`);
 
             res.send(html);
         } catch (error) {
@@ -124,7 +126,6 @@ app.get('*', (req, res) => {
             res.status(500).send("Internal Server Error");
         }
     } else {
-        // Fallback to simpler error or message if dist isn't built yet
         res.status(404).send("Application dist not found. Please run 'npm run build' first.");
     }
 });
