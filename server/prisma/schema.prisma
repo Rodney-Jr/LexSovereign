@@ -55,7 +55,7 @@ model User {
 
 model Role {
   id          String       @id @default(uuid())
-  name        String       @unique // e.g., "TENANT_ADMIN"
+  name        String       // e.g., "TENANT_ADMIN"
   description String?
   isSystem    Boolean      @default(false) // System roles cannot be deleted
   
@@ -65,6 +65,8 @@ model Role {
 
   tenantId    String?      // Null = Global Role, Set = Custom Tenant Role
   tenant      Tenant?      @relation(fields: [tenantId], references: [id])
+
+  @@unique([name, tenantId])
 }
 
 model Permission {

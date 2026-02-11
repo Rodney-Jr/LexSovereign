@@ -39,98 +39,99 @@ export class TenantService {
         const tenantId = randomUUID();
 
         // Transaction ensures atomicity - no half-baked tenants
-        await prisma.$transaction(async (tx) => {
-
-            // 1. Create Tenant
-            const tenant = await tx.tenant.create({
-                data: {
-                    id: tenantId,
-                    name,
-                    plan,
-                    primaryRegion: region,
-                    appMode
-                }
-            });
-
-            // 2. Create Roles (TENANT_ADMIN, INTERNAL_COUNSEL)
-            // We assume permissions are already seeded in the system (global/system resources)
-
-            const adminRole = await tx.role.create({
-                data: {
-                    name: 'TENANT_ADMIN',
-                    description: 'Full access to tenant resources',
-                    isSystem: true,
-                    tenantId: tenant.id,
-                    permissions: {
-                        connect: [
-                            { id: 'manage_tenant' }, { id: 'manage_users' }, { id: 'manage_roles' },
-                            { id: 'read_billing' }, { id: 'read_all_audits' }, { id: 'create_matter' }
-                            // Add more default permissions as needed or fetch from a 'template'
-                        ]
+        try {
+            await prisma.$transaction(async (tx) => {
+                // ... (rest of the transaction logic remains unchanged)
+                // 1. Create Tenant
+                const tenant = await tx.tenant.create({
+                    data: {
+                        id: tenantId,
+                        name,
+                        plan,
+                        primaryRegion: region,
+                        appMode
                     }
-                }
-            });
+                });
 
-            const userRole = await tx.role.create({
-                data: {
-                    name: process.env.DEFAULT_USER_ROLE || 'INTERNAL_COUNSEL',
-                    description: 'Standard access to matters and documents',
-                    isSystem: true,
-                    tenantId: tenant.id,
-                    permissions: {
-                        connect: [
-                            { id: 'create_matter' }, { id: 'read_assigned_matter' },
-                            { id: 'create_draft' }, { id: 'edit_draft' }
-                        ]
+                // 2. Create Roles (TENANT_ADMIN, INTERNAL_COUNSEL)
+                const adminRole = await tx.role.create({
+                    data: {
+                        name: 'TENANT_ADMIN',
+                        description: 'Full access to tenant resources',
+                        isSystem: true,
+                        tenantId: tenant.id,
+                        permissions: {
+                            connect: [
+                                { id: 'manage_tenant' }, { id: 'manage_users' }, { id: 'manage_roles' },
+                                { id: 'read_billing' }, { id: 'read_all_audits' }, { id: 'create_matter' }
+                            ]
+                        }
                     }
-                }
-            });
+                });
 
-            // 3. Create Admin User
-            await tx.user.create({
-                data: {
-                    id: adminId,
-                    email: adminEmail,
-                    name: adminName,
-                    passwordHash,
-                    tenantId: tenant.id,
-                    roleId: adminRole.id,
-                    region: region, // Admin sits in primary region
-                    roleSeniority: 10.0
-                }
-            });
+                const userRole = await tx.role.create({
+                    data: {
+                        name: process.env.DEFAULT_USER_ROLE || 'INTERNAL_COUNSEL',
+                        description: 'Standard access to matters and documents',
+                        isSystem: true,
+                        tenantId: tenant.id,
+                        permissions: {
+                            connect: [
+                                { id: 'create_matter' }, { id: 'read_assigned_matter' },
+                                { id: 'create_draft' }, { id: 'edit_draft' }
+                            ]
+                        }
+                    }
+                });
 
-            // 4. Create Chatbot Config
-            await tx.chatbotConfig.create({
-                data: {
-                    tenantId: tenant.id,
-                    botName: `${name} Assistant`,
-                    welcomeMessage: `Welcome to ${name}. How can I assist you securely today?`,
-                    systemInstruction: `You are the AI assistant for ${name}. Act with professional legal decorum.`,
-                    channels: { webWidget: false, whatsapp: false },
-                    knowledgeBaseIds: []
-                }
-            });
+                // 3. Create Admin User
+                await tx.user.create({
+                    data: {
+                        id: adminId,
+                        email: adminEmail,
+                        name: adminName,
+                        passwordHash,
+                        tenantId: tenant.id,
+                        roleId: adminRole.id,
+                        region: region,
+                        roleSeniority: 10.0
+                    }
+                });
 
-            // 5. Create Default Branding
-            await tx.brandingProfile.create({
-                data: {
-                    tenantId: tenant.id,
-                    name: 'Default Brand',
-                    primaryColor: '#4F46E5',
-                    secondaryColor: '#6366F1',
-                    primaryFont: 'Times New Roman',
-                    headerText: `${name} - Confidential`,
-                    footerText: `Generated by ${name} Legal Enclave`,
-                    watermarkText: 'CONFIDENTIAL'
-                }
+                // 4. Create Chatbot Config
+                await tx.chatbotConfig.create({
+                    data: {
+                        tenantId: tenant.id,
+                        botName: `${name} Assistant`,
+                        welcomeMessage: `Welcome to ${name}. How can I assist you securely today?`,
+                        systemInstruction: `You are the AI assistant for ${name}. Act with professional legal decorum.`,
+                        channels: { webWidget: false, whatsapp: false },
+                        knowledgeBaseIds: []
+                    }
+                });
+
+                // 5. Create Default Branding
+                await tx.brandingProfile.create({
+                    data: {
+                        tenantId: tenant.id,
+                        name: 'Default Brand',
+                        primaryColor: '#4F46E5',
+                        secondaryColor: '#6366F1',
+                        primaryFont: 'Times New Roman',
+                        headerText: `${name} - Confidential`,
+                        footerText: `Generated by ${name} Legal Enclave`,
+                        watermarkText: 'CONFIDENTIAL'
+                    }
+                });
             });
-        });
+            console.log(`✅ Database transaction successful for tenant: ${tenantId}`);
+        } catch (error) {
+            console.error("❌ Provisioning Transaction Failed:", error);
+            throw error;
+        }
 
         // Determine Login URL (Environment specific)
         const baseUrl = process.env.PLATFORM_URL || 'http://localhost:3000';
-        // In a real sub-domain app, this might be `https://${slug}.lexsovereign.com`
-        // For MVP, we point them to the main login
         const loginUrl = `${baseUrl}/login?email=${encodeURIComponent(adminEmail)}`;
 
         return {

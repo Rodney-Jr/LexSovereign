@@ -23,17 +23,21 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
         e.preventDefault();
         setIsLoading(true);
         try {
-            const token = localStorage.getItem('lexSovereign_token') || localStorage.getItem('token') || '';
+            const sessionData = localStorage.getItem('lexSovereign_session');
+            const token = sessionData ? JSON.parse(sessionData).token : '';
+
             const data = await authorizedFetch('/api/platform/provision', {
                 method: 'POST',
                 token,
                 body: JSON.stringify(formData)
             });
+
             if (data && !data.error) {
                 setResult(data.details);
                 setStep(2);
             } else {
-                alert(data.error || 'Provisioning failed');
+                const errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+                alert(errorMsg || 'Provisioning failed');
             }
         } catch (err) {
             console.error(err);

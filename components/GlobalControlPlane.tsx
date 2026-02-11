@@ -51,7 +51,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
    React.useEffect(() => {
       const fetchStats = async () => {
          try {
-            const token = localStorage.getItem('token') || '';
+            const sessionData = localStorage.getItem('lexSovereign_session');
+            const token = sessionData ? JSON.parse(sessionData).token : '';
             const data = await authorizedFetch('/api/platform/stats', { token });
             if (!data.error) {
                setStats((prev: any) => ({ ...prev, ...data }));
@@ -401,7 +402,8 @@ const LeadsTab = () => {
    React.useEffect(() => {
       const fetchLeads = async () => {
          try {
-            const token = localStorage.getItem('token') || '';
+            const sessionData = localStorage.getItem('lexSovereign_session');
+            const token = sessionData ? JSON.parse(sessionData).token : '';
             const data = await authorizedFetch('/api/leads', { token });
             if (Array.isArray(data)) setLeads(data);
          } catch (e) {
@@ -413,7 +415,8 @@ const LeadsTab = () => {
 
    const updateStatus = async (id: string, status: string) => {
       try {
-         const token = localStorage.getItem('token') || '';
+         const sessionData = localStorage.getItem('lexSovereign_session');
+         const token = sessionData ? JSON.parse(sessionData).token : '';
          await authorizedFetch(`/api/leads/${id}/status`, {
             method: 'PATCH',
             token,
