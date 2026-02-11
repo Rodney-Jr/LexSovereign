@@ -109,6 +109,7 @@ async function main() {
             create: p
         });
     }
+    console.log('✅ Permissions seeded.');
 
     console.log('🌱 Seeding System Roles...');
     for (const r of ROLES) {
@@ -118,6 +119,7 @@ async function main() {
         });
 
         if (!role) {
+            console.log(`   creating system role: ${r.name}`);
             role = await prisma.role.create({
                 data: {
                     name: r.name,
@@ -130,6 +132,7 @@ async function main() {
             });
         }
     }
+    console.log('✅ System Roles seeded.');
 
     // Tenant & User Seeding using Service
     console.log('🌱 Provisioning Default Tenant via Service...');
@@ -160,13 +163,18 @@ async function main() {
         console.log(`✅ Admin Credentials: ${result.tempPassword}`);
 
         // Update the admin user to have specific properties not covered by provisioner (like credentials)
+        // Update the admin user to have specific properties not covered by provisioner
+        const globalAdminRole = await prisma.role.findFirst({ where: { name: 'GLOBAL_ADMIN', isSystem: true, tenantId: null } });
+        if (!globalAdminRole) {
+            console.error('❌ Critical: GLOBAL_ADMIN role not found after seeding!');
+            throw new Error('GLOBAL_ADMIN role missing.');
+        }
+
         await prisma.user.update({
             where: { id: result.adminId },
             data: {
-                roleString: 'GLOBAL_ADMIN', // Check if we want this? Seed says GLOBAL_ADMIN.
-                // Provisioner creates TENANT_ADMIN. We should upgrade him.
-                // Upgrade to admin using found global admin role
-                role: { connect: { id: (await prisma.role.findFirst({ where: { name: 'GLOBAL_ADMIN', isSystem: true, tenantId: null } }))?.id } },
+                roleString: 'GLOBAL_ADMIN',
+                role: { connect: { id: globalAdminRole.id } },
                 jurisdictionPins: ['GH_ACC_1'],
                 credentials: [{ type: 'SYSTEM_ADMIN', id: 'SA-001' }]
             }
