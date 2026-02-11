@@ -324,12 +324,13 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 export default function WrappedApp() {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || (window as any)._GOOGLE_CLIENT_ID;
+  const hasValidGoogleClientId = googleClientId && googleClientId !== 'v0-google-client-id' && !googleClientId.includes('placeholder');
 
-  if (!googleClientId || googleClientId === 'v0-google-client-id') {
-    console.error("[Security] Google Client ID is missing or invalid. Authentication will fail.");
+  if (!hasValidGoogleClientId) {
+    console.warn("[Auth] Google OAuth is disabled - no valid Client ID found. Email/password login is still available.");
   }
 
-  return (
+  const AppWrapper = hasValidGoogleClientId ? (
     <GoogleOAuthProvider clientId={googleClientId}>
       <PermissionProvider>
         <ErrorBoundary>
@@ -337,5 +338,13 @@ export default function WrappedApp() {
         </ErrorBoundary>
       </PermissionProvider>
     </GoogleOAuthProvider>
+  ) : (
+    <PermissionProvider>
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
+    </PermissionProvider>
   );
+
+  return AppWrapper;
 }

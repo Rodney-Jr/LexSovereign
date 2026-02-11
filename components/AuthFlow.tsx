@@ -327,7 +327,8 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                         {isProcessing ? "Authenticating..." : isLogin ? "Sign In" : "Register Silo"}
                      </button>
 
-                     {isLogin && (
+
+                     {isLogin && (window as any).GoogleOAuthProvider && (
                         <div className="space-y-4">
                            <div className="flex items-center gap-4 py-2">
                               <div className="h-[1px] bg-slate-800 flex-1"></div>
