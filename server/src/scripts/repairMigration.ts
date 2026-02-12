@@ -7,20 +7,22 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function repair() {
-    console.log("🛠️ Starting Migration Repair...");
+    console.log("🛠️ Starting Robust Migration Repair...");
 
     const failedMigrationName = "20260212054430_add_gazette_vector";
 
+    // 1. Try to enable pgvector extension
     try {
-        // 1. Try to enable pgvector extension (Superuser might be needed, but we try anyway)
         console.log("🐘 Attempting to enable pgvector extension...");
         await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS vector;`);
         console.log("✅ pgvector extension handled.");
+    } catch (error: any) {
+        console.warn("⚠️ Extension creation failed (Expected on standard Railway PG):", error.message);
+    }
 
-        // 2. Clear failed migration from _prisma_migrations
+    // 2. Clear failed migration from _prisma_migrations
+    try {
         console.log(`🧹 Checking for failed migration: ${failedMigrationName}...`);
-
-        // Check if it exists and is failed (finished_at is null)
         const migration: any[] = await prisma.$queryRawUnsafe(
             `SELECT * FROM "_prisma_migrations" WHERE migration_name = $1`,
             failedMigrationName
@@ -36,10 +38,8 @@ async function repair() {
         } else {
             console.log("ℹ️ No failed migration record found for this version.");
         }
-
     } catch (error: any) {
-        console.error("❌ Repair failed:", error.message);
-        // We don't exit with error here to allow the main process to continue if possible
+        console.error("❌ Failed to clear migration record:", error.message);
     } finally {
         await prisma.$disconnect();
     }
