@@ -36,6 +36,7 @@ import CapacityDashboard from './components/CapacityDashboard';
 import PredictiveOps from './components/PredictiveOps';
 import EngineeringBacklog from './components/EngineeringBacklog';
 import GrowthDashboard from './components/GrowthDashboard';
+import GhanaReviewScreen from './components/GhanaReviewScreen';
 import DecisionTraceLedger from './components/DecisionTraceLedger';
 import { PricingGovernance } from './components/PricingGovernance';
 import LegalDrafting from './components/LegalDrafting';
@@ -246,6 +247,8 @@ const AppContent: React.FC = () => {
         {activeTab === 'workflow' && <MatterWorkflow />}
         {activeTab === 'conflict-check' && <ZkConflictSearch />}
         {activeTab === 'growth' && <GrowthDashboard />}
+        {activeTab === 'sentinel' && <GhanaReviewScreen />}
+        {activeTab === 'sentinel-demo' && <GhanaReviewScreen />}
         {activeTab === 'pricing-calib' && <PricingGovernance />}
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}

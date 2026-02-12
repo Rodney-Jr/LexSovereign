@@ -268,6 +268,15 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
+              {isAllowed('sentinel') && (
+                <NavItem
+                  icon={<ShieldAlert size={18} className="text-brand-primary" />}
+                  label="Ghana Sentinel"
+                  isActive={activeTab === 'sentinel'}
+                  onClick={() => setActiveTab('sentinel')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
               {isAllowed('marketplace') && (
                 <NavItem
                   icon={<ShoppingBag size={18} className="text-brand-primary" />}
