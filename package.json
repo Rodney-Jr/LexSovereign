@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "npm run db:repair && npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)",
-    "db:repair": "node server/dist/scripts/repairMigration.js"
+    "start": "npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)"
   },
   "dependencies": {
     "@google/genai": "^1.35.0",
