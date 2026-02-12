@@ -40,14 +40,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const hasAnyPermission = React.useCallback((permissionIds: string[]): boolean => {
         if (role === 'GLOBAL_ADMIN') return true;
-        const result = permissionIds.some(id => permissions.includes(id));
-
-        // Debug logging for tenant admin
-        if (role === 'TENANT_ADMIN' && !result) {
-            console.log(`[Permissions] TENANT_ADMIN missing permissions. Required: [${permissionIds.join(', ')}], Has: [${permissions.join(', ')}]`);
-        }
-
-        return result;
+        return permissionIds.some(id => permissions.includes(id));
     }, [role, permissions]);
 
     const updatePermissions = React.useCallback((perms: string[]) => {
