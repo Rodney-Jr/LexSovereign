@@ -8,6 +8,7 @@
     "build": "vite build",
     "start": "npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)"
   },
+  "//": "Updated 2026-02-12: Removed db:repair to prevent Railway timeouts",
   "dependencies": {
     "@google/genai": "^1.35.0",
     "@react-oauth/google": "^0.13.4",
