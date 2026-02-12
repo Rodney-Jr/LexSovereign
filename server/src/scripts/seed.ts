@@ -832,3 +832,4 @@ export async function seedDatabase() {
     } finally {
         await prisma.$disconnect();
     }
+}
