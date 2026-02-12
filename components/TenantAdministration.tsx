@@ -552,7 +552,7 @@ const TenantAdministration: React.FC = () => {
                         <div className="space-y-6 animate-in slide-in-from-bottom-4">
                            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-2">
                               <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                 <LinkIcon size={12} /> Sovereign Practitioner Link
+                                 <LinkIcon size={12} /> Sovereign {inviteForm.roleName === 'CLIENT' ? 'Client' : 'Practitioner'} Link
                               </p>
                               <p className="text-xs font-mono text-blue-400 break-all leading-relaxed">
                                  {generatedLink}
@@ -579,12 +579,29 @@ const TenantAdministration: React.FC = () => {
                         </div>
                      ) : (
                         <div className="space-y-6">
+
+                           {/* User Type Toggle */}
+                           <div className="flex p-1 bg-slate-950 border border-slate-800 rounded-xl mb-6">
+                              <button
+                                 onClick={() => setInviteForm(prev => ({ ...prev, roleName: availableRoles.length > 0 ? availableRoles[0].name : 'SENIOR_COUNSEL' }))}
+                                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${inviteForm.roleName !== 'CLIENT' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                              >
+                                 Internal Member
+                              </button>
+                              <button
+                                 onClick={() => setInviteForm(prev => ({ ...prev, roleName: 'CLIENT' }))}
+                                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${inviteForm.roleName === 'CLIENT' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                              >
+                                 External Client
+                              </button>
+                           </div>
+
                            <div className="space-y-2">
                               <label htmlFor="invite-email" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
                               <input
                                  id="invite-email"
                                  type="email"
-                                 placeholder="personnel@organization.internal"
+                                 placeholder={inviteForm.roleName === 'CLIENT' ? "client@external.org" : "personnel@organization.internal"}
                                  className={`w-full bg-slate-950 border rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 transition-all ${emailError ? 'border-red-500 focus:ring-red-500' : 'border-slate-800 focus:ring-purple-500'
                                     }`}
                                  value={inviteForm.email}
@@ -600,27 +617,39 @@ const TenantAdministration: React.FC = () => {
                                  </p>
                               )}
                            </div>
-                           <div className="space-y-2">
-                              <label htmlFor="enclave-role" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Enclave Role</label>
-                              <select
-                                 id="enclave-role"
-                                 title="Enclave Role"
-                                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none text-slate-300"
-                                 value={inviteForm.roleName}
-                                 onChange={e => setInviteForm({ ...inviteForm, roleName: e.target.value })}
-                              >
-                                 {isLoadingRoles ? (
-                                    <option disabled>Loading system roles...</option>
-                                 ) : availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').length === 0 ? (
-                                    <option disabled>No roles available</option>
-                                 ) : (
-                                    availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').map(role => (
-                                       <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>
-                                    ))
-                                 )}
-                                 <option value="CLIENT">CLIENT</option>
-                              </select>
-                           </div>
+
+                           {inviteForm.roleName !== 'CLIENT' && (
+                              <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                 <label htmlFor="enclave-role" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Enclave Role</label>
+                                 <select
+                                    id="enclave-role"
+                                    title="Enclave Role"
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none text-slate-300"
+                                    value={inviteForm.roleName}
+                                    onChange={e => setInviteForm({ ...inviteForm, roleName: e.target.value })}
+                                 >
+                                    {isLoadingRoles ? (
+                                       <option disabled>Loading system roles...</option>
+                                    ) : availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').length === 0 ? (
+                                       <option disabled>No roles available</option>
+                                    ) : (
+                                       availableRoles.filter(r => !r.isSystem || r.name !== 'GLOBAL_ADMIN').map(role => (
+                                          <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>
+                                       ))
+                                    )}
+                                 </select>
+                              </div>
+                           )}
+
+                           {inviteForm.roleName === 'CLIENT' && (
+                              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                                 <p className="text-xs text-purple-200 leading-relaxed">
+                                    <strong className="block mb-1 text-purple-400">Client Portal Access</strong>
+                                    Invited clients will have restricted access to the Client Portal to view shared documents and real-time status updates. They cannot access internal matters or sensitive firm data.
+                                 </p>
+                              </div>
+                           )}
+
                            <button
                               onClick={generateInvite}
                               disabled={isGenerating}

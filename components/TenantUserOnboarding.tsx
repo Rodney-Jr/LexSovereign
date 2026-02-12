@@ -124,11 +124,14 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
 
          <div className="w-full max-w-xl z-10 space-y-8 animate-in fade-in duration-700">
             <div className="text-center space-y-4">
+               {/* Dynamic Header Based on Role */}
                <div className="inline-flex items-center gap-3 bg-slate-900 border border-slate-800 px-5 py-2.5 rounded-2xl shadow-2xl">
                   <div className="p-2 bg-emerald-500/20 rounded-xl">
                      <ShieldCheck className="text-emerald-400" size={24} />
                   </div>
-                  <span className="font-bold text-2xl tracking-tight text-white">Practitioner Onboarding</span>
+                  <span className="font-bold text-2xl tracking-tight text-white">
+                     {inviteContext?.roleName === 'CLIENT' ? 'Client Portal Access' : 'Practitioner Onboarding'}
+                  </span>
                </div>
                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]">Sovereign Silo Enrollment: PRIMARY-SILO-01</p>
                {onBack && step === 1 && (
@@ -199,7 +202,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                            </div>
                            <div className="text-right">
                               <p className="text-[9px] font-bold text-slate-600 uppercase">Role</p>
-                              <span className="text-[9px] bg-slate-800 px-2 py-0.5 rounded-lg text-slate-400 font-bold uppercase">{inviteContext.roleName}</span>
+                              <span className="text-[9px] bg-slate-800 px-2 py-0.5 rounded-lg text-slate-400 font-bold uppercase">{inviteContext.roleName.replace('_', ' ')}</span>
                            </div>
                         </div>
                         <button
@@ -212,12 +215,14 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
 
                      <div className="space-y-4">
                         <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Legal Practitioner Name</label>
+                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+                              {inviteContext.roleName === 'CLIENT' ? 'Full Name' : 'Legal Practitioner Name'}
+                           </label>
                            <input
                               value={name}
                               onChange={e => setName(e.target.value)}
                               className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium"
-                              placeholder="e.g. Practitioner Name, Esq."
+                              placeholder={inviteContext.roleName === 'CLIENT' ? "e.g. John Doe" : "e.g. Practitioner Name, Esq."}
                            />
                         </div>
                         <div className="space-y-2">
@@ -260,14 +265,22 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                      <div className="space-y-2 text-center">
                         <h3 className="text-2xl font-bold text-white flex items-center justify-center gap-3">
                            <ShieldCheck className="text-emerald-400" size={28} />
-                           Professional Standards
+                           {inviteContext?.roleName === 'CLIENT' ? 'Access Agreement' : 'Professional Standards'}
                         </h3>
-                        <p className="text-slate-400 text-sm">Review and acknowledge the jurisdictional ethical standards for this silo.</p>
+                        <p className="text-slate-400 text-sm">
+                           {inviteContext?.roleName === 'CLIENT'
+                              ? "Review and acknowledge your access rights to the Sovereign Client Portal."
+                              : "Review and acknowledge the jurisdictional ethical standards for this silo."
+                           }
+                        </p>
                      </div>
                      <div className="bg-slate-950 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-inner">
                         <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
                            <p className="text-xs text-slate-300 leading-relaxed italic text-center">
-                              "I hereby acknowledge and agree to abide by the jurisdictional professional standards and ethical obligations required for access to this Sovereign Silo."
+                              {inviteContext?.roleName === 'CLIENT'
+                                 ? '"I hereby agree to access this portal solely for the purpose of viewing my legal matters and agree to keep my credentials secure."'
+                                 : '"I hereby acknowledge and agree to abide by the jurisdictional professional standards and ethical obligations required for access to this Sovereign Silo."'
+                              }
                            </p>
                         </div>
 
@@ -277,7 +290,9 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                            </div>
                            <input type="checkbox" className="hidden" checked={affidavitSigned} onChange={() => setAffidavitSigned(!affidavitSigned)} />
                            <div className="flex-1">
-                              <p className="text-xs font-bold text-slate-300">I Agree to the {isFirm ? 'Ethical Use Affidavit' : 'Compliance Standards'}</p>
+                              <p className="text-xs font-bold text-slate-300">
+                                 I Agree to the {inviteContext?.roleName === 'CLIENT' ? 'Client Access Terms' : (isFirm ? 'Ethical Use Affidavit' : 'Compliance Standards')}
+                              </p>
                               <p className="text-[10px] text-slate-500">Electronically signing version 2.4.1</p>
                            </div>
                         </label>

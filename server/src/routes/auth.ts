@@ -127,18 +127,7 @@ router.post('/resolve-invite', async (req, res) => {
     }
 });
 
-// DEBUG: Check System Roles
-router.get('/debug-roles', async (req, res) => {
-    try {
-        const roles = await prisma.role.findMany({
-            where: { isSystem: true },
-            select: { id: true, name: true, tenantId: true }
-        });
-        res.json({ systemRoles: roles, count: roles.length });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
+
 
 // 3. Join Silo (Practitioner Completion) - PUBLIC
 router.post('/join-silo', async (req, res) => {
