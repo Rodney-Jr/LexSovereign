@@ -17,7 +17,6 @@ export const initCronJobs = () => {
             console.error('[Cron] Daily rate sync failed:', error);
         }
     }, {
-        scheduled: true,
         timezone: "UTC"
     });
 
