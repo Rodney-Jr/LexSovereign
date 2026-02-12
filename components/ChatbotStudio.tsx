@@ -203,7 +203,24 @@ const ChatbotStudio: React.FC = () => {
               <h4 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
                 <Database size={16} className="text-emerald-400" /> Knowledge Base Training
               </h4>
-              <button className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1 hover:underline">
+              <button
+                onClick={() => {
+                  const title = prompt("Enter document title:");
+                  if (!title) return;
+                  const content = prompt("Enter document content:");
+                  if (!content) return;
+                  const category = prompt("Enter category (OnboardingProcess, PracticeArea, Faq):", "Faq");
+                  const newDoc: KnowledgeArtifact = {
+                    id: `k${knowledge.length + 1}`,
+                    title,
+                    category: category || 'Faq',
+                    content,
+                    lastIndexed: 'Just now'
+                  };
+                  setKnowledge([...knowledge, newDoc]);
+                }}
+                className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1 hover:underline cursor-pointer"
+              >
                 <Plus size={14} /> Add Document
               </button>
             </div>
