@@ -12,7 +12,7 @@
         "build": "npx prisma generate && tsc",
         "seed": "npx prisma db seed",
         "seed:templates": "ts-node src/scripts/seedTemplates.ts",
-        "db:repair": "ts-node src/scripts/repairMigration.ts"
+        "db:repair": "node server/dist/scripts/repairMigration.js || node dist/scripts/repairMigration.js || ts-node src/scripts/repairMigration.ts"
     },
     "dependencies": {
         "@anthropic-ai/sdk": "^0.74.0",
