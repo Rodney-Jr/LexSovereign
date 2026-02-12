@@ -17,7 +17,24 @@ export interface GazetteExcerpt {
 
 export class LegalQueryService {
     /**
-     * Performs a vector similarity search to find the most relevant statutes.
+     * Performs a cosine similarity calculation between two vectors.
+     */
+    private static cosineSimilarity(v1: number[], v2: number[]): number {
+        let dotProduct = 0;
+        let normA = 0;
+        let normB = 0;
+        for (let i = 0; i < v1.length; i++) {
+            dotProduct += v1[i] * v2[i];
+            normA += v1[i] * v1[i];
+            normB += v2[i] * v2[i];
+        }
+        if (normA === 0 || normB === 0) return 0;
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+    }
+
+    /**
+     * Performs Retrieval-Augmented Generation (RAG) by fetching candidates
+     * and calculating similarity in-memory (Standard PG Fallback).
      */
     static async getRelevantStatutes(query: string, region: string): Promise<GazetteExcerpt[]> {
         try {
@@ -28,28 +45,33 @@ export class LegalQueryService {
                 encoding_format: "float",
             });
             const queryEmbedding = response.data[0].embedding;
-            const embeddingSql = `[${queryEmbedding.join(',')}]`;
 
-            // 2. Perform Cosine Similarity search using Prisma raw SQL
-            // Using the <=> operator for cosine distance (1 - similarity)
-            const results: any[] = await prisma.$queryRawUnsafe(`
-        SELECT 
-          "contentChunk", 
-          "sourceUrl", 
-          title, 
-          1 - (embedding <=> $1::vector) as score
-        FROM "GazetteEmbedding"
-        WHERE region = $2
-        ORDER BY embedding <=> $1::vector
-        LIMIT 3;
-      `, embeddingSql, region);
+            // 2. Fetch candidates for the region from standard JSON storage
+            const candidates = await prisma.gazetteEmbedding.findMany({
+                where: { region },
+                select: {
+                    contentChunk: true,
+                    sourceUrl: true,
+                    title: true,
+                    embedding: true
+                }
+            });
 
-            return results.map(r => ({
-                contentChunk: r.contentChunk,
-                sourceUrl: r.sourceUrl,
-                title: r.title,
-                score: r.score
-            }));
+            // 3. Calculate similarity and sort in-memory
+            const results = candidates
+                .map(c => {
+                    const docEmbedding = c.embedding as unknown as number[];
+                    return {
+                        contentChunk: c.contentChunk,
+                        sourceUrl: c.sourceUrl || "",
+                        title: c.title,
+                        score: this.cosineSimilarity(queryEmbedding, docEmbedding)
+                    };
+                })
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3);
+
+            return results;
         } catch (error) {
             console.error("❌ LegalQueryService Error:", error);
             return [];

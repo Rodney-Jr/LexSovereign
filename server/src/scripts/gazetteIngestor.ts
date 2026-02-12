@@ -10,14 +10,7 @@ dotenv.config();
 const prisma = new PrismaClient();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-async function enableVectorExtension() {
-    try {
-        await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS vector;`);
-        console.log("✅ pgvector extension enabled or already exists.");
-    } catch (error) {
-        console.error("❌ Failed to enable pgvector. Ensure your database user has superuser or appropriate permissions.", error);
-    }
-}
+
 
 async function generateEmbedding(text: string) {
     const response = await openai.embeddings.create({
@@ -50,8 +43,6 @@ function chunkText(text: string, chunkSize: number = 800): string[] {
 }
 
 export async function ingestGazette(url: string, region: string, title: string) {
-    await enableVectorExtension();
-
     console.log(`📥 Fetching PDF from: ${url}...`);
     const response = await axios.get(url, { responseType: 'arraybuffer' });
     const data = await pdf(response.data);
@@ -67,15 +58,15 @@ export async function ingestGazette(url: string, region: string, title: string) 
 
         const embedding = await generateEmbedding(chunk);
 
-        // Prisma doesn't support vector types directly in create(), use raw SQL
-        const embeddingSql = `[${embedding.join(',')}]`;
-        const id = randomUUID();
-
-        await prisma.$executeRawUnsafe(
-            `INSERT INTO "GazetteEmbedding" (id, region, title, "contentChunk", embedding, "sourceUrl", "updatedAt", "createdAt") 
-       VALUES ($1, $2, $3, $4, $5::vector, $6, NOW(), NOW())`,
-            id, region, title, chunk, embeddingSql, url
-        );
+        await prisma.gazetteEmbedding.create({
+            data: {
+                region,
+                title,
+                contentChunk: chunk,
+                embedding: embedding as any, // Store as JSON array
+                sourceUrl: url
+            }
+        });
     }
 
     console.log(`✅ Ingestion complete for ${title} (${region}).`);

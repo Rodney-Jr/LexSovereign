@@ -1,6 +1,3 @@
--- CreateExtension
-CREATE EXTENSION IF NOT EXISTS vector;
-
 -- AlterTable
 ALTER TABLE "DocumentTemplate" ALTER COLUMN "structure" DROP DEFAULT;
 
@@ -10,7 +7,7 @@ CREATE TABLE "GazetteEmbedding" (
     "region" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "contentChunk" TEXT NOT NULL,
-    "embedding" vector(1536),
+    "embedding" JSONB,
     "sourceUrl" TEXT,
     "metadata" JSONB DEFAULT '{}',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

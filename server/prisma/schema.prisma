@@ -317,7 +317,7 @@ model GazetteEmbedding {
   region          String   // GH, NG, KE
   title           String
   contentChunk    String   // The text excerpt
-  embedding       Unsupported("vector(1536)")? // pgvector embedding (1536 dims for OpenAI)
+  embedding       Json?    // Standard JSON storage for raw embeddings
   sourceUrl       String?  // Reference to original PDF
   metadata        Json?    @default("{}")
 
