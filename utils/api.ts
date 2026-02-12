@@ -19,7 +19,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     const { token, ...fetchOptions } = options;
 
     const headers = new Headers(fetchOptions.headers || {});
-    if (token) {
+    if (token && token !== 'undefined') {
         headers.set('Authorization', `Bearer ${token}`);
     }
 

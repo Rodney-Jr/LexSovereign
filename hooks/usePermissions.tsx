@@ -33,16 +33,12 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         }
     }, []);
 
-    const hasPermission = (permissionId: string): boolean => {
-        // Global Admin bypass - Assuming GLOBAL_ADMIN has all permissions conceptually, 
-        // or rely on the explicit list. Let's rely on explicit list to be safe, 
-        // unless the list is missing 'manage_platform' which implies superuser.
+    const hasPermission = React.useCallback((permissionId: string): boolean => {
         if (role === 'GLOBAL_ADMIN') return true;
-
         return permissions.includes(permissionId);
-    };
+    }, [role, permissions]);
 
-    const hasAnyPermission = (permissionIds: string[]): boolean => {
+    const hasAnyPermission = React.useCallback((permissionIds: string[]): boolean => {
         if (role === 'GLOBAL_ADMIN') return true;
         const result = permissionIds.some(id => permissions.includes(id));
 
@@ -52,22 +48,30 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         }
 
         return result;
-    };
+    }, [role, permissions]);
 
-    const updatePermissions = (perms: string[]) => {
-        setPermissions(perms);
-        // Determine if we should save this back to session? Usually handled by auth flow, but good to keep sync.
-    };
+    const updatePermissions = React.useCallback((perms: string[]) => {
+        setPermissions(prev => {
+            if (JSON.stringify(prev) === JSON.stringify(perms)) return prev;
+            return perms;
+        });
+    }, []);
+
+    const updateRole = React.useCallback((newRole: string | null) => {
+        setRole(prev => (prev === newRole ? prev : newRole));
+    }, []);
+
+    const contextValue = React.useMemo(() => ({
+        permissions,
+        role,
+        setPermissions: updatePermissions,
+        setRole: updateRole,
+        hasPermission,
+        hasAnyPermission
+    }), [permissions, role, updatePermissions, updateRole, hasPermission, hasAnyPermission]);
 
     return (
-        <PermissionContext.Provider value={{
-            permissions,
-            role,
-            setPermissions: updatePermissions,
-            setRole,
-            hasPermission,
-            hasAnyPermission
-        }}>
+        <PermissionContext.Provider value={contextValue}>
             {children}
         </PermissionContext.Provider>
     );

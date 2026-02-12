@@ -35,29 +35,31 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         localStorage.setItem('lexSovereign_session', JSON.stringify(sessionToSave));
 
         // 2. Immediate Pin Handshake (Crucial for Railway enclave access)
-        console.log(`[Auth] Initiating PIN handshake for user: ${session.userId}...`);
-        try {
-            const data = await authorizedFetch('/api/auth/pin', {
-                token: session.token
-            });
-            if (data && data.pin) {
-                localStorage.setItem('lexSovereign_pin', data.pin);
-                console.log("[Auth] Sovereign Pin Handshake Successful");
-            } else {
-                console.warn("[Auth] PIN handshake returned no data");
+        // Optimization: Only handshake if we don't have a valid PIN or if token changed
+        const existingPin = localStorage.getItem('lexSovereign_pin');
+        if (!existingPin || existingPin === 'undefined') {
+            console.log(`[Auth] Initiating PIN handshake for user: ${session.userId}...`);
+            try {
+                const data = await authorizedFetch('/api/auth/pin', {
+                    token: session.token
+                });
+                if (data && data.pin) {
+                    localStorage.setItem('lexSovereign_pin', data.pin);
+                    console.log("[Auth] Sovereign Pin Handshake Successful");
+                }
+            } catch (e: any) {
+                console.error("[Auth] Pin Handshake Failed during login:", e.message);
             }
-        } catch (e: any) {
-            console.error("[Auth] Pin Handshake Failed during login:", e.message);
         }
 
-        // 3. Update state
+        // 3. Update state (Only if changed to prevent loops)
         setRole(normalizedRole);
         setPermissions(activePermissions);
-        setUserId(session.userId);
-        setUserName(session.userName || null);
-        setTenantId(session.tenantId);
-        if (session.mode) setMode(session.mode);
-        setIsAuthenticated(true);
+        setUserId(prev => (prev === session.userId ? prev : session.userId));
+        setUserName(prev => (prev === (session.userName || null) ? prev : (session.userName || null)));
+        setTenantId(prev => (prev === session.tenantId ? prev : session.tenantId));
+        if (session.mode) setMode(prev => (prev === session.mode ? prev : session.mode!));
+        setIsAuthenticated(prev => (prev === true ? prev : true));
 
         return normalizedRole;
     }, [setRole, setPermissions]);
