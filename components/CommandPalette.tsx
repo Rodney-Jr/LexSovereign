@@ -15,7 +15,6 @@ const COMMANDS = [
     { id: 'workflow', label: 'Workflow Engine', icon: <Zap size={18} />, category: 'Operations' },
     { id: 'platform-ops', label: 'Global Plane', icon: <Globe size={18} />, category: 'Administration' },
     { id: 'org-blueprint', label: 'Firm Blueprint', icon: <GitBranch size={18} />, category: 'Administration' },
-    { id: 'tenant-settings', label: 'Governance Controls', icon: <Settings size={18} />, category: 'Settings' },
 ];
 
 const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose, onNavigate }) => {

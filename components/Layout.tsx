@@ -363,15 +363,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('tenant-settings') && (
-                <NavItem
-                  icon={<Settings size={18} className="text-purple-400" />}
-                  label="Tenant Settings"
-                  isActive={activeTab === 'tenant-settings'}
-                  onClick={() => setActiveTab('tenant-settings')}
-                  setIsSidebarOpen={setIsSidebarOpen}
-                />
-              )}
+
 
             </>
           )}
