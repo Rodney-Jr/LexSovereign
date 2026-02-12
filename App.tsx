@@ -35,7 +35,7 @@ import AppRouter from './components/AppRouter';
 import CapacityDashboard from './components/CapacityDashboard';
 import PredictiveOps from './components/PredictiveOps';
 import EngineeringBacklog from './components/EngineeringBacklog';
-import MonetizationStrategy from './components/MonetizationStrategy';
+import GrowthDashboard from './components/GrowthDashboard';
 import DecisionTraceLedger from './components/DecisionTraceLedger';
 import { PricingGovernance } from './components/PricingGovernance';
 import LegalDrafting from './components/LegalDrafting';
@@ -245,7 +245,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'predictive' && <PredictiveOps mode={mode} />}
         {activeTab === 'workflow' && <MatterWorkflow />}
         {activeTab === 'conflict-check' && <ZkConflictSearch />}
-        {activeTab === 'growth' && <MonetizationStrategy />}
+        {activeTab === 'growth' && <GrowthDashboard />}
         {activeTab === 'pricing-calib' && <PricingGovernance />}
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}

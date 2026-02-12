@@ -15,7 +15,8 @@ import {
   ChevronRight,
   ShieldAlert,
   Terminal,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Scale
 } from 'lucide-react';
 import { AuditLogEntry } from '../types';
 
@@ -64,6 +65,21 @@ const SAMPLE_LOGS: AuditLogEntry[] = [
 
 const DecisionTraceLedger: React.FC = () => {
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
+  const [isSimplifiedView, setIsSimplifiedView] = useState(true);
+
+  // Mapping for simplified view
+  const getSimplifiedData = (log: AuditLogEntry) => {
+    let localLaw = "General Regulatory Framework";
+    if (log.action.includes("Contract") || log.action.includes("Drafted")) localLaw = "Nigeria NDPA 2023 Applied";
+    if (log.action.includes("KYC")) localLaw = "Kenya DPA 2019 Applied";
+    if (log.action.includes("Privileged")) localLaw = "Ghana Data Protection Act Applied";
+
+    const securityStatus = log.status === 'PROCEEDED' ? "🔒 Secure in Lagos Silo" :
+      log.status === 'KILL_SWITCH' ? "🛑 Intercepted for Safety" :
+        "🛡️ Restricted Access";
+
+    return { localLaw, securityStatus };
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-24">
@@ -78,6 +94,20 @@ const DecisionTraceLedger: React.FC = () => {
           <p className="text-slate-400 text-sm">Decision hashes pinned to the FIPS 140-2 Sovereign Ledger.</p>
         </div>
         <div className="flex items-center gap-4">
+          <div className="bg-slate-900 border border-slate-800 p-1 rounded-xl flex gap-1">
+            <button
+              onClick={() => setIsSimplifiedView(true)}
+              className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${isSimplifiedView ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              Peace of Mind View
+            </button>
+            <button
+              onClick={() => setIsSimplifiedView(false)}
+              className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${!isSimplifiedView ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              Technical Trace
+            </button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
             <input
@@ -97,69 +127,104 @@ const DecisionTraceLedger: React.FC = () => {
         <div className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
           <table className="w-full text-left">
             <thead className="bg-slate-800/30 border-b border-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-              <tr>
-                <th className="px-8 py-5">Event / Timestamp</th>
-                <th className="px-8 py-5">System Architecture</th>
-                <th className="px-8 py-5">Status / Confidence</th>
-                <th className="px-8 py-5 text-right">Trace</th>
-              </tr>
+              {isSimplifiedView ? (
+                <tr>
+                  <th className="px-8 py-5">Action Taken</th>
+                  <th className="px-8 py-5">Local Law Applied</th>
+                  <th className="px-8 py-5">Security Status</th>
+                  <th className="px-8 py-5 text-right">Verification</th>
+                </tr>
+              ) : (
+                <tr>
+                  <th className="px-8 py-5">Event / Timestamp</th>
+                  <th className="px-8 py-5">System Architecture</th>
+                  <th className="px-8 py-5">Status / Confidence</th>
+                  <th className="px-8 py-5 text-right">Trace</th>
+                </tr>
+              )}
             </thead>
             <tbody className="divide-y divide-slate-800/50">
-              {SAMPLE_LOGS.map((log, idx) => (
-                <tr
-                  key={idx}
-                  onClick={() => setSelectedLog(log)}
-                  className={`group cursor-pointer transition-all ${selectedLog === log ? 'bg-emerald-500/5' : 'hover:bg-slate-800/20'}`}
-                >
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-xl border ${log.status === 'PROCEEDED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                        log.status === 'KILL_SWITCH' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                          'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                        }`}>
-                        {log.status === 'PROCEEDED' ? <ShieldCheck size={18} /> : log.status === 'KILL_SWITCH' ? <ShieldAlert size={18} /> : <Lock size={18} />}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-100">{log.action}</p>
-                        <p className="text-[10px] text-slate-500 font-mono tracking-tighter">
-                          {new Date(log.timestamp).toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="space-y-1">
-                      <p className="text-[11px] font-bold text-slate-300">{log.model}</p>
-                      <div className="flex items-center gap-2">
-                        <Hash size={10} className="text-slate-500" />
-                        <span className="text-[9px] font-mono text-slate-500 uppercase">{log.promptVersion}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="space-y-2">
-                      <div className={`text-[9px] font-bold px-2 py-0.5 rounded border inline-block ${log.status === 'PROCEEDED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        log.status === 'KILL_SWITCH' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                          'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                        }`}>
-                        {log.status.replace('_', ' ')}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-1 w-12 bg-slate-800 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full dynamic-width ${log.confidenceScore >= 0.85 ? 'bg-emerald-500' : 'bg-red-500'}`}
-                            style={{ '--width': `${log.confidenceScore * 100}%` } as any}
-                          ></div>
-                        </div>
-                        <span className="text-[10px] font-mono text-slate-400">{Math.round(log.confidenceScore * 100)}%</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <ChevronRight size={18} className={`text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all ${selectedLog === log ? 'text-emerald-400 translate-x-1' : ''}`} />
-                  </td>
-                </tr>
-              ))}
+              {SAMPLE_LOGS.map((log, idx) => {
+                const { localLaw, securityStatus } = getSimplifiedData(log);
+                return (
+                  <tr
+                    key={idx}
+                    onClick={() => setSelectedLog(log)}
+                    className={`group cursor-pointer transition-all ${selectedLog === log ? 'bg-emerald-500/5' : 'hover:bg-slate-800/20'}`}
+                  >
+                    {isSimplifiedView ? (
+                      <>
+                        <td className="px-8 py-5">
+                          <p className="text-sm font-serif font-bold text-slate-100">{log.action}</p>
+                          <p className="text-[10px] text-slate-500 italic mt-0.5">{new Date(log.timestamp).toLocaleDateString()}</p>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-2">
+                            <Scale size={14} className="text-emerald-500/50" />
+                            <span className="text-xs text-slate-300 font-serif">{localLaw}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${log.status === 'PROCEEDED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
+                            }`}>
+                            {securityStatus}
+                          </span>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-2 rounded-xl border ${log.status === 'PROCEEDED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                              log.status === 'KILL_SWITCH' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                                'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                              }`}>
+                              {log.status === 'PROCEEDED' ? <ShieldCheck size={18} /> : log.status === 'KILL_SWITCH' ? <ShieldAlert size={18} /> : <Lock size={18} />}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-slate-100">{log.action}</p>
+                              <p className="text-[10px] text-slate-500 font-mono tracking-tighter">
+                                {new Date(log.timestamp).toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="space-y-1">
+                            <p className="text-[11px] font-bold text-slate-300">{log.model}</p>
+                            <div className="flex items-center gap-2">
+                              <Hash size={10} className="text-slate-500" />
+                              <span className="text-[9px] font-mono text-slate-500 uppercase">{log.promptVersion}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="space-y-2">
+                            <div className={`text-[9px] font-bold px-2 py-0.5 rounded border inline-block ${log.status === 'PROCEEDED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              log.status === 'KILL_SWITCH' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              }`}>
+                              {log.status.replace('_', ' ')}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-1 w-12 bg-slate-800 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full dynamic-width ${log.confidenceScore >= 0.85 ? 'bg-emerald-500' : 'bg-red-500'}`}
+                                  style={{ '--width': `${log.confidenceScore * 100}%` } as any}
+                                ></div>
+                              </div>
+                              <span className="text-[10px] font-mono text-slate-400">{Math.round(log.confidenceScore * 100)}%</span>
+                            </div>
+                          </div>
+                        </td>
+                      </>
+                    )}
+                    <td className="px-8 py-5 text-right">
+                      <ChevronRight size={18} className={`text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all ${selectedLog === log ? 'text-emerald-400 translate-x-1' : ''}`} />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
