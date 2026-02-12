@@ -11,6 +11,8 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
+    console.log(`[Auth-Diag] Request to ${req.originalUrl || req.url} | Header: ${authHeader ? 'Y' : 'N'} | Token: ${token ? (token === 'undefined' ? 'UNDEFINED_STR' : 'EXISTS') : 'MISSING'}`);
+
     if (!token || token === 'undefined') {
         res.sendStatus(401); // Unauthorized
         return;

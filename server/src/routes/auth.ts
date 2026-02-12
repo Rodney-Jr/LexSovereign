@@ -526,8 +526,9 @@ router.get('/me', async (req, res) => {
     }
 });
 
-// 6. Get Sovereign Pin - PUBLIC (needed for subsequent authenticated requests)
-router.get('/pin', (req, res) => {
+// 6. Get Sovereign Pin - SECURE
+router.get('/pin', authenticateToken, (req, res) => {
+    console.log(`[Auth] PIN requested by ${req.user?.email}`);
     res.json({ pin: process.env.SOVEREIGN_PIN || "" });
 });
 

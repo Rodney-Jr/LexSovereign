@@ -21,6 +21,8 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     const headers = new Headers(fetchOptions.headers || {});
     if (token && token !== 'undefined') {
         headers.set('Authorization', `Bearer ${token}`);
+    } else {
+        console.warn(`[API-Diag] No token found for ${url}. Token Value: ${token}`);
     }
 
     // Add Sovereign Pin if available (Prioritize dynamic handshake, fallback to window/global)
