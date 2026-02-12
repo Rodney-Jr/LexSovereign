@@ -7,11 +7,12 @@
         "seed": "node dist/scripts/seed.js || node server/dist/scripts/seed.js"
     },
     "scripts": {
-        "start": "npx prisma migrate deploy && (node server/dist/scripts/seed.js || node dist/scripts/seed.js) && (node server/dist/index.js || node dist/index.js)",
+        "start": "npm run db:repair && npx prisma migrate deploy && (node server/dist/scripts/seed.js || node dist/scripts/seed.js) && (node server/dist/index.js || node dist/index.js)",
         "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
         "build": "npx prisma generate && tsc",
         "seed": "npx prisma db seed",
-        "seed:templates": "ts-node src/scripts/seedTemplates.ts"
+        "seed:templates": "ts-node src/scripts/seedTemplates.ts",
+        "db:repair": "ts-node src/scripts/repairMigration.ts"
     },
     "dependencies": {
         "@anthropic-ai/sdk": "^0.74.0",
