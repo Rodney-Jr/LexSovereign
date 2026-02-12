@@ -45,7 +45,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'system-settings': ['manage_platform'],
   'tenant-settings': ['manage_tenant'],
   'status': ['manage_platform'],
-  'client': ['client_portal_access']
+  'client-portal': ['client_portal_access']
 };
 
 // Default Permissions for Roles (Fallback/Mock)

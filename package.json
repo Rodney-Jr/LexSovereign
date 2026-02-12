@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "vite build && tsc -p server",
+    "start": "npm run db:repair && npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)",
+    "db:repair": "tsc -p server && node server/dist/scripts/repairMigration.js"
   },
   "dependencies": {
     "@google/genai": "^1.35.0",

@@ -148,6 +148,14 @@ app.listen(Number(port), '0.0.0.0', () => {
 
     // Initialize Sovereign Cron System
     initCronJobs();
+
+    // Async Seeding (Non-blocking for Railway Healthcheck)
+    if (process.env.NODE_ENV === 'production') {
+        import('./scripts/seed').then(({ seedDatabase }) => {
+            console.log('🌱 Starting Async Database Seeding...');
+            seedDatabase().catch(err => console.error('❌ Async Seeding Failed:', err));
+        }).catch(err => console.error('❌ Failed to load seed module:', err));
+    }
 });
 
 // Global Error Handlers

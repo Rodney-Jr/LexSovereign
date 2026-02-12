@@ -162,9 +162,17 @@ router.post('/join-silo', async (req, res) => {
 
             console.log(`[Join] Found invitation for ${invitation.email}, tenant: ${invitation.tenant.name}`);
 
-            const role = await tx.role.findFirst({
+            let role = await tx.role.findFirst({
                 where: { name: invitation.roleName, tenantId: invitation.tenantId }
             });
+
+            if (!role) {
+                // Fallback to System Role (e.g. CLIENT, GLOBAL_ADMIN)
+                console.log(`[Join] Tenant role not found, checking system roles for: ${invitation.roleName}`);
+                role = await tx.role.findFirst({
+                    where: { name: invitation.roleName, isSystem: true, tenantId: null }
+                });
+            }
 
             if (!role) {
                 console.log(`[Join] ERROR: Role not found: ${invitation.roleName}`);

@@ -823,8 +823,10 @@ Title: **{{receiving_party_signer_title}}**
     }
 }
 
-main()
-    .catch((e) => {
+export async function seedDatabase() {
+    try {
+        await main();
+    } catch (e) {
         console.error(e);
         process.exit(1);
     })

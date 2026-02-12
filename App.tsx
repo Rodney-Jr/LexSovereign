@@ -142,6 +142,13 @@ const AppContent: React.FC = () => {
     }
   }, [activeTab, contextRole, isAuthenticated, hasAnyPermission]);
 
+  // Client Portal Redirection
+  useEffect(() => {
+    if (isAuthenticated && contextRole === 'CLIENT' && activeTab !== 'client-portal') {
+      setActiveTab('client-portal');
+    }
+  }, [isAuthenticated, contextRole, activeTab]);
+
   const handleInceptionComplete = async (selectedMode: AppMode) => {
     const pending = (window as any)._pendingSession;
     if (pending) {
