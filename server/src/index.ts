@@ -25,8 +25,10 @@ import brandingRouter from './routes/branding';
 import chatbotRouter from './routes/chatbot';
 import tenantRouter from './routes/tenant';
 import leadsRouter from './routes/leads';
+import fxRatesRouter from './routes/fxRates';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
+import { initCronJobs } from './services/cronService';
 
 const app = express();
 // Force reload for env var update (Key Rotation 2)
@@ -63,6 +65,9 @@ app.get('/health', (req, res) => {
 
 // Public / Lead Generation
 app.use('/api/leads', leadsRouter);
+
+// FX Rates (Daily Sync)
+app.use('/api/fx-rates', fxRatesRouter);
 
 // Authentication (Handshake/Login)
 app.use('/api/auth', authRouter);
@@ -140,6 +145,9 @@ app.listen(Number(port), '0.0.0.0', () => {
         const memoryUsage = process.memoryUsage();
         console.log(`[Heartbeat] RSS: ${(memoryUsage.rss / 1024 / 1024).toFixed(2)}MB`);
     }, 30000);
+
+    // Initialize Sovereign Cron System
+    initCronJobs();
 });
 
 // Global Error Handlers

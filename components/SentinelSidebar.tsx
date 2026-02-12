@@ -17,7 +17,8 @@ import {
     calculateDetailedStampDuty,
     INSTRUMENT_TYPES,
     convertUSDtoGHS,
-    getBoGExchangeRate
+    fetchFxRates,
+    LiveFxRates
 } from '../utils/ghanaFinanceService';
 
 interface SentinelSidebarProps {
@@ -26,6 +27,7 @@ interface SentinelSidebarProps {
     isSyncing: boolean;
     orcStatus: 'idle' | 'syncing' | 'verified';
     onOrcSync: () => void;
+    liveRates: LiveFxRates | null;
 }
 
 const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
@@ -33,17 +35,19 @@ const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
     detectedValue,
     isSyncing,
     orcStatus,
-    onOrcSync
+    onOrcSync,
+    liveRates
 }) => {
     const [instrumentType, setInstrumentType] = useState(INSTRUMENT_TYPES.COMMERCIAL);
 
-    // Calculate values based on detection
+    const exchangeRate = liveRates?.USD_GHS.rate || 12.5;
     const ghsValue = detectedValue.currency === 'USD'
-        ? convertUSDtoGHS(detectedValue.amount)
+        ? convertUSDtoGHS(detectedValue.amount, exchangeRate)
         : detectedValue.amount;
 
     const taxResults = calculateDetailedStampDuty(ghsValue, instrumentType);
-    const exchangeRate = getBoGExchangeRate();
+    const isFallback = liveRates?.USD_GHS.isFallback ?? true;
+    const rateDate = liveRates?.USD_GHS.date || 'System Default';
 
     return (
         <div className="space-y-8 h-[700px] overflow-auto pr-2 custom-scrollbar">
@@ -58,9 +62,14 @@ const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
                         <h4 className="text-[10px] font-bold text-brand-muted uppercase tracking-widest flex items-center gap-2">
                             <Scale size={14} className="text-brand-primary" /> Tax & Filing Summary
                         </h4>
-                        {detectedValue.currency === 'USD' && (
-                            <span className="text-[8px] px-2 py-1 bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/20 font-bold">BoG RATE: $1 = GHS {exchangeRate}</span>
-                        )}
+                        <div className="flex flex-col items-end gap-1">
+                            {detectedValue.currency === 'USD' && (
+                                <span className="text-[8px] px-2 py-1 bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/20 font-bold">BoG RATE: $1 = GHS {exchangeRate}</span>
+                            )}
+                            <span className={`text-[7px] px-1.5 py-0.5 rounded border uppercase font-black tracking-tighter ${isFallback ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
+                                {isFallback ? `FALLBACK: ${rateDate}` : `LIVE: ${rateDate}`}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="space-y-4">

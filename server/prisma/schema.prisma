@@ -326,3 +326,15 @@ model GazetteEmbedding {
 
   @@index([region])
 }
+
+model DailyFxRate {
+  id            String   @id @default(uuid())
+  currencyPair  String   // e.g. "USD_GHS", "GBP_GHS"
+  rate          Float
+  provider      String   @default("EXCHANGERATE_API")
+  
+  effectiveDate DateTime // The date the rate is valid for
+  capturedAt    DateTime @default(now())
+
+  @@unique([currencyPair, effectiveDate])
+}

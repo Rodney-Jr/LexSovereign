@@ -7,6 +7,7 @@ import {
     Layout
 } from 'lucide-react';
 import { GHANA_LEGAL_HEURISTICS, detectMonetaryValue } from '../utils/ghanaRules';
+import { fetchFxRates, LiveFxRates } from '../utils/ghanaFinanceService';
 import SentinelSidebar from './SentinelSidebar';
 
 const GhanaReviewScreen: React.FC = () => {
@@ -19,6 +20,12 @@ This Agreement is governed by the laws of England and Wales.`);
 
     const [isSyncing, setIsSyncing] = useState(false);
     const [orcStatus, setOrcStatus] = useState<'idle' | 'syncing' | 'verified'>('idle');
+    const [liveRates, setLiveRates] = useState<LiveFxRates | null>(null);
+
+    React.useEffect(() => {
+        const sovPin = localStorage.getItem('sov-pin') || '';
+        fetchFxRates(sovPin).then(setLiveRates);
+    }, []);
 
     const activeFlags = useMemo(() => {
         return GHANA_LEGAL_HEURISTICS.filter(rule => {
@@ -98,6 +105,7 @@ This Agreement is governed by the laws of England and Wales.`);
                         isSyncing={isSyncing}
                         orcStatus={orcStatus}
                         onOrcSync={handleOrcSync}
+                        liveRates={liveRates}
                     />
                 </div>
             </div>

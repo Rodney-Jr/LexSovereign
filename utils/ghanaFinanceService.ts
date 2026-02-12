@@ -10,10 +10,37 @@ export interface StampDutyResult {
     rateApplied: number;
 }
 
+export interface LiveFxRates {
+    USD_GHS: { rate: number; isFallback: boolean; date: string };
+    GBP_GHS: { rate: number; isFallback: boolean; date: string };
+}
+
 export const INSTRUMENT_TYPES = {
     COMMERCIAL: 'Leases/Commercial Contracts',
     MORTGAGE: 'Mortgages/Charges',
     CONVEYANCE: 'Conveyance/Transfers',
+};
+
+/**
+ * Fetches live exchange rates from the Sovereign Control Plane backend.
+ */
+export const fetchFxRates = async (sovPin: string): Promise<LiveFxRates> => {
+    try {
+        const response = await fetch('/api/fx-rates', {
+            headers: { 'x-sov-pin': sovPin }
+        });
+        const data = await response.json();
+        if (data.success) {
+            return data.rates;
+        }
+        throw new Error('API returned failure');
+    } catch (error) {
+        console.error('[FX Service] Failed to fetch live rates, using defaults:', error);
+        return {
+            USD_GHS: { rate: 12.5, isFallback: true, date: 'Fallback' },
+            GBP_GHS: { rate: 15.8, isFallback: true, date: 'Fallback' }
+        };
+    }
 };
 
 /**
@@ -51,19 +78,11 @@ export const calculateDetailedStampDuty = (
 };
 
 /**
- * Simulated Bank of Ghana (BoG) exchange rate.
- * In production, this would call an external API.
- */
-export const getBoGExchangeRate = (): number => {
-    // Simulated rate: 1 USD = 12.5 GHS
-    return 12.5;
-};
-
-/**
- * Converts USD value to GHS for stamp duty assessment.
+ * Converts USD value to GHS for stamp duty assessment using live or fallback rates.
  * @param usdAmount 
+ * @param rate 
  * @returns GHS amount
  */
-export const convertUSDtoGHS = (usdAmount: number): number => {
-    return usdAmount * getBoGExchangeRate();
+export const convertUSDtoGHS = (usdAmount: number, rate: number = 12.5): number => {
+    return usdAmount * rate;
 };
