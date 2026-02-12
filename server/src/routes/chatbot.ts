@@ -26,12 +26,12 @@ router.get('/config/public/:botId', async (req, res) => {
     }
 });
 
-router.get('/config', async (req, res) => {
+router.get('/config', async (req: any, res) => {
     try {
-        // TODO: Get tenantId from authenticated user session
-        // For MVP/Demo, using a default hardcoded tenant ID or the one from the first config found
-        // This should be updated to req.user.tenantId once auth middleware is fully integrated here
-        const tenantId = 'demo-tenant-id'; // Placeholder
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) {
+            return res.status(401).json({ error: "Authentication required" });
+        }
         const config = await ChatbotService.getConfig(tenantId);
         res.json(config);
     } catch (err: any) {
@@ -39,14 +39,16 @@ router.get('/config', async (req, res) => {
     }
 });
 
-router.post('/config', async (req, res) => {
+router.post('/config', async (req: any, res) => {
     try {
         const newConfig = req.body;
         if (!newConfig.botName || !newConfig.systemInstruction) {
             return res.status(400).json({ error: "Missing required fields: botName, systemInstruction" });
         }
-        // TODO: Get tenantId from session
-        const tenantId = 'demo-tenant-id';
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) {
+            return res.status(401).json({ error: "Authentication required" });
+        }
         const saved = await ChatbotService.saveConfig(tenantId, newConfig);
         res.json(saved);
     } catch (err: any) {
