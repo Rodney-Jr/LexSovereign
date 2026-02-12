@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Save, RefreshCw, Check, AlertCircle, DollarSign, Users, Plus, X } from 'lucide-react';
-import { authorizedFetch } from '../utils/api';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface PricingConfig {
     id: string; // Plan Name
@@ -24,7 +24,8 @@ export const PricingGovernance: React.FC = () => {
     const fetchConfigs = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('lexSovereign_token') || '';
+            const session = getSavedSession();
+            const token = session?.token || '';
             const data = await authorizedFetch('/api/pricing', { token });
             if (data.error) throw new Error(data.error);
             setConfigs(data);
@@ -41,7 +42,8 @@ export const PricingGovernance: React.FC = () => {
             setError(null);
             setSuccess(null);
 
-            const token = localStorage.getItem('lexSovereign_token') || '';
+            const session = getSavedSession();
+            const token = session?.token || '';
             const data = await authorizedFetch(`/api/pricing/${config.id}`, {
                 method: 'PUT',
                 token,

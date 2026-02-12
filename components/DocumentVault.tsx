@@ -22,7 +22,7 @@ import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
-import { authorizedFetch } from '../utils/api';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface DocumentVaultProps {
   documents: DocumentMetadata[];
@@ -48,7 +48,8 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
   useEffect(() => {
     const fetchBranding = async () => {
       try {
-        const token = localStorage.getItem('lexSovereign_token') || '';
+        const session = getSavedSession();
+        const token = session?.token || '';
         const data = await authorizedFetch('/api/branding-profiles', { token });
         if (data && !data.error) {
           setBrandingProfiles(data);
@@ -62,7 +63,8 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
 
   const handleExport = async (id: string, format: 'DOCX' | 'PDF', name: string) => {
     try {
-      const token = localStorage.getItem('lexSovereign_token') || '';
+      const session = getSavedSession();
+      const token = session?.token || '';
 
       // Use raw fetch for blob downloading, but manually add x-sov-pin if available
       // authorizedFetch currently assumes JSON response
