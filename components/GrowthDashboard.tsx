@@ -15,10 +15,19 @@ import {
     AlertCircle
 } from 'lucide-react';
 
+import { GHANA_LEGAL_HEURISTICS, detectMonetaryValue } from '../utils/ghanaRules';
+import { fetchFxRates, LiveFxRates } from '../utils/ghanaFinanceService';
+
 const GrowthDashboard: React.FC = () => {
-    const [partnerRate, setPartnerRate] = useState(450);
+    const [partnerRate, setPartnerRate] = useState(5625); // GHS approx for $450
     const [hoursSaved, setHoursSaved] = useState(142);
     const [staffCount, setStaffCount] = useState(12);
+    const [liveRates, setLiveRates] = useState<LiveFxRates | null>(null);
+
+    React.useEffect(() => {
+        const sovPin = localStorage.getItem('sov-pin') || '';
+        fetchFxRates(sovPin).then(setLiveRates);
+    }, []);
 
     const revenueProtected = useMemo(() => hoursSaved * partnerRate, [hoursSaved, partnerRate]);
     const extraCapacity = useMemo(() => Math.floor(hoursSaved / 8), [hoursSaved]);
@@ -66,25 +75,33 @@ const GrowthDashboard: React.FC = () => {
                                 <Award className="text-brand-primary" size={20} />
                             </div>
                             <h4 className="font-bold text-brand-muted uppercase tracking-widest text-xs">Financial Performance</h4>
+                            <div className="ml-auto flex flex-col items-end">
+                                <span className={`text-[9px] px-2 py-1 rounded border uppercase font-bold tracking-tighter ${liveRates?.USD_GHS ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                                    {liveRates?.USD_GHS ? `LIVE RATE: ${liveRates.USD_GHS.date}` : 'PILOT RATE'}
+                                </span>
+                                {liveRates?.USD_GHS && (
+                                    <span className="text-[8px] text-brand-muted font-mono mt-1">$1 = GHS {liveRates.USD_GHS.rate.toFixed(2)}</span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="space-y-2">
                             <p className="text-5xl font-black text-brand-text">
-                                ${revenueProtected.toLocaleString()}
+                                GHS {revenueProtected.toLocaleString()}
                             </p>
                             <h2 className="text-xl font-bold text-brand-muted">Total Revenue Protected from Overhead</h2>
                         </div>
 
                         <div className="grid grid-cols-2 gap-8 pt-8 border-t border-brand-border">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest italic">Senior Partner Rate</p>
+                                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest italic">Senior Partner Rate (GHS)</p>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-brand-text font-bold">$</span>
+                                    <span className="text-brand-text font-bold">GHS</span>
                                     <input
                                         type="number"
                                         value={partnerRate}
                                         onChange={(e) => setPartnerRate(Number(e.target.value))}
-                                        className="bg-transparent border-b border-brand-border focus:border-brand-primary outline-none w-20 text-lg font-bold text-brand-text"
+                                        className="bg-transparent border-b border-brand-border focus:border-brand-primary outline-none w-24 text-lg font-bold text-brand-text"
                                     />
                                 </div>
                             </div>
@@ -127,7 +144,7 @@ const GrowthDashboard: React.FC = () => {
                 <MetricCard
                     icon={<TrendingUp size={24} />}
                     label="Unbilled Fee Recovery"
-                    value="$12,400"
+                    value="GHS 155,000"
                     sub="Captured from automated tracing"
                     color="primary"
                 />
