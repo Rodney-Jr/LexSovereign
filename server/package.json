@@ -7,7 +7,7 @@
         "seed": "node dist/scripts/seed.js || node server/dist/scripts/seed.js"
     },
     "scripts": {
-        "start": "npm run db:repair && npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)",
+        "start": "npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)",
         "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
         "build": "npx prisma generate && tsc",
         "seed": "npx prisma db seed",
