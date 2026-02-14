@@ -84,8 +84,8 @@ export interface KnowledgeArtifact {
     id: string;
     title: string;
     content: string;
-    lastIndexed: string;
-    category: 'Faq' | 'PracticeArea' | 'JurisdictionGuide' | 'OnboardingProcess';
+    lastIndexed: Date | string;
+    category: string;
 }
 
 export interface SystemPermission {

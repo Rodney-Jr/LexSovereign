@@ -353,9 +353,15 @@ model ChatConversation {
   source        String   @default("MARKETING_WIDGET") // MARKETING_WIDGET, etc.
   status        String   @default("ACTIVE") // ACTIVE, ARCHIVED
   
+  isLead        Boolean  @default(false)
+  intentScore   Float    @default(0.0) // 0 to 1 scale
+  
+  metadata      Json?    // For analytics: { faqHit: string, ragHits: number, language: string }
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
   @@index([sessionId])
   @@index([createdAt])
+  @@index([isLead])
 }

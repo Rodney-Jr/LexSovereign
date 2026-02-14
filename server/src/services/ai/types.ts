@@ -1,5 +1,5 @@
 
-import { DocumentMetadata, RegulatoryRule, KnowledgeArtifact, ChatbotConfig, UserRole, PrivilegeStatus } from "../../types";
+import { DocumentMetadata, RegulatoryRule, KnowledgeArtifact, ChatbotConfig, UserRole, PrivilegeStatus, ChatMessage } from "../../types";
 
 export interface ChatParams {
     input: string;
@@ -39,7 +39,7 @@ export interface AIProvider {
 
     evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }>;
 
-    publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }>;
+    publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }>;
 
     generateBillingDescription(rawNotes: string): Promise<string>;
 

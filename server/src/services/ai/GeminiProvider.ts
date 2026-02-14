@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact } from "../../types";
+import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact, ChatMessage } from "../../types";
 import { prisma } from "../../db";
 import { PiiService } from "../piiService";
 import { AuditorService } from "../auditorService";
@@ -277,15 +277,27 @@ export class GeminiProvider implements AIProvider {
         }
     }
 
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }> {
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }> {
         if (!config.isEnabled) return { text: "Chatbot is currently disabled.", confidence: 1 };
 
         const ai = this.getAI();
         const knowledgeContext = knowledge.map(k => `${k.title}: ${k.content}`).join('\n\n');
 
+        // Prepare conversation history for Gemini
+        const historyContents = (history || []).map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.content }]
+        }));
+
         const response = await ai.models.generateContent({
             model: this.defaultModel,
-            contents: `SYSTEM: ${config.systemInstruction}\n\nKNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}`,
+            contents: [
+                ...historyContents,
+                {
+                    role: 'user',
+                    parts: [{ text: `SYSTEM: ${config.systemInstruction}\n\nKNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}` }]
+                }
+            ],
             config: { temperature: 0.3 }
         });
 

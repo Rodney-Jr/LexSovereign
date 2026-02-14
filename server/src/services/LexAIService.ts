@@ -1,5 +1,5 @@
 
-import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, ChatbotConfig, KnowledgeArtifact } from "../types";
+import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, ChatbotConfig, KnowledgeArtifact, ChatMessage } from "../types";
 import { AIServiceFactory } from "./ai/AIServiceFactory";
 import { ChatParams, ChatResult } from "./ai/types";
 
@@ -64,8 +64,8 @@ export class LexAIService {
         return this.getProvider().evaluateRRE(text, rules);
     }
 
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }> {
-        return this.getProvider().publicChat(input, config, knowledge);
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }> {
+        return this.getProvider().publicChat(input, config, knowledge, history);
     }
 
     async generateBillingDescription(rawNotes: string): Promise<string> {

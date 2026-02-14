@@ -2,7 +2,7 @@ import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { LexAIService } from '../services/LexAIService';
-import { ChatbotConfig } from '../types';
+import { ChatbotConfig, ChatMessage, KnowledgeArtifact } from '../types';
 
 const router = express.Router();
 const lexAI = new LexAIService();
@@ -11,23 +11,18 @@ const lexAI = new LexAIService();
 const MARKETING_CHATBOT_CONFIG: ChatbotConfig = {
     id: 'marketing-widget',
     botName: 'LexSovereign Assistant',
-    systemInstruction: `You are the LexSovereign AI Assistant, helping visitors learn about our legal operations platform.
-
-About LexSovereign:
-- A sovereign legal operations platform for law firms and in-house legal teams
-- Features include: matter management, document automation, AI-powered legal research, secure client portals, billing & time tracking
-- Built with privacy-first architecture and data sovereignty principles
-- Supports multi-jurisdictional legal work with region-specific statutory knowledge
-- Offers both cloud and on-premise deployment options
-
-Your role:
-- Answer questions about LexSovereign's features, pricing, and capabilities
-- Help visitors understand how the platform can benefit their legal practice
-- Be professional, helpful, and concise
-- If asked about specific pricing, suggest scheduling a demo for personalized pricing
-- If you don't know something, be honest and offer to connect them with our team
-
-Tone: Professional, knowledgeable, and friendly`,
+    systemInstruction: `You are the LexSovereign AI Assistant. You are an expert on the LexSovereign platform.
+    
+    LexSovereign is a sovereign legal operations platform for law firms and in-house legal teams.
+    Features: Matter management, document automation, AI legal research (Gazette-RAG), secure client portals, multi-jurisdictional support.
+    Branding: Professional, sovereign, authoritative, yet helpful.
+    Pricing: Shared only when asked. Tiers: Starter, Professional, Institutional.
+    
+    IMPORTANT: 
+    1. Detect the user's language and respond in the same language.
+    2. Maintain a professional, sovereign tone in all languages.
+    3. If you don't know something about LexSovereign, suggest scheduling a demo at https://lexsovereign.com/demo
+    4. Do not offer legal advice. You are a platform assistant.`,
     isEnabled: true,
     channels: {
         whatsapp: false,
@@ -148,6 +143,28 @@ function calculateMatchScore(userKeywords: string[], faqKeywords: string[]): num
     return score;
 }
 
+function calculateIntentScore(message: string): number {
+    const highIntentKeywords = [
+        'pricing', 'cost', 'how much', 'plan', 'subscription', 'price',
+        'demo', 'demonstration', 'trial', 'test', 'show me', 'see it',
+        'schedule', 'book', 'talk to sales', 'contact sales', 'speak with someone',
+        'implementation', 'onboarding', 'on-boarding', 'migrate', 'setup',
+        'enterprise', 'law firm', 'institutional', 'buy', 'purchase', 'quote'
+    ];
+
+    const userKeywords = extractKeywords(message);
+    let matches = 0;
+
+    for (const keyword of highIntentKeywords) {
+        if (message.toLowerCase().includes(keyword)) {
+            matches += 1;
+        }
+    }
+
+    // Basic scoring logic: 0.2 per match, capped at 1.0
+    return Math.min(matches * 0.2, 1.0);
+}
+
 function findBestFAQ(userMessage: string): FAQ | null {
     const userKeywords = extractKeywords(userMessage);
     if (userKeywords.length === 0) return null;
@@ -190,13 +207,37 @@ router.post('/', async (req, res) => {
         // Get conversation history for context
         const conversationHistory = conversation?.messages as any[] || [];
 
+        // Simple RAG: Search Knowledge Base for relevant artifacts
+        const keywords = extractKeywords(message);
+        let relevantKnowledge: KnowledgeArtifact[] = [];
+
+        if (keywords.length > 0) {
+            try {
+                relevantKnowledge = await prisma.knowledgeArtifact.findMany({
+                    where: {
+                        OR: keywords.map(kw => ({
+                            OR: [
+                                { title: { contains: kw, mode: 'insensitive' } },
+                                { content: { contains: kw, mode: 'insensitive' } }
+                            ]
+                        }))
+                    },
+                    take: 5
+                });
+            } catch (kError) {
+                console.warn("RAG Search Failed:", kError);
+            }
+        }
+
         // Generate AI response using LexAIService
         let aiResponseText: string;
+        let faqHit: string | undefined;
         try {
             const aiResult = await lexAI.publicChat(
                 message,
                 MARKETING_CHATBOT_CONFIG,
-                [] // No knowledge base artifacts for now
+                relevantKnowledge,
+                conversationHistory
             );
             aiResponseText = aiResult.text;
         } catch (error: any) {
@@ -206,10 +247,11 @@ router.post('/', async (req, res) => {
             const faqMatch = findBestFAQ(message);
             if (faqMatch) {
                 aiResponseText = faqMatch.answer;
-                console.log(`FAQ Fallback used: ${faqMatch.id}`);
+                faqHit = faqMatch.id;
+                console.log(`FAQ Fallback used: ${faqMatch.id} `);
             } else {
                 // Generic fallback if no FAQ matches
-                aiResponseText = "Thank you for your message! I'm having trouble connecting to my AI service right now. Please try again in a moment, or feel free to schedule a demo to speak with our team directly at https://lexsovereign.com/demo";
+                aiResponseText = "I'm sorry, I'm having trouble connecting to my brain right now. Please try again or contact our support if the issue persists.";
             }
         }
 
@@ -218,6 +260,18 @@ router.post('/', async (req, res) => {
             content: aiResponseText,
             timestamp: new Date().toISOString()
         };
+
+        // Analytics Metadata
+        const metadata: any = {
+            faqHit,
+            ragHits: relevantKnowledge.length,
+            lastMessageTimestamp: new Date().toISOString()
+        };
+
+        // Calculate Intent Score
+        const currentIntentScore = calculateIntentScore(message);
+        const intentScore = Math.max(currentIntentScore, conversation?.intentScore || 0);
+        const isLead = intentScore >= 0.4; // Threshold for lead qualification
 
         if (conversation) {
             // Update existing conversation
@@ -229,7 +283,10 @@ router.post('/', async (req, res) => {
                 data: {
                     messages,
                     visitorEmail: visitorEmail || conversation.visitorEmail,
-                    visitorName: visitorName || conversation.visitorName
+                    visitorName: visitorName || conversation.visitorName,
+                    intentScore,
+                    isLead,
+                    metadata
                 }
             });
         } else {
@@ -241,14 +298,41 @@ router.post('/', async (req, res) => {
                     visitorName,
                     messages: [userMessage, aiResponse],
                     source: 'MARKETING_WIDGET',
-                    status: 'ACTIVE'
+                    status: 'ACTIVE',
+                    intentScore,
+                    isLead,
+                    metadata
                 }
             });
         }
 
+        // If it's a lead and we have contact info, also create/sync with Lead model
+        if (isLead && (visitorEmail || visitorName)) {
+            try {
+                const existingLead = visitorEmail
+                    ? await prisma.lead.findFirst({ where: { email: visitorEmail } })
+                    : null;
+
+                if (!existingLead) {
+                    await prisma.lead.create({
+                        data: {
+                            email: visitorEmail || 'anonymous@chatbot.lexsovereign.com',
+                            name: visitorName || 'Chatbot Visitor',
+                            source: 'CHATBOT',
+                            status: 'NEW'
+                        }
+                    });
+                    console.log(`New lead created from chatbot: ${visitorEmail || visitorName} `);
+                }
+            } catch (leadError) {
+                console.error("Failed to sync lead record:", leadError);
+            }
+        }
+
         res.status(200).json({
             response: aiResponse.content,
-            conversationId: conversation.id
+            conversationId: conversation.id,
+            isLead: conversation.isLead
         });
     } catch (error: any) {
         console.error("Chat conversation error:", error);

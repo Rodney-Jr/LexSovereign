@@ -1,6 +1,6 @@
 
 import Anthropic from "@anthropic-ai/sdk";
-import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, ChatbotConfig, KnowledgeArtifact } from "../../types";
+import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, ChatbotConfig, KnowledgeArtifact, ChatMessage } from "../../types";
 import { AIProvider, ChatParams, ChatResult } from "./types";
 import { PiiService } from "../piiService";
 import { AuditorService } from "../auditorService";
@@ -117,7 +117,7 @@ export class AnthropicProvider implements AIProvider {
     async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> { return "Executive Briefing Not Implemented"; }
     async getScrubbedContent(rawContent: string, role: UserRole, privilege: PrivilegeStatus): Promise<{ content: string; scrubbedEntities: number }> { return { content: rawContent, scrubbedEntities: 0 }; }
     async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> { return { isBlocked: false }; }
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }> { return { text: "Chatbot Not Implemented", confidence: 0 }; }
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }> { return { text: "Chatbot Not Implemented", confidence: 0 }; }
     async generateBillingDescription(rawNotes: string): Promise<string> { return rawNotes; }
     async hydrateTemplate(template: any, matter: any): Promise<any> { return {}; }
 }

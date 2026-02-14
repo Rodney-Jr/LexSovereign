@@ -1,6 +1,6 @@
 
 import { OpenAI } from "openai";
-import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, ChatbotConfig, KnowledgeArtifact } from "../../types";
+import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, ChatbotConfig, KnowledgeArtifact, ChatMessage } from "../../types";
 import { AIProvider, ChatParams, ChatResult } from "./types";
 import { PiiService } from "../piiService";
 import { AuditorService } from "../auditorService";
@@ -165,7 +165,7 @@ export class OpenAIProvider implements AIProvider {
         return { isBlocked: false };
     }
 
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number }> {
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }> {
         // Implementation similar to chat
         return { text: "OpenAI Chatbot Not Implemented Yet", confidence: 0 };
     }
