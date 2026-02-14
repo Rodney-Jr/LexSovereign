@@ -73,6 +73,7 @@ const AppContent: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     const resetTokenParam = params.get('resetToken');
+    const planParam = params.get('plan');
 
     if (resetTokenParam) {
       setResetToken(resetTokenParam);
@@ -80,6 +81,8 @@ const AppContent: React.FC = () => {
     } else if (token) {
       setInitialToken(token);
       setIsUserInvitation(true);
+    } else if (planParam) {
+      setIsOnboarding(true);
     } else if (window.location.pathname === '/join') {
       setIsUserInvitation(true);
     }

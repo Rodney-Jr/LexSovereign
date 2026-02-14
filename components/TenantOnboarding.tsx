@@ -60,7 +60,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
 
   const [formData, setFormData] = useState({
     name: '',
-    plan: SaaSPlan.SOVEREIGN,
+    plan: SaaSPlan.PROFESSIONAL,
     region: Region.PRIMARY,
     encryption: 'SYSTEM',
     adminEmail: '',
@@ -76,6 +76,19 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         const data = await authorizedFetch('/api/pricing');
         if (data && !data.error) {
           setPricingConfigs(data);
+
+          // Pre-select plan from URL
+          const params = new URLSearchParams(window.location.search);
+          const planParam = params.get('plan');
+          if (planParam) {
+            // Match case-insensitively or exactly as per seed IDs
+            const matchedPlan = data.find((p: any) => p.id.toLowerCase() === planParam.toLowerCase());
+            if (matchedPlan) {
+              setFormData(prev => ({ ...prev, plan: matchedPlan.id as SaaSPlan }));
+              // If we already have a plan, we could skip to a later step, 
+              // but usually the user still needs to fill in their name/email.
+            }
+          }
         }
       } catch (err) {
         console.error('Failed to fetch pricing:', err);
@@ -305,25 +318,25 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
 
               <div className="grid grid-cols-3 gap-6">
                 <PlanCard
-                  plan={SaaSPlan.STANDARD}
-                  active={formData.plan === SaaSPlan.STANDARD}
-                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.STANDARD })}
-                  pricing={getPricingForPlan(SaaSPlan.STANDARD)}
+                  plan={SaaSPlan.STARTER}
+                  active={formData.plan === SaaSPlan.STARTER}
+                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.STARTER })}
+                  pricing={getPricingForPlan(SaaSPlan.STARTER)}
                   loading={pricingLoading}
                 />
                 <PlanCard
-                  plan={SaaSPlan.SOVEREIGN}
-                  active={formData.plan === SaaSPlan.SOVEREIGN}
-                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.SOVEREIGN })}
-                  pricing={getPricingForPlan(SaaSPlan.SOVEREIGN)}
+                  plan={SaaSPlan.PROFESSIONAL}
+                  active={formData.plan === SaaSPlan.PROFESSIONAL}
+                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.PROFESSIONAL })}
+                  pricing={getPricingForPlan(SaaSPlan.PROFESSIONAL)}
                   loading={pricingLoading}
                   highlight={true}
                 />
                 <PlanCard
-                  plan={SaaSPlan.ENCLAVE_EXCLUSIVE}
-                  active={formData.plan === SaaSPlan.ENCLAVE_EXCLUSIVE}
-                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.ENCLAVE_EXCLUSIVE })}
-                  pricing={getPricingForPlan(SaaSPlan.ENCLAVE_EXCLUSIVE)}
+                  plan={SaaSPlan.INSTITUTIONAL}
+                  active={formData.plan === SaaSPlan.INSTITUTIONAL}
+                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.INSTITUTIONAL })}
+                  pricing={getPricingForPlan(SaaSPlan.INSTITUTIONAL)}
                   loading={pricingLoading}
                 />
               </div>
