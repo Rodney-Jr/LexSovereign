@@ -130,7 +130,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         `Initializing ${formData.plan} Instance...`,
         "Software-Defined Silo: Allocated.",
         "Binding Logical Context to Regional IP-Pin...",
-        formData.plan === SaaSPlan.SOVEREIGN ? "Provisioning BYOK Handshake Gateway..." : "Generating System-Managed Master Key...",
+        formData.plan === SaaSPlan.INSTITUTIONAL ? "Provisioning BYOK Handshake Gateway..." : "Generating System-Managed Master Key...",
         "Sovereign Trust Chain pinned. HSM Handshake Complete."
       ];
 
@@ -388,12 +388,12 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                 {entityType === AppMode.LAW_FIRM ? (
                   <>
                     <InterceptorToggle active={true} icon={<Scale size={16} />} label="Ethics & UPL Intercept" desc="Blocks advice triggers for non-verified practitioners." />
-                    <InterceptorToggle active={formData.plan !== SaaSPlan.STANDARD} icon={<Activity size={16} />} label="Scale of Fees Auditor" desc="Real-time compliance checks for jurisdictional legal billing." />
+                    <InterceptorToggle active={formData.plan !== SaaSPlan.STARTER} icon={<Activity size={16} />} label="Scale of Fees Auditor" desc="Real-time compliance checks for jurisdictional legal billing." />
                   </>
                 ) : (
                   <>
                     <InterceptorToggle active={true} icon={<Layers size={16} />} label="Regulatory Compliance Auditor" desc="Scans for regional AML/KYC trigger events." />
-                    <InterceptorToggle active={formData.plan !== SaaSPlan.STANDARD} icon={<ShieldAlert size={16} />} label="OCG Expenditure Policy" desc="Ensures external spend matches corporate guidelines." />
+                    <InterceptorToggle active={formData.plan !== SaaSPlan.STARTER} icon={<ShieldAlert size={16} />} label="OCG Expenditure Policy" desc="Ensures external spend matches corporate guidelines." />
                   </>
                 )}
                 <InterceptorToggle active={true} icon={<Fingerprint size={16} />} label="Logical DAS Scrubbing" desc="PII Redaction filter active for all software-defined inference." />
@@ -433,11 +433,11 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
           </button>
           <button
             onClick={step === 6 ? () => onComplete(entityType!) : next}
-            disabled={(step === 1 && !isStep1Valid) || (step === 4 && isProvisioning) || (step === 6 && !affidavitSigned)}
+            disabled={(step === 1 && !isStep1Valid) || (step === 4 && isProvisioning) || (step === 6 && !affidavitSigned) || (step === 3 && formData.plan === SaaSPlan.INSTITUTIONAL && getPricingForPlan(SaaSPlan.INSTITUTIONAL)?.basePrice === 0)}
             className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white px-12 py-3.5 rounded-2xl font-bold flex items-center gap-3 transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
           >
-            {step === 6 ? 'Launch Legal Silo' : 'Initialize Phase'}
-            {step < 6 && <ChevronRight size={20} />}
+            {step === 3 && formData.plan === SaaSPlan.INSTITUTIONAL && getPricingForPlan(SaaSPlan.INSTITUTIONAL)?.basePrice === 0 ? 'Contact Sales' : (step === 6 ? 'Launch Legal Silo' : 'Initialize Phase')}
+            {step < 6 && !(step === 3 && formData.plan === SaaSPlan.INSTITUTIONAL && getPricingForPlan(SaaSPlan.INSTITUTIONAL)?.basePrice === 0) && <ChevronRight size={20} />}
           </button>
         </div>
       </div>
@@ -470,11 +470,20 @@ const PlanCard = ({ plan, active, onClick, pricing, loading, highlight }: any) =
       )}
       <div className="space-y-1 mb-4">
         <h4 className={`text-xs font-bold uppercase tracking-widest ${active ? 'text-emerald-400' : 'text-slate-500'}`}>{plan}</h4>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-white">${basePrice}</span>
-          <span className="text-[10px] text-slate-500">/mo</span>
-        </div>
-        <p className="text-[9px] text-slate-500 font-mono">+ ${perUserPrice}/user</p>
+        {plan === SaaSPlan.INSTITUTIONAL && basePrice === 0 ? (
+          <div className="flex flex-col">
+            <span className="text-xl font-bold text-white uppercase tracking-tighter">Custom Quote</span>
+            <span className="text-[8px] text-amber-500 font-bold">CONTACT SALES REQUIRED</span>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-white">${basePrice}</span>
+              <span className="text-[10px] text-slate-500">/mo</span>
+            </div>
+            <p className="text-[9px] text-slate-500 font-mono">+ ${perUserPrice}/user</p>
+          </>
+        )}
       </div>
       <div className="space-y-2 flex-1">
         {features.map((f: string, i: number) => (

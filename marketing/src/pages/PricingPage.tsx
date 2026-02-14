@@ -115,7 +115,7 @@ function PricingCard({ title, price, userMonth, description, features, featured 
                 ))}
             </div>
 
-            <Button variant={featured ? 'primary' : 'outline'} asLink={`http://localhost:3000/?plan=${title}`} className="w-full">
+            <Button variant={featured ? 'primary' : 'outline'} asLink={price === 'Custom' ? '/#demo' : `http://localhost:3000/?plan=${title}`} className="w-full">
                 {price === 'Custom' ? 'Contact Sales' : 'Start Trial'}
             </Button>
         </div>
