@@ -11,14 +11,15 @@ const router = express.Router();
  */
 router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
-        if (!req.user?.tenantId) {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && !req.user?.tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
             return;
         }
 
         const users = await prisma.user.findMany({
-            where: {
-                tenantId: req.user.tenantId
+            where: isGlobalAdmin ? {} : {
+                tenantId: req.user!.tenantId
             },
             select: {
                 id: true,
@@ -66,14 +67,16 @@ router.delete('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_AD
         const userId = req.params.id;
         const tenantId = req.user?.tenantId;
 
-        if (!tenantId) {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+
+        if (!isGlobalAdmin && !tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
             return;
         }
 
-        // 1. Verify user exists in this tenant
+        // 1. Verify user exists 
         const user = await prisma.user.findFirst({
-            where: { id: userId, tenantId }
+            where: isGlobalAdmin ? { id: userId } : { id: userId, tenantId }
         });
 
         if (!user) {

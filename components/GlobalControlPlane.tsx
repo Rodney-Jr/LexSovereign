@@ -42,39 +42,47 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
    const [stats, setStats] = useState<any>({
-      totalTenants: 12, // Placeholder default
-      totalMatters: 148,
-      activeSilos: 12,
-      systemHealth: 99.9
+      tenants: 0,
+      matters: 0,
+      documents: 0,
+      silos: 0,
+      margin: '0%',
+      egress: 'Checking...',
+      systemHealth: 100
    });
 
+   const [platformAdmins, setPlatformAdmins] = useState<GlobalAdminIdentity[]>([]);
+   const [regionalSilos, setRegionalSilos] = useState<any[]>([]);
+   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+
    React.useEffect(() => {
-      const fetchStats = async () => {
+      const fetchPlatformData = async () => {
          try {
             const sessionData = localStorage.getItem('lexSovereign_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
-            const data = await authorizedFetch('/api/platform/stats', { token });
-            if (!data.error) {
-               setStats((prev: any) => ({ ...prev, ...data }));
-            }
+
+            // Parallel fetch for all platform signals
+            const [statsData, adminData, siloData, logData] = await Promise.all([
+               authorizedFetch('/api/platform/stats', { token }),
+               authorizedFetch('/api/platform/admins', { token }),
+               authorizedFetch('/api/platform/silos', { token }),
+               authorizedFetch('/api/platform/audit-logs', { token })
+            ]);
+
+            if (!statsData.error) setStats(statsData);
+            if (Array.isArray(adminData)) setPlatformAdmins(adminData);
+            if (Array.isArray(siloData)) setRegionalSilos(siloData);
+            if (Array.isArray(logData)) setAuditLogs(logData);
+
          } catch (e) {
-            console.error("Failed to fetch platform stats", e);
+            console.error("Failed to fetch platform telemetry", e);
          }
       };
-      fetchStats();
+
+      fetchPlatformData();
+      const interval = setInterval(fetchPlatformData, 30000); // Polling every 30s
+      return () => clearInterval(interval);
    }, []);
-
-   const [platformAdmins, setPlatformAdmins] = useState<GlobalAdminIdentity[]>([
-      { id: 'adm_01', name: 'Lead Architect', email: 'architect@lexsovereign.io', hardwareEnclaveId: 'FIPS-140-HSM-A99', mfaMethod: 'ZK-Proof Hardware', status: 'Active', lastHandshake: '12s ago', accessLevel: 'PLATFORM_OWNER' },
-      { id: 'adm_02', name: 'Ops Director', email: 'ops@lexsovereign.io', hardwareEnclaveId: 'FIPS-140-HSM-B12', mfaMethod: 'Deterministic Handshake', status: 'Active', lastHandshake: '4h ago', accessLevel: 'PLATFORM_OWNER' }
-   ]);
-
-   const regionalSilos = [
-      { id: Region.PRIMARY, name: 'Silo Alpha', nodes: 12, health: 100, latency: '12ms', status: 'Active' },
-      { id: Region.SECONDARY, name: 'Silo Beta', nodes: 24, health: 98, latency: '34ms', status: 'Maintenance' },
-      { id: Region.GLOBAL, name: 'Global Cluster', nodes: 8, health: 100, latency: '48ms', status: 'Active' },
-      { id: Region.USA, name: 'US Cluster', nodes: 64, health: 100, latency: '8ms', status: 'Active' },
-   ];
 
    const handleGlobalSync = () => {
       setIsSyncing(true);
@@ -203,9 +211,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                            <button className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest hover:underline">Deploy Update</button>
                         </div>
                         <div className="space-y-3">
-                           <ModelRow name="Gemini 3 Pro" regions="Global" users="Sovereign+" version="v1.2.4" status="PROD" />
-                           <ModelRow name="Gemini 3 Flash" regions="Global" users="Standard" version="v2.0.1" status="PROD" />
+                           <ModelRow name="Gemini 1.5 Pro" regions="Global" users="Sovereign+" version="v1.5.0" status="PROD" />
+                           <ModelRow name="Gemini 1.5 Flash" regions="Global" users="Standard" version="v1.5.0" status="PROD" />
+                           <ModelRow name="Claude 3.5 Sonnet" regions="Global" users="Sovereign+" version="latest" status="PROD" />
+                           <ModelRow name="GPT-4 Turbo" regions="Global" users="Enterprise" version="2024-04-09" status="PROD" />
                            <ModelRow name="Llama-3-Sovereign-70B" regions="Primary, Secondary" users="Enclave Only" version="v0.9.8" status="BETA" />
+                           <ModelRow name="Legal-Mistral-Enclave" regions="Secondary" users="Enclave Only" version="v0.8.2" status="STAGING" />
                         </div>
                      </div>
                   </div>
@@ -230,11 +241,16 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
 
                            <div className="space-y-4">
                               <p className="text-[10px] font-bold text-slate-500 uppercase px-1">Global Audit Pulse</p>
-                              <div className="bg-slate-950 rounded-2xl p-4 font-mono text-[9px] h-40 overflow-y-auto space-y-2 border border-slate-900">
-                                 <p className="text-cyan-500/80">&gt; Silo-PRIMARY-01 Heartbeat: OK</p>
-                                 <p className="text-cyan-500/80">&gt; Quota Rebalance: ORG_LTD (+500c)...</p>
-                                 <p className="text-amber-500/80">&gt; Warning: Latency Spike DE-FRA-1 (42ms)</p>
-                                 <p className="text-cyan-500/80">&gt; DAS-Proxy-Handshake: Verified x420</p>
+                              <div className="bg-slate-950 rounded-2xl p-4 font-mono text-[9px] h-40 overflow-y-auto space-y-2 border border-slate-900 scrollbar-hide">
+                                 {auditLogs.length > 0 ? (
+                                    auditLogs.map(log => (
+                                       <p key={log.id} className="text-cyan-500/80 leading-tight">
+                                          <span className="text-slate-600">[{new Date(log.timestamp).toLocaleTimeString()}]</span> {log.action}: {log.user?.name || 'System'}
+                                       </p>
+                                    ))
+                                 ) : (
+                                    <p className="text-slate-600 italic">Listening for system signals...</p>
+                                 )}
                               </div>
                            </div>
 
@@ -371,12 +387,13 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                         </div>
                      </div>
 
-                     <div className="bg-black/60 rounded-2xl p-5 font-mono text-[10px] h-[400px] overflow-y-auto border border-cyan-900/20 scrollbar-hide space-y-2 flex flex-col-reverse shadow-inner">
-                        <p className="text-cyan-500/80">&gt; Identity prov-adm-01: Hardware Fingerprint Valid.</p>
-                        <p className="text-slate-600">&gt; Root Key 0x8a...2e: Rotation deferred.</p>
-                        <p className="text-cyan-500/80">&gt; Session token signed: HSM-ENCLAVE-01 (RS256).</p>
-                        <p className="text-emerald-500/80">&gt; Policy Check: PLATFORM_OWNER restricted by METADATA_ONLY constraint.</p>
-                        <p className="text-cyan-500/80">&gt; Discovery Resolver: Routing architect@lexsovereign.io...</p>
+                     <div className="bg-black/60 rounded-2xl p-5 font-mono text-[10px] h-[400px] overflow-y-auto border border-cyan-900/20 scrollbar-hide space-y-2 shadow-inner">
+                        {auditLogs.map((log, i) => (
+                           <p key={log.id} className={`${i === 0 ? 'text-emerald-400' : 'text-cyan-500/80'}`}>
+                              &gt; {new Date(log.timestamp).toISOString()} | {log.action} | {log.user?.email || 'SYSTEM'}
+                           </p>
+                        ))}
+                        {auditLogs.length === 0 && <p className="text-slate-600">&gt; No recent activity traces found.</p>}
                      </div>
 
                      <div className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-2xl space-y-3">

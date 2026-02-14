@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { X, Upload, Shield, MapPin, CheckCircle, RefreshCw, Info, Lock } from 'lucide-react';
 import { LexGeminiService } from '../services/geminiService';
-import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
+import { DocumentMetadata, Region, PrivilegeStatus, Matter } from '../types';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface DocumentIngestModalProps {
   onClose: () => void;
@@ -13,9 +14,32 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
   const [fileName, setFileName] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [suggestions, setSuggestions] = useState<Partial<DocumentMetadata> | null>(null);
+  const [matters, setMatters] = useState<Matter[]>([]);
+  const [isLoadingMatters, setIsLoadingMatters] = useState(false);
   const [encryption, setEncryption] = useState<'BYOK' | 'SYSTEM'>('SYSTEM');
 
   const gemini = new LexGeminiService();
+
+  const fetchMatters = async () => {
+    setIsLoadingMatters(true);
+    try {
+      const session = getSavedSession();
+      if (!session?.token) return;
+      const data = await authorizedFetch('/api/matters', { token: session.token });
+      setMatters(data);
+      if (data.length > 0 && suggestions && !suggestions.matterId) {
+        setSuggestions(prev => ({ ...prev, matterId: data[0].id } as DocumentMetadata));
+      }
+    } catch (e) {
+      console.error("[Ingest] Matter fetch failed:", e);
+    } finally {
+      setIsLoadingMatters(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchMatters();
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,8 +122,42 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
                 </div>
               ) : suggestions && (
                 <div className="grid grid-cols-2 gap-6">
-                  <MetadataInput label="Matter ID" value={suggestions.matterId!} onChange={v => setSuggestions({ ...suggestions, matterId: v })} />
+                  <div className="space-y-2 col-span-1">
+                    <label htmlFor="matter-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Matter ID</label>
+                    <select
+                      id="matter-select"
+                      title="Matter ID"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      value={suggestions.matterId}
+                      onChange={e => setSuggestions({ ...suggestions, matterId: e.target.value })}
+                    >
+                      {isLoadingMatters ? (
+                        <option>Loading matters...</option>
+                      ) : matters.length === 0 ? (
+                        <option>No matters available</option>
+                      ) : (
+                        matters.map(m => <option key={m.id} value={m.id}>{m.name} ({m.client})</option>)
+                      )}
+                    </select>
+                  </div>
+
                   <MetadataInput label="Jurisdiction" value={suggestions.jurisdiction!} onChange={v => setSuggestions({ ...suggestions, jurisdiction: v })} />
+
+                  <div className="space-y-2 col-span-1">
+                    <label htmlFor="classification-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Classification</label>
+                    <select
+                      id="classification-select"
+                      title="Classification"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      value={suggestions.classification}
+                      onChange={e => setSuggestions({ ...suggestions, classification: e.target.value as any })}
+                    >
+                      <option value="Highly Sensitive">Highly Sensitive</option>
+                      <option value="Confidential">Confidential</option>
+                      <option value="Internal">Internal</option>
+                      <option value="Public">Public</option>
+                    </select>
+                  </div>
 
                   <div className="space-y-2 col-span-1">
                     <label htmlFor="region-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Regional Pinning</label>
@@ -114,7 +172,7 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
                     </select>
                   </div>
 
-                  <div className="space-y-2 col-span-1">
+                  <div className="space-y-2 col-span-2">
                     <label htmlFor="privilege-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Privilege Status</label>
                     <select
                       id="privilege-select"

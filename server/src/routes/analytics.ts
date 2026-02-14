@@ -12,14 +12,28 @@ router.get('/metrics', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
 
-        // Scope queries to tenant if applicable, or global if necessary (though usually tenant-scoped)
-        // For now, we assume tenant scoping for security.
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
 
         const [mattersCount, docsCount, rulesCount] = await Promise.all([
-            prisma.matter.count({ where: { tenantId } }),
-            prisma.document.count({ where: { matter: { tenantId } } }),
+            prisma.matter.count({ where: isGlobalAdmin ? {} : { tenantId } }),
+            prisma.document.count({ where: isGlobalAdmin ? {} : { matter: { tenantId } } }),
             prisma.regulatoryRule.count()
         ]);
+
+        // Growth Metrics Heuristics
+        // Hours Saved: 10h per matter + 0.5h per document
+        const hoursSaved = (mattersCount * 10) + (docsCount * 0.5);
+
+        // Fee Recovery: Approx 5000 GHS per matter in unbilled fees captured
+        const feeRecovery = mattersCount * 5000;
+
+        // TAT Reduction: Base 40% + scaling with volume up to 75%
+        const tatReduction = Math.min(40 + (docsCount * 0.1), 75).toFixed(1);
+
+        // staffCount: Pull from users in tenant
+        const staffCount = await prisma.user.count({
+            where: isGlobalAdmin ? {} : { tenantId }
+        });
 
         // "AI Validation Score" is likely a calculated metric. 
         // For MVP, if we don't have a specific table for logs, we might count "Audited" events.
@@ -31,7 +45,13 @@ router.get('/metrics', authenticateToken, async (req, res) => {
             matters: mattersCount,
             documents: docsCount,
             rules: rulesCount,
-            aiValidationScore: aiScore
+            aiValidationScore: aiScore,
+            growth: {
+                hoursSaved,
+                feeRecovery,
+                tatReduction: parseFloat(tatReduction),
+                staffCount
+            }
         });
     } catch (error: any) {
         // Fallback for missing tables or other DB errors
@@ -44,13 +64,13 @@ router.get('/metrics', authenticateToken, async (req, res) => {
 // Returns matter creation history for the last 6 months
 router.get('/history', authenticateToken, async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // Go back 5 months + current
 
         const matters = await prisma.matter.findMany({
             where: {
-                tenantId,
+                ...(isGlobalAdmin ? {} : { tenantId }),
                 createdAt: { gte: sixMonthsAgo }
             },
             select: { createdAt: true }

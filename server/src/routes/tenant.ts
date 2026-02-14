@@ -8,16 +8,18 @@ const router = express.Router();
 // Returns live counts for the current tenant
 router.get('/admin-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         const tenantId = req.user?.tenantId;
-        if (!tenantId) {
+
+        if (!isGlobalAdmin && !tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
             return;
         }
 
         const [userCount, matterCount, docCount] = await Promise.all([
-            prisma.user.count({ where: { tenantId } }),
-            prisma.matter.count({ where: { tenantId } }),
-            prisma.document.count({ where: { matter: { tenantId } } })
+            prisma.user.count({ where: isGlobalAdmin ? {} : { tenantId } }),
+            prisma.matter.count({ where: isGlobalAdmin ? {} : { tenantId } }),
+            prisma.document.count({ where: isGlobalAdmin ? {} : { matter: { tenantId } } })
         ]);
 
         res.json({
@@ -36,7 +38,22 @@ router.get('/admin-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOB
 // Returns plan details and usage metrics
 router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        let tenantId = req.user?.tenantId;
+
+        if (!tenantId && isGlobalAdmin) {
+            // Check if a specific tenant was requested via query, else default or show global
+            const targetTenantId = req.query.targetTenantId as string;
+            if (targetTenantId) {
+                tenantId = targetTenantId;
+            } else {
+                // Return a global overview or list of tenants if possible?
+                // For now, let's just use the first tenant found to avoid crash during dashboard load
+                const firstTenant = await prisma.tenant.findFirst();
+                tenantId = firstTenant?.id;
+            }
+        }
+
         if (!tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
             return;
@@ -88,8 +105,8 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 // Returns organization-specific settings
 router.get('/settings', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
-        if (!tenantId) {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && !req.user?.tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
             return;
         }

@@ -173,11 +173,28 @@ const TenantAdministration: React.FC = () => {
    };
 
    const handleEmailInvite = async () => {
+      if (!generatedLink) return;
+      const session = getSavedSession();
+      if (!session?.token) return;
+
       setIsEmailing(true);
-      // Simulate Sovereign Notification handshake
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setIsEmailing(false);
-      alert("Sovereign Invitation dispatched to practitioner.");
+      try {
+         const token = generatedLink.split('token=')[1];
+         await authorizedFetch('/api/auth/dispatch-invite', {
+            method: 'POST',
+            token: session.token,
+            body: JSON.stringify({
+               token,
+               email: inviteForm.email || pendingInvites.find(i => i.token === token)?.email
+            })
+         });
+         alert("Sovereign Invitation dispatched to practitioner.");
+      } catch (e: any) {
+         console.error(e);
+         alert(`Dispatch failed: ${e.message}`);
+      } finally {
+         setIsEmailing(false);
+      }
    };
 
    const removeUser = async (id: string, name: string) => {
@@ -583,7 +600,7 @@ const TenantAdministration: React.FC = () => {
                            {/* User Type Toggle */}
                            <div className="flex p-1 bg-slate-950 border border-slate-800 rounded-xl mb-6">
                               <button
-                                 onClick={() => setInviteForm(prev => ({ ...prev, roleName: availableRoles.length > 0 ? availableRoles[0].name : 'SENIOR_COUNSEL' }))}
+                                 onClick={() => setInviteForm(prev => ({ ...prev, roleName: availableRoles[0]?.name || 'SENIOR_COUNSEL' }))}
                                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${inviteForm.roleName !== 'CLIENT' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                               >
                                  Internal Member

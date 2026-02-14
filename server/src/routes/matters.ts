@@ -25,6 +25,68 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+// Validate capacity for a practitioner before matter inception
+router.get('/validate-capacity', authenticateToken, async (req, res) => {
+    try {
+        const { userId, riskLevel, region, complexityWeight } = req.query;
+
+        if (!userId) {
+            res.status(400).json({ error: 'Missing userId for capacity validation' });
+            return;
+        }
+
+        const validation = await CapacityService.validateAssignment(userId as string, {
+            riskLevel: (riskLevel as string) || 'LOW',
+            region: region as string,
+            complexityWeight: complexityWeight ? parseFloat(complexityWeight as string) : undefined
+        });
+
+        res.json(validation);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Perform conflict check for potential collisions
+router.post('/conflict-check', authenticateToken, async (req, res) => {
+    try {
+        const { searchTerm } = req.body;
+
+        if (!searchTerm || searchTerm.length < 3) {
+            res.status(400).json({ error: 'Search term too short for conflict check' });
+            return;
+        }
+
+        // Search for matters or clients with similar names
+        const collisions = await prisma.matter.findMany({
+            where: {
+                OR: [
+                    { name: { contains: searchTerm, mode: 'insensitive' } },
+                    { client: { contains: searchTerm, mode: 'insensitive' } }
+                ]
+            },
+            select: {
+                id: true,
+                name: true,
+                client: true,
+                status: true
+            },
+            take: 5
+        });
+
+        if (collisions.length > 0) {
+            res.json({
+                result: 'COLLISION',
+                collisions: collisions.map(c => `${c.name} (${c.client}) - Status: ${c.status}`)
+            });
+        } else {
+            res.json({ result: 'CLEAN' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Create a new matter
 router.post('/', authenticateToken, async (req, res) => {
     try {

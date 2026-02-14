@@ -27,8 +27,8 @@ async function checkTenantUserLimit(tenantId: string) {
         where: { tenantId }
     });
 
-    if (currentUsers >= pricing.maxUsers) {
-        throw new Error(`Plan limit reached. Your ${tenant.plan} plan allows up to ${pricing.maxUsers} users.`);
+    if (currentUsers >= (pricing as any).maxUsers) {
+        throw new Error(`Plan limit reached. Your ${tenant.plan} plan allows up to ${(pricing as any).maxUsers} users.`);
     }
 
     return true;
@@ -321,6 +321,18 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
     }
 });
 
+// 4.5 Dispatch Invitation - PROTECTED
+router.post('/dispatch-invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { token, email } = req.body;
+        // In a real app, this would trigger an ESM/SMTP dispatch
+        console.log(`[Notification] Dispatching Sovereign Invitation for ${email} with token ${token}`);
+        res.json({ success: true, message: 'Invitation dispatched successfully.' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Register - Standard
 router.post('/register', async (req, res) => {
     try {
@@ -590,14 +602,15 @@ router.get('/pin', authenticateToken, (req, res) => {
 // 7. Get Pending Invites - PROTECTED
 router.get('/invites', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
-        if (!req.user?.tenantId) {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && !req.user?.tenantId) {
             res.status(401).json({ error: 'Unauthorized' });
             return;
         }
 
         const invites = await prisma.invitation.findMany({
             where: {
-                tenantId: req.user.tenantId,
+                ...(isGlobalAdmin ? {} : { tenantId: req.user!.tenantId }),
                 isUsed: false,
                 expiresAt: { gt: new Date() }
             },
@@ -614,14 +627,16 @@ router.get('/invites', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 router.delete('/invites/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const inviteId = req.params.id;
-        if (!req.user?.tenantId) {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        const tenantId = req.user?.tenantId;
+
+        if (!isGlobalAdmin && !tenantId) {
             res.status(401).json({ error: 'Unauthorized' });
             return;
         }
 
-        // Check if invite belongs to tenant
         const invite = await prisma.invitation.findFirst({
-            where: { id: inviteId, tenantId: req.user.tenantId }
+            where: isGlobalAdmin ? { id: inviteId } : { id: inviteId, tenantId: req.user!.tenantId }
         });
 
         if (!invite) {

@@ -10,11 +10,12 @@ const router = express.Router();
  */
 router.get('/', authenticateToken, async (req, res) => {
     try {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Tenant context missing' });
+        if (!isGlobalAdmin && !tenantId) return res.status(401).json({ error: 'Tenant context missing' });
 
         const profiles = await prisma.brandingProfile.findMany({
-            where: { tenantId },
+            where: isGlobalAdmin ? {} : { tenantId: req.user!.tenantId },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -30,7 +31,7 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
+        const tenantId = req.user!.tenantId;
         if (!tenantId) return res.status(401).json({ error: 'Tenant context missing' });
 
         const { name, logoUrl, primaryColor, secondaryColor, primaryFont, headerText, footerText, coverPageEnabled, watermarkText } = req.body;
@@ -63,14 +64,16 @@ router.post('/', authenticateToken, async (req, res) => {
 router.patch('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const tenantId = req.user?.tenantId;
+        const tenantId = req.user!.tenantId;
         if (!tenantId) return res.status(401).json({ error: 'Tenant context missing' });
 
         const { name, logoUrl, primaryColor, secondaryColor, primaryFont, headerText, footerText, coverPageEnabled, watermarkText } = req.body;
 
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+
         // Verify ownership
         const existing = await prisma.brandingProfile.findUnique({ where: { id } });
-        if (!existing || existing.tenantId !== tenantId) {
+        if (!existing || (!isGlobalAdmin && existing.tenantId !== tenantId)) {
             return res.status(404).json({ error: 'Profile not found' });
         }
 

@@ -72,6 +72,9 @@ app.use('/api/fx-rates', fxRatesRouter);
 // Authentication (Handshake/Login)
 app.use('/api/auth', authRouter);
 
+// Tenant Actions (Must be above /api catchall)
+app.use('/api/tenant', authenticateToken, tenantRouter);
+
 // Protected Sovereign Routes (Require x-sov-pin)
 app.use('/api/pricing', sovereignGuard, pricingRouter);
 app.use('/api/platform', sovereignGuard, platformRouter);
@@ -82,7 +85,7 @@ app.use('/api/rules', sovereignGuard, rulesRouter);
 app.use('/api/users', sovereignGuard, usersRouter);
 app.use('/api', sovereignGuard, apiRouter);
 
-// Matter Management (Double Layer: Auth + Optional Sovereign Guard inside mattersRouter if needed)
+// Matter Management
 app.use('/api/matters', authenticateToken, mattersRouter);
 app.use('/api/bridges', authenticateToken, bridgesRouter);
 app.use('/api/roles', authenticateToken, rolesRouter);
@@ -90,7 +93,6 @@ app.use('/api/webhooks', authenticateToken, webhooksRouter);
 app.use('/api/analytics', authenticateToken, analyticsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
-app.use('/api/tenant', authenticateToken, tenantRouter);
 
 // Serve static files from the React app
 // Priority 1: Check root dist (Standard Vite) - DISABLE default index.html serving here

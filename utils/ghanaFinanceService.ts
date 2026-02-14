@@ -21,15 +21,14 @@ export const INSTRUMENT_TYPES = {
     CONVEYANCE: 'Conveyance/Transfers',
 };
 
+import { authorizedFetch } from './api';
+
 /**
  * Fetches live exchange rates from the Sovereign Control Plane backend.
  */
 export const fetchFxRates = async (sovPin: string): Promise<LiveFxRates> => {
     try {
-        const response = await fetch('/api/fx-rates', {
-            headers: { 'x-sov-pin': sovPin }
-        });
-        const data = await response.json();
+        const data = await authorizedFetch('/api/fx-rates');
         if (data.success) {
             return data.rates;
         }

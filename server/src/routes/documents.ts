@@ -12,8 +12,9 @@ router.get('/', authenticateToken, async (req, res) => {
             return;
         }
 
+        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
         const documents = await prisma.document.findMany({
-            where: {
+            where: isGlobalAdmin ? {} : {
                 matter: {
                     tenantId: req.user.tenantId
                 }
@@ -56,10 +57,11 @@ router.get('/matter/:matterId', authenticateToken, async (req, res) => {
             return;
         }
 
+        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
         const documents = await prisma.document.findMany({
             where: {
                 matterId,
-                matter: {
+                matter: isGlobalAdmin ? {} : {
                     tenantId: req.user.tenantId
                 }
             },
@@ -90,7 +92,9 @@ router.post('/', authenticateToken, async (req, res) => {
             include: { tenant: true }
         });
 
-        if (!matter || matter.tenantId !== tenantId) {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+
+        if (!matter || (!isGlobalAdmin && matter.tenantId !== tenantId)) {
             res.status(403).json({ error: 'Invalid Matter ID' });
             return;
         }

@@ -20,13 +20,39 @@ import { fetchFxRates, LiveFxRates } from '../utils/ghanaFinanceService';
 
 const GrowthDashboard: React.FC = () => {
     const [partnerRate, setPartnerRate] = useState(5625); // GHS approx for $450
-    const [hoursSaved, setHoursSaved] = useState(142);
-    const [staffCount, setStaffCount] = useState(12);
+    const [hoursSaved, setHoursSaved] = useState(0);
+    const [staffCount, setStaffCount] = useState(0);
+    const [feeRecovery, setFeeRecovery] = useState(0);
+    const [tatReduction, setTatReduction] = useState(0);
     const [liveRates, setLiveRates] = useState<LiveFxRates | null>(null);
 
     React.useEffect(() => {
-        const sovPin = localStorage.getItem('sov-pin') || '';
-        fetchFxRates(sovPin).then(setLiveRates);
+        const fetchDashboardData = async () => {
+            try {
+                const sovPin = localStorage.getItem('sov-pin') || '';
+                const rates = await fetchFxRates(sovPin);
+                setLiveRates(rates);
+
+                const sessionData = localStorage.getItem('lexSovereign_session');
+                const token = sessionData ? JSON.parse(sessionData).token : '';
+
+                const response = await fetch('/api/analytics/metrics', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.growth) {
+                    setHoursSaved(data.growth.hoursSaved || 0);
+                    setStaffCount(data.growth.staffCount || 0);
+                    setFeeRecovery(data.growth.feeRecovery || 0);
+                    setTatReduction(data.growth.tatReduction || 0);
+                }
+            } catch (error) {
+                console.error("Failed to fetch growth metrics:", error);
+            }
+        };
+
+        fetchDashboardData();
     }, []);
 
     const revenueProtected = useMemo(() => hoursSaved * partnerRate, [hoursSaved, partnerRate]);
@@ -136,22 +162,22 @@ const GrowthDashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <MetricCard
                     icon={<Users size={24} />}
-                    label="Junior Staffing Efficiency"
-                    value="+42%"
-                    sub="Hours redirected to strategy"
+                    label="Active Staff Efficiency"
+                    value={`${staffCount} Personnel`}
+                    sub="Current headcount utilizing Sovereign"
                     color="secondary"
                 />
                 <MetricCard
                     icon={<TrendingUp size={24} />}
                     label="Unbilled Fee Recovery"
-                    value="GHS 155,000"
+                    value={`GHS ${feeRecovery.toLocaleString()}`}
                     sub="Captured from automated tracing"
                     color="primary"
                 />
                 <MetricCard
                     icon={<Clock size={24} />}
                     label="Drafting Turnaround Time (TAT)"
-                    value="-65%"
+                    value={`-${tatReduction}%`}
                     sub="Average reduction per matter"
                     color="purple"
                 />

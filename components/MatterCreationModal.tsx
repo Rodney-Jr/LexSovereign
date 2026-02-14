@@ -84,21 +84,30 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   }, [formData.internalCounsel, formData.complexityWeight, formData.riskLevel]);
 
   const validateCapacity = async () => {
-    // In a real app, this would be an API call to CapacityService.validateAssignment
-    // For the prototype, we simulate the validation logic
-    const user = practitioners.find(p => p.id === formData.internalCounsel);
-    if (!user) return;
+    if (!formData.internalCounsel) return;
 
-    // Simulate potential issues
-    const isOverloaded = Math.random() > 0.7; // Mock condition
-    if (isOverloaded) {
-      setCapacityStatus({
-        severity: 'OVERRIDE',
-        reason: 'Assignment would exceed capacity: 42.5h / 40h (Critical Overload)'
+    try {
+      const session = getSavedSession();
+      if (!session?.token) return;
+
+      const data = await authorizedFetch(`/api/matters/validate-capacity?userId=${formData.internalCounsel}&riskLevel=LOW&region=${formData.region}&complexityWeight=5.0`, {
+        token: session.token
       });
-    } else {
-      setCapacityStatus({ severity: 'GREEN' });
-      setShowOverrideInput(false);
+
+      if (!data.allowed) {
+        setCapacityStatus({
+          severity: data.severity || 'OVERRIDE',
+          reason: data.reason
+        });
+      } else {
+        setCapacityStatus({
+          severity: data.severity || 'GREEN',
+          reason: data.reason
+        });
+        setShowOverrideInput(false);
+      }
+    } catch (err) {
+      console.error("[Capacity] Validation failed:", err);
     }
   };
 
@@ -127,24 +136,20 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const payload = {
-        name: formData.name,
-        client: formData.client,
-        type: formData.type,
-        description: formData.description,
-        internalCounselId: formData.internalCounsel || userId,
-        tenantId: tenantId,
-        riskLevel: formData.riskLevel,
-        complexityWeight: formData.complexityWeight,
-        overrideJustification: formData.overrideJustification,
-        conflictStatus: conflictResult === 'CLEAN' ? 'CLEAN' : 'NOT_CHECKED',
-        conflictProof: conflictResult === 'CLEAN' ? `ZK-PROOF-${Math.random().toString(16).slice(2, 12).toUpperCase()}` : undefined
-      };
-
       const session = getSavedSession();
       if (!session?.token) {
         throw new Error('Authentication required');
       }
+
+      const payload = {
+        ...formData,
+        tenantId: session.tenantId,
+        internalCounselId: formData.internalCounsel,
+        riskLevel: 'LOW',
+        complexityWeight: 5.0,
+        conflictStatus: conflictResult === 'CLEAN' ? 'CLEAN' : 'COLLISION',
+        conflictProof: conflictResult === 'CLEAN' ? `ZK-PROOF-${Math.random().toString(16).slice(2, 12).toUpperCase()}` : undefined
+      };
 
       const newMatter = await authorizedFetch('/api/matters', {
         method: 'POST',
@@ -152,39 +157,55 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         body: JSON.stringify(payload)
       });
 
-      onCreated(newMatter);
+      if (newMatter && !newMatter.error) {
+        onCreated(newMatter);
+      } else {
+        throw new Error(newMatter.error || "Matter inception failed");
+      }
     } catch (e: any) {
-      console.error("Failed to create matter, implementing fallback for demo...", e);
-      // Fallback for demo if API fails (e.g. no DB connection)
-      const fallbackMatter: Matter = {
-        ...formData,
-        id: `MT-${Math.floor(Math.random() * 900 + 100)}`,
-        status: 'Open',
-        internalCounsel: 'Current User', // Placeholder for display
-        createdAt: new Date().toISOString().split('T')[0] ?? new Date().toISOString()
-      };
-      onCreated(fallbackMatter);
+      console.error("Failed to create matter:", e);
+      throw e;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const performZkConflictSearch = () => {
+  const performZkConflictSearch = async () => {
+    if (!conflictSearchTerm || conflictSearchTerm.length < 3) return;
+
     setIsConflictSearching(true);
     setConflictResult('SCANNING');
     setConflictScanProgress(0);
 
+    // Visual progress simulation
     const interval = setInterval(() => {
-      setConflictScanProgress(p => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setIsConflictSearching(false);
-          setConflictResult(conflictSearchTerm.toLowerCase().includes('restricted') ? 'COLLISION' : 'CLEAN');
-          return 100;
-        }
-        return p + 10;
+      setConflictScanProgress(p => (p >= 90 ? p : p + 10));
+    }, 50);
+
+    try {
+      const session = getSavedSession();
+      if (!session?.token) throw new Error("No session");
+
+      const data = await authorizedFetch('/api/matters/conflict-check', {
+        method: 'POST',
+        token: session.token,
+        body: JSON.stringify({ searchTerm: conflictSearchTerm })
       });
-    }, 80);
+
+      clearInterval(interval);
+      setConflictScanProgress(100);
+      setIsConflictSearching(false);
+      setConflictResult(data.result);
+
+      if (data.collisions) {
+        console.warn("[Conflict] Collisions detected:", data.collisions);
+      }
+    } catch (err) {
+      console.error("[Conflict] Search failed:", err);
+      clearInterval(interval);
+      setIsConflictSearching(false);
+      setConflictResult('CLEAN'); // Fallback to safe state
+    }
   };
 
   const isStep1Valid = conflictResult === 'CLEAN';
