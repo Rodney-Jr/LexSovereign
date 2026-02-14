@@ -330,6 +330,7 @@ export interface TenantMetadata {
   id: string;
   name: string;
   plan: SaaSPlan;
+  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
   primaryRegion: Region;
   sovereignCredits: number;
   activeMatters: number;

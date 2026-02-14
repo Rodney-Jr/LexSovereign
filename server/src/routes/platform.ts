@@ -62,16 +62,51 @@ router.get('/tenants', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (
             name: t.name,
             primaryRegion: t.primaryRegion || 'GLOBAL',
             plan: t.plan,
+            status: t.status,
             sovereignCredits: 10000, // Heuristic/Static for now
             activeMatters: t._count.matters,
             userCount: t._count.users,
-            health: 100
+            health: t.status === 'ACTIVE' ? 100 : 0
         }));
 
         res.json(formatted);
     } catch (err: any) {
         console.error("Platform Tenants Error:", err);
         res.status(500).json({ error: 'Failed to fetch platform tenants' });
+    }
+});
+
+/**
+ * PATCH /api/platform/tenants/:id/status
+ * Suspend or reactivate a tenant.
+ */
+router.patch('/tenants/:id/status', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!['ACTIVE', 'SUSPENDED'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status. Must be ACTIVE or SUSPENDED.' });
+        }
+
+        const tenant = await TenantService.updateTenantStatus(id, status);
+        res.json({ message: `Tenant status updated to ${status}`, tenant });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to update tenant status' });
+    }
+});
+
+/**
+ * DELETE /api/platform/tenants/:id
+ * Decommission a tenant (Soft Delete).
+ */
+router.delete('/tenants/:id', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        await TenantService.deleteTenant(id);
+        res.json({ message: 'Tenant decommissioned successfully' });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to decommission tenant' });
     }
 });
 

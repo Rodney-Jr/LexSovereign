@@ -51,6 +51,8 @@ model User {
   roleSeniority     Float     @default(1.0)
   jurisdictionPins  Json?     @default("[]")
   credentials       Json?     @default("[]")
+  
+  isActive          Boolean   @default(true)
 }
 
 model Role {
@@ -113,6 +115,7 @@ model Tenant {
   invitations       Invitation[]
   brandingProfiles  BrandingProfile[]
   chatbotConfig     ChatbotConfig?
+  status            String    @default("ACTIVE") // ACTIVE, SUSPENDED, DELETED
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

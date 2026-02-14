@@ -15,7 +15,11 @@ import {
   HardDrive,
   Plus,
   RefreshCw,
-  Search
+  Search,
+  Pause,
+  Play,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { TenantMetadata, Region, SaaSPlan } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
@@ -67,6 +71,42 @@ const TenantGovernance: React.FC = () => {
     setIsSyncing(true);
     await fetchPlatformData();
     setTimeout(() => setIsSyncing(false), 800);
+  };
+
+  const handleStatusToggle = async (tenantId: string, currentStatus: string) => {
+    const session = getSavedSession();
+    if (!session?.token) return;
+
+    const newStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    if (!confirm(`Are you sure you want to ${newStatus === 'SUSPENDED' ? 'SUSPEND' : 'ACTIVATE'} this tenant?`)) return;
+
+    try {
+      await authorizedFetch(`/api/platform/tenants/${tenantId}/status`, {
+        method: 'PATCH',
+        token: session.token,
+        body: JSON.stringify({ status: newStatus })
+      });
+      fetchPlatformData();
+    } catch (e) {
+      console.error("Failed to update status", e);
+    }
+  };
+
+  const handleDelete = async (tenantId: string) => {
+    const session = getSavedSession();
+    if (!session?.token) return;
+
+    if (!confirm("Are you sure you want to DECOMMISSION this tenant? This is a soft-delete and will suspend all access.")) return;
+
+    try {
+      await authorizedFetch(`/api/platform/tenants/${tenantId}`, {
+        method: 'DELETE',
+        token: session.token
+      });
+      fetchPlatformData();
+    } catch (e) {
+      console.error("Failed to delete tenant", e);
+    }
   };
 
   const handleManageSilo = (tenantId: string) => {
@@ -152,13 +192,46 @@ const TenantGovernance: React.FC = () => {
 
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-slate-800 rounded-2xl group-hover:scale-110 transition-transform shadow-inner">
-                    <HardDrive size={24} className="text-slate-400" />
+                  <div className={`p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-inner ${tenant.status === 'SUSPENDED' ? 'bg-amber-500/10 text-amber-500' :
+                      tenant.status === 'DELETED' ? 'bg-red-500/10 text-red-500' : 'bg-slate-800 text-slate-400'
+                    }`}>
+                    {tenant.status === 'SUSPENDED' ? <Pause size={24} /> :
+                      tenant.status === 'DELETED' ? <Trash2 size={24} /> : <HardDrive size={24} />}
                   </div>
                   <div>
-                    <h5 className="font-bold text-white text-lg tracking-tight">{tenant.name}</h5>
+                    <div className="flex items-center gap-2">
+                      <h5 className="font-bold text-white text-lg tracking-tight">{tenant.name}</h5>
+                      {tenant.status !== 'ACTIVE' && (
+                        <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-widest ${tenant.status === 'SUSPENDED' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'
+                          }`}>
+                          {tenant.status}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{tenant.id}</p>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {tenant.status !== 'DELETED' && (
+                    <>
+                      <button
+                        onClick={() => handleStatusToggle(tenant.id, tenant.status)}
+                        className={`p-2 rounded-xl transition-all ${tenant.status === 'ACTIVE' ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                          }`}
+                        title={tenant.status === 'ACTIVE' ? 'Suspend Tenant' : 'Activate Tenant'}
+                      >
+                        {tenant.status === 'ACTIVE' ? <Pause size={16} /> : <Play size={16} />}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(tenant.id)}
+                        className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-all"
+                        title="Decommission Tenant"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 

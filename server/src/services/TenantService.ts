@@ -153,4 +153,28 @@ export class TenantService {
             }
         });
     }
+
+    static async updateTenantStatus(tenantId: string, status: string) {
+        return prisma.tenant.update({
+            where: { id: tenantId },
+            data: { status }
+        });
+    }
+
+    static async deleteTenant(tenantId: string) {
+        // Soft delete by updating status or hard delete?
+        // For a true "Sovereign Decommission", we might want to wipe data.
+        // For now, let's mark as DELETED.
+        return prisma.tenant.update({
+            where: { id: tenantId },
+            data: { status: 'DELETED' }
+        });
+    }
+
+    static async manageUserStatus(userId: string, isActive: boolean) {
+        return prisma.user.update({
+            where: { id: userId },
+            data: { isActive }
+        });
+    }
 }

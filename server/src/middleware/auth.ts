@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
-import { requestContext } from '../db';
+import { prisma, requestContext } from '../db';
 import { CONFIG } from '../config';
 
 import { AuthUser } from '../types';
@@ -18,7 +18,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         return;
     }
 
-    jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    jwt.verify(token, JWT_SECRET, async (err: any, user: any) => {
         if (err) {
             console.error(`[Auth] JWT Verification failed: ${err.message}`);
             return res.status(403).json({
@@ -26,6 +26,22 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
                 code: 'FORBIDDEN',
                 reason: err.message === 'jwt expired' ? 'expired' : 'invalid'
             });
+        }
+
+        // Check User & Tenant Status
+        const dbUser = await requestContext.run({ tenantId: user.tenantId, userId: user.id }, () =>
+            prisma.user.findUnique({
+                where: { id: user.id },
+                include: { tenant: { select: { status: true } } }
+            })
+        );
+
+        if (!dbUser || !dbUser.isActive) {
+            return res.status(403).json({ error: 'Account disabled. Contact platform admin.', code: 'ACCOUNT_DISABLED' });
+        }
+
+        if (dbUser.tenant && dbUser.tenant.status === 'SUSPENDED') {
+            return res.status(403).json({ error: 'Tenant enclave suspended. Access denied.', code: 'TENANT_SUSPENDED' });
         }
 
         console.log(`[Auth] JWT Verified for user: ${user.email} (Role: ${user.role})`);
