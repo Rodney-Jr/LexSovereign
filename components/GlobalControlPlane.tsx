@@ -33,10 +33,11 @@ import { ProvisionTenantModal } from './ProvisionTenantModal';
 import { authorizedFetch } from '../utils/api';
 
 interface GlobalControlPlaneProps {
+   userName: string;
    onNavigate?: (tab: string) => void;
 }
 
-const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) => {
+const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNavigate }) => {
    const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
@@ -100,7 +101,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ onNavigate }) =
                   </div>
                   Sovereign Control Plane
                </h3>
-               <p className="text-slate-400 text-sm">Global platform oversight: Multi-region enclaves & cross-tenant governance.</p>
+               <p className="text-slate-400 text-sm">Platform Integrity Monitor | Authenticated: <span className="text-cyan-400 font-bold">{userName}</span></p>
             </div>
             <div className="flex items-center gap-4">
                <div className="bg-slate-900 border border-slate-800 p-1 rounded-2xl flex gap-1">

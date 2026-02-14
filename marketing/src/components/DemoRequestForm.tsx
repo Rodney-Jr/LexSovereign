@@ -5,13 +5,47 @@ import { Link } from 'react-router-dom';
 
 export default function DemoRequestForm() {
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        organization: '',
+        orgType: 'Law Firm',
+        message: ''
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('submitting');
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setStatus('success');
+
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || '';
+            const response = await fetch(`${apiUrl}/api/leads`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: `${formData.firstName} ${formData.lastName}`.trim(),
+                    email: formData.email,
+                    phone: formData.phone,
+                    company: formData.organization,
+                    source: 'WEB_MODAL', // Can be specific for different forms
+                    // OrgType and message can be added to the lead model or metadata if needed
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit request');
+            }
+
+            setStatus('success');
+        } catch (error) {
+            console.error('Lead submission error:', error);
+            alert('There was an error processing your request. Please try again or contact us directly.');
+            setStatus('idle');
+        }
     };
 
     if (status === 'success') {
@@ -45,6 +79,8 @@ export default function DemoRequestForm() {
                         <input
                             required
                             type="text"
+                            value={formData.firstName}
+                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                             placeholder="Jane"
                         />
@@ -54,6 +90,8 @@ export default function DemoRequestForm() {
                         <input
                             required
                             type="text"
+                            value={formData.lastName}
+                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                             placeholder="Doe"
                         />
@@ -65,8 +103,21 @@ export default function DemoRequestForm() {
                     <input
                         required
                         type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                         placeholder="j.doe@firm.law"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Phone Number (Optional)</label>
+                    <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                        placeholder="+1 (555) 123-4567"
                     />
                 </div>
 
@@ -75,6 +126,8 @@ export default function DemoRequestForm() {
                     <input
                         required
                         type="text"
+                        value={formData.organization}
+                        onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                         placeholder="Legal Organization Name"
                     />
@@ -84,6 +137,8 @@ export default function DemoRequestForm() {
                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Organization Type</label>
                     <select
                         aria-label="Organization Type"
+                        value={formData.orgType}
+                        onChange={(e) => setFormData({ ...formData, orgType: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                     >
                         <option>Law Firm</option>
@@ -97,6 +152,8 @@ export default function DemoRequestForm() {
                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Message (Optional)</label>
                     <textarea
                         rows={3}
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                         placeholder="Any specific governance requirements..."
                     ></textarea>

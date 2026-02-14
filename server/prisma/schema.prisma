@@ -309,6 +309,7 @@ model Lead {
   email     String
   name      String
   company   String?
+  phone     String?
   status    String   @default("NEW") // NEW, CONTACTED, CONVERTED, ARCHIVED
   source    String   @default("WEB_MODAL") // WEB_MODAL, CHATBOT
 

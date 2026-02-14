@@ -7,7 +7,7 @@ const router = express.Router();
 // Public: Submit a new lead
 router.post('/', async (req, res) => {
     try {
-        const { email, name, company, source } = req.body;
+        const { email, name, company, phone, source } = req.body;
 
         if (!email || !name) {
             return res.status(400).json({ error: "Name and Email are required." });
@@ -18,6 +18,7 @@ router.post('/', async (req, res) => {
                 email,
                 name,
                 company,
+                phone,
                 source: source || 'WEB_MODAL',
                 status: 'NEW'
             }

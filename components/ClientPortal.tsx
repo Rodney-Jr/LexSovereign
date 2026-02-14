@@ -14,7 +14,7 @@ import {
    AlertCircle
 } from 'lucide-react';
 
-const ClientPortal: React.FC = () => {
+const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
    return (
       <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-right-8 duration-700 pb-20">
          <div className="text-center space-y-4 pt-8">
@@ -24,7 +24,7 @@ const ClientPortal: React.FC = () => {
                </div>
             </div>
             <div className="space-y-1">
-               <h2 className="text-3xl font-bold text-white tracking-tight">Sovereign Client Portal</h2>
+               <h2 className="text-3xl font-bold text-white tracking-tight">{userName}'s Sovereign Portal</h2>
                <p className="text-slate-400 text-sm">Welcome back. Your data is currently pinned to the primary regional silo.</p>
             </div>
          </div>

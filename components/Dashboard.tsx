@@ -17,10 +17,11 @@ import { authorizedFetch, getSavedSession } from '../utils/api'; // Ensure this 
 
 const Dashboard: React.FC<{
   mode: AppMode;
+  userName: string;
   mattersCount: number;
   docsCount: number;
   rulesCount: number;
-}> = ({ mode, mattersCount, docsCount, rulesCount }) => {
+}> = ({ mode, userName, mattersCount, docsCount, rulesCount }) => {
   const [historyData, setHistoryData] = useState<{ name: string; value: number }[]>([]);
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,17 @@ const Dashboard: React.FC<{
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Welcome back, {userName}</h2>
+          <p className="text-slate-500 text-sm mt-1">Here's what's happening in your {mode === AppMode.LAW_FIRM ? 'practice' : 'organization'} today.</p>
+        </div>
+        <div className="flex items-center gap-3 bg-brand-sidebar border border-brand-border px-4 py-2 rounded-2xl">
+          <Activity size={16} className="text-brand-primary" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Silo Pulse: Nominal</span>
+        </div>
+      </div>
+
       {/* KPI Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <KpiCard

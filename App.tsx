@@ -238,6 +238,7 @@ const AppContent: React.FC = () => {
             </div>
             <Dashboard
               mode={mode}
+              userName={userName || 'User'}
               mattersCount={matters.length}
               docsCount={documents.length}
               rulesCount={rules.length}
@@ -245,7 +246,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'platform-ops' && <GlobalControlPlane onNavigate={setActiveTab} />}
+        {activeTab === 'platform-ops' && <GlobalControlPlane userName={userName || 'Administrator'} onNavigate={setActiveTab} />}
         {activeTab === 'governance' && <TenantGovernance />}
         {activeTab === 'org-blueprint' && <OrgChart />}
         {activeTab === 'integration-bridge' && <BridgeRegistry />}
@@ -294,7 +295,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'status' && <ProjectStatus />}
         {activeTab === 'tenant-settings' && <TenantSettings userRole={contextRole as any} setUserRole={() => { }} />}
         {activeTab === 'system-settings' && <GlobalSettings />}
-        {activeTab === 'client-portal' && <ClientPortal />}
+        {activeTab === 'client-portal' && <ClientPortal userName={userName || 'Valued Client'} />}
       </div>
 
       {showMatterModal && (
