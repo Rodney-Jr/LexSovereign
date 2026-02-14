@@ -65,6 +65,7 @@ router.get('/metrics', authenticateToken, async (req, res) => {
 router.get('/history', authenticateToken, async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        const tenantId = req.user?.tenantId;
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // Go back 5 months + current
 
