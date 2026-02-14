@@ -7,6 +7,7 @@ import ForGovernment from './pages/ForGovernment';
 import PricingPage from './pages/PricingPage';
 import SecurityPage from './pages/SecurityPage';
 import ClientIntakePage from './pages/ClientIntakePage';
+import ChatbotWidget from './components/ChatbotWidget';
 
 // ScrollToTop component to handle scroll restoration on route change
 function ScrollToTop() {
@@ -35,6 +36,8 @@ export default function App() {
                 <Route path="/privacy" element={<SecurityPage />} /> {/* Fallback for demo */}
                 <Route path="/terms" element={<SecurityPage />} /> {/* Fallback for demo */}
             </Routes>
+            {/* Chatbot Widget - appears on all pages */}
+            <ChatbotWidget />
         </Router>
     );
 }

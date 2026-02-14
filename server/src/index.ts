@@ -25,6 +25,7 @@ import brandingRouter from './routes/branding';
 import chatbotRouter from './routes/chatbot';
 import tenantRouter from './routes/tenant';
 import leadsRouter from './routes/leads';
+import chatConversationsRouter from './routes/chatConversations';
 import fxRatesRouter from './routes/fxRates';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
@@ -65,6 +66,9 @@ app.get('/health', (req, res) => {
 
 // Public / Lead Generation
 app.use('/api/leads', leadsRouter);
+
+// Chat Conversations (Public for widget, Protected for admin)
+app.use('/api/chat-conversations', chatConversationsRouter);
 
 // FX Rates (Daily Sync)
 app.use('/api/fx-rates', fxRatesRouter);

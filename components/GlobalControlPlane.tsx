@@ -26,6 +26,7 @@ import {
    UserPlus,
    MoreVertical,
    ShieldQuestion,
+   MessageSquare,
    EyeOff
 } from 'lucide-react';
 import { Region, GlobalAdminIdentity } from '../types';
@@ -38,7 +39,7 @@ interface GlobalControlPlaneProps {
 }
 
 const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNavigate }) => {
-   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads'>('telemetry');
+   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads' | 'conversations'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
@@ -55,6 +56,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
    const [platformAdmins, setPlatformAdmins] = useState<GlobalAdminIdentity[]>([]);
    const [regionalSilos, setRegionalSilos] = useState<any[]>([]);
    const [auditLogs, setAuditLogs] = useState<any[]>([]);
+   const [conversations, setConversations] = useState<any[]>([]);
 
    React.useEffect(() => {
       const fetchPlatformData = async () => {
@@ -62,18 +64,20 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
             const sessionData = localStorage.getItem('lexSovereign_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
 
-            // Parallel fetch for all platform signals
-            const [statsData, adminData, siloData, logData] = await Promise.all([
+            // Parallel fetch for all platform signals including conversations
+            const [statsData, adminData, siloData, logData, conversationsData] = await Promise.all([
                authorizedFetch('/api/platform/stats', { token }),
                authorizedFetch('/api/platform/admins', { token }),
                authorizedFetch('/api/platform/silos', { token }),
-               authorizedFetch('/api/platform/audit-logs', { token })
+               authorizedFetch('/api/platform/audit-logs', { token }),
+               authorizedFetch('/api/chat-conversations', { token })
             ]);
 
             if (!statsData.error) setStats(statsData);
             if (Array.isArray(adminData)) setPlatformAdmins(adminData);
             if (Array.isArray(siloData)) setRegionalSilos(siloData);
             if (Array.isArray(logData)) setAuditLogs(logData);
+            if (Array.isArray(conversationsData)) setConversations(conversationsData);
 
          } catch (e) {
             console.error("Failed to fetch platform telemetry", e);
@@ -84,7 +88,6 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
       const interval = setInterval(fetchPlatformData, 30000); // Polling every 30s
       return () => clearInterval(interval);
    }, []);
-
    const handleGlobalSync = () => {
       setIsSyncing(true);
       setTimeout(() => setIsSyncing(false), 2000);
@@ -122,6 +125,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                      className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'leads' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                      Leads
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('conversations')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'conversations' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                     Conversations
                   </button>
                   <button
                      onClick={() => onNavigate?.('pricing-calib')}
@@ -419,7 +428,119 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
          )}
 
          {activeTab === 'leads' && <LeadsTab />}
+
+         {activeTab === 'conversations' && <ConversationsTab conversations={conversations} />}
       </div >
+   );
+};
+
+const ConversationsTab = ({ conversations }: { conversations: any[] }) => {
+   const [expandedSession, setExpandedSession] = useState<string | null>(null);
+
+   // Group conversations by session - conversations already come from backend
+   const sessionGroups = conversations.reduce((acc: any, conv: any) => {
+      if (!acc[conv.sessionId]) {
+         acc[conv.sessionId] = {
+            sessionId: conv.sessionId,
+            visitorName: conv.visitorName,
+            visitorEmail: conv.visitorEmail,
+            messages: conv.messages || [],
+            createdAt: conv.createdAt,
+            updatedAt: conv.updatedAt
+         };
+      }
+      return acc;
+   }, {});
+
+   const sessions = Object.values(sessionGroups).sort((a: any, b: any) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+   );
+
+   return (
+      <div className="grid grid-cols-1 gap-10 animate-in slide-in-from-right-4 duration-500">
+         <div className="space-y-6">
+            <div className="flex items-center justify-between px-2">
+               <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <MessageSquare size={14} className="text-purple-400" /> Marketing Chatbot Conversations
+               </h4>
+               <div className="text-slate-500 text-xs">
+                  {sessions.length} session{sessions.length !== 1 ? 's' : ''}
+               </div>
+            </div>
+
+            <div className="space-y-4">
+               {sessions.length === 0 ? (
+                  <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-12 text-center">
+                     <MessageSquare size={48} className="text-slate-700 mx-auto mb-4" />
+                     <p className="text-slate-500 text-sm">No chatbot conversations yet.</p>
+                     <p className="text-slate-600 text-xs mt-2">Conversations from the marketing website will appear here.</p>
+                  </div>
+               ) : (
+                  sessions.map((session: any) => (
+                     <div
+                        key={session.sessionId}
+                        className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl hover:border-slate-700 transition-all"
+                     >
+                        {/* Session Header */}
+                        <div
+                           className="p-6 cursor-pointer hover:bg-slate-800/30 transition-all"
+                           onClick={() => setExpandedSession(expandedSession === session.sessionId ? null : session.sessionId)}
+                        >
+                           <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                    <MessageSquare size={24} className="text-purple-400" />
+                                 </div>
+                                 <div>
+                                    <h5 className="text-white font-bold text-sm">
+                                       {session.visitorName || `Session ${session.sessionId.slice(-8)}`}
+                                    </h5>
+                                    <p className="text-slate-500 text-xs font-mono mt-1">
+                                       {session.visitorEmail || `${session.messages.length} message${session.messages.length !== 1 ? 's' : ''}`}
+                                    </p>
+                                 </div>
+                              </div>
+                              <div className="text-right">
+                                 <p className="text-slate-400 text-xs">
+                                    {new Date(session.lastMessage).toLocaleDateString()}
+                                 </p>
+                                 <p className="text-slate-600 text-xs font-mono">
+                                    {new Date(session.lastMessage).toLocaleTimeString()}
+                                 </p>
+                              </div>
+                           </div>
+                        </div>
+
+                        {/* Expanded Messages */}
+                        {expandedSession === session.sessionId && (
+                           <div className="border-t border-slate-800 bg-slate-950 p-6 space-y-3">
+                              {session.messages.map((msg: any, idx: number) => (
+                                 <div
+                                    key={idx}
+                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                 >
+                                    <div
+                                       className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === 'user'
+                                             ? 'bg-purple-600 text-white'
+                                             : 'bg-slate-800 text-slate-200'
+                                          }`}
+                                    >
+                                       <p className="text-sm">{msg.content}</p>
+                                       <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-purple-200 opacity-70' : 'text-slate-500'
+                                          }`}>
+                                          {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : ''}
+                                       </p>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        )}
+                     </div>
+                  ))
+               )}
+            </div>
+         </div>
+      </div>
    );
 };
 

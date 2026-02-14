@@ -343,3 +343,19 @@ model DailyFxRate {
 
   @@unique([currencyPair, effectiveDate])
 }
+
+model ChatConversation {
+  id            String   @id @default(uuid())
+  sessionId     String   // Unique session ID for the visitor
+  visitorEmail  String?  // Optional email if provided
+  visitorName   String?  // Optional name if provided
+  messages      Json     // Array of {role: 'user'|'assistant', content: string, timestamp: string}
+  source        String   @default("MARKETING_WIDGET") // MARKETING_WIDGET, etc.
+  status        String   @default("ACTIVE") // ACTIVE, ARCHIVED
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([sessionId])
+  @@index([createdAt])
+}
