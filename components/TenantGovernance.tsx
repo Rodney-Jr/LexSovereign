@@ -25,24 +25,35 @@ const TenantGovernance: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [platformStats, setPlatformStats] = useState<any>({
+    storageTB: '0.00',
+    computeNodes: 0,
+    aiTokens: '0',
+    systemHealth: 100
+  });
 
-  const fetchTenants = async () => {
+  const fetchPlatformData = async () => {
     const session = getSavedSession();
     if (!session?.token) return;
 
     try {
       setLoading(true);
-      const data = await authorizedFetch('/api/platform/tenants', { token: session.token });
-      setTenants(data);
+      const [tenantsData, statsData] = await Promise.all([
+        authorizedFetch('/api/platform/tenants', { token: session.token }),
+        authorizedFetch('/api/platform/stats', { token: session.token })
+      ]);
+
+      if (Array.isArray(tenantsData)) setTenants(tenantsData);
+      if (statsData && !statsData.error) setPlatformStats(statsData);
     } catch (e) {
-      console.error("Failed to load tenants", e);
+      console.error("Failed to load platform data", e);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTenants();
+    fetchPlatformData();
   }, []);
 
   const [filter, setFilter] = useState('');
@@ -54,7 +65,7 @@ const TenantGovernance: React.FC = () => {
 
   const handleSync = async () => {
     setIsSyncing(true);
-    await fetchTenants();
+    await fetchPlatformData();
     setTimeout(() => setIsSyncing(false), 800);
   };
 
@@ -102,10 +113,10 @@ const TenantGovernance: React.FC = () => {
 
       {/* Infrastructure Heatmap */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <ResourceCard label="Global Storage" value="17.8 TB" sub="Pinned Artifacts" icon={<Database className="text-blue-400" />} />
-        <ResourceCard label="Compute Nodes" value="42" sub="Distributed TEEs" icon={<Server className="text-emerald-400" />} />
-        <ResourceCard label="AI Throughput" value="1.4M" sub="Daily Tokens" icon={<Zap className="text-amber-400" />} />
-        <ResourceCard label="Tenant Health" value="100%" sub="Silo Integrity" icon={<ShieldCheck className="text-emerald-500" />} />
+        <ResourceCard label="Global Storage" value={`${platformStats.storageTB} TB`} sub="Pinned Artifacts" icon={<Database className="text-blue-400" />} />
+        <ResourceCard label="Compute Nodes" value={platformStats.computeNodes} sub="Distributed TEEs" icon={<Server className="text-emerald-400" />} />
+        <ResourceCard label="AI Throughput" value={platformStats.aiTokens} sub="Daily Tokens" icon={<Zap className="text-amber-400" />} />
+        <ResourceCard label="Tenant Health" value={`${platformStats.systemHealth}%`} sub="Silo Integrity" icon={<ShieldCheck className="text-emerald-500" />} />
       </div>
 
       <div className="bg-slate-900/30 border border-slate-800 rounded-[3rem] p-8 space-y-8">
@@ -170,7 +181,7 @@ const TenantGovernance: React.FC = () => {
               <div className="space-y-3 pt-6 border-t border-slate-800/50 relative z-10">
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-500">
                   <span>Sovereign Credits</span>
-                  <span className="text-emerald-400">{tenant.sovereignCredits} Unit / mo</span>
+                  <span className="text-emerald-400">{tenant.sovereignCredits?.toLocaleString() || '10,000'} Unit / mo</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 w-[72%] rounded-full shadow-[0_0_12px_rgba(16,185,129,0.3)]"></div>
@@ -180,7 +191,7 @@ const TenantGovernance: React.FC = () => {
               <div className="flex items-center justify-between pt-2 relative z-10">
                 <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold">
                   <TrendingUp size={14} className="text-emerald-500" />
-                  {tenant.activeMatters} Active Matters
+                  {tenant.activeMatters} Active Matters • {tenant.userCount} Users
                 </div>
                 <button
                   onClick={() => handleManageSilo(tenant.id)}

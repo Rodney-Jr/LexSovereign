@@ -329,6 +329,7 @@ export interface TenantMetadata {
   primaryRegion: Region;
   sovereignCredits: number;
   activeMatters: number;
+  userCount: number;
   dataGravity: string;
 }
 
