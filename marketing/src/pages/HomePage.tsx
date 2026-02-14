@@ -27,7 +27,7 @@ export default function HomePage() {
             />
 
             {/* HERO */}
-            <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-20 overflow-hidden">
+            <section id="demo" className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-20 overflow-hidden">
                 {/* Background Effects */}
                 <div className="absolute inset-0 bg-slate-950 z-0">
                     <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950"></div>
@@ -54,7 +54,7 @@ export default function HomePage() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                            <Button asLink="#demo" size="lg">Request Private Demo</Button>
+                            <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Request Private Demo</Button>
                             <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>
                         </div>
 
@@ -235,14 +235,14 @@ export default function HomePage() {
             </Section>
 
             {/* FINAL CTA */}
-            <section id="demo" className="py-24 px-6 bg-indigo-950/30 border-y border-indigo-900/30">
+            <section className="py-24 px-6 bg-indigo-950/30 border-y border-indigo-900/30">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-4xl font-bold mb-6 text-white">Ready to Professionalize Your Operations?</h2>
                     <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
                         Schedule a confidential demonstration with our institutional team to discuss your specific governance needs.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button onClick={() => document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })} size="lg">Request Access</Button>
+                        <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Request Access</Button>
                         <Button asLink="/pricing" variant="outline" size="lg">View Pricing</Button>
                     </div>
                 </div>

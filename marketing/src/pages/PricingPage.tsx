@@ -1,10 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
-import { Check } from 'lucide-react';
+import { Check, Settings, Loader2 } from 'lucide-react';
+
+interface PricingConfig {
+    id: string;
+    basePrice: number;
+    pricePerUser: number;
+    features: string[];
+}
 
 export default function PricingPage() {
+    const [configs, setConfigs] = useState<PricingConfig[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchPricing = async () => {
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || '';
+                const response = await fetch(`${apiUrl}/api/pricing`);
+                if (!response.ok) throw new Error('Failed to fetch pricing');
+                const data = await response.json();
+                setConfigs(data);
+            } catch (err: any) {
+                console.error('Pricing Error:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPricing();
+    }, []);
+
     return (
         <Layout>
             <SEO
@@ -18,64 +48,63 @@ export default function PricingPage() {
                     subtitle="Choose the governance level that fits your organization. No hidden fees."
                 />
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {/* Starter */}
-                    <PricingCard
-                        title="Starter"
-                        price="$29"
-                        userMonth
-                        description="For small firms establishing governance."
-                        features={[
-                            "Up to 5 Users",
-                            "Basic Conflict Checking",
-                            "Standard Document Management",
-                            "Email Support",
-                            "99.9% Uptime"
-                        ]}
-                    />
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
+                        <Loader2 className="animate-spin w-12 h-12 text-indigo-500" />
+                        <p className="font-mono animate-pulse">Synchronizing with Sovereign Billing Enclave...</p>
+                    </div>
+                ) : error ? (
+                    <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-3xl max-w-2xl mx-auto text-center">
+                        <p className="text-red-400 font-bold mb-2">Billing Synchronization Unavailable</p>
+                        <p className="text-slate-400 text-sm">We're unable to load live pricing. Please contact sales for current rates.</p>
+                    </div>
+                ) : (
+                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        {configs.map((config) => (
+                            <PricingCard
+                                key={config.id}
+                                title={config.id}
+                                price={`$${config.basePrice}`}
+                                pricePerUser={config.pricePerUser}
+                                userMonth={config.pricePerUser > 0}
+                                featured={config.id === 'Sovereign'}
+                                description={
+                                    config.id === 'Standard' ? "For small firms establishing governance." :
+                                        config.id === 'Sovereign' ? "For growing firms requiring oversight." :
+                                            "For enterprise and government institutional scale."
+                                }
+                                features={config.features}
+                            />
+                        ))}
+                    </div>
+                )}
 
-                    {/* Professional */}
-                    <PricingCard
-                        title="Professional"
-                        price="$59"
-                        userMonth
-                        featured
-                        description="For growing firms requiring oversight."
-                        features={[
-                            "Up to 50 Users",
-                            "Advanced Conflict Workflows",
-                            "Partner Approval Gates",
-                            "Audit Logs (30 Days)",
-                            "Priority Support",
-                            "Client Portal Access",
-                            "Marketing Chatbot Widget"
-                        ]}
-                    />
+                <div className="mt-20 grid md:grid-cols-2 gap-8 max-w-6xl mx-auto items-center">
+                    <div className="p-8 bg-slate-900/40 border border-slate-800 rounded-[2.5rem] relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 text-emerald-500/10 group-hover:text-emerald-500/20 transition-colors">
+                            <Settings size={120} />
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                            <Settings className="text-emerald-400" /> Hybrid Pricing Governance
+                        </h3>
+                        <p className="text-slate-300 mb-6 leading-relaxed relative z-10">
+                            LexSovereign isn't just a platform; it's a governance layer. Institutional clients can manage their own tiered rates,
+                            user allocations, and internal feature sets directly through the <strong>Sovereign Control Plane</strong>.
+                        </p>
+                        <div className="flex flex-wrap gap-3 mb-6">
+                            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono rounded-full border border-emerald-500/20">Dynamic Calibration</span>
+                            <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 text-xs font-mono rounded-full border border-indigo-500/20">Enclave Billing</span>
+                            <span className="px-3 py-1 bg-slate-800 text-slate-300 text-xs font-mono rounded-full">RBAC Enforcement</span>
+                        </div>
+                    </div>
 
-                    {/* Institutional */}
-                    <PricingCard
-                        title="Institutional"
-                        price="Custom"
-                        description="For enterprise and government."
-                        features={[
-                            "Unlimited Users",
-                            "Multi-Entity Support",
-                            "Full Audit Trail (Unlimited)",
-                            "Sovereign Data Residency",
-                            "Dedicated Success Manager",
-                            "SSO & Custom Security",
-                            "On-Premise Deployment Option",
-                            "Universal Marketing Chatbots"
-                        ]}
-                    />
-                </div>
-
-                <div className="mt-16 bg-indigo-900/20 border border-indigo-900/50 rounded-2xl p-8 max-w-4xl mx-auto text-center">
-                    <h3 className="text-xl font-bold text-white mb-2">Emerging Market Program</h3>
-                    <p className="text-slate-300 mb-6">
-                        We advocate for rule of law worldwide. Special pricing is available for qualifying institutions in emerging markets.
-                    </p>
-                    <Button asLink="/#demo" variant="outline">Contact for Eligibility</Button>
+                    <div className="bg-gradient-to-br from-indigo-900/20 to-slate-900/40 border border-indigo-900/50 rounded-[2.5rem] p-8 text-center md:text-left">
+                        <h3 className="text-xl font-bold text-white mb-2">Emerging Market Program</h3>
+                        <p className="text-slate-300 mb-6">
+                            We advocate for rule of law worldwide. Special pricing is available for qualifying institutions in emerging markets.
+                        </p>
+                        <Button asLink="/#demo" variant="outline">Contact for Eligibility</Button>
+                    </div>
                 </div>
             </Section>
 
@@ -93,7 +122,7 @@ export default function PricingPage() {
     );
 }
 
-function PricingCard({ title, price, userMonth, description, features, featured }: any) {
+function PricingCard({ title, price, userMonth, pricePerUser, description, features, featured }: any) {
     return (
         <div className={`p-8 rounded-3xl border flex flex-col relative ${featured ? 'bg-slate-900 border-indigo-500 shadow-xl shadow-indigo-900/10' : 'bg-slate-950/50 border-slate-800'}`}>
             {featured && (
@@ -104,7 +133,7 @@ function PricingCard({ title, price, userMonth, description, features, featured 
             <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
             <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-4xl font-bold text-white">{price}</span>
-                {userMonth && <span className="text-slate-500">/user/mo</span>}
+                {userMonth && <span className="text-slate-500">/user/mo (${pricePerUser})</span>}
             </div>
             <p className="text-slate-400 text-sm mb-8 min-h-[40px]">{description}</p>
 

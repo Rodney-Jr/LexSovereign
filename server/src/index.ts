@@ -66,6 +66,7 @@ app.get('/health', (req, res) => {
 
 // Public / Lead Generation
 app.use('/api/leads', leadsRouter);
+app.use('/api/pricing', pricingRouter);
 
 // Chat Conversations (Public for widget, Protected for admin)
 app.use('/api/chat-conversations', chatConversationsRouter);
@@ -78,9 +79,6 @@ app.use('/api/auth', authRouter);
 
 // Tenant Actions (Must be above /api catchall)
 app.use('/api/tenant', authenticateToken, tenantRouter);
-
-// Protected Sovereign Routes (Require x-sov-pin)
-app.use('/api/pricing', sovereignGuard, pricingRouter);
 app.use('/api/platform', sovereignGuard, platformRouter);
 app.use('/api/document-templates', sovereignGuard, documentTemplatesRouter);
 app.use('/api/branding-profiles', sovereignGuard, brandingRouter);

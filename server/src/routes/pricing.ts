@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { sovereignGuard } from '../middleware/sovereignGuard';
 
 const router = express.Router();
 
@@ -82,7 +83,7 @@ router.get('/', async (req, res) => {
 });
 
 // Update Pricing Config (Global Admin Only)
-router.put('/:id', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+router.put('/:id', sovereignGuard, authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { id } = req.params;
         const { basePrice, pricePerUser, creditsIncluded, features } = req.body;

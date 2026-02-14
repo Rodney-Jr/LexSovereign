@@ -30,6 +30,21 @@ export default function Layout({ children }: LayoutProps) {
         setIsMobileMenuOpen(false);
     }, [location]);
 
+    // Global Hash Scrolling Logic
+    useEffect(() => {
+        if (location.hash) {
+            const id = location.hash.replace('#', '');
+            const element = document.getElementById(id);
+            if (element) {
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }, 100); // Small delay to ensure DOM is ready
+            }
+        } else if (location.pathname) {
+            window.scrollTo(0, 0); // Scroll to top on standard route change
+        }
+    }, [location]);
+
     return (
         <div className="min-h-screen bg-slate-950 text-slate-50 font-inter selection:bg-indigo-500/30">
             {/* Navigation */}
