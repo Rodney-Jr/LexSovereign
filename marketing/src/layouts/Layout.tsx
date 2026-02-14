@@ -155,7 +155,10 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
 
                     <div className="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-                        <p>© 2026 LexSovereign. All rights reserved.</p>
+                        <div className="text-center md:text-left">
+                            <p>© 2026 LexSovereign. All rights reserved.</p>
+                            <p className="mt-1 text-slate-600 italic">The LexSovereign platform is owned and operated by Nexus Technologies Limited.</p>
+                        </div>
                         <div className="flex gap-6 mt-4 md:mt-0">
                             <Link to="/privacy" className="hover:text-slate-300">Privacy Policy</Link>
                             <Link to="/terms" className="hover:text-slate-300">Terms of Service</Link>
