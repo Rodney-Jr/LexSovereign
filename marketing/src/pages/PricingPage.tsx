@@ -1,15 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import Layout from '../layouts/Layout';
-import SEO from '../components/SEO';
-import { Section, SectionHeader, Button } from '../components/ui';
-import { Check, Settings, Loader2 } from 'lucide-react';
-
-interface PricingConfig {
-    id: string;
-    basePrice: number;
-    pricePerUser: number;
-    features: string[];
-}
+import { apiFetch } from '../utils/api';
 
 export default function PricingPage() {
     const [configs, setConfigs] = useState<PricingConfig[]>([]);
@@ -19,13 +8,10 @@ export default function PricingPage() {
     useEffect(() => {
         const fetchPricing = async () => {
             try {
-                const apiUrl = import.meta.env.VITE_API_URL || '';
-                const response = await fetch(`${apiUrl}/api/pricing`);
-                if (!response.ok) throw new Error('Failed to fetch pricing');
+                const response = await apiFetch('/api/pricing');
                 const data = await response.json();
                 setConfigs(data);
             } catch (err: any) {
-                console.error('Pricing Error:', err);
                 setError(err.message);
             } finally {
                 setLoading(false);

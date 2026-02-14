@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { MessageCircle, X, Send, Minimize2 } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
 export default function ChatbotWidget() {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,21 +19,13 @@ export default function ChatbotWidget() {
         setIsLoading(true);
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${apiUrl}/api/chat-conversations`, {
+            const response = await apiFetch('/api/chat-conversations', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify({
                     sessionId,
                     message: userMessage
                 })
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
 
             const data = await response.json();
             setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);

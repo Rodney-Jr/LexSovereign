@@ -1,7 +1,4 @@
-import React, { useState } from 'react';
-import { Button } from './ui';
-import { Check, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 export default function DemoRequestForm() {
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
@@ -20,30 +17,20 @@ export default function DemoRequestForm() {
         setStatus('submitting');
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${apiUrl}/api/leads`, {
+            await apiFetch('/api/leads', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify({
                     name: `${formData.firstName} ${formData.lastName}`.trim(),
                     email: formData.email,
                     phone: formData.phone,
                     company: formData.organization,
-                    source: 'WEB_MODAL', // Can be specific for different forms
-                    // OrgType and message can be added to the lead model or metadata if needed
+                    source: 'WEB_MODAL',
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to submit request');
-            }
-
             setStatus('success');
-        } catch (error) {
-            console.error('Lead submission error:', error);
-            alert('There was an error processing your request. Please try again or contact us directly.');
+        } catch (error: any) {
+            alert(`Error: ${error.message}. Please check your connection or contact us directly.`);
             setStatus('idle');
         }
     };
