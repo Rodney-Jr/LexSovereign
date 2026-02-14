@@ -105,11 +105,12 @@ const TenantGovernance: React.FC = () => {
         </div>
       </div>
 
-      <ProvisionTenantModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchTenants}
-      />
+      {isModalOpen && (
+        <ProvisionTenantModal
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={fetchPlatformData}
+        />
+      )}
 
       {/* Infrastructure Heatmap */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

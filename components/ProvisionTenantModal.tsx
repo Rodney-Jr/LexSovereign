@@ -5,9 +5,10 @@ import { authorizedFetch } from '../utils/api';
 
 interface ProvisionTenantModalProps {
     onClose: () => void;
+    onSuccess?: () => void;
 }
 
-export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onClose }) => {
+export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onClose, onSuccess }) => {
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -35,6 +36,7 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
             if (data && !data.error) {
                 setResult(data.details);
                 setStep(2);
+                if (onSuccess) onSuccess();
             } else {
                 const errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
                 alert(errorMsg || 'Provisioning failed');
