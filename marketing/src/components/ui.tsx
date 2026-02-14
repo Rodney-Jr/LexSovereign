@@ -39,6 +39,16 @@ export function Button({
     const classes = cn(baseStyles, variants[variant], sizes[size], className);
 
     if (asLink) {
+        const isExternal = asLink.startsWith('http') || asLink.startsWith('https') || asLink.startsWith('//');
+
+        if (isExternal) {
+            return (
+                <a href={asLink} className={classes}>
+                    {children}
+                </a>
+            );
+        }
+
         return (
             <Link to={asLink} className={classes}>
                 {children}
