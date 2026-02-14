@@ -47,7 +47,8 @@ export default function PricingPage() {
                             "Partner Approval Gates",
                             "Audit Logs (30 Days)",
                             "Priority Support",
-                            "Client Portal Access"
+                            "Client Portal Access",
+                            "Marketing Chatbot Widget"
                         ]}
                     />
 
@@ -63,7 +64,8 @@ export default function PricingPage() {
                             "Sovereign Data Residency",
                             "Dedicated Success Manager",
                             "SSO & Custom Security",
-                            "On-Premise Deployment Option"
+                            "On-Premise Deployment Option",
+                            "Universal Marketing Chatbots"
                         ]}
                     />
                 </div>
