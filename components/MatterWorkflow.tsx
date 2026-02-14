@@ -32,6 +32,14 @@ const MatterWorkflow: React.FC = () => {
 
   const steps = [
     {
+      id: 'CONFLICT',
+      title: 'ZK Conflict Scan',
+      icon: <Search size={24} />,
+      color: 'blue',
+      desc: 'Zero-Knowledge collision check against the regional vault index to prevent party conflicts.',
+      security: 'SHA-256 / Local Blind Search'
+    },
+    {
       id: 'AUTH',
       title: 'Identity Handshake',
       icon: <Fingerprint size={24} />,
@@ -132,7 +140,7 @@ const MatterWorkflow: React.FC = () => {
             </div>
             End-to-End Matter Orchestration
           </h3>
-          <p className="text-slate-400 text-sm">Visualizing the 8-stage Zero-Knowledge lifecycle of Matter MAT-ORG-001.</p>
+          <p className="text-slate-400 text-sm">Visualizing the 9-stage Zero-Knowledge lifecycle of Matter MAT-ORG-001.</p>
         </div>
 
         <div className="flex items-center gap-4">

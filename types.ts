@@ -210,6 +210,8 @@ export interface Matter {
   createdAt: string;
   attachedFiles?: string[];
   complexityWeight?: number;
+  conflictStatus?: 'CLEAN' | 'COLLISION' | 'NOT_CHECKED';
+  conflictProof?: string;
   attributes?: Record<string, any>;
 }
 
