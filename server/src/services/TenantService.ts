@@ -7,6 +7,7 @@ interface ProvisionTenantInput {
     name: string;
     adminEmail: string;
     adminName: string;
+    adminPassword?: string;
     plan?: string;
     region?: string;
     appMode?: string;
@@ -30,10 +31,10 @@ export class TenantService {
      * 5. Create Default Branding Profile
      */
     static async provisionTenant(input: ProvisionTenantInput): Promise<ProvisionResult> {
-        const { name, adminEmail, adminName, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM' } = input;
+        const { name, adminEmail, adminName, adminPassword, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM' } = input;
 
-        // Generate a temporary password
-        const tempPassword = Math.random().toString(36).slice(-8) + "!Aa1";
+        // Generate a temporary password or use the provided one
+        const tempPassword = adminPassword || (Math.random().toString(36).slice(-8) + "!Aa1");
         const passwordHash = await bcrypt.hash(tempPassword, 10);
         const adminId = randomUUID();
         const tenantId = randomUUID();

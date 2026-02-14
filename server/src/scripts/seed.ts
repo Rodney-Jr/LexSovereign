@@ -145,6 +145,7 @@ async function main() {
             name: 'LexSovereign Demo',
             adminEmail: 'admin@lexsovereign.com',
             adminName: 'Sovereign Admin',
+            adminPassword: 'password123',
             plan: 'ENTERPRISE',
             region: 'GH_ACC_1',
             appMode: 'LAW_FIRM'
@@ -157,7 +158,7 @@ async function main() {
         // For seeding stability, we might want to enforce the ID, but TenantService generates random UUID.
         // Let's just use the returned ID for subsequent relations.
         console.log(`✅ Provisioned Tenant: ${result.tenantId}`);
-        console.log(`✅ Admin Credentials: ${result.tempPassword}`);
+        console.log(`✅ Admin Credentials: admin@lexsovereign.com / password123`);
 
         // Update the admin user to have specific properties not covered by provisioner (like credentials)
         // Update the admin user to have specific properties not covered by provisioner
@@ -198,8 +199,16 @@ async function main() {
         tenantId = result.tenantId; // Ensure available for scope
 
     } else {
-        console.log('ℹ️ Default tenant already exists. Skipping provisioning.');
+        console.log('ℹ️ Default tenant already exists. Enforcing Global Admin password reset...');
         tenantId = existingAdmin.tenantId;
+
+        // Force reset admin password to password123 during re-seed
+        await prisma.user.update({
+            where: { email: 'admin@lexsovereign.com' },
+            data: { passwordHash: await bcrypt.hash('password123', 10) }
+        });
+        console.log('✅ Global Admin password reset to password123');
+
         const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@lexsovereign.com' } });
         counselId = counselUser?.id;
     }
