@@ -9,6 +9,31 @@ import { GoogleAuthService } from '../services/googleAuthService';
 
 const router = express.Router();
 
+async function checkTenantUserLimit(tenantId: string) {
+    const tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { plan: true }
+    });
+
+    if (!tenant) return true; // Fail open if no tenant found (shouldn't happen)
+
+    const pricing = await prisma.pricingConfig.findUnique({
+        where: { id: tenant.plan }
+    });
+
+    if (!pricing) return true; // Fail open if no pricing config
+
+    const currentUsers = await prisma.user.count({
+        where: { tenantId }
+    });
+
+    if (currentUsers >= pricing.maxUsers) {
+        throw new Error(`Plan limit reached. Your ${tenant.plan} plan allows up to ${pricing.maxUsers} users.`);
+    }
+
+    return true;
+}
+
 // 1. Atomic Onboard (New Silo + Admin) - PUBLIC
 router.post('/onboard-silo', async (req, res) => {
     const { name, plan, appMode, region, adminEmail, adminPassword } = req.body;
@@ -19,7 +44,7 @@ router.post('/onboard-silo', async (req, res) => {
             const tenant = await tx.tenant.create({
                 data: {
                     name,
-                    plan: plan || 'STANDARD',
+                    plan: plan || 'Starter', // Default to Starter
                     appMode: appMode || 'LAW_FIRM',
                     primaryRegion: region || 'GH_ACC_1'
                 }
@@ -137,6 +162,17 @@ router.post('/join-silo', async (req, res) => {
     console.log(`[Join] Name: ${name}, Password length: ${password?.length}`);
 
     try {
+        // Enforce Plan Limits before even starting transaction
+        // First find the invitation to get the tenant ID
+        const preCheckInvite = await prisma.invitation.findUnique({
+            where: { token, isUsed: false },
+            select: { tenantId: true }
+        });
+
+        if (preCheckInvite) {
+            await checkTenantUserLimit(preCheckInvite.tenantId);
+        }
+
         const result = await prisma.$transaction(async (tx) => {
             const invitation = await tx.invitation.findUnique({
                 where: { token, isUsed: false },
@@ -256,6 +292,10 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             return;
         }
 
+        // Check limits before creating an invite
+        // Note: This is an optimistic check. The real check happens at join, but we shouldn't allow invites if full.
+        await checkTenantUserLimit(tenantId);
+
         const token = `SOV-INV-${crypto.randomUUID().split('-')[0]!.toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
@@ -285,6 +325,11 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 router.post('/register', async (req, res) => {
     try {
         const { email, password, name, roleName, region, tenantId } = req.body;
+
+        if (tenantId) {
+            await checkTenantUserLimit(tenantId);
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const role = await prisma.role.findFirst({

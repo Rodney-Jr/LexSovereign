@@ -237,25 +237,28 @@ async function main() {
         console.log('🌱 Seeding Pricing Configurations...');
         const pricingConfigs = [
             {
-                id: 'Standard',
-                basePrice: 99,
-                pricePerUser: 10,
+                id: 'Starter',
+                basePrice: 29,
+                pricePerUser: 29,
+                creditsIncluded: 0,
+                maxUsers: 5,
+                features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'Email Support']
+            },
+            {
+                id: 'Professional',
+                basePrice: 59,
+                pricePerUser: 59,
                 creditsIncluded: 500,
-                features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits']
+                maxUsers: 50,
+                features: ['50 Users Max', 'Advanced Conflict Workflows', 'Partner Approval Gates', 'Audit Logs (30 Days)', 'Priority Support']
             },
             {
-                id: 'Sovereign',
-                basePrice: 499,
-                pricePerUser: 15,
+                id: 'Institutional',
+                basePrice: 0, // Custom
+                pricePerUser: 0, // Custom
                 creditsIncluded: 10000,
-                features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready']
-            },
-            {
-                id: 'Enclave Exclusive',
-                basePrice: 1999,
-                pricePerUser: 25,
-                creditsIncluded: 0, // Unlimited or specific
-                features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits']
+                maxUsers: 10000, // Effectively unlimited
+                features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'Sovereign Data Residency', 'SSO & Custom Security']
             }
         ];
 

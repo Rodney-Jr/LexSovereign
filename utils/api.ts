@@ -54,7 +54,18 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
                 errorData = { error: text || `Error ${response.status}`, raw: true };
             }
 
-            if (response.status === 401 || response.status === 403) {
+            // SMART ERROR HANDLING:
+            // Only kill the session if the error is explicitly about the TOKEN being invalid/expired.
+            // Do NOT kill the session for "Insufficient Permissions" or business logic denials.
+            const isTokenError =
+                response.status === 401 ||
+                (response.status === 403 && (
+                    errorData.code === 'FORBIDDEN' ||
+                    errorData.error === 'Invalid session token' ||
+                    errorData.reason === 'expired'
+                ));
+
+            if (isTokenError) {
                 console.error(`[API] Session invalidated (${response.status}): ${errorData.error} | URL: ${url}`);
                 if (url.includes('/pin')) {
                     console.warn("[API] PIN handshake failed. Check if SOVEREIGN_PIN matches on server.");
@@ -73,6 +84,8 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
                 window.dispatchEvent(new CustomEvent('lex-sovereign-auth-failed', {
                     detail: { status: response.status, error: errorData.error }
                 }));
+            } else {
+                console.warn(`[API] Request Forbidden (Business Logic/Permission): ${errorData.error}`);
             }
 
             throw new Error(errorData.error || 'Request failed');

@@ -276,6 +276,7 @@ model PricingConfig {
   basePrice       Float
   pricePerUser    Float
   creditsIncluded Int      @default(0)
+  maxUsers        Int      @default(5)
   features        Json     // Array of strings
   updatedAt       DateTime @updatedAt
 }
