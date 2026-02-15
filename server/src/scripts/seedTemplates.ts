@@ -21,6 +21,7 @@ async function main() {
 
     try {
         let count = 0;
+        const seededIds: string[] = [];
         for (const file of files) {
             const filePath = path.join(TEMPLATES_DIR, file);
             const rawData = fs.readFileSync(filePath, 'utf8');
@@ -40,6 +41,7 @@ async function main() {
             const content = t.content || ''; // Some new templates might rely purely on assembly of clauses
 
             const templateId = `template-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+            seededIds.push(templateId);
 
             await prisma.documentTemplate.upsert({
                 where: { id: templateId },
@@ -64,6 +66,18 @@ async function main() {
             });
             count++;
         }
+
+        // Cleanup: remove templates from database that are no longer in the filesystem
+        const deleted = await prisma.documentTemplate.deleteMany({
+            where: {
+                id: { notIn: seededIds }
+            }
+        });
+
+        if (deleted.count > 0) {
+            console.log(`🧹 Cleaned up ${deleted.count} orphaned templates from the database.`);
+        }
+
         console.log(`✅ Successfully seeded ${count} Document Templates.`);
     } catch (e) {
         console.error('❌ SEED ERROR:');
