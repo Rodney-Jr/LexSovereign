@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+import { MessageCircle, Minimize2, X, Send } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 
 export default function ChatbotWidget() {

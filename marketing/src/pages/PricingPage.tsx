@@ -1,4 +1,17 @@
+import React, { useState, useEffect } from 'react';
+import { Loader2, Settings, Check } from 'lucide-react';
 import { apiFetch } from '../utils/api';
+import Layout from '../layouts/Layout';
+import SEO from '../components/SEO';
+import { Section, SectionHeader, Button } from '../components/ui';
+
+interface PricingConfig {
+    id: string; // Plan Name
+    basePrice: number;
+    pricePerUser: number;
+    creditsIncluded: number;
+    features: string[];
+}
 
 export default function PricingPage() {
     const [configs, setConfigs] = useState<PricingConfig[]>([]);
