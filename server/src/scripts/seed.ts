@@ -810,26 +810,26 @@ Title: **{{receiving_party_signer_title}}**
                 await prisma.documentTemplate.upsert({
                     where: { id: file.replace('.json', '') },
                     update: {
-                        name: templateData.template_name,
-                        description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
-                        category: templateData.category,
-                        jurisdiction: templateData.jurisdiction,
-                        content: '', // Re-purposed for structure in modern templates
-                        structure: templateData.clauses || templateData.structure,
-                        version: templateData.version
+                        name: templateData.name || templateData.template_name || file.replace('.json', ''),
+                        description: templateData.description || `${templateData.category || 'Standard'} Template`,
+                        category: templateData.category || 'GENERAL',
+                        jurisdiction: templateData.jurisdiction || 'GLOBAL',
+                        content: templateData.content || '',
+                        structure: templateData.clauses || templateData.structure || { fields: [], sections: [] },
+                        version: templateData.version || '1.0.0'
                     },
                     create: {
                         id: file.replace('.json', ''),
-                        name: templateData.template_name,
-                        description: `${templateData.category} - ${templateData.risk_level || 'Standard'} Risk`,
-                        category: templateData.category,
-                        jurisdiction: templateData.jurisdiction,
-                        content: '',
-                        structure: templateData.clauses || templateData.structure,
-                        version: templateData.version
+                        name: templateData.name || templateData.template_name || file.replace('.json', ''),
+                        description: templateData.description || `${templateData.category || 'Standard'} Template`,
+                        category: templateData.category || 'GENERAL',
+                        jurisdiction: templateData.jurisdiction || 'GLOBAL',
+                        content: templateData.content || '',
+                        structure: templateData.clauses || templateData.structure || { fields: [], sections: [] },
+                        version: templateData.version || '1.0.0'
                     }
                 });
-                console.log(`   - Seeded Dynamic Template: ${templateData.template_name}`);
+                console.log(`   - Seeded Dynamic Template: ${templateData.name || templateData.template_name}`);
             }
         }
     }
