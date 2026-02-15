@@ -1,0 +1,45 @@
+{
+    "name": "Local Content Plan (Petroleum/Mining)",
+    "description": "Compliance template for Petroleum/Mining sectors in Ghana to prove local hiring and procurement for commission licensing.",
+    "category": "COMPLIANCE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "Company Details",
+            "clause_text": "LOCAL CONTENT AND LOCAL PARTICIPATION PLAN\n\nCOMPANY NAME: {{company_name}}\nLICENSE TYPE: {{license_type}}\nHUB/LOCATION: {{operation_hub_e_g_takoradi}}",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "hiring_plan",
+            "clause_title": "Employment and Training Strategy",
+            "clause_text": "The Company commits that at least {{ghanaian_staff_percent}}% of its total workforce will be Ghanaian citizens. Specifically, specialized training will be provided for {{training_areas}} to ensure knowledge transfer.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "procurement_plan",
+            "clause_title": "Local Procurement Strategy",
+            "clause_text": "Preference shall be given to Ghanaian service providers for the following categories: {{local_service_categories_catering_logistics_security}}. The Company aims for a local spend of {{local_spend_target}} (GHS) per annum.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "technology_transfer",
+            "clause_title": "Technology Transfer Commitment",
+            "clause_text": "In accordance with GIPC and Commission requirements, the Company will transfer technical expertise in {{tech_expertise_area}} to Ghanaian partners over a period of {{transfer_years}} years.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "reporting",
+            "clause_title": "Monitoring and Reporting",
+            "clause_text": "The Company shall submit quarterly local content performance reports to the {{regulatory_body_petroleum_commission_minerals_commission}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Commitment Signature",
+            "clause_text": "Authorized Signatory: ____________________\nTitle: {{signatory_title}}\nDate: {{submission_date}}",
+            "clause_type": "locked"
+        }
+    ]
+}

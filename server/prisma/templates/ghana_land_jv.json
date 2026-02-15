@@ -1,0 +1,57 @@
+{
+    "name": "Landowner-Developer Joint Venture Agreement",
+    "description": "Agreement between customary landowners (Chiefs/Families) and developers for property development projects under the Land Act, 2020 (Act 1036).",
+    "category": "REAL_ESTATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "THIS JOINT VENTURE AGREEMENT is made on {{agreement_date}} BETWEEN {{landowner_entity}} (represented by {{head_of_family_chief}}, the 'Landowner') AND {{developer_company}} (the 'Developer').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "background",
+            "clause_title": "Background",
+            "clause_text": "The Landowner is the allodial owner of the land described as {{property_description}}. The Developer possesses the expertise and financial resources to develop the land into {{project_type}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "customary_consent",
+            "clause_title": "Customary and Regulatory Consent",
+            "clause_text": "In accordance with Act 1036, the Landowner warrants that the development has been approved by the {{stool_skin_family_council}} and that the site plan has been duly certified by the Regional Lands Commission.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "contribution_land",
+            "clause_title": "Landowner's Contribution",
+            "clause_text": "The Landowner contributes the use of the Land for a period of {{jv_term_years}} years for the purpose of the Project.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "contribution_developer",
+            "clause_title": "Developer's Contribution",
+            "clause_text": "The Developer shall be responsible for all costs related to planning, survey, construction, and marketing of the {{project_name}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "revenue_sharing",
+            "clause_title": "Profit Sharing / Allocation",
+            "clause_text": "The parties agree to the following revenue or unit sharing ratio: Landowner: {{landowner_share_percent}}%; Developer: {{developer_share_percent}}%. This shall be distributed as {{distribution_method}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "dispute_resolution",
+            "clause_title": "Customary Arbitration",
+            "clause_text": "Any disputes shall first be referred to customary arbitration or mediation. If unresolved within 30 days, the matter shall be referred to the High Court (Land Division) of Ghana.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "For Landowner: ____________________\n(Head of Family/Chief)\n\nFor Developer: ____________________\n(Managing Director)",
+            "clause_type": "locked"
+        }
+    ]
+}

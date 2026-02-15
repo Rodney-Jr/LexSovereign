@@ -1,0 +1,57 @@
+{
+    "name": "IP Assignment Agreement (Tech Hubs/Startups)",
+    "description": "Agreement ensuring legal ownership of intellectual property created by developers, contractors, or employees within a Ghanaian tech hub or startup. Standard for MEST, Impact Hub, and similar ecosystems.",
+    "category": "CORPORATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "THIS INTELLECTUAL PROPERTY ASSIGNMENT AGREEMENT is made on {{agreement_date}} BETWEEN {{assignor_name}} ('the Assignor') AND {{assignee_name}} ('the Assignee').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "purpose",
+            "clause_title": "Background and Purpose",
+            "clause_text": "The Assignor has been engaged by the Assignee to perform certain services, including but not limited to software development, design, and data analysis. In the course of these services, the Assignor may create or develop various intellectual properties.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "definition_ip",
+            "clause_title": "Definition of Intellectual Property",
+            "clause_text": "'Intellectual Property' means all inventions, designs, source code, logos, domain names, and database rights created or acquired by the Assignor during the Term of Engagement with the Assignee.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "assignment",
+            "clause_title": "Assignment of Rights",
+            "clause_text": "The Assignor hereby irrevocably assigns to the Assignee all right, title, and interest in and to all Intellectual Property created during the engagement. This assignment includes the right to sue for past infringements and applies globally.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "moral_rights",
+            "clause_title": "Waiver of Moral Rights",
+            "clause_text": "The Assignor hereby waives all moral rights arising under the Copyright Act, 2005 (Act 690) of Ghana or any similar legislation globally, in respect of the Intellectual Property assigned herein.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "further_assurance",
+            "clause_title": "Further Assurance",
+            "clause_text": "The Assignor agrees to execute all such documents and perform all such acts as may be reasonably required by the Assignee to give full effect to this assignment, including assisting with patent or trademark registrations.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "governing_law",
+            "clause_title": "Governing Law",
+            "clause_text": "This Agreement shall be governed by the laws of the Republic of Ghana, specifically the Copyright Act, 2005 (Act 690) and the Trademarks Act, 2004 (Act 667).",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "Assignor: ____________________\nName: {{assignor_name}}\n\nAssignee: ____________________\nName: {{assignee_name}}\nTitle: {{assignee_signatory_title}}",
+            "clause_type": "locked"
+        }
+    ]
+}

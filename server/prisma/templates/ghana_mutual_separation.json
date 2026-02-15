@@ -1,0 +1,57 @@
+{
+    "name": "Executive Mutual Separation Agreement",
+    "description": "A 'clean break' agreement for high-level executives in Ghana, designed to waive future claims at the Labour Commission under Act 651.",
+    "category": "EMPLOYMENT",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "THIS MUTUAL SEPARATION AGREEMENT is made on {{agreement_date}} BETWEEN {{employer_name}} ('the Employer') AND {{executive_name}} ('the Executive').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "separation_date",
+            "clause_title": "Separation Date",
+            "clause_text": "The Executive's employment shall cease by mutual consent on {{separation_effective_date}} (the 'Separation Date').",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "severance_package",
+            "clause_title": "Severance and Full Settlement",
+            "clause_text": "The Employer agrees to pay the Executive a global sum of {{severance_amount}} (GHS), which includes all accrued leave, salary in lieu of notice, and any statutory redundancy payments under Act 651.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "waiver_of_claims",
+            "clause_title": "Waiver of Claims",
+            "clause_text": "The Executive hereby irrevocably waives all claims, known or unknown, against the Employer arising out of the employment relationship, including but not limited to claims for unfair termination, discrimination, or non-payment of benefits at the Labour Commission or the High Court.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "confidentiality",
+            "clause_title": "Confidentiality and Non-Disparagement",
+            "clause_text": "Both parties agree to maintain the confidentiality of this Agreement and refrain from making disparaging remarks about each other in the press or on social media.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "return_property",
+            "clause_title": "Return of Company Property",
+            "clause_text": "The Executive shall return all property, including {{property_list_vehicle_laptop}}, by the Separation Date.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "governing_law",
+            "clause_title": "Governing Law",
+            "clause_text": "This Agreement is governed by the Labour Act, 2003 (Act 651) of Ghana.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "Employer: ____________________\n\nExecutive: ____________________",
+            "clause_type": "locked"
+        }
+    ]
+}

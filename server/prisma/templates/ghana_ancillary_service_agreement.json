@@ -1,0 +1,45 @@
+{
+    "name": "Ancillary Service Agreement (Mining SMEs)",
+    "description": "Standard agreement for Ghanaian SMEs providing ancillary services (catering, logistics, cleaning) to large mining or industrial firms.",
+    "category": "COMMERCIAL",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "THIS SERVICE AGREEMENT is made on {{agreement_date}} BETWEEN {{mining_company_name}} ('the Principal') AND {{sme_provider_name}} ('the Service Provider').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "scope",
+            "clause_title": "Scope of Ancillary Services",
+            "clause_text": "The Service Provider shall provide {{service_description_catering_transport}} at the Principal's site located at {{site_location_e_g_tarkwa}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "safety_compliance",
+            "clause_title": "Health, Safety, and Environment (HSE)",
+            "clause_text": "The Service Provider shall strictly comply with the Principal's HSE policy and the Minerals and Mining (Health, Safety and Technical) Regulations, 2012 (L.I. 2182).",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "payment_wht",
+            "clause_title": "Payment and Tax Withholding",
+            "clause_text": "The Principal shall pay the sum of {{monthly_payment}} (GHS) per month. In accordance with the Income Tax Act, 2015 (Act 896), the Principal shall withhold {{wht_percent_e_g_7_5}}% as Withholding Tax (WHT) and provide a certificate to the Service Provider.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "local_content_warranty",
+            "clause_title": "Local Content Warranty",
+            "clause_text": "The Service Provider warrants that it is a 'Ghanaian Company' as defined under the Minerals and Mining (Local Content and Local Participation) Regulations, 2020 (L.I. 2431).",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "Principal: ____________________\n\nService Provider: ____________________",
+            "clause_type": "locked"
+        }
+    ]
+}

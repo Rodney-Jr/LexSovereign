@@ -1,0 +1,51 @@
+{
+    "name": "Land Search & Due Diligence Report",
+    "description": "Standardized report for presenting land search results from the Lands Commission, Land Title Registry, and local authorities under the Land Act, 2020 (Act 1036).",
+    "category": "REAL_ESTATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "Property Identification",
+            "clause_text": "REPORT ON LAND SEARCH CONDUCTED ON {{search_date}}\n\nPROPERTY ADDRESS/LOCATION: {{property_location}}\nREGION: {{region_name}}\nDISTRICT: {{district_name}}\nPLOT NO.: {{plot_number}}\nSITE PLAN RECORD NO.: {{site_plan_id}}",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "lands_commission_results",
+            "clause_title": "Lands Commission (PVLMD) Results",
+            "clause_text": "Our search at the Public and Vested Land Management Division (PVLMD) indicates that the land is {{#if is_encumbered}}ENCUMBERED by {{encumbrance_details}}{{else}}NOT ENCUMBERED and appears to be in the name of {{recorded_owner}}{{/if}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "title_registry_results",
+            "clause_title": "Land Title Registry Results",
+            "clause_text": "The result from the Land Title Registry reveals that {{#if is_registered}}the Land is registered with Title No. {{title_number}} and Volume No. {{volume_number}}{{else}}the Land is NOT currently registered under the Land Title Registration System{{/if}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "court_search",
+            "clause_title": "Court Litigation Search",
+            "clause_text": "A check on the Registry of the High Court (Land Division) shows {{#if has_litigation}}pending litigation under suit number {{suit_number}} involving {{litigation_parties}}{{else}}no record of pending litigation involving this specific plot{{/if}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "conclusion",
+            "clause_title": "Legal Opinion and Conclusion",
+            "clause_text": "Based on the findings above, it is our legal opinion that the Client {{#if is_safe}}MAY proceed with the transaction, provided the Spousal Consent requirements of Act 1036 are met{{else}}SHOULD NOT proceed due to the following risks: {{risk_summary}}{{/if}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "disclaimer",
+            "clause_title": "Disclaimer",
+            "clause_text": "This report is based on records available at the respective institutions as of the date of the search. LexSovereign and the conducting lawyer are not liable for any subsequent changes in status or unrecorded customary interests.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Report Prepared By",
+            "clause_text": "Lawyer/Firm: {{lawyer_name}}\nLicense No.: {{law_license_number}}\nDate: {{report_completion_date}}",
+            "clause_type": "locked"
+        }
+    ]
+}

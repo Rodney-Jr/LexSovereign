@@ -30,6 +30,12 @@
             "clause_type": "variable"
         },
         {
+            "clause_key": "spousal_consent",
+            "clause_title": "Spousal Consent (Act 1036 Compliance)",
+            "clause_text": "In accordance with Section 47 of the Land Act, 2020 (Act 1036), the Assignor hereby declares that: {{#if is_married}}the Property is a matrimonial property and the consent of the spouse, {{spouse_name}}, has been obtained as evidenced by their signature herein;{{else}}the Property is not a matrimonial property and no spousal consent is required for this assignment.{{/if}}",
+            "clause_type": "locked"
+        },
+        {
             "clause_key": "unexpired_term",
             "clause_title": "Unexpired Term",
             "clause_text": "The Assignor assigns the property to the Assignee for the unexpired residue of the term of {{total_years}} years granted under the Head Lease dated {{head_lease_date}}.",
@@ -44,7 +50,7 @@
         {
             "clause_key": "signatures",
             "clause_title": "Signatures and Attestation",
-            "clause_text": "Signed by Assignor: ____________________\nIn the presence of Witness: {{witness_assignor}}\n\nSigned by Assignee: ____________________\nIn the presence of Witness: {{witness_assignee}}",
+            "clause_text": "Signed by Assignor: ____________________\nIn the presence of Witness: {{witness_assignor}}\n\n{{#if is_married}}\nSigned by Spouse (Consent): ____________________\nName: {{spouse_name}}\n{{/if}}\n\nSigned by Assignee: ____________________\nIn the presence of Witness: {{witness_assignee}}",
             "clause_type": "locked"
         }
     ]
