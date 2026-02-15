@@ -1,0 +1,51 @@
+{
+    "name": "Data Processing Agreement (DPA - Act 843)",
+    "description": "Mandatory agreement under the Ghana Data Protection Act, 2012 (Act 843) for companies sharing personal data with third-party processors.",
+    "category": "COMPLIANCE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Agreement",
+            "clause_text": "This Data Processing Agreement is made between {{data_controller}} ('the Controller') and {{data_processor}} ('the Processor') on {{agreement_date}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "statutory_compliance",
+            "clause_title": "Act 843 Compliance",
+            "clause_text": "Both parties agree to comply with their respective obligations under the Ghana Data Protection Act, 2012 (Act 843) and any guidelines issued by the Data Protection Commission (DPC).",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "processing_scope",
+            "clause_title": "Scope of Processing",
+            "clause_text": "The Processor shall process the following types of personal data: {{personal_data_types}}, solely for the purpose of {{processing_purpose}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "security_measures",
+            "clause_title": "Security and Confidentiality",
+            "clause_text": "The Processor shall implement appropriate technical and organizational measures to protect personal data against unauthorized or unlawful processing and against accidental loss, destruction, or damage, as required by Section 28 of Act 843.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "sub_processing",
+            "clause_title": "Sub-processing",
+            "clause_text": "The Processor shall not engage a sub-processor without the prior written consent of the Controller. Any sub-processor shall be bound by terms no less restrictive than those in this Agreement.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "data_subject_rights",
+            "clause_title": "Assisting Data Subjects",
+            "clause_text": "The Processor shall assist the Controller in responding to requests from data subjects to exercise their rights under Act 843, including the right to access, correction, and deletion.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "breach_notification",
+            "clause_title": "Breach Notification",
+            "clause_text": "The Processor shall notify the Controller within {{notification_hours}} hours of becoming aware of any personal data breach affecting the Controller's data.",
+            "clause_type": "variable"
+        }
+    ]
+}

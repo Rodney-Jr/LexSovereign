@@ -1,0 +1,45 @@
+{
+    "name": "Demand Letter",
+    "description": "Formal letter demanding payment or action to resolve a dispute.",
+    "category": "Disputes",
+    "jurisdiction": "Local",
+    "version": "1.0.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "deadline_date",
+                "label": "Payment Deadline",
+                "type": "date",
+                "required": true
+            },
+            {
+                "key": "recipient_name",
+                "label": "Recipient Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "sender_name",
+                "label": "Sender Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "breach_details",
+                "label": "Details of Breach/Issue",
+                "type": "text",
+                "multiline": true,
+                "required": true
+            },
+            {
+                "key": "amount_due",
+                "label": "Amount Due",
+                "type": "currency",
+                "currency": "USD",
+                "required": true
+            }
+        ],
+        "sections": []
+    },
+    "content": "# CEASE AND DESIST / DEMAND LETTER\n\n**DATE:** {{deadline_date}}\n\n**TO:** {{recipient_name}}\n\n**FROM:** {{sender_name}}\n\n**RE:** Demand for Payment / Cease and Desist\n\nDear Sir/Madam,\n\nThis letter serves as a formal demand regarding **{{breach_details}}**.\n\nYou are hereby required to pay the outstanding amount of **{{amount_due}}** by **{{deadline_date}}**. Failure to comply will result in immediate legal action.\n\nGoverned yourself accordingly.\n\nSincerely,\n**{{sender_name}}**\n"
+}

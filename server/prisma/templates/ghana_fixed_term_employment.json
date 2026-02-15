@@ -1,0 +1,51 @@
+{
+    "name": "Fixed-Term Employment Contract (Ghana)",
+    "description": "Ghana-compliant fixed-term employment contract designed to strictly comply with the Labour Act, 2003 (Act 651) and avoid automatic permanent status issues.",
+    "category": "EMPLOYMENT",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "This Fixed-Term Employment Contract (the 'Agreement') is made on {{agreement_date}} between {{employer_name}}, a company incorporated in Ghana (the 'Employer') and {{employee_name}} (the 'Employee').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "appointment_and_term",
+            "clause_title": "Appointment and Fixed Term",
+            "clause_text": "The Employee is appointed as {{position_title}}. This is a fixed-term contract commencing on {{start_date}} and terminating automatically without notice on {{end_date}}. The parties expressly agree that there is no expectation of renewal or permanent employment.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "probation",
+            "clause_title": "Probation Period",
+            "clause_text": "The first {{probation_months}} months of employment shall be a probationary period. During this time, either party may terminate this Agreement with {{probation_notice_days}} days' notice.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "remuneration",
+            "clause_title": "Remuneration and Benefits",
+            "clause_text": "The Employee shall receive a gross monthly salary of {{monthly_salary}} (GHS). The Employer shall make mandatory SSNIT contributions (13%) and deduct the Employee's portion (5.5%) as per Ghanaian law.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "leave_entitlement",
+            "clause_title": "Leave and Public Holidays",
+            "clause_text": "The Employee is entitled to {{annual_leave_days}} days of paid annual leave (minimum 15 days under Act 651). The Employee is also entitled to paid sick leave upon production of a medical certificate from a recognized practitioner.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "termination",
+            "clause_title": "Termination",
+            "clause_text": "Notwithstanding the fixed term, either party may terminate this Agreement by giving {{notice_period}} months' written notice or payment of salary in lieu of notice. The Employer may terminate summarily for proven gross misconduct in accordance with Section 63 of Act 651.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "governing_law",
+            "clause_title": "Governing Law",
+            "clause_text": "This Agreement is governed by the Labour Act, 2003 (Act 651) and the laws of the Republic of Ghana.",
+            "clause_type": "locked"
+        }
+    ]
+}

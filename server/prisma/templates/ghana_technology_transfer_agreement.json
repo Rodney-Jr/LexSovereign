@@ -1,0 +1,51 @@
+{
+    "name": "Technology Transfer Agreement (TTA - GIPC)",
+    "description": "Complex agreement for transferring proprietary technology or expertise into Ghana, requiring registration with the Ghana Investment Promotion Centre (GIPC).",
+    "category": "COMPLIANCE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "THIS TECHNOLOGY TRANSFER AGREEMENT is made between {{transferor_name}}, a company organized under the laws of {{transferor_country}} ('the Transferor') and {{local_transferee_name}}, a company incorporated in Ghana ('the Transferee') on {{agreement_date}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "technology_scope",
+            "clause_title": "Scope of Technology Transfer",
+            "clause_text": "The Transferor shall transfer to the Transferee the following: {{technology_description}} (the 'Technology'), including technical know-how, patents, and specialized training as detailed in Schedule A.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "consideration_royalties",
+            "clause_title": "Fees and Royalties",
+            "clause_text": "In consideration of the transfer, the Transferee shall pay a royalty of {{royalty_percentage}}% (not to exceed GIPC limits) of net sales, and a technical service fee of {{technical_service_fee}} (GHS) per annum.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "gipc_registration",
+            "clause_title": "GIPC Registration and Compliance",
+            "clause_text": "This Agreement is subject to registration with the Ghana Investment Promotion Centre (GIPC) under the GIPC Act, 2013 (Act 865) and the Technology Transfer Regulations, 1992 (L.I. 1547). No payments shall be remitted offshore until such registration is obtained.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "training_obligation",
+            "clause_title": "Training and Skills Transfer",
+            "clause_text": "The Transferor agrees to provide training to at least {{number_of_trainees}} Ghanaian personnel of the Transferee annually to ensure the effective absorption of the technology in Ghana.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "duration",
+            "clause_title": "Duration",
+            "clause_text": "This Agreement shall be valid for an initial period of {{duration_years}} years (typically between 1.5 to 10 years as per GIPC norms) and may be renewed subject to GIPC approval.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "confidentiality",
+            "clause_title": "Confidentiality",
+            "clause_text": "The Transferee shall maintain the confidentiality of the Technology and shall not disclose any technical secrets to third parties without prior written consent, except as required by the ORC or GIPC.",
+            "clause_type": "locked"
+        }
+    ]
+}

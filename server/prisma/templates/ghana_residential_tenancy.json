@@ -1,0 +1,45 @@
+{
+    "name": "Residential Tenancy Agreement (Ghana)",
+    "description": "Short-form tenancy agreement for residential properties in Accra, Kumasi, and other urban areas.",
+    "category": "REAL_ESTATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Agreement",
+            "clause_text": "This Tenancy Agreement is made on {{agreement_date}} between {{landlord_name}} ('the Landlord') and {{tenant_name}} ('the Tenant').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "property",
+            "clause_title": "The Property",
+            "clause_text": "The Landlord lets to the Tenant the residential property at {{property_address}} for a period of {{tenancy_months}} months.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "rent",
+            "clause_title": "Rent and Security Deposit",
+            "clause_text": "The rent is {{monthly_rent}} (GHS) payable in advance. A security deposit of {{security_deposit}} shall be held by the Landlord to cover damages or unpaid bills.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "utilities",
+            "clause_title": "Utilities",
+            "clause_text": "The Tenant is responsible for paying all electricity (prepaid/postpaid), water, and internet bills incurred during the tenancy.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "maintenance",
+            "clause_title": "Maintenance",
+            "clause_text": "The Landlord is responsible for major structural repairs. The Tenant is responsible for minor repairs and maintaining the property in a clean and habitable state.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "termination",
+            "clause_title": "Termination Notice",
+            "clause_text": "Either party may terminate this agreement by giving {{notice_months}} months' written notice. Failure to pay rent for {{default_period}} days shall entitle the Landlord to initiate eviction proceedings.",
+            "clause_type": "variable"
+        }
+    ]
+}

@@ -1,0 +1,45 @@
+{
+    "name": "Notice to Quit / Eviction Notice (Ghana)",
+    "description": "Formal notice to quit drafted according to the procedures required by the Rent Control Department of Ghana.",
+    "category": "REAL_ESTATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "Formal Notice",
+            "clause_text": "TO: {{tenant_name}}\nADDRESS: {{premises_address}}\n\nDATE: {{notice_date}}",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "instruction",
+            "clause_title": "Notice to Quit",
+            "clause_text": "I, {{landlord_name}}, being your Landlord, hereby give you formal notice to quit and deliver up possession of the premises situated at {{premises_address}} which you hold of me as a tenant.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "deadline",
+            "clause_title": "Vacation Deadline",
+            "clause_text": "You are required to vacate the premises on or before {{vacation_date}} (expiry of {{notice_duration}} months' notice).",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "reason",
+            "clause_title": "Reason for Notice",
+            "clause_text": "This notice is given on the grounds of: {{reason_for_eviction}} (e.g. non-payment of rent, personal use by landlord, or expiry of lease).",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "warning",
+            "clause_title": "Legal Warning",
+            "clause_text": "TAKE NOTICE that if you fail to vacate the premises by the stated date, legal proceedings will be commenced against you in the Rent Control Department or the District Court for recovery of possession and mesne profits.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signature",
+            "clause_title": "Signature",
+            "clause_text": "____________________\n{{signature_name}}\nLandlord / Solicitor for Landlord",
+            "clause_type": "locked"
+        }
+    ]
+}

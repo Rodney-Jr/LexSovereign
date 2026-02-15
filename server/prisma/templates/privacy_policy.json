@@ -1,0 +1,51 @@
+{
+    "name": "Privacy Policy",
+    "description": "Policy outlining how an organization collects and handles data.",
+    "category": "Compliance",
+    "jurisdiction": "GLOBAL",
+    "version": "2.0.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "effective_date",
+                "label": "Effective Date",
+                "type": "date",
+                "required": true
+            },
+            {
+                "key": "company_name",
+                "label": "Company Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "website_url",
+                "label": "Website URL",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "contact_email",
+                "label": "Contact Email",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "data_types_collected",
+                "label": "Data Collected",
+                "type": "text",
+                "multiline": true,
+                "placeholder": "e.g. name, email, IP address...",
+                "required": true
+            }
+        ],
+        "sections": [
+            {
+                "key": "include_cookie_policy",
+                "label": "Include Cookie Policy Section?",
+                "default": true
+            }
+        ]
+    },
+    "content": "# PRIVACY POLICY\n\n**Last Updated:** {{effective_date}}\n\n**{{company_name}}** (\"we,\" \"our,\" or \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and share information about you when you visit our website **{{website_url}}**.\n\n### 1. Information We Collect\nWe collect the following types of information: **{{data_types_collected}}**.\n\n### 2. How We Use Information\nWe use the information we collect to provide, maintain, and improve our services.\n\n{{#if include_cookie_policy}}\n### 3. Cookies\nWe use cookies to enhance your experience. By using our website, you consent to our use of cookies.\n{{/if}}\n\n### Contact Us\nIf you have questions, please contact us at **{{contact_email}}**.\n"
+}

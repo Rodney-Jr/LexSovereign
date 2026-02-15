@@ -1,0 +1,45 @@
+{
+    "name": "Board Resolution for Major Transaction (Act 992)",
+    "description": "Formal board resolution authorizing a 'Major Transaction' as required under Section 145 of the Ghana Companies Act, 2019.",
+    "category": "CORPORATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "Resolution Details",
+            "clause_text": "BOARD RESOLUTION OF {{company_name}} (the 'Company') HELD ON {{meeting_date}} AT {{meeting_location}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "preamble",
+            "clause_title": "Recitals",
+            "clause_text": "WHEREAS the Board has reviewed the proposal for {{transaction_description}} (the 'Transaction'), which involves assets valued at {{asset_value}}, representing approximately {{asset_percentage}}% of the Company's total assets.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "statutory_compliance",
+            "clause_title": "Statutory Compliance",
+            "clause_text": "IT IS NOTED that as the Transaction constitutes a 'Major Transaction' under Section 145 of the Companies Act, 2019 (Act 992), it is subject to approval by the Shareholders by way of a Special Resolution.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "approval_resolution",
+            "clause_title": "Approval Resolution",
+            "clause_text": "IT IS HEREBY RESOLVED THAT: (1) The Transaction is in the best interest of the Company; (2) Subject to Shareholder approval, the Transaction be and is hereby approved; (3) {{authorized_person_1}} and {{authorized_person_2}} be authorized to execute all necessary documents to give effect to the Transaction.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "shareholder_notice",
+            "clause_title": "Notice to Shareholders",
+            "clause_text": "A General Meeting of the Shareholders be convened on {{general_meeting_date}} to consider and, if thought fit, pass a Special Resolution to approve the Transaction.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "Chairman: ____________________ Name: {{chairman_name}}\nDirector: ____________________ Name: {{director_name}}\nSecretary: ____________________ Name: {{secretary_name}}",
+            "clause_type": "locked"
+        }
+    ]
+}

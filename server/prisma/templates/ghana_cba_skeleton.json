@@ -1,0 +1,39 @@
+{
+    "name": "Collective Bargaining Agreement (CBA) Skeleton",
+    "description": "A high-level framework for negotiating CBAs with unions in Ghana, reflecting Act 651 requirements for mining and manufacturing sectors.",
+    "category": "EMPLOYMENT",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties and Recognition",
+            "clause_text": "This Agreement is between {{employer_name}} and {{union_name}}. Both parties recognize the Union as the sole collective bargaining agent for the employees in the {{bargaining_unit}} category.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "scope",
+            "clause_title": "Duration and Scope",
+            "clause_text": "This Agreement shall remain in force for a period of {{duration_years}} years starting from {{effective_date}}. It covers all conditions of employment including wages, hours of work, and disciplinary procedures.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "wages",
+            "clause_title": "Wages and Increments",
+            "clause_text": "The salary scales for the covered employees are set out in Appendix A. There shall be an annual across-the-board increment of {{annual_increment_percentage}}%, subject to performance reviews.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "grievance_procedure",
+            "clause_title": "Grievance and Dispute Resolution",
+            "clause_text": "In the event of a dispute, the parties shall follow the grievance procedure: (1) Informal discussion; (2) Formal written complaint to Management; (3) Mediation; (4) Referral to the National Labour Commission (NLC) in accordance with Section 154 of Act 651.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "redundancy",
+            "clause_title": "Redundancy and Severance",
+            "clause_text": "In case of redundancy, the Employer shall provide at least {{redundancy_notice_months}} months' notice to the Union and the Chief Labour Officer. Severance pay shall be calculated as {{weeks_per_year}} weeks of basic salary for every year of completed service.",
+            "clause_type": "variable"
+        }
+    ]
+}

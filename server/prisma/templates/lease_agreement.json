@@ -1,0 +1,50 @@
+{
+    "name": "Lease Agreement",
+    "description": "Contract for renting residential or commercial property.",
+    "category": "Property",
+    "jurisdiction": "Local",
+    "version": "1.3.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "landlord_name",
+                "label": "Landlord Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "tenant_name",
+                "label": "Tenant Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "property_address",
+                "label": "Property Address",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "lease_term_months",
+                "label": "Term (Months)",
+                "type": "number",
+                "required": true
+            },
+            {
+                "key": "monthly_rent",
+                "label": "Monthly Rent",
+                "type": "currency",
+                "currency": "USD",
+                "required": true
+            }
+        ],
+        "sections": [
+            {
+                "key": "include_pets_clause",
+                "label": "Include Pets Clause?",
+                "default": false
+            }
+        ]
+    },
+    "content": "# RESIDENTIAL LEASE AGREEMENT\n\nThis Lease Agreement is made between **{{landlord_name}}** (\"Landlord\") and **{{tenant_name}}** (\"Tenant\").\n\n### 1. Property\nLandlord agrees to lease to Tenant the premises located at: **{{property_address}}**.\n\n### 2. Term\nThe term of this lease shall be for **{{lease_term_months}}** months.\n\n### 3. Rent\nTenant agrees to pay **{{monthly_rent}}** per month on the 1st day of each month.\n\n{{#if include_pets_clause}}\n### 4. Pets\nTenant is permitted to keep up to two (2) domestic pets on the premises, subject to a pet deposit.\n{{/if}}\n\n---\n"
+}

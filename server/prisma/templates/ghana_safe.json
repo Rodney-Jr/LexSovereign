@@ -1,0 +1,45 @@
+{
+    "name": "SAFE - Ghana Version (Private Equity)",
+    "description": "Simple Agreement for Future Equity (SAFE) localized for the Ghanaian tech ecosystem, focusing on common seed-stage investment terms in Accra.",
+    "category": "COMMERCIAL",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "SAFE Agreement",
+            "clause_text": "THIS SAFE (Simple Agreement for Future Equity) is made on {{agreement_date}} between {{company_name}} ('the Company') and {{investor_name}} ('the Investor').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "investment",
+            "clause_title": "The Purchase Amount",
+            "clause_text": "In exchange for the payment by the Investor of a purchase amount of {{purchase_amount}} (GHS) (the 'Purchase Amount'), the Company issues to the Investor the right to certain shares of the Company's capital stock.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "conversion_event",
+            "clause_title": "Equity Financing",
+            "clause_text": "If there is an Equity Financing before the expiration or termination of this SAFE, the Company will automatically issue a number of shares to the Investor equal to the Purchase Amount divided by the conversion price.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "valuation_cap",
+            "clause_title": "Valuation Cap",
+            "clause_text": "The Valuation Cap for the purpose of conversion is {{valuation_cap}} (GHS). The Discount Rate is {{discount_rate}}%.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "dissolution",
+            "clause_title": "Liquidity or Dissolution",
+            "clause_text": "In the event of a Liquidity Event or Dissolution Event, the Investor will be entitled to receive a cash payment equal to the Purchase Amount, prior to any distribution to holders of Common Shares.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "compliance_act_992",
+            "clause_title": "Compliance with Act 992",
+            "clause_text": "The Company warrants that the issuance of shares upon conversion of this SAFE shall comply with the share issuance procedures of the Ghana Companies Act, 2019 (Act 992).",
+            "clause_type": "locked"
+        }
+    ]
+}

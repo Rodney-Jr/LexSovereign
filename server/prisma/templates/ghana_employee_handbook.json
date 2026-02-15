@@ -1,0 +1,39 @@
+{
+    "name": "Ghana Employee Handbook / HR Policy",
+    "description": "A comprehensive HR policy document that incorporates mandatory provisions of the Ghana Labour Act, 2003 (Maternity, Sick Leave, SSNIT).",
+    "category": "EMPLOYMENT",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "introduction",
+            "clause_title": "Introduction",
+            "clause_text": "Welcome to {{company_name}}. This handbook outlines our policies and your rights as an employee. Where this handbook conflicts with Act 651, the Act shall prevail.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "working_hours",
+            "clause_title": "Working Hours",
+            "clause_text": "Standard working hours are from {{start_time}} to {{end_time}}, Monday to Friday. This exceeds the legal maximum of 40 hours per week only in accordance with overtime provisions agreed herein.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "maternity_leave",
+            "clause_title": "Maternity and Paternity Leave",
+            "clause_text": "Female employees are entitled to {{maternity_weeks}} weeks (minimum 12 weeks) of fully paid maternity leave. Nursing mothers are entitled to one hour off daily during working hours for breastfeeding for a period of one year.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "ssnit_policy",
+            "clause_title": "Social Security (SSNIT)",
+            "clause_text": "The Employer is registered with SSNIT (No: {{ssnit_number}}) and Tier 2 schemes. Contributions are deducted and remitted monthly in accordance with the National Pensions Act, 2008 (Act 766).",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "discipline",
+            "clause_title": "Disciplinary Code",
+            "clause_text": "The following acts constitute gross misconduct: (a) Theft or fraud; (b) Violence in the workplace; (c) Chronic absenteeism; (d) Breach of confidentiality. Disciplinary actions follow the principle of natural justice.",
+            "clause_type": "locked"
+        }
+    ]
+}

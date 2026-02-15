@@ -1,0 +1,51 @@
+{
+    "name": "Facility Agreement (Loan Agreement - GH)",
+    "description": "Commercial loan agreement (facility agreement) for private lending in Ghana, including Right to Set-off and Act 689 compliance.",
+    "category": "COMMERCIAL",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "THIS FACILITY AGREEMENT is made on {{agreement_date}} BETWEEN {{lender_name}} ('the Lender') and {{borrower_name}} ('the Borrower').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "facility",
+            "clause_title": "The Loan Facility",
+            "clause_text": "The Lender agrees to make available to the Borrower a term loan facility in the aggregate amount of {{loan_amount}} (GHS) (the 'Facility').",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "purpose",
+            "clause_title": "Purpose",
+            "clause_text": "The Borrower shall apply all amounts borrowed by it under the Facility towards {{loan_purpose}} (e.g. working capital, asset acquisition).",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "interest",
+            "clause_title": "Interest and Repayment",
+            "clause_text": "The Borrower shall pay interest on the Facility at a rate of {{interest_rate}}% per annum. The loan shall be repaid in {{repayment_installments}} equal monthly installments commencing on {{repayment_start_date}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "set_off",
+            "clause_title": "Right to Set-off",
+            "clause_text": "The Lender may at any time, without notice to the Borrower, set off any liability of the Borrower against any liability of the Lender to the Borrower, whether either liability is present or future, liquidated or unliquidated.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "default",
+            "clause_title": "Events of Default",
+            "clause_text": "Each of the following is an Event of Default: (a) Non-payment of any sum due under this Agreement; (b) Breach of any financial covenant; (c) Insolvency or bankruptcy of the Borrower.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "governing_law",
+            "clause_title": "Governing Law",
+            "clause_text": "This Agreement is governed by the laws of Ghana, including the Borrowers and Lenders Act, 2020 (Act 1019) where applicable.",
+            "clause_type": "locked"
+        }
+    ]
+}

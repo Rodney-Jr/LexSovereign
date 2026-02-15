@@ -1,0 +1,64 @@
+{
+    "name": "Business Plan",
+    "description": "Comprehensive business plan template for startups and established enterprises.",
+    "category": "Corporate",
+    "jurisdiction": "GLOBAL",
+    "version": "1.0.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "company_name",
+                "label": "Company Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "mission_statement",
+                "label": "Mission Statement",
+                "type": "text",
+                "multiline": true,
+                "required": true
+            },
+            {
+                "key": "target_market",
+                "label": "Target Market",
+                "type": "text",
+                "placeholder": "e.g. Fintech in SE Asia",
+                "required": true
+            },
+            {
+                "key": "revenue_model",
+                "label": "Revenue Model",
+                "type": "text",
+                "multiline": true,
+                "required": true
+            },
+            {
+                "key": "funding_goal",
+                "label": "Funding Goal",
+                "type": "currency",
+                "currency": "USD",
+                "required": true
+            },
+            {
+                "key": "founder_names",
+                "label": "Founders",
+                "type": "text",
+                "required": true
+            }
+        ],
+        "sections": [
+            {
+                "key": "include_risk_factors",
+                "label": "Include Risk Factors?",
+                "default": true
+            },
+            {
+                "key": "include_market_analysis",
+                "label": "Include Market Analysis?",
+                "default": true
+            }
+        ]
+    },
+    "content": "# BUSINESS PLAN: {{company_name}}\n\n**Founders:** {{founder_names}}\n\n### 1. Executive Summary\n{{company_name}} is dedicated to fulfilling our mission: {{mission_statement}}.\n\n### 2. Market Analysis\nWe are targeting the following market segment: **{{target_market}}**. \n\n{{#if include_market_analysis}}\n#### 2.1 Market Opportunity\nOur target market is characterized by rapid growth and evolving customer needs, presenting a significant opportunity for our tailored solutions.\n{{/if}}\n\n### 3. Revenue & Business Model\nOur sustainable revenue model consists of: {{revenue_model}}.\n\n### 4. Funding Requirements\nTo achieve our milestones, we are seeking **{{funding_goal}}** in capital.\n\n{{#if include_risk_factors}}\n### 5. Risk Factors\nWe have identified potential risks including market volatility, regulatory changes, and execution challenges. Mitigation strategies are in place for each.\n{{/if}}\n\n---\n*Generated via LexSovereign Sovereign Control Plane*\n"
+}

@@ -1,0 +1,45 @@
+{
+    "name": "AGM Minutes & Proxies (Ghana)",
+    "description": "Template for Annual General Meeting minutes and proxy forms compliant with ORC requirements.",
+    "category": "CORPORATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "minutes_header",
+            "clause_title": "Meeting Minutes",
+            "clause_text": "MINUTES OF THE ANNUAL GENERAL MEETING OF {{company_name}} HELD ON {{meeting_date}} AT {{meeting_location}} STARTING AT {{start_time}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "attendance",
+            "clause_title": "Attendance and Quorum",
+            "clause_text": "Present: {{attendees_list}}. The Chairman noted that a quorum was present in accordance with the Company's Constitution and Act 992.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "ordinary_business",
+            "clause_title": "Ordinary Business",
+            "clause_text": "The following ordinary business was transacted: (1) Presentation of the Audited Financial Statements for the year ended {{year_end_date}}; (2) Re-appointment of {{auditor_name}} as Auditors; (3) Re-election of retiring Directors: {{retiring_directors}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "dividends",
+            "clause_title": "Declaration of Dividends",
+            "clause_text": "A final dividend of {{dividend_per_share}} per share was declared and approved for payment to shareholders on the register as of {{record_date}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "proxy_form",
+            "clause_title": "Proxy Form",
+            "clause_text": "I, {{shareholder_name}}, being a member of {{company_name}}, hereby appoint {{proxy_name}} or failing him, the Chairman of the meeting, as my proxy to vote for me and on my behalf at the Annual General Meeting to be held on {{meeting_date}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Chairman's Certification",
+            "clause_text": "Certified as a true record:\n\n____________________\n{{chairman_name}}\nChairman",
+            "clause_type": "locked"
+        }
+    ]
+}

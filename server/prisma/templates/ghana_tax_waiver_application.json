@@ -1,0 +1,45 @@
+{
+    "name": "Application for Tax Waiver/Exemption (GIPC)",
+    "description": "Template for applying for strategic investor status and associated tax waivers/exemptions through GIPC.",
+    "category": "COMPLIANCE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "Formal Application",
+            "clause_text": "TO: The Chief Executive Officer\nGhana Investment Promotion Centre (GIPC)\nAccra, Ghana\n\nDATE: {{application_date}}",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "applicant_info",
+            "clause_title": "Applicant Details",
+            "clause_text": "RE: Application for Strategic Investor Status and Tax Exemptions by {{company_name}} (GIPC Reg No: {{gipc_reg_number}}).",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "project_description",
+            "clause_title": "Project Overview",
+            "clause_text": "The Applicant is invested in a major project in the {{sector_name}} sector with a total investment value of {{total_investment_value}} (USD), located at {{project_site}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "economic_justification",
+            "clause_title": "Economic Justification",
+            "clause_text": "The project is expected to create {{job_count}} direct jobs for Ghanaians and contribute to the national economy through {{economic_benefits}} (e.g. import substitution, export earnings, technology transfer).",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "exemptions_requested",
+            "clause_title": "Requested Exemptions",
+            "clause_text": "Pursuant to Section 26 of the GIPC Act, 2013 (Act 865), the Applicant requests the following: (a) Exemption from import duties on plant and machinery; (b) {{specific_tax_exemption}} (e.g. 5-year corporate tax holiday); (c) Exemption from VAT on capital goods.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "certification",
+            "clause_title": "Certification",
+            "clause_text": "We certify that all information provided is true and we agree to comply with all reporting requirements set by GIPC and the Ghana Revenue Authority (GRA).\n\n____________________\n{{signature_name}}\nManaging Director",
+            "clause_type": "locked"
+        }
+    ]
+}

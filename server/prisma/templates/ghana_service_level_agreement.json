@@ -1,0 +1,45 @@
+{
+    "name": "Service Level Agreement (SLA - Ghana)",
+    "description": "B2B Service Level Agreement including Ghanaian Tax Withholding (WHT) clauses and liability caps.",
+    "category": "COMMERCIAL",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Service Agreement",
+            "clause_text": "THIS SERVICE LEVEL AGREEMENT is made between {{provider_name}} ('the Provider') and {{client_name}} ('the Client') on {{agreement_date}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "scope",
+            "clause_title": "Scope of Services",
+            "clause_text": "The Provider shall provide the following services: {{service_scope_details}} (the 'Services').",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "performance_metrics",
+            "clause_title": "Service Levels (SLAs)",
+            "clause_text": "The Provider guarantees an uptime of {{uptime_percentage}}% for the platform. Service response time for critical issues shall be no more than {{response_hours}} hours.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "fees_wht",
+            "clause_title": "Fees and Taxes (WHT)",
+            "clause_text": "The monthly fee for the services is {{monthly_fee}} (GHS), exclusive of VAT/NHIL/GETFund. The Client shall deduct Withholding Tax (WHT) at the prevailing rate (currently {{wht_rate}}% for services) and provide the Provider with a WHT certificate within 30 days of payment.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "liability_cap",
+            "clause_title": "Limitation of Liability",
+            "clause_text": "The total liability of the Provider under this Agreement shall not exceed {{liability_cap_amount}} or the total fees paid by the Client in the {{preceding_months}} months preceding the claim.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "force_majeure",
+            "clause_title": "Force Majeure",
+            "clause_text": "Neither party shall be liable for any failure to perform its obligations due to events beyond its reasonable control, including acts of God, war, or nationwide power outages (GRIDCo/ECG failures).",
+            "clause_type": "locked"
+        }
+    ]
+}

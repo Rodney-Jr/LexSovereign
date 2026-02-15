@@ -1,0 +1,38 @@
+{
+    "name": "Board Resolution",
+    "description": "Record of decisions made by the Board of Directors.",
+    "category": "Corporate",
+    "jurisdiction": "GLOBAL",
+    "version": "1.0.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "meeting_date",
+                "label": "Meeting Date",
+                "type": "date",
+                "required": true
+            },
+            {
+                "key": "company_name",
+                "label": "Company Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "resolution_topic",
+                "label": "Resolution Topic",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "decision_details",
+                "label": "Decision Details",
+                "type": "text",
+                "multiline": true,
+                "required": true
+            }
+        ],
+        "sections": []
+    },
+    "content": "# BOARD RESOLUTION OF {{company_name}}\n\n**DATE:** {{meeting_date}}\n\n**TOPIC:** {{resolution_topic}}\n\n**WHEREAS**, the Board of Directors of **{{company_name}}** has discussed the matter of **{{resolution_topic}}**;\n\n**IT IS HEREBY RESOLVED:**\nThat **{{decision_details}}**.\n\nThe undersigned certify that the foregoing resolution was duly adopted by the Board of Directors.\n\n---\n"
+}

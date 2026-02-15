@@ -1,0 +1,57 @@
+{
+    "name": "Standard Company Constitution (Act 992)",
+    "description": "Modern company constitution compliant with the Ghana Companies Act, 2019 (Act 992), replacing the old Regulations format.",
+    "category": "CORPORATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "company_details",
+            "clause_title": "Company Details",
+            "clause_text": "The name of the Company is {{company_name}}. The Company is a private company limited by shares, incorporated under the Companies Act, 2019 (Act 992) of the Republic of Ghana.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "nature_of_business",
+            "clause_title": "Nature of Business",
+            "clause_text": "The Company is authorized to carry on the following businesses: {{business_objects}}, and any other business that the Board of Directors may from time to time determine.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "registered_office",
+            "clause_title": "Registered Office",
+            "clause_text": "The registered office of the Company shall be situated at {{registered_address}}, Ghana.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "share_capital",
+            "clause_title": "Share Capital",
+            "clause_text": "The Company is authorized to issue a maximum of {{max_shares}} shares of no par value. The initial shares issued and fully paid up are {{initial_issued_shares}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "powers_of_directors",
+            "clause_title": "Powers of Directors",
+            "clause_text": "Subject to the provisions of Act 992 and this Constitution, the business of the Company shall be managed by the Board of Directors, who may exercise all such powers of the Company as are not required to be exercised by the Company in general meeting. Specifically, the Directors shall have the power to borrow money and charge the assets of the Company as security.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "major_transactions",
+            "clause_title": "Major Transactions",
+            "clause_text": "In accordance with Section 145 of Act 992, the Company shall not enter into a 'major transaction' (as defined in the Act, referring to transactions involving 75% or more of the value of the Company's assets) unless the transaction is approved by special resolution of the shareholders.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "provisional_secretary",
+            "clause_title": "Company Secretary",
+            "clause_text": "The first Company Secretary of the Company is {{secretary_name}}, who is qualified to act as such under the laws of Ghana.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "adoption",
+            "clause_title": "Adoption",
+            "clause_text": "We, the undersigned, whose names and addresses are hereunto subscribed, are desirous of being formed into a Company in pursuance of this Constitution and we respectively agree to take the number of shares in the capital of the Company set opposite our respective names.\n\nName: {{subscriber_1_name}}\nAddress: {{subscriber_1_address}}\nShares: {{subscriber_1_shares}}\nSign: ____________________\n\nName: {{subscriber_2_name}}\nAddress: {{subscriber_2_address}}\nShares: {{subscriber_2_shares}}\nSign: ____________________",
+            "clause_type": "locked"
+        }
+    ]
+}

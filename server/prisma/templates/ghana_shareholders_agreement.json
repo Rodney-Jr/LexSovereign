@@ -1,0 +1,57 @@
+{
+    "name": "Shareholders’ Agreement (Ghana-Specific)",
+    "description": "Shareholders' agreement tailored to Ghanaian private equity norms and the Companies Act, 2019.",
+    "category": "CORPORATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "This Shareholders' Agreement is entered into on {{agreement_date}} among {{company_name}} (the 'Company') and the following shareholders: {{shareholder_list}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "board_composition",
+            "clause_title": "Board Composition",
+            "clause_text": "The Board shall consist of {{total_directors}} directors. {{shareholder_a}} shall be entitled to appoint {{directors_a}} directors, and {{shareholder_b}} shall be entitled to appoint {{directors_b}} directors.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "rofr",
+            "clause_title": "Right of First Refusal (ROFR)",
+            "clause_text": "If any Shareholder proposes to transfer any Shares to a third party, that Shareholder shall first offer such Shares to the other Shareholders on the same terms and conditions as the proposed transfer to the third party.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "tag_along",
+            "clause_title": "Tag-Along Rights",
+            "clause_text": "In the event of a proposed sale of a majority stake (defined as over {{control_threshold}}%) by a majority Shareholder, the minority Shareholders shall have the right to include their Shares in the sale on a pro-rata basis and on the same terms.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "drag_along",
+            "clause_title": "Drag-Along Rights",
+            "clause_text": "If Shareholders holding at least {{drag_threshold}}% of the Shares approve a sale of the Company to a bona fide third party, they shall have the right to require the other Shareholders to sell their Shares on the same terms and conditions.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "reserved_matters",
+            "clause_title": "Reserved Matters",
+            "clause_text": "Notwithstanding any other provision, the following matters shall require the prior written consent of {{veto_shareholder}}: (a) amendment of the Constitution; (b) increase or decrease in share capital; (c) entry into any transaction exceeding {{spending_limit}}; (d) appointment or removal of the Auditor.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "dividend_policy",
+            "clause_title": "Dividend Policy",
+            "clause_text": "The Company shall distribute at least {{dividend_percentage}}% of its annual audited net profit as dividends, subject to the solvency test requirements under Section 71 of Act 992.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "governing_law",
+            "clause_title": "Governing Law and Arbitration",
+            "clause_text": "This Agreement is governed by the laws of Ghana. Any dispute shall be referred to arbitration in Accra under the Alternative Dispute Resolution Act, 2010 (Act 798).",
+            "clause_type": "locked"
+        }
+    ]
+}

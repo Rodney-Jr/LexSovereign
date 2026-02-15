@@ -1,0 +1,51 @@
+{
+    "name": "Commercial Lease Agreement (Ghana)",
+    "description": "Commercial lease for office or retail space in Ghana, referencing Act 1036 and common rent advance practices.",
+    "category": "REAL_ESTATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "THIS COMMERCIAL LEASE is made between {{landlord_name}} ('the Landlord') and {{tenant_name}} ('the Tenant') on {{lease_date}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "premises",
+            "clause_title": "The Premises",
+            "clause_text": "The Landlord leases to the Tenant the following commercial space: {{premises_address}}, including the fixtures and fittings listed in Appendix B.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "term",
+            "clause_title": "Duration of Lease",
+            "clause_text": "The term of this lease is {{lease_years}} years, commencing on {{commencement_date}} and ending on {{termination_date}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "rent_advance",
+            "clause_title": "Rent and Advance Payment",
+            "clause_text": "The rent is {{monthly_rent}} (GHS) per month. The Tenant shall pay an advance rent of {{advance_amount}} representing {{advance_months}} months of rent. Following the advance period, rent shall be paid {{payment_frequency}} (e.g. quarterly) in advance.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "service_charge",
+            "clause_title": "Service Charges",
+            "clause_text": "In addition to rent, the Tenant shall pay a monthly service charge of {{service_charge}} for security, cleaning of common areas, and {{other_services}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "permitted_use",
+            "clause_title": "Permitted Use",
+            "clause_text": "The premises shall be used solely for the purpose of {{business_activity}} and for no other purpose without the prior written consent of the Landlord.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "rent_control",
+            "clause_title": "Statutory Note",
+            "clause_text": "The parties acknowledge the provisions of the Rent Act, 1963 (Act 220) and the Land Act, 2020 (Act 1036) regarding rent reviews and recovery of possession.",
+            "clause_type": "locked"
+        }
+    ]
+}

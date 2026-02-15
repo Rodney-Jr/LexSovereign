@@ -1,0 +1,45 @@
+{
+    "name": "NDA & Non-Compete (Ghana)",
+    "description": "Non-Disclosure and Non-Compete Agreement designed to be enforceable within the Ghanaian High Court system.",
+    "category": "EMPLOYMENT",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties",
+            "clause_title": "Parties",
+            "clause_text": "This Agreement is entered into between {{employer_name}} ('the Company') and {{individual_name}} ('the Representative') on {{agreement_date}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "confidentiality",
+            "clause_title": "Confidentiality Obligations",
+            "clause_text": "The Representative shall keep secret and shall not use, disclose or divulge to any third party any Confidential Information relating to the Company's business, clients, or trade secrets acquired during the course of engagement.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "non_compete",
+            "clause_title": "Non-Compete Clause",
+            "clause_text": "The Representative agrees that for a period of {{non_compete_months}} months following termination, they shall not, within {{geographical_scope}} (e.g. Greater Accra), engage in any business that directly competes with the Company's services in {{industry_vertical}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "non_solicitation",
+            "clause_title": "Non-Solicitation",
+            "clause_text": "For a period of {{non_solicitation_months}} months, the Representative shall not solicit or entice away any employees or clients of the Company.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "reasonableness",
+            "clause_title": "Acknowledgement of Reasonableness",
+            "clause_text": "The Representative acknowledges that the restrictions in this Agreement are reasonable and necessary to protect the Company's legitimate business interests and that they have received independent legal advice (or had the opportunity to do so).",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "injunctive_relief",
+            "clause_title": "Injunctive Relief",
+            "clause_text": "The Representative acknowledges that a breach of this Agreement may cause irreparable harm for which damages may not be an adequate remedy, and the Company shall be entitled to seek injunctive relief in the High Court of Ghana.",
+            "clause_type": "locked"
+        }
+    ]
+}

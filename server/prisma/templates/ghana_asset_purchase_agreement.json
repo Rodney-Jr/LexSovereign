@@ -1,0 +1,45 @@
+{
+    "name": "Asset Purchase Agreement (APA - Ghana)",
+    "description": "Template for the sale and purchase of business assets in Ghana, including goodwill and employee transfer considerations.",
+    "category": "COMMERCIAL",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "Agreement Summary",
+            "clause_text": "THIS ASSET PURCHASE AGREEMENT is made between {{vendor_name}} ('the Vendor') and {{purchaser_name}} ('the Purchaser') on {{completion_date}}.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "assets_definition",
+            "clause_title": "Sale Assets",
+            "clause_text": "The Vendor sells and the Purchaser purchases the following assets: {{list_of_assets}} (the 'Purchased Assets'), including goodwill, intellectual property, and equipment.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "consideration",
+            "clause_title": "Purchase Price",
+            "clause_text": "The total purchase price for the Assets is {{purchase_price}} (GHS). The allocation of the price among the Assets is set out in Schedule 1.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "employees",
+            "clause_title": "Transfer of Employees",
+            "clause_text": "The parties agree to comply with Section 65 of Act 651 regarding the transfer of employees. The Purchaser {{shall_or_shall_not}} offer employment to the existing employees of the Vendor listed in Schedule 2.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "warranties",
+            "clause_title": "Vendor Warranties",
+            "clause_text": "The Vendor warrants that (a) it has good title to the Assets; (b) the Assets are free from any encumbrances; (c) there are no pending litigations affecting the Assets.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "appportionment",
+            "clause_title": "Apportionments",
+            "clause_text": "All income and outgoings (including utility bills and ground rent) related to the Assets shall be apportioned between the Vendor and the Purchaser as of the Completion Date.",
+            "clause_type": "locked"
+        }
+    ]
+}

@@ -1,0 +1,51 @@
+{
+    "name": "Deed of Assignment (Leasehold land)",
+    "description": "Standard deed for transferring land titles in Ghana under the Land Act, 2020 (Act 1036), including ORC and Lands Commission requirements.",
+    "category": "REAL_ESTATE",
+    "jurisdiction": "GHANA",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "header",
+            "clause_title": "Parties and Date",
+            "clause_text": "THIS DEED OF ASSIGNMENT is made on {{assignment_date}} BETWEEN {{assignor_name}} ('the Assignor') AND {{assignee_name}} ('the Assignee').",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "recitals",
+            "clause_title": "Recitals",
+            "clause_text": "WHEREAS: (1) The Assignor is the legal and beneficial owner of the property described in the Schedule herein; (2) The Assignor has agreed to assign their interest to the Assignee for the consideration mentioned below.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "property_description",
+            "clause_title": "The Property",
+            "clause_text": "All that piece or parcel of land situated at {{town_location}}, in the {{district_name}} District of the {{region_name}} Region, covering an area of {{land_area}} and bounded as follows: {{land_boundaries}}. This land is identified as Plot No. {{plot_number}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "consideration",
+            "clause_title": "Consideration and Receipt",
+            "clause_text": "In consideration of the sum of {{sale_price}} (GHS) paid by the Assignee to the Assignor, the receipt of which the Assignor hereby acknowledges.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "unexpired_term",
+            "clause_title": "Unexpired Term",
+            "clause_text": "The Assignor assigns the property to the Assignee for the unexpired residue of the term of {{total_years}} years granted under the Head Lease dated {{head_lease_date}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "covenants",
+            "clause_title": "Standard Covenants",
+            "clause_text": "The Assignor covenants that they have full power to assign the property and that the Assignee shall quietly enjoy the property without interruption. The Assignee covenants to pay the ground rent of {{monthly_ground_rent}} to the Head Lessor.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures and Attestation",
+            "clause_text": "Signed by Assignor: ____________________\nIn the presence of Witness: {{witness_assignor}}\n\nSigned by Assignee: ____________________\nIn the presence of Witness: {{witness_assignee}}",
+            "clause_type": "locked"
+        }
+    ]
+}

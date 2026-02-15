@@ -1,0 +1,44 @@
+{
+    "name": "Memorandum of Understanding (MoU)",
+    "description": "Non-binding agreement outlining the terms of a new relationship.",
+    "category": "Corporate",
+    "jurisdiction": "GLOBAL",
+    "version": "1.1.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "signing_date",
+                "label": "Signing Date",
+                "type": "date",
+                "required": true
+            },
+            {
+                "key": "party_a",
+                "label": "Party A",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "party_b",
+                "label": "Party B",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "mutual_goal",
+                "label": "Mutual Goal",
+                "type": "text",
+                "multiline": true,
+                "required": true
+            }
+        ],
+        "sections": [
+            {
+                "key": "include_confidentiality",
+                "label": "Include Confidentiality Section?",
+                "default": false
+            }
+        ]
+    },
+    "content": "# MEMORANDUM OF UNDERSTANDING\n\nThis Memorandum of Understanding (MoU) is made on **{{signing_date}}** between **{{party_a}}** and **{{party_b}}**.\n\n### 1. Objective\nThe parties share the common goal of **{{mutual_goal}}**. This MoU outlines the framework for cooperation to achieve this objective.\n\n### 2. Non-Binding\nThis MoU is not intended to create legal or binding obligations between the Parties.\n\n{{#if include_confidentiality}}\n### 3. Confidentiality\nBoth parties agree to keep the discussions regarding this MoU confidential.\n{{/if}}\n\n---\n"
+}

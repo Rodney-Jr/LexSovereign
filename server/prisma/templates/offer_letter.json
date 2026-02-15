@@ -1,0 +1,43 @@
+{
+    "name": "Offer Letter",
+    "description": "Formal letter offering employment to a candidate.",
+    "category": "Employment",
+    "jurisdiction": "Local",
+    "version": "1.0.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "start_date",
+                "label": "Start Date",
+                "type": "date",
+                "required": true
+            },
+            {
+                "key": "candidate_name",
+                "label": "Candidate Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "company_name",
+                "label": "Company Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "offer_position",
+                "label": "Position Offered",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "supervisor_name",
+                "label": "Reporting To",
+                "type": "text",
+                "required": true
+            }
+        ],
+        "sections": []
+    },
+    "content": "# EMPLOYMENT OFFER LETTER\n\n**Date:** {{start_date}}\n\n**To:** {{candidate_name}}\n\n**Dear {{candidate_name}},**\n\n**{{company_name}}** is pleased to offer you the position of **{{offer_position}}**. We believe your skills and experience are an excellent match for our company.\n\n**Start Date:** Your employment will commence on {{start_date}}.\n**Reporting To:** You will report directly to **{{supervisor_name}}**.\n\nWe look forward to welcoming you to the team.\n\nSincerely,\n\nHiring Manager\n**{{company_name}}**\n"
+}

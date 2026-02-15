@@ -1,0 +1,38 @@
+{
+    "name": "Termination Letter",
+    "description": "Formal notice of contract or employment termination.",
+    "category": "Employment",
+    "jurisdiction": "Local",
+    "version": "1.0.0",
+    "structure": {
+        "fields": [
+            {
+                "key": "termination_date",
+                "label": "Effective Date",
+                "type": "date",
+                "required": true
+            },
+            {
+                "key": "recipient_name",
+                "label": "Recipient Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "company_name",
+                "label": "Company Name",
+                "type": "text",
+                "required": true
+            },
+            {
+                "key": "reason_for_termination",
+                "label": "Reason",
+                "type": "text",
+                "multiline": true,
+                "required": true
+            }
+        ],
+        "sections": []
+    },
+    "content": "# NOTICE OF TERMINATION\n\n**TO:** {{recipient_name}}\n\n**FROM:** {{company_name}}\n\n**DATE:** {{termination_date}}\n\n**RE:** Termination of Employment\n\nDear {{recipient_name}},\n\nThis letter serves to confirm that your employment with **{{company_name}}** is terminated effective **{{termination_date}}**.\n\nReason for termination: **{{reason_for_termination}}**.\n\nPlease return all company property immediately.\n\nSincerely,\n\nHuman Resources\n**{{company_name}}**\n"
+}
