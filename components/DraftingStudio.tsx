@@ -85,6 +85,34 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     const [isAssembling, setIsAssembling] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [sidebarWidth, setSidebarWidth] = useState(400);
+    const [isResizing, setIsResizing] = useState(false);
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isResizing) return;
+            const newWidth = e.clientX;
+            if (newWidth >= 300 && newWidth <= 800) {
+                setSidebarWidth(newWidth);
+            }
+        };
+
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            document.body.style.cursor = 'default';
+        };
+
+        if (isResizing) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'col-resize';
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizing]);
 
     useEffect(() => {
         fetchTemplate();
@@ -374,9 +402,12 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             </header>
 
             {/* Main Workspace */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden relative">
                 {/* Left: Input Sidebar */}
-                <aside className="w-[400px] border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-8 scrollbar-hide">
+                <aside
+                    className="border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-8 scrollbar-hide shrink-0"
+                    style={{ width: `${sidebarWidth}px` }}
+                >
                     {/* Sections (Toggles) */}
                     {((template.structure as any).sections?.length > 0 || (Array.isArray(template.structure) && template.structure.some(c => c.clause_type === 'optional'))) && (
                         <div className="mb-8 space-y-4">
@@ -538,6 +569,12 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         </p>
                     </div>
                 </aside>
+
+                {/* Resize Handle */}
+                <div
+                    className={`w-1.5 h-full cursor-col-resize hover:bg-brand-primary/40 transition-colors z-20 flex-shrink-0 -ml-[3px] ${isResizing ? 'bg-brand-primary/60' : ''}`}
+                    onMouseDown={() => setIsResizing(true)}
+                />
 
                 {/* Right: Live Preview */}
                 <main className="flex-1 bg-brand-bg p-12 overflow-y-auto scrollbar-hide flex justify-center">
