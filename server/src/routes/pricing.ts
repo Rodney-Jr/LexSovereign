@@ -45,40 +45,38 @@ router.get('/', async (req, res) => {
     } catch (error: any) {
         console.error('Pricing API Error:', error);
 
-        // P2021: Table doesn't exist (migrations not run)
-        // Return default configs instead of failing
-        if (error.code === 'P2021') {
-            console.warn('⚠️  PricingConfig table does not exist. Returning default configs. Run migrations: npx prisma migrate deploy');
-            const defaultConfigs = [
-                {
-                    id: 'Standard',
-                    basePrice: 99,
-                    pricePerUser: 10,
-                    creditsIncluded: 500,
-                    features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits'],
-                    updatedAt: new Date()
-                },
-                {
-                    id: 'Sovereign',
-                    basePrice: 499,
-                    pricePerUser: 15,
-                    creditsIncluded: 10000,
-                    features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready'],
-                    updatedAt: new Date()
-                },
-                {
-                    id: 'Enclave Exclusive',
-                    basePrice: 1999,
-                    pricePerUser: 25,
-                    creditsIncluded: 0,
-                    features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits'],
-                    updatedAt: new Date()
-                }
-            ];
-            return res.json(defaultConfigs);
-        }
+        // ALWAYS return default configs instead of 500
+        // This ensures the marketing site remains functional even if DB is down
+        console.warn('⚠️  Returning default pricing configurations due to error.');
 
-        return res.status(500).json({ error: error.message });
+        const defaultConfigs = [
+            {
+                id: 'Standard',
+                basePrice: 99,
+                pricePerUser: 10,
+                creditsIncluded: 500,
+                features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits'],
+                updatedAt: new Date()
+            },
+            {
+                id: 'Sovereign',
+                basePrice: 499,
+                pricePerUser: 15,
+                creditsIncluded: 10000,
+                features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready'],
+                updatedAt: new Date()
+            },
+            {
+                id: 'Enclave Exclusive',
+                basePrice: 1999,
+                pricePerUser: 25,
+                creditsIncluded: 0,
+                features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits'],
+                updatedAt: new Date()
+            }
+        ];
+
+        return res.json(defaultConfigs);
     }
 });
 

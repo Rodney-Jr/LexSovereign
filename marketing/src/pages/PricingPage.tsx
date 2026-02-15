@@ -23,7 +23,14 @@ export default function PricingPage() {
             try {
                 const response = await apiFetch('/api/pricing');
                 const data = await response.json();
-                setConfigs(data);
+
+                // Defensive check: Ensure data is an array
+                if (Array.isArray(data)) {
+                    setConfigs(data);
+                } else {
+                    console.error('Expected pricing array, received:', data);
+                    setError('Invalid billing data received.');
+                }
             } catch (err: any) {
                 setError(err.message);
             } finally {
