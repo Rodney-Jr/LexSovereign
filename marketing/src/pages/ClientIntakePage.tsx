@@ -13,7 +13,7 @@ export default function ClientIntakePage() {
                 schema={{
                     "@context": "https://schema.org",
                     "@type": "SoftwareApplication",
-                    "name": "LexSovereign Client Intake Assistant",
+                    "name": "NomosDesk Client Intake Assistant",
                     "applicationCategory": "BusinessApplication",
                     "operatingSystem": "Cloud",
                     "offers": {
@@ -49,7 +49,7 @@ export default function ClientIntakePage() {
                     <div>
                         <h2 className="text-3xl font-bold text-white mb-6">Structured Intake, Not Chatbot Chaos</h2>
                         <p className="text-slate-300 text-lg mb-8 leading-relaxed">
-                            Unlike generic chatbots, LexSovereign’s assistant follows a strict review framework defined by your firm.
+                            Unlike generic chatbots, NomosDesk’s assistant follows a strict review framework defined by your firm.
                         </p>
                         <div className="space-y-6">
                             <WorkStep
@@ -145,7 +145,7 @@ export default function ClientIntakePage() {
                         <FAQItem q="Can we customize the questions?" a="Yes. You have full control over the intake workflows and the specific questions asked for each practice area." />
                         <FAQItem q="Can we control what information is collected?" a="Absolutely. You define the data fields (name, phone, matter type, description) that are required." />
                         <FAQItem q="Is the assistant suitable for regulated legal environments?" a="Yes. It helps maintain compliance by ensuring a consistent, auditable intake process." />
-                        <FAQItem q="Can it integrate with internal systems?" a="Yes. Enquiries are automatically created as prospective matters within the LexSovereign platform." />
+                        <FAQItem q="Can it integrate with internal systems?" a="Yes. Enquiries are automatically created as prospective matters within the NomosDesk platform." />
                     </div>
                 </div>
             </Section>

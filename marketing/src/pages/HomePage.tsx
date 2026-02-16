@@ -11,11 +11,11 @@ export default function HomePage() {
         <Layout>
             <SEO
                 title="Secure Legal Matter Management & Governance Platform"
-                description="LexSovereign is a secure legal operating system for law firms, enterprise legal departments, and government institutions. Built for conflict checking, document security, and role-based governance."
+                description="NomosDesk is a secure legal operating system for law firms, enterprise legal departments, and government institutions. Built for conflict checking, document security, and role-based governance."
                 schema={{
                     "@context": "https://schema.org",
                     "@type": "SoftwareApplication",
-                    "name": "LexSovereign",
+                    "name": "NomosDesk",
                     "applicationCategory": "BusinessApplication",
                     "operatingSystem": "Cloud",
                     "offers": {
@@ -48,7 +48,7 @@ export default function HomePage() {
                         </h1>
 
                         <p className="text-xl text-slate-300 mb-8 leading-relaxed max-w-xl">
-                            LexSovereign is a secure platform designed for professional accountability.
+                            NomosDesk is a secure platform designed for professional accountability.
                             Manage matters, enforce conflict checks, and protect client confidentiality
                             within a structured governance system.
                         </p>
@@ -74,7 +74,7 @@ export default function HomePage() {
             <Section darker>
                 <SectionHeader
                     title="Designed for Institutional Governance"
-                    subtitle="LexSovereign replaces fragmented tools with a single, secure source of truth for your legal operations."
+                    subtitle="NomosDesk replaces fragmented tools with a single, secure source of truth for your legal operations."
                 />
 
                 <div className="grid md:grid-cols-3 gap-8">
@@ -105,7 +105,7 @@ export default function HomePage() {
                         </div>
                         <h2 className="text-3xl font-bold mb-6 text-white">Improve Client Service and Lead Intake</h2>
                         <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                            LexSovereign now includes a customizable website enquiry assistant that law firms can embed directly into their own website.
+                            NomosDesk now includes a customizable website enquiry assistant that law firms can embed directly into their own website.
                         </p>
                         <ul className="space-y-4 mb-8">
                             <li className="flex gap-3">
@@ -209,7 +209,7 @@ export default function HomePage() {
                 <SectionHeader title="Trusted by Legal Leaders" />
                 <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     <TestimonialCard
-                        quote="LexSovereign provided the governance structure we needed to scale our firm across three regions without losing control of risk management."
+                        quote="NomosDesk provided the governance structure we needed to scale our firm across three regions without losing control of risk management."
                         author="Senior Partner"
                         role="Regional Law Firm, Nairobi"
                     />

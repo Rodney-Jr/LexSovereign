@@ -35,7 +35,7 @@ export default function SecurityPage() {
                     </h1>
                     <p className="text-xl text-slate-300 max-w-2xl mx-auto">
                         We understand that legal data is among the most sensitive in the world.
-                        LexSovereign is built to protect privilege, confidentiality, and integrity.
+                        NomosDesk is built to protect privilege, confidentiality, and integrity.
                     </p>
                 </div>
             </Section>
@@ -70,7 +70,7 @@ export default function SecurityPage() {
                     <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
                     <div className="space-y-6">
                         <FAQItem q="Where is data stored?" a="We utilize secure, enterprise-grade data centers with options for regional residency to comply with local data protection laws (e.g., GDPR, local acts)." />
-                        <FAQItem q="Who can access information?" a="Only authorized users within your tenant. LexSovereign support staff have no standing access to your encrypted documents." />
+                        <FAQItem q="Who can access information?" a="Only authorized users within your tenant. NomosDesk support staff have no standing access to your encrypted documents." />
                         <FAQItem q="How are conflicts detected?" a="Our system indexes entities across all matters. A fuzzy-matching algorithm runs against this index during the intake process." />
                         <FAQItem q="Is the system suitable for public institutions?" a="Yes. We have specialized modules for government that handle higher classification levels and separation of duties." />
                     </div>

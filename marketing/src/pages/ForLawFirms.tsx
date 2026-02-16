@@ -21,7 +21,7 @@ export default function ForLawFirms() {
                         Governance that Scales <br /> With Your Practice
                     </h1>
                     <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
-                        Focus on client advocacy while LexSovereign handles the risk.
+                        Focus on client advocacy while NomosDesk handles the risk.
                         Automated conflict checks, partner approvals, and secure matter files
                         keep your firm compliant and efficient.
                     </p>
@@ -36,7 +36,7 @@ export default function ForLawFirms() {
                     <div>
                         <h2 className="text-3xl font-bold text-white mb-6">Stop Conflicts Before They Start</h2>
                         <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                            Manual conflict checks are prone to error. LexSovereign enforces a conflict search
+                            Manual conflict checks are prone to error. NomosDesk enforces a conflict search
                             workflow before any matter can be activated.
                         </p>
                         <ul className="space-y-4">

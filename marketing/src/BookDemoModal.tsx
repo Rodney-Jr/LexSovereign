@@ -64,7 +64,7 @@ const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose }) => {
                                 <Shield className="text-emerald-400" size={24} />
                             </div>
                             <h3 className="text-2xl font-bold text-white font-outfit">Secure Your Enclave</h3>
-                            <p className="text-sm text-slate-400">Request a private demonstration of the LexSovereign operating system.</p>
+                            <p className="text-sm text-slate-400">Request a private demonstration of the NomosDesk operating system.</p>
                         </div>
 
                         <div className="space-y-4">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, RefreshCw, Check, AlertCircle, DollarSign, Users, Plus, X, ExternalLink } from 'lucide-react';
+import { Settings, Save, RefreshCw, Check, AlertCircle, DollarSign, Users, Plus, X } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface PricingConfig {
@@ -98,18 +98,7 @@ export const PricingGovernance: React.FC = () => {
                     <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                         <Settings className="text-emerald-400" /> Hybrid Pricing Governance
                     </h2>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-                        <p className="text-slate-400">Configure tiered base rates and per-user billing models.</p>
-                        <a
-                            href={import.meta.env.VITE_MARKETING_URL || 'http://localhost:3002/pricing'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors group/link"
-                        >
-                            <ExternalLink size={12} className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-                            View Public Pricing Site
-                        </a>
-                    </div>
+                    <p className="text-slate-400 mt-1">Configure tiered base rates and per-user billing models.</p>
                 </div>
                 <button onClick={fetchConfigs} title="Refresh Pricing" className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
                     <RefreshCw className="text-slate-400 hover:text-white" size={20} />

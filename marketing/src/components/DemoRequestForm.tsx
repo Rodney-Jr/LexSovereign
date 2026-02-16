@@ -47,7 +47,7 @@ export default function DemoRequestForm() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Request Received</h3>
                 <p className="text-slate-300 mb-6">
-                    Thank you for your interest in LexSovereign. A member of our institutional team will contact you securely within 24 hours to schedule your private demonstration.
+                    Thank you for your interest in NomosDesk. A member of our institutional team will contact you securely within 24 hours to schedule your private demonstration.
                 </p>
                 <p className="text-sm text-slate-500">
                     Your information is processed in accordance with our strict confidentiality protocols.
@@ -60,7 +60,7 @@ export default function DemoRequestForm() {
         <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
             <h3 className="text-2xl font-bold text-white mb-2">Request a Private Demo</h3>
             <p className="text-slate-400 mb-8 text-sm">
-                See how LexSovereign enforces governance and meaningful confidentiality.
+                See how NomosDesk enforces governance and meaningful confidentiality.
             </p>
 
             <div className="space-y-5">

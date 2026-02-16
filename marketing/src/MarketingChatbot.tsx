@@ -16,7 +16,7 @@ const MarketingChatbot: React.FC<MarketingChatbotProps> = ({ onBookDemo }) => {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'bot',
-            text: "Greetings. I am the LexSovereign AI. How can I assist you with your regional legal technology requirements today?",
+            text: "Greetings. I am the NomosDesk AI. How can I assist you with your regional legal technology requirements today?",
             timestamp: new Date()
         }
     ]);
@@ -54,8 +54,8 @@ const MarketingChatbot: React.FC<MarketingChatbotProps> = ({ onBookDemo }) => {
                     message: input,
                     config: {
                         botName: 'SovereignAssistant',
-                        systemInstruction: `You are an expert LexSovereign sales and marketing bot. You represent Nexus Technologies Limited. 
-                        Your goal is to sell LexSovereign to Managing Partners and General Counsels in Africa (Ghana, Nigeria, Kenya, South Africa). 
+                        systemInstruction: `You are an expert NomosDesk sales and marketing bot. You represent Nexus Technologies Limited. 
+                        Your goal is to sell NomosDesk to Managing Partners and General Counsels in Africa (Ghana, Nigeria, Kenya, South Africa). 
                         
                         KEY MESSAGING:
                         1. Sovereignty: Cryptographic isolation. Only the firm holds the keys (BYOK).
@@ -187,7 +187,7 @@ const MarketingChatbot: React.FC<MarketingChatbotProps> = ({ onBookDemo }) => {
                     {/* Footer */}
                     <div className="bg-[#020617] p-3 text-center border-t border-white/5">
                         <p className="text-[8px] text-slate-600 flex items-center justify-center gap-1 uppercase tracking-[0.2em] font-bold">
-                            <Sparkles size={8} className="text-emerald-500" /> Powered by LexSovereign AI Enclave
+                            <Sparkles size={8} className="text-emerald-500" /> Powered by NomosDesk AI Enclave
                         </p>
                     </div>
                 </div>

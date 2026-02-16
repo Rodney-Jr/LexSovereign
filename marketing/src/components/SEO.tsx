@@ -16,8 +16,8 @@ export default function SEO({
     type = 'website',
     schema
 }: SEOProps) {
-    const siteUrl = 'https://lexsovereign.com';
-    const fullTitle = `${title} | LexSovereign`;
+    const siteUrl = 'https://nomosdesk.com';
+    const fullTitle = `${title} | NomosDesk`;
 
     return (
         <Helmet>
@@ -30,7 +30,7 @@ export default function SEO({
             <meta property="og:title" content={fullTitle} />
             <meta property="og:description" content={description} />
             <meta property="og:type" content={type} />
-            <meta property="og:site_name" content="LexSovereign" />
+            <meta property="og:site_name" content="NomosDesk" />
             {canonical && <meta property="og:url" content={`${siteUrl}${canonical}`} />}
 
             {/* Twitter */}

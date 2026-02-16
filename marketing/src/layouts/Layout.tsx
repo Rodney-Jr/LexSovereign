@@ -59,7 +59,7 @@ export default function Layout({ children }: LayoutProps) {
                         <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20 group-hover:border-indigo-500/50 transition-colors">
                             <Shield className="w-6 h-6 text-indigo-400" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-white">Lex<span className="text-indigo-400">Sovereign</span></span>
+                        <span className="text-xl font-bold tracking-tight text-white">Nomos<span className="text-indigo-400">Desk</span></span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -130,7 +130,7 @@ export default function Layout({ children }: LayoutProps) {
                         <div className="col-span-1 md:col-span-1">
                             <Link to="/" className="flex items-center gap-2 mb-6">
                                 <Shield className="w-6 h-6 text-indigo-500" />
-                                <span className="text-lg font-bold text-white">LexSovereign</span>
+                                <span className="text-lg font-bold text-white">NomosDesk</span>
                             </Link>
                             <p className="text-slate-400 text-sm leading-relaxed mb-6">
                                 Secure legal matter and governance platform designed for professional responsibility,
@@ -163,7 +163,7 @@ export default function Layout({ children }: LayoutProps) {
                         <div>
                             <h4 className="font-semibold text-white mb-4">Contact</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
-                                <li><a href="mailto:access@lexsovereign.com" className="hover:text-indigo-400 transition-colors">access@lexsovereign.com</a></li>
+                                <li><a href="mailto:access@nomosdesk.com" className="hover:text-indigo-400 transition-colors">access@nomosdesk.com</a></li>
                                 <li><Link to="/#demo" className="hover:text-indigo-400 transition-colors">Schedule Demo</Link></li>
                             </ul>
                         </div>
@@ -171,8 +171,8 @@ export default function Layout({ children }: LayoutProps) {
 
                     <div className="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
                         <div className="text-center md:text-left">
-                            <p>© 2026 LexSovereign. All rights reserved.</p>
-                            <p className="mt-1 text-slate-600 italic">The LexSovereign platform is owned and operated by Nexus Technologies Limited.</p>
+                            <p>© 2026 NomosDesk. All rights reserved.</p>
+                            <p className="mt-1 text-slate-600 italic">The NomosDesk platform is owned and operated by Nexus Technologies Limited.</p>
                         </div>
                         <div className="flex gap-6 mt-4 md:mt-0">
                             <Link to="/privacy" className="hover:text-slate-300">Privacy Policy</Link>

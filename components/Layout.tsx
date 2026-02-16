@@ -127,7 +127,7 @@ const Layout: React.FC<LayoutProps> = ({
             <div className="bg-emerald-500/20 p-2 rounded-lg">
               <ShieldCheck className="text-emerald-400 w-6 h-6" />
             </div>
-            <span className="font-bold text-xl tracking-tight text-white">LexSovereign</span>
+            <span className="font-bold text-xl tracking-tight text-white">NomosDesk</span>
           </div>
           <button
             className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-brand-muted"

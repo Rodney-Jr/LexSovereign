@@ -59,7 +59,7 @@ export default function ForEnterprise() {
                 <div className="max-w-3xl mx-auto">
                     <h2 className="text-3xl font-bold text-white mb-6">Designed for the General Counsel</h2>
                     <p className="text-slate-300 mb-8">
-                        "LexSovereign gives me the dashboard I need to report to the Board, while giving my team the tools they need to execute."
+                        "NomosDesk gives me the dashboard I need to report to the Board, while giving my team the tools they need to execute."
                     </p>
                     <Button asLink="/#demo" size="lg">See the Dashboard</Button>
                 </div>

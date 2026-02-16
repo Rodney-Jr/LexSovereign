@@ -110,7 +110,7 @@ export default function PricingPage() {
                             <Settings className="text-emerald-400" /> Hybrid Pricing Governance
                         </h3>
                         <p className="text-slate-300 mb-6 leading-relaxed relative z-10">
-                            LexSovereign isn't just a platform; it's a governance layer. Institutional clients can manage their own tiered rates,
+                            NomosDesk isn't just a platform; it's a governance layer. Institutional clients can manage their own tiered rates,
                             user allocations, and internal feature sets directly through the <strong>Sovereign Control Plane</strong>.
                         </p>
                         <div className="flex flex-wrap gap-3 mb-6">
