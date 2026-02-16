@@ -42,7 +42,7 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: 'Hello, I am LexSovereign AI. I have access to your Sovereign Vault and real-time Global Research. Select a Matter context below to begin.',
+      content: 'Hello, I am NomosDesk AI. I have access to your Sovereign Vault and real-time Global Research. Select a Matter context below to begin.',
       verifiedBy: 'Safety-Model-v1'
     }
   ]);

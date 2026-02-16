@@ -168,7 +168,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                   <div className="p-1.5 bg-emerald-500/20 rounded-lg">
                      <ShieldCheck className="text-emerald-400" size={24} />
                   </div>
-                  <span className="font-bold text-2xl tracking-tight text-white select-none">LexSovereign</span>
+                  <span className="font-bold text-2xl tracking-tight text-white select-none">NomosDesk</span>
                </div>
                <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] select-none">Secure Legal Intelligence</p>
             </div>
@@ -394,7 +394,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             <div className="flex items-start gap-4 px-6 opacity-60 group hover:opacity-100 transition-opacity">
                <ShieldCheck className="text-emerald-500 shrink-0" size={18} />
                <p className="text-[10px] text-slate-500 leading-relaxed italic font-medium">
-                  LexSovereign uses <strong className="text-slate-300">Industry Standard Encryption</strong>. Your data remains your own, protected by standard secure protocols.
+                  NomosDesk uses <strong className="text-slate-300">Industry Standard Encryption</strong>. Your data remains your own, protected by standard secure protocols.
                </p>
             </div>
          </div>

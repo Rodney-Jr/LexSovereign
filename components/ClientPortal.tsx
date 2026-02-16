@@ -124,9 +124,9 @@ const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
          <div className="bg-blue-500/5 border border-blue-500/10 p-6 rounded-[2rem] flex items-start gap-5">
             <Info className="text-blue-500 shrink-0" size={24} />
             <div className="space-y-1">
-               <h5 className="font-bold text-xs text-blue-400 uppercase tracking-widest">LexSovereign Guarantee</h5>
+               <h5 className="font-bold text-xs text-blue-400 uppercase tracking-widest">NomosDesk Guarantee</h5>
                <p className="text-[10px] text-slate-400 leading-relaxed">
-                  As a <strong>Sovereign Tier</strong> client, you have direct control over your encryption keys. At no point can LexSovereign or its AI providers access your documents without your HSM session token.
+                  As a <strong>Sovereign Tier</strong> client, you have direct control over your encryption keys. At no point can NomosDesk or its AI providers access your documents without your HSM session token.
                </p>
             </div>
          </div>

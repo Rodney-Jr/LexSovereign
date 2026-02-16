@@ -107,7 +107,7 @@ const OmnichannelPreview: React.FC = () => {
                     <Smartphone size={20} />
                   </div>
                   <div>
-                    <p className="font-bold text-xs">LexSovereign Bot</p>
+                    <p className="font-bold text-xs">NomosDesk Bot</p>
                     <p className="text-[9px] text-green-200 flex items-center gap-1 opacity-80">
                       <ShieldCheck size={10} /> Verified Node: PRIMARY-SILO-01
                     </p>
@@ -172,7 +172,7 @@ const OmnichannelPreview: React.FC = () => {
               <div className="space-y-12 py-4">
                 <HandshakeNode icon={<Server size={18} />} label="Corp IdP" sub="Azure AD Federated" active={authStep >= 1} />
                 <div className="flex justify-center -my-8"><div className={`h-8 w-[2px] ${authStep >= 2 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div></div>
-                <HandshakeNode icon={<Cpu size={18} />} label="LexSovereign" sub="HSM Token Enclave" active={authStep >= 2} />
+                <HandshakeNode icon={<Cpu size={18} />} label="NomosDesk" sub="HSM Token Enclave" active={authStep >= 2} />
                 <div className="flex justify-center -my-8"><div className={`h-8 w-[2px] ${authStep >= 3 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div></div>
                 <HandshakeNode icon={<Smartphone size={18} />} label="Mobile Egress" sub="WhatsApp Sanitized" active={authStep >= 3} />
               </div>

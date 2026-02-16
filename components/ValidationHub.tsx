@@ -100,7 +100,7 @@ const ValidationHub: React.FC = () => {
             </div>
 
             <p className="text-[10px] text-slate-400 text-center leading-relaxed">
-              LexSovereign AI successfully identifies and blocks 92% of jurisdictional advice triggers in real-time.
+              NomosDesk AI successfully identifies and blocks 92% of jurisdictional advice triggers in real-time.
             </p>
           </div>
 

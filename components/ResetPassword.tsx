@@ -84,7 +84,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ token, onComplete, onBack
                         <div className="p-1.5 bg-emerald-500/20 rounded-lg">
                             <ShieldCheck className="text-emerald-400" size={24} />
                         </div>
-                        <span className="font-bold text-2xl tracking-tight text-white">LexSovereign</span>
+                        <span className="font-bold text-2xl tracking-tight text-white">NomosDesk</span>
                     </div>
                 </div>
 

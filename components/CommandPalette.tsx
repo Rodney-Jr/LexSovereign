@@ -133,7 +133,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose, onNavigate }) 
                         </div>
                     </div>
                     <div className="flex items-center gap-2 opacity-40">
-                        <span className="text-[9px] font-bold text-brand-muted uppercase tracking-[0.2em]">LexSovereign Core</span>
+                        <span className="text-[9px] font-bold text-brand-muted uppercase tracking-[0.2em]">NomosDesk Core</span>
                         <Command size={10} className="text-brand-muted" />
                     </div>
                 </div>

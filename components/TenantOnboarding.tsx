@@ -148,7 +148,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         let isConflict = data.code === 'CONFLICT';
 
         if (isConflict) {
-          throw new Error("IDENTITY CONFLICT: This email is already registered in a LexSovereign Enclave.");
+          throw new Error("IDENTITY CONFLICT: This email is already registered in a NomosDesk Enclave.");
         }
         throw new Error(errorMessage);
       }
@@ -218,7 +218,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                   <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20"><Building2 className="text-blue-400" size={20} /></div>
                   Entity Route
                 </h3>
-                <p className="text-slate-400 text-sm max-w-lg leading-relaxed">LexSovereign implements Route-Based Sovereignty. Select the architectural template that matches your organizational charter.</p>
+                <p className="text-slate-400 text-sm max-w-lg leading-relaxed">NomosDesk implements Route-Based Sovereignty. Select the architectural template that matches your organizational charter.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-6">
