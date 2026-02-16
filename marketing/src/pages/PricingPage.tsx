@@ -16,24 +16,24 @@ interface PricingConfig {
 const DEFAULT_PRICING: PricingConfig[] = [
     {
         id: 'Starter',
-        basePrice: 29,
-        pricePerUser: 29,
+        basePrice: 99,
+        pricePerUser: 10,
         creditsIncluded: 0,
-        features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'Email Support']
+        features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget']
     },
     {
         id: 'Professional',
-        basePrice: 59,
-        pricePerUser: 59,
-        creditsIncluded: 500,
-        features: ['50 Users Max', 'Advanced Conflict Workflows', 'Partner Approval Gates', 'Audit Logs (30 Days)', 'Priority Support']
+        basePrice: 149,
+        pricePerUser: 15,
+        creditsIncluded: 50,
+        features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support']
     },
     {
-        id: 'Sovereign', // Kept as Sovereign for "Featured" logic match, but mapped to Institutional features
+        id: 'Institutional',
         basePrice: 0,
-        pricePerUser: 0,
-        creditsIncluded: 10000,
-        features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'Sovereign Data Residency', 'SSO & Custom Security']
+        pricePerUser: 25,
+        creditsIncluded: 0,
+        features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
     }
 ];
 
@@ -89,10 +89,10 @@ export default function PricingPage() {
                                 price={config.basePrice === 0 ? 'Custom' : `$${config.basePrice}`}
                                 pricePerUser={config.pricePerUser}
                                 userMonth={config.pricePerUser > 0}
-                                featured={config.id === 'Sovereign' || config.id === 'Professional'}
+                                featured={config.id === 'Institutional' || config.id === 'Professional'}
                                 description={
                                     config.id === 'Standard' || config.id === 'Starter' ? "For small firms establishing governance." :
-                                        config.id === 'Sovereign' || config.id === 'Professional' ? "For growing firms requiring oversight." :
+                                        config.id === 'Institutional' || config.id === 'Professional' ? "For growing firms requiring oversight." :
                                             "For enterprise and government institutional scale."
                                 }
                                 features={config.features}

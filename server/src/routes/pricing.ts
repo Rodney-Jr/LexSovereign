@@ -14,27 +14,27 @@ router.get('/', async (req, res) => {
         if (configs.length === 0) {
             const defaultConfigs = [
                 {
-                    id: 'Standard',
+                    id: 'STARTER',
                     basePrice: 99,
                     pricePerUser: 10,
-                    creditsIncluded: 500,
-                    features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits'],
+                    creditsIncluded: 0,
+                    features: ['Multi-tenant Storage', 'Base Guardrails', 'No Chatbot Widget'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'Sovereign',
-                    basePrice: 499,
+                    id: 'PROFESSIONAL',
+                    basePrice: 149,
                     pricePerUser: 15,
-                    creditsIncluded: 10000,
-                    features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready'],
+                    creditsIncluded: 50,
+                    features: ['Dedicated Partition', 'Full RRE Engine', 'AI Chatbot Widget (50 Credits)', 'BYOK Ready'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'Enclave Exclusive',
-                    basePrice: 1999,
+                    id: 'INSTITUTIONAL',
+                    basePrice: 0, // Contact Sales
                     pricePerUser: 25,
                     creditsIncluded: 0,
-                    features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits'],
+                    features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'White-Label Chatbot (Unlimited)'],
                     updatedAt: new Date()
                 }
             ];
@@ -51,27 +51,27 @@ router.get('/', async (req, res) => {
             console.warn('⚠️  PricingConfig table does not exist. Returning default configs. Run migrations: npx prisma migrate deploy');
             const defaultConfigs = [
                 {
-                    id: 'Standard',
+                    id: 'STARTER',
                     basePrice: 99,
                     pricePerUser: 10,
-                    creditsIncluded: 500,
-                    features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits'],
+                    creditsIncluded: 0,
+                    features: ['Multi-tenant Storage', 'Base Guardrails', 'No Chatbot Widget'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'Sovereign',
-                    basePrice: 499,
+                    id: 'PROFESSIONAL',
+                    basePrice: 149,
                     pricePerUser: 15,
-                    creditsIncluded: 10000,
-                    features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready'],
+                    creditsIncluded: 50,
+                    features: ['Dedicated Partition', 'Full RRE Engine', 'AI Chatbot Widget (50 Credits)', 'BYOK Ready'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'Enclave Exclusive',
-                    basePrice: 1999,
+                    id: 'INSTITUTIONAL',
+                    basePrice: 0, // Contact Sales
                     pricePerUser: 25,
                     creditsIncluded: 0,
-                    features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits'],
+                    features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'White-Label Chatbot (Unlimited)'],
                     updatedAt: new Date()
                 }
             ];
