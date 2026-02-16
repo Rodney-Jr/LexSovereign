@@ -13,8 +13,32 @@ interface PricingConfig {
     features: string[];
 }
 
+const DEFAULT_PRICING: PricingConfig[] = [
+    {
+        id: 'Starter',
+        basePrice: 29,
+        pricePerUser: 29,
+        creditsIncluded: 0,
+        features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'Email Support']
+    },
+    {
+        id: 'Professional',
+        basePrice: 59,
+        pricePerUser: 59,
+        creditsIncluded: 500,
+        features: ['50 Users Max', 'Advanced Conflict Workflows', 'Partner Approval Gates', 'Audit Logs (30 Days)', 'Priority Support']
+    },
+    {
+        id: 'Sovereign', // Kept as Sovereign for "Featured" logic match, but mapped to Institutional features
+        basePrice: 0,
+        pricePerUser: 0,
+        creditsIncluded: 10000,
+        features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'Sovereign Data Residency', 'SSO & Custom Security']
+    }
+];
+
 export default function PricingPage() {
-    const [configs, setConfigs] = useState<PricingConfig[]>([]);
+    const [configs, setConfigs] = useState<PricingConfig[]>(DEFAULT_PRICING);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -22,44 +46,14 @@ export default function PricingPage() {
         const fetchPricing = async () => {
             try {
                 const response = await apiFetch('/api/pricing');
+                if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
-
-                // Defensive check: Ensure data is an array
-                if (Array.isArray(data)) {
+                if (Array.isArray(data) && data.length > 0) {
                     setConfigs(data);
-                    return;
                 }
-                throw new Error('Invalid billing data format');
             } catch (err: any) {
-                console.error('Pricing synchronization failed, using local fallback:', err.message);
-
-                // Final Fallback: Hardcoded defaults in case API is unreachable
-                const fallbackConfigs = [
-                    {
-                        id: 'Standard',
-                        basePrice: 99,
-                        pricePerUser: 10,
-                        creditsIncluded: 500,
-                        features: ['Multi-tenant Storage', 'Base Guardrails', '500 AI Credits']
-                    },
-                    {
-                        id: 'Sovereign',
-                        basePrice: 499,
-                        pricePerUser: 15,
-                        creditsIncluded: 10000,
-                        features: ['Dedicated Partition', 'Full RRE Engine', '10,000 AI Credits', 'BYOK Ready']
-                    },
-                    {
-                        id: 'Enclave Exclusive',
-                        basePrice: 1999,
-                        pricePerUser: 25,
-                        creditsIncluded: 0,
-                        features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'Unlimited Credits']
-                    }
-                ];
-                setConfigs(fallbackConfigs);
-                // Reset error so the fallback UI renders properly
-                setError(null);
+                console.warn('Using default pricing due to API error:', err);
+                // Keep default configs, do not set error state to avoid blocking UI
             } finally {
                 setLoading(false);
             }
@@ -86,24 +80,19 @@ export default function PricingPage() {
                         <Loader2 className="animate-spin w-12 h-12 text-indigo-500" />
                         <p className="font-mono animate-pulse">Synchronizing with Sovereign Billing Enclave...</p>
                     </div>
-                ) : error ? (
-                    <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-3xl max-w-2xl mx-auto text-center">
-                        <p className="text-red-400 font-bold mb-2">Billing Synchronization Unavailable</p>
-                        <p className="text-slate-400 text-sm">We're unable to load live pricing. Please contact sales for current rates.</p>
-                    </div>
                 ) : (
                     <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {configs.map((config) => (
                             <PricingCard
                                 key={config.id}
                                 title={config.id}
-                                price={`$${config.basePrice}`}
+                                price={config.basePrice === 0 ? 'Custom' : `$${config.basePrice}`}
                                 pricePerUser={config.pricePerUser}
                                 userMonth={config.pricePerUser > 0}
-                                featured={config.id === 'Sovereign'}
+                                featured={config.id === 'Sovereign' || config.id === 'Professional'}
                                 description={
-                                    config.id === 'Standard' ? "For small firms establishing governance." :
-                                        config.id === 'Sovereign' ? "For growing firms requiring oversight." :
+                                    config.id === 'Standard' || config.id === 'Starter' ? "For small firms establishing governance." :
+                                        config.id === 'Sovereign' || config.id === 'Professional' ? "For growing firms requiring oversight." :
                                             "For enterprise and government institutional scale."
                                 }
                                 features={config.features}
