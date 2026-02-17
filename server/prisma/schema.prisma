@@ -148,7 +148,7 @@ model Matter {
   riskLevel         String    @default("LOW")
   description       String?
   complexityWeight  Float     @default(5.0)
-  complexityWeight  Float     @default(5.0)
+
   attributes        Json?     @default("{}")
   department        String?   // e.g. "INVESTIGATION"
 
