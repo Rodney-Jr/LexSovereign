@@ -1,5 +1,5 @@
 # Stage 1: Build the React Client
-FROM node:18-alpine AS client-builder
+FROM node:20-alpine AS client-builder
 WORKDIR /app-client
 COPY package*.json ./
 RUN npm ci
@@ -10,7 +10,7 @@ ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 RUN npm run build
 
 # Stage 2: Build the Node.js Server
-FROM node:18-alpine AS server-builder
+FROM node:20-alpine AS server-builder
 WORKDIR /app-server
 COPY server/package*.json ./
 RUN apk add --no-cache openssl
@@ -21,7 +21,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Stage 3: Production Runtime
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 
 # Install OpenSSL for Prisma
