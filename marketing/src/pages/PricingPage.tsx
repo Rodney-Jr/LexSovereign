@@ -26,14 +26,14 @@ const DEFAULT_PRICING: PricingConfig[] = [
         basePrice: 149,
         pricePerUser: 15,
         creditsIncluded: 50,
-        features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support']
+        features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Judicial Research & Case Memory', 'Priority Support']
     },
     {
         id: 'Institutional',
         basePrice: 0,
         pricePerUser: 25,
         creditsIncluded: 0,
-        features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
+        features: ['Unlimited Users', 'Deep Judicial Research Enclave', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
     }
 ];
 

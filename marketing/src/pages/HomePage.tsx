@@ -77,7 +77,7 @@ export default function HomePage() {
                     subtitle="NomosDesk replaces fragmented tools with a single, secure source of truth for your legal operations."
                 />
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-4 gap-8">
                     <FeatureCard
                         icon={<Shield className="w-8 h-8 text-indigo-400" />}
                         title="Conflict Prevention"
@@ -92,6 +92,11 @@ export default function HomePage() {
                         icon={<Users className="w-8 h-8 text-blue-400" />}
                         title="Role Governance"
                         description="Pre-configured roles (Partner, Associate, General Counsel) strictly enforce hierarchy and permission boundaries."
+                    />
+                    <FeatureCard
+                        icon={<Globe className="w-8 h-8 text-purple-400" />}
+                        title="Judicial Intelligence"
+                        description="Ground your research in a Sovereign Registry of constitutional law, statutes, and verified casefiles."
                     />
                 </div>
             </Section>

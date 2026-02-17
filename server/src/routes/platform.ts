@@ -219,4 +219,67 @@ router.get('/silos', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (re
     }
 });
 
+
+import multer from 'multer';
+import { JudicialIngestionService } from '../services/JudicialIngestionService';
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+/**
+ * POST /api/platform/judicial/upload
+ * Global Admin endpoint to upload new legal documents to the Sovereign Registry.
+ */
+router.post('/judicial/upload', authenticateToken, requireRole(['GLOBAL_ADMIN']), upload.single('file'), async (req, res) => {
+    try {
+        if (!(req as any).file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const { category, region } = req.body;
+        const result = await JudicialIngestionService.ingestDocument(
+            (req as any).file.originalname,
+            (req as any).file.buffer,
+            category || 'LEGAL_DOC',
+            region || 'GH'
+        );
+
+        if (result.success) {
+            res.status(201).json(result);
+        } else {
+            res.status(500).json(result);
+        }
+    } catch (err: any) {
+        console.error("Judicial Upload Error:", err);
+        res.status(500).json({ error: 'Failed to ingest document' });
+    }
+});
+
+/**
+ * GET /api/platform/judicial/documents
+ * List unique legal documents in the Sovereign Registry.
+ */
+router.get('/judicial/documents', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { region } = req.query;
+        const docs = await JudicialIngestionService.listDocuments((region as string) || 'GH');
+        res.json(docs);
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to fetch judicial documents' });
+    }
+});
+
+/**
+ * DELETE /api/platform/judicial/documents/:id
+ * Remove a document from the Sovereign Registry.
+ */
+router.delete('/judicial/documents/:id', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        await JudicialIngestionService.deleteDocument(id);
+        res.json({ message: 'Document removed from Sovereign Registry' });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to delete document' });
+    }
+});
+
 export default router;

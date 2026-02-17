@@ -64,6 +64,45 @@ export default function ForLawFirms() {
                 </div>
             </Section>
 
+            <Section>
+                <div className="grid md:grid-cols-2 gap-16 items-center">
+                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl overflow-hidden relative group">
+                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 blur-[80px] rounded-full group-hover:bg-indigo-500/20 transition-colors"></div>
+                        <div className="relative z-10 space-y-6">
+                            <div className="flex items-center gap-3 text-indigo-400">
+                                <Scale className="w-6 h-6" />
+                                <span className="font-mono text-xs font-bold uppercase tracking-widest">Judicial Intelligence Enclave</span>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                                    <p className="text-xs text-slate-500 mb-2 font-mono">RESEARCH QUERY</p>
+                                    <p className="text-sm text-slate-200">"Relevant precedents for land title disputes in Greater Accra..."</p>
+                                </div>
+                                <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/20">
+                                    <p className="text-xs text-indigo-400 mb-2 font-mono">ENCLAVE RESPONSE [CITED]</p>
+                                    <p className="text-sm text-indigo-100">"Based on the 1992 Constitution and recent Ghana Law Reports (GLR), the principle of..."</p>
+                                    <div className="mt-3 flex gap-2">
+                                        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30">Constitution §36</span>
+                                        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30">Statute 102/2021</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 className="text-3xl font-bold text-white mb-6">Case Memory & Statutory Intelligence</h2>
+                        <p className="text-slate-300 text-lg mb-6 leading-relaxed">
+                            Empower your associates with verified jurisdictional data. NomosDesk's deep research enclave is grounded in your regional legal history.
+                        </p>
+                        <ul className="space-y-4">
+                            <ListItem title="Constitutional Grounding" desc="AI responses are strictly anchored in national and regional constitutional frameworks." />
+                            <ListItem title="Statutory Precision" desc="Instant access to the latest statutes and official gazette updates." />
+                            <ListItem title="Judicial Case Memory" desc="Leverage a library of closed casefiles and precedents to build stronger arguments faster." />
+                        </ul>
+                    </div>
+                </div>
+            </Section>
+
             <Section darker>
                 <SectionHeader title="Partner Oversight & Multi-Office Control" />
                 <div className="grid md:grid-cols-3 gap-8 text-center">

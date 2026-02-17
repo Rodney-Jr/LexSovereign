@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
-import { Landmark, Fingerprint, History, Database } from 'lucide-react';
+import { Landmark, Fingerprint, History, Database, CheckCircle } from 'lucide-react';
 
 export default function ForGovernment() {
     return (
@@ -69,6 +69,56 @@ export default function ForGovernment() {
                         <div className="flex gap-3">
                             <CheckBadge text="Forensic-Ready Logs" />
                             <CheckBadge text="Non-Repudiation" />
+                        </div>
+                    </div>
+                </div>
+            </Section>
+
+            <Section>
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 className="text-3xl font-bold text-white mb-6">Deep Research & Judicial Memory</h2>
+                        <p className="text-slate-300 text-lg mb-6 leading-relaxed">
+                            Maintain institutional memory across administrations. Our Sovereign Enclave provides a secure, permanent repository for judicial archives.
+                        </p>
+                        <ul className="space-y-4 mb-8">
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-blue-500 shrink-0" />
+                                <span className="text-slate-300">Secure archiving of constitutional interpretations</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-blue-500 shrink-0" />
+                                <span className="text-slate-300">Statutory history tracking at the regional level</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-blue-500 shrink-0" />
+                                <span className="text-slate-300">Closed casefile indexing for precedent retrieval</span>
+                            </li>
+                        </ul>
+                        <Button asLink="/#demo" variant="outline">Learn About Judicial Enclaves</Button>
+                    </div>
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full"></div>
+                        <div className="relative bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                                    <div className="flex items-center gap-3">
+                                        <Landmark className="text-blue-400" />
+                                        <span className="font-bold text-white">Sovereign Knowledge Base</span>
+                                    </div>
+                                    <span className="text-[10px] font-mono text-slate-500">ENCRYPTED SILO: GH-01</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-center">
+                                        <div className="text-2xl font-bold text-white">100%</div>
+                                        <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Constitutional Alignment</div>
+                                    </div>
+                                    <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-center">
+                                        <div className="text-2xl font-bold text-white">Verified</div>
+                                        <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Judicial Precedents</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

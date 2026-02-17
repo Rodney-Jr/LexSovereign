@@ -17,7 +17,8 @@ LexSovereign is a high-fidelity **Sovereign Legal Operating System** designed fo
 *   **Sovereign Marketplace**: A repository for sharing and acquiring verified, jurisdiction-neutral legal templates.
 *   **Practitioner Directory**: Centralized management of personnel, roles, and cryptographic identities.
 
-## 3. Advanced AI & Compliance Guardrails
+## 3. Advanced AI & Judicial Intelligence
+*   **Judicial Intelligence & Case Memory**: Sovereign RAG engine grounded in constitutional law, national statutes, and historical casefiles.
 *   **Regulatory Rules Engine (RRE)**: Real-time monitoring of AI and human outputs against jurisdictional statutes (e.g., GDPR, CCPA, Banking Secrecy Act).
 *   **PII Sanitization Proxy (DAS)**: Semantic **Data Access Service** that scrubs sensitive identifiers before they reach the LLM, ensuring privacy-safe inference.
 *   **Dual-Agent Adversarial Auditing**: An independent "Auditor" agent that intercepts primary AI outputs to prevent **Unauthorized Practice of Law (UPL)**.

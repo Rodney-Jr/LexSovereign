@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Region, GlobalAdminIdentity } from '../types';
 import { ProvisionTenantModal } from './ProvisionTenantModal';
+import { LegalRepositoryTab } from './LegalRepositoryTab';
 import { authorizedFetch } from '../utils/api';
 
 interface GlobalControlPlaneProps {
@@ -39,7 +40,7 @@ interface GlobalControlPlaneProps {
 }
 
 const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNavigate }) => {
-   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads' | 'conversations'>('telemetry');
+   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads' | 'conversations' | 'repository'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
@@ -131,6 +132,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                      className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'conversations' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                      Conversations
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('repository')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'repository' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                     Legal Repository
                   </button>
                   <button
                      onClick={() => onNavigate?.('pricing-calib')}
@@ -430,6 +437,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
          {activeTab === 'leads' && <LeadsTab />}
 
          {activeTab === 'conversations' && <ConversationsTab conversations={conversations} />}
+
+         {activeTab === 'repository' && <LegalRepositoryTab />}
       </div >
    );
 };
@@ -521,8 +530,8 @@ const ConversationsTab = ({ conversations }: { conversations: any[] }) => {
                                  >
                                     <div
                                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === 'user'
-                                             ? 'bg-purple-600 text-white'
-                                             : 'bg-slate-800 text-slate-200'
+                                          ? 'bg-purple-600 text-white'
+                                          : 'bg-slate-800 text-slate-200'
                                           }`}
                                     >
                                        <p className="text-sm">{msg.content}</p>
