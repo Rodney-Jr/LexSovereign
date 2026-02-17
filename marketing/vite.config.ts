@@ -14,6 +14,10 @@ export default defineConfig({
         },
     },
     preview: {
-        allowedHosts: ['extraordinary-perfection-production-5752.up.railway.app']
+        allowedHosts: [
+            'extraordinary-perfection-production-5752.up.railway.app',
+            'www.nomosdesk.com',
+            'nomosdesk.com'
+        ]
     }
 })

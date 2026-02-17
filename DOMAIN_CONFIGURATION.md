@@ -60,7 +60,12 @@ The marketing site (`nomosdesk-marketing`) is a separate static site deployment.
 | **CNAME** | `www` | `{{marketing-service-domain}}.up.railway.app` | Auto / 1 Hour |
 | **CNAME** (Optional) | `@` (Root) | `{{marketing-service-domain}}.up.railway.app` | Auto / 1 Hour |
 
-*(Note: Standard DNS providers like GoDaddy do not support CNAME records for the root domain `@`. Use one of the workarounds below if using GoDaddy.)*
+### Common Errors & Fixes
+- **`ERR_CERT_COMMON_NAME_INVALID`**: 
+    - This means the certificate served by Railway doesn't match `www.nomosdesk.com`.
+    - **Fix 1**: Wait 10-20 minutes. Railway often needs time to provision the Let's Encrypt certificate after DNS is pointed.
+    - **Fix 2**: In Railway dashboard, ensure `www.nomosdesk.com` is added to the **Marketing** service settings. If it's only in the **Platform** service, the marketing site will serve the wrong cert.
+    - **Fix 3**: Confirm the Status in Railway is "Active/Healthy". If it says "DNS configuration not found," check your GoDaddy CNAME spelling.
 
 #### GoDaddy Root Domain Workaround
 If your domain is with GoDaddy, choice **A** is highly recommended:
@@ -87,7 +92,7 @@ Ensure the service is configured correctly:
     - Variables -> `VITE_PLATFORM_URL`: `https://app.nomosdesk.com`
 - [ ] **Marketing Service**:
     - Networking -> Custom Domain: `www.nomosdesk.com`
-    - Networking -> Port: `4173`
+    - Networking -> Port: `8080`
     - Variables -> `VITE_API_URL`: `https://app.nomosdesk.com`
 
 ### 2. GoDaddy DNS Settings
