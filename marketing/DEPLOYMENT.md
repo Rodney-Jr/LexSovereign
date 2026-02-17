@@ -1,4 +1,4 @@
-# LexSovereign Marketing Website Deployment
+# NomosDesk Marketing Website Deployment
 
 This website is designed to be hosted as a separate service within your Railway project `Remarkable-tenderness`.
 

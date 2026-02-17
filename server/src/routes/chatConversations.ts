@@ -10,10 +10,10 @@ const lexAI = new LexAIService();
 // Marketing chatbot configuration
 const MARKETING_CHATBOT_CONFIG: ChatbotConfig = {
     id: 'marketing-widget',
-    botName: 'LexSovereign Assistant',
-    systemInstruction: `You are the LexSovereign AI Assistant. You are an expert on the LexSovereign platform.
+    botName: 'NomosDesk Assistant',
+    systemInstruction: `You are the NomosDesk AI Assistant. You are an expert on the NomosDesk platform.
     
-    LexSovereign is a sovereign legal operations platform for law firms and in-house legal teams.
+    NomosDesk is a sovereign legal operations platform for law firms and in-house legal teams.
     Features: Matter management, document automation, AI legal research (Gazette-RAG), secure client portals, multi-jurisdictional support.
     Branding: Professional, sovereign, authoritative, yet helpful.
     Pricing: Shared only when asked. Tiers: Starter, Professional, Institutional.
@@ -21,7 +21,7 @@ const MARKETING_CHATBOT_CONFIG: ChatbotConfig = {
     IMPORTANT: 
     1. Detect the user's language and respond in the same language.
     2. Maintain a professional, sovereign tone in all languages.
-    3. If you don't know something about LexSovereign, suggest scheduling a demo at https://lexsovereign.com/demo
+    3. If you don't know something about NomosDesk, suggest scheduling a demo at https://nomosdesk.com/demo
     4. Do not offer legal advice. You are a platform assistant.`,
     isEnabled: true,
     channels: {
@@ -29,7 +29,7 @@ const MARKETING_CHATBOT_CONFIG: ChatbotConfig = {
         webWidget: true
     },
     knowledgeBaseIds: [],
-    welcomeMessage: 'Hi! How can I help you learn more about LexSovereign?'
+    welcomeMessage: 'Hi! How can I help you learn more about NomosDesk?'
 };
 
 // FAQ Knowledge Base for fallback when AI is unavailable
@@ -43,30 +43,30 @@ interface FAQ {
 
 const FAQ_DATABASE: FAQ[] = [
     {
-        id: 'what-is-lexsovereign',
-        question: 'What is LexSovereign?',
-        answer: 'LexSovereign is a sovereign legal operations platform designed for law firms and in-house legal teams. We provide matter management, document automation, AI-powered legal research, secure client portals, billing & time tracking, and multi-jurisdictional support—all built with privacy-first architecture and data sovereignty principles.',
-        keywords: ['what', 'lexsovereign', 'platform', 'about', 'describe', 'tell me'],
+        id: 'what-is-nomosdesk',
+        question: 'What is NomosDesk?',
+        answer: 'NomosDesk is a sovereign legal operations platform designed for law firms and in-house legal teams. We provide matter management, document automation, AI-powered legal research, secure client portals, billing & time tracking, and multi-jurisdictional support—all built with privacy-first architecture and data sovereignty principles.',
+        keywords: ['what', 'nomosdesk', 'platform', 'about', 'describe', 'tell me'],
         category: 'general'
     },
     {
         id: 'features',
-        question: 'What features does LexSovereign offer?',
-        answer: 'LexSovereign offers: Matter Management, Document Automation, AI-Powered Legal Research, Secure Client Portals, Time Tracking & Billing, Multi-Jurisdictional Support, Regulatory Compliance Tools, Workflow Automation, and Advanced Analytics. All features are built with enterprise-grade security and data sovereignty in mind.',
+        question: 'What features does NomosDesk offer?',
+        answer: 'NomosDesk offers: Matter Management, Document Automation, AI-Powered Legal Research, Secure Client Portals, Time Tracking & Billing, Multi-Jurisdictional Support, Regulatory Compliance Tools, Workflow Automation, and Advanced Analytics. All features are built with enterprise-grade security and data sovereignty in mind.',
         keywords: ['features', 'capabilities', 'what can', 'functionality', 'tools', 'offer'],
         category: 'features'
     },
     {
         id: 'pricing',
-        question: 'How much does LexSovereign cost?',
-        answer: 'We offer flexible pricing plans tailored to your firm\'s size and needs. Our plans include Standard, Sovereign, and Enclave Exclusive tiers. For personalized pricing and to discuss which plan is right for you, I recommend scheduling a demo with our team at https://lexsovereign.com/demo',
+        question: 'How much does NomosDesk cost?',
+        answer: 'We offer flexible pricing plans tailored to your firm\'s size and needs. Our plans include Standard, Sovereign, and Enclave Exclusive tiers. For personalized pricing and to discuss which plan is right for you, I recommend scheduling a demo with our team at https://nomosdesk.com/demo',
         keywords: ['price', 'pricing', 'cost', 'how much', 'plans', 'subscription', 'fee'],
         category: 'pricing'
     },
     {
         id: 'security',
-        question: 'Is my data secure with LexSovereign?',
-        answer: 'Absolutely! LexSovereign is built with privacy-first architecture and data sovereignty principles. We offer end-to-end encryption, BYOK (Bring Your Own Key) options, regional data residency, and both cloud and on-premise deployment options. Your data never leaves your chosen jurisdiction without your explicit consent.',
+        question: 'Is my data secure with NomosDesk?',
+        answer: 'Absolutely! NomosDesk is built with privacy-first architecture and data sovereignty principles. We offer end-to-end encryption, BYOK (Bring Your Own Key) options, regional data residency, and both cloud and on-premise deployment options. Your data never leaves your chosen jurisdiction without your explicit consent.',
         keywords: ['secure', 'security', 'safe', 'privacy', 'data protection', 'encryption', 'confidential'],
         category: 'security'
     },
@@ -80,14 +80,14 @@ const FAQ_DATABASE: FAQ[] = [
     {
         id: 'demo',
         question: 'How can I schedule a demo?',
-        answer: 'You can schedule a personalized demo at https://lexsovereign.com/demo or by filling out the demo request form on our website. Our team will walk you through the platform and answer any questions specific to your practice.',
+        answer: 'You can schedule a personalized demo at https://nomosdesk.com/demo or by filling out the demo request form on our website. Our team will walk you through the platform and answer any questions specific to your practice.',
         keywords: ['demo', 'demonstration', 'trial', 'try', 'test', 'see it', 'show me'],
         category: 'general'
     },
     {
         id: 'deployment',
         question: 'Do you offer on-premise deployment?',
-        answer: 'Yes! LexSovereign supports both cloud and on-premise deployment options. Our Enclave Exclusive plan is specifically designed for organizations that require complete data sovereignty with on-premise or private cloud deployment.',
+        answer: 'Yes! NomosDesk supports both cloud and on-premise deployment options. Our Enclave Exclusive plan is specifically designed for organizations that require complete data sovereignty with on-premise or private cloud deployment.',
         keywords: ['on-premise', 'on premise', 'deployment', 'self-hosted', 'private cloud', 'install'],
         category: 'security'
     },
@@ -101,14 +101,14 @@ const FAQ_DATABASE: FAQ[] = [
     {
         id: 'jurisdictions',
         question: 'What jurisdictions do you support?',
-        answer: 'LexSovereign supports multi-jurisdictional legal work with region-specific statutory knowledge bases. We currently have comprehensive coverage for Ghana, Nigeria, Kenya, South Africa, UK, and USA, with expanding coverage for other Commonwealth and African jurisdictions.',
+        answer: 'NomosDesk supports multi-jurisdictional legal work with region-specific statutory knowledge bases. We currently have comprehensive coverage for Ghana, Nigeria, Kenya, South Africa, UK, and USA, with expanding coverage for other Commonwealth and African jurisdictions.',
         keywords: ['jurisdiction', 'countries', 'regions', 'international', 'global', 'africa'],
         category: 'features'
     },
     {
         id: 'getting-started',
         question: 'How do I get started?',
-        answer: 'Getting started is easy! Schedule a demo at https://lexsovereign.com/demo to see the platform in action. After that, we\'ll help you choose the right plan, set up your account, migrate your data, and train your team. Most firms are fully operational within 48 hours.',
+        answer: 'Getting started is easy! Schedule a demo at https://nomosdesk.com/demo to see the platform in action. After that, we\'ll help you choose the right plan, set up your account, migrate your data, and train your team. Most firms are fully operational within 48 hours.',
         keywords: ['get started', 'start', 'begin', 'onboard', 'sign up', 'register'],
         category: 'general'
     }
@@ -316,7 +316,7 @@ router.post('/', async (req, res) => {
                 if (!existingLead) {
                     await prisma.lead.create({
                         data: {
-                            email: visitorEmail || 'anonymous@chatbot.lexsovereign.com',
+                            email: visitorEmail || 'anonymous@chatbot.nomosdesk.com',
                             name: visitorName || 'Chatbot Visitor',
                             source: 'CHATBOT',
                             status: 'NEW'

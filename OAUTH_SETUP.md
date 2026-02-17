@@ -1,7 +1,7 @@
 # Google OAuth Setup Guide
 
 ## Overview
-LexSovereign supports Google OAuth for streamlined authentication. This is **optional** - the application works perfectly with email/password authentication if OAuth is not configured.
+NomosDesk supports Google OAuth for streamlined authentication. This is **optional** - the application works perfectly with email/password authentication if OAuth is not configured.
 
 ## Current Status
 - **Warning**: `[Auth] Google OAuth is disabled - no valid Client ID found`

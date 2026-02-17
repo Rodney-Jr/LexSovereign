@@ -61,7 +61,7 @@ app.use(express.json());
 
 // Routes
 app.get('/health', (req, res) => {
-    res.json({ status: 'ok', service: 'LexSovereign Control Plane' });
+    res.json({ status: 'ok', service: 'NomosDesk Control Plane' });
 });
 
 // Public / Lead Generation

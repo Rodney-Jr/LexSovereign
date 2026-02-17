@@ -21,7 +21,7 @@ interface PlatformGatewayProps {
 }
 
 const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBackToTenant }) => {
-  const [email, setEmail] = useState('admin@lexsovereign.com');
+  const [email, setEmail] = useState('admin@nomosdesk.com');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);

@@ -1,5 +1,5 @@
 {
-    "name": "lexsovereign-server",
+    "name": "nomosdesk-server",
     "version": "1.0.1",
     "description": "Sovereign Control Plane API",
     "main": "dist/index.js",

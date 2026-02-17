@@ -6,7 +6,7 @@ export default function ChatbotWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([
-        { role: 'assistant', content: 'Hi! How can I help you learn more about LexSovereign?' }
+        { role: 'assistant', content: 'Hi! How can I help you learn more about NomosDesk?' }
     ]);
     const [inputMessage, setInputMessage] = useState('');
     const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
@@ -75,7 +75,7 @@ export default function ChatbotWidget() {
                             <MessageCircle size={20} className="text-white" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold text-sm">LexSovereign Assistant</h3>
+                            <h3 className="text-white font-bold text-sm">NomosDesk Assistant</h3>
                             <p className="text-indigo-200 text-xs">We typically reply instantly</p>
                         </div>
                     </div>
@@ -151,7 +151,7 @@ export default function ChatbotWidget() {
                                 </button>
                             </div>
                             <p className="text-xs text-slate-500 mt-2 text-center">
-                                Powered by LexSovereign AI
+                                Powered by NomosDesk AI
                             </p>
                         </div>
                     </>

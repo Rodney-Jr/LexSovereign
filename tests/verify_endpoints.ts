@@ -1,5 +1,5 @@
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:3002';
 
 async function verify() {
     console.log('🔍 Verifying Implementation...');
@@ -10,7 +10,7 @@ async function verify() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            email: 'admin@lexsovereign.com',
+            email: 'admin@nomosdesk.com',
             password: 'password123'
         })
     });
@@ -27,7 +27,10 @@ async function verify() {
     // 2. Platform Stats
     console.log('👉 Fetching Platform Stats...');
     const statsRes = await fetch(`${BASE_URL}/api/platform/stats`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'x-sov-pin': '8899'
+        }
     });
 
     if (!statsRes.ok) {
@@ -46,7 +49,10 @@ async function verify() {
     // 3. User List
     console.log('👉 Fetching User List...');
     const usersRes = await fetch(`${BASE_URL}/api/users`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'x-sov-pin': '8899'
+        }
     });
 
     if (!usersRes.ok) {

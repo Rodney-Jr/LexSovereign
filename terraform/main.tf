@@ -13,7 +13,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "LexSovereign"
+      Project     = "NomosDesk"
       Jurisdiction = "Primary"
       Compliance   = "DataSovereignty"
     }
@@ -33,7 +33,7 @@ resource "aws_kms_key" "silo_root_key" {
 
 resource "aws_s3_bucket" "sovereign_vault" {
   provider = aws.sovereign_silo
-  bucket_prefix = "lexsovereign-vault-primary-"
+  bucket_prefix = "nomosdesk-vault-primary-"
 
   tags = {
     Name = "SovereignVault"

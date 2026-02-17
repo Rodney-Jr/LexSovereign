@@ -135,15 +135,15 @@ async function main() {
     console.log('🌱 Provisioning Default Tenant via Service...');
 
     // Check if admin user already exists to prevent duplicate seeding errors
-    const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@lexsovereign.com' } });
+    const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@nomosdesk.com' } });
 
     let tenantId;
     let counselId;
 
     if (!existingAdmin) {
         const result = await TenantService.provisionTenant({
-            name: 'LexSovereign Demo',
-            adminEmail: 'admin@lexsovereign.com',
+            name: 'NomosDesk Demo',
+            adminEmail: 'admin@nomosdesk.com',
             adminName: 'Sovereign Admin',
             adminPassword: 'password123',
             plan: 'ENTERPRISE',
@@ -158,10 +158,9 @@ async function main() {
         // For seeding stability, we might want to enforce the ID, but TenantService generates random UUID.
         // Let's just use the returned ID for subsequent relations.
         console.log(`✅ Provisioned Tenant: ${result.tenantId}`);
-        console.log(`✅ Admin Credentials: admin@lexsovereign.com / password123`);
+        console.log(`✅ Admin Credentials: admin@nomosdesk.com / password123`);
 
-        // Update the admin user to have specific properties not covered by provisioner (like credentials)
-        // Update the admin user to have specific properties not covered by provisioner
+        console.log('🌱 Updating Admin User details...');
         const globalAdminRole = await prisma.role.findFirst({ where: { name: 'GLOBAL_ADMIN', isSystem: true, tenantId: null } });
         if (!globalAdminRole) {
             console.error('❌ Critical: GLOBAL_ADMIN role not found after seeding!');
@@ -186,7 +185,7 @@ async function main() {
 
         const counsel = await prisma.user.create({
             data: {
-                email: 'counsel@lexsovereign.com',
+                email: 'counsel@nomosdesk.com',
                 passwordHash: await bcrypt.hash('password123', 10),
                 name: 'Internal Counsel',
                 roleId: counselRole?.id,
@@ -204,12 +203,15 @@ async function main() {
 
         // Force reset admin password to password123 during re-seed
         await prisma.user.update({
-            where: { email: 'admin@lexsovereign.com' },
-            data: { passwordHash: await bcrypt.hash('password123', 10) }
+            where: { email: 'admin@nomosdesk.com' },
+            data: {
+                passwordHash: await bcrypt.hash('password123', 10),
+                name: 'Sovereign Admin'
+            }
         });
         console.log('✅ Global Admin password reset to password123');
 
-        const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@lexsovereign.com' } });
+        const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@nomosdesk.com' } });
         counselId = counselUser?.id;
     }
 
@@ -845,3 +847,6 @@ export async function seedDatabase() {
         await prisma.$disconnect();
     }
 }
+
+// Execute when run directly
+seedDatabase();

@@ -52,11 +52,11 @@ import { useSovereignData } from './hooks/useSovereignData';
 const AppContent: React.FC = () => {
   // Persist Active Tab
   const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('lexSovereign_activeTab') || 'dashboard';
+    return localStorage.getItem('nomosdesk_activeTab') || 'dashboard';
   });
 
   useEffect(() => {
-    localStorage.setItem('lexSovereign_activeTab', activeTab);
+    localStorage.setItem('nomosdesk_activeTab', activeTab);
   }, [activeTab]);
 
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
@@ -123,8 +123,8 @@ const AppContent: React.FC = () => {
       console.warn("[App] Session revoked via API signal. Forced logout.");
       handleLogout();
     };
-    window.addEventListener('lex-sovereign-auth-failed', handleAuthFailure);
-    return () => window.removeEventListener('lex-sovereign-auth-failed', handleAuthFailure);
+    window.addEventListener('nomosdesk-auth-failed', handleAuthFailure);
+    return () => window.removeEventListener('nomosdesk-auth-failed', handleAuthFailure);
   }, [handleLogout]);
 
   // Security Policy

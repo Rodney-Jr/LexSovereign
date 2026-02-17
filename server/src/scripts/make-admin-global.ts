@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-    const email = 'admin@lexsovereign.com';
+    const email = 'admin@nomosdesk.com';
 
     // Find the GLOBAL_ADMIN role
     const globalAdminRole = await prisma.role.findFirst({

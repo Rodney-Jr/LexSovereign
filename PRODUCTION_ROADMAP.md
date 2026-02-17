@@ -1,6 +1,6 @@
-# LexSovereign: Production Readiness Roadmap
+# NomosDesk: Production Readiness Roadmap
 
-To transition **LexSovereign** from its current high-fidelity architectural prototype to a production-hardened environment, we must move from simulated logic to hardware-enforced constraints.
+To transition **NomosDesk** from its current high-fidelity architectural prototype to a production-hardened environment, we must move from simulated logic to hardware-enforced constraints.
 
 ## 1. Cryptographic Hardening (HSM Integration)
 While the UI demonstrates the "BYOK Handshake," production requires a physical **Root of Trust**.

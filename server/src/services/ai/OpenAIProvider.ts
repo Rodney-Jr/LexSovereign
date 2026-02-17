@@ -46,7 +46,7 @@ export class OpenAIProvider implements AIProvider {
             console.warn("Gazette RAG Search Failed:", e);
         }
 
-        const systemPrompt = "You are a senior LexSovereign legal assistant. Task: Provide accurate legal information based ONLY on the provided Gazette excerpts. Rules: 1. If the information is not in the excerpts, state that you cannot find the specific statutory basis. 2. Always cite the Source URL for every claim. 3. Use a professional, sovereign tone. 4. Return JSON object with 'text', 'confidence', and 'references' (Source URLs).";
+        const systemPrompt = "You are a senior NomosDesk legal assistant. Task: Provide accurate legal information based ONLY on the provided Gazette excerpts. Rules: 1. If the information is not in the excerpts, state that you cannot find the specific statutory basis. 2. Always cite the Source URL for every claim. 3. Use a professional, sovereign tone. 4. Return JSON object with 'text', 'confidence', and 'references' (Source URLs).";
         const userPrompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${sanitized}`;
 
         try {
@@ -85,7 +85,7 @@ export class OpenAIProvider implements AIProvider {
             return {
                 text: "OpenAI Service Unavailable. Operating in offline mode.",
                 confidence: 1.0,
-                provider: "LexSovereign Local (Offline)",
+                provider: "NomosDesk Local (Offline)",
                 references: []
             };
         }

@@ -74,7 +74,7 @@ router.post('/deploy', async (req, res) => {
         res.json({
             status: 'DEPLOYED',
             version: `v${Date.now()}`,
-            url: `https://widget.lexsovereign.com/${config.id || 'bot_default'}`,
+            url: `https://widget.nomosdesk.com/${config.id || 'bot_default'}`,
             scriptTag: `<script src="${generateWidgetScriptUrl()}" data-bot-id="${config.id || 'bot_default'}"></script>`,
             timestamp: new Date().toISOString()
         });

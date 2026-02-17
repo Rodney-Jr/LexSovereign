@@ -8,7 +8,7 @@ interface OIDCProfile {
     email: string;
     name: string;
     provider: string; // 'AZURE_AD', 'OKTA'
-    groups?: string[]; // e.g., ["LexSovereign_Tenants", "Legal_Counsel"]
+    groups?: string[]; // e.g., ["NomosDesk_Tenants", "Legal_Counsel"]
     department?: string;
     clearance_level?: string;
 }

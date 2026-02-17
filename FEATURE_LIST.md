@@ -1,6 +1,6 @@
-# LexSovereign: Full Feature List
+# NomosDesk: Full Feature List
 
-LexSovereign is a high-fidelity **Sovereign Legal Operating System** designed for private regional enclaves. It provides a comprehensive suite of tools for law firms and enterprise legal departments to manage matters, drafting, and compliance within jurisdictional boundaries.
+NomosDesk is a high-fidelity **Sovereign Legal Operating System** designed for private regional enclaves. It provides a comprehensive suite of tools for law firms and enterprise legal departments to manage matters, drafting, and compliance within jurisdictional boundaries.
 
 ## 1. Platform & Global Governance
 *   **Global Control Plane**: Single-pane-of-glass for managing the entire multi-tenant infrastructure.

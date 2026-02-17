@@ -1,4 +1,4 @@
-# LexSovereign: Practitioner User Manual (Tenant Workspace)
+# NomosDesk: Practitioner User Manual (Tenant Workspace)
 
 Welcome to your **Sovereign Legal Workspace**. This platform is designed to provide high-performance AI intelligence while ensuring your data remains pinned to your jurisdiction and under your exclusive cryptographic control.
 
@@ -18,7 +18,7 @@ Access is managed via your firm's OIDC provider (Azure AD / Okta).
 ### 2.1 Ingesting Artifacts
 Documents can be uploaded directly to the vault.
 *   **AI Profiling:** The system automatically suggests Matter IDs and Jurisdictions.
-*   **Regional Pinning:** All artifacts are pinned to the **SOV-PR-1 Silo**. LexSovereign guarantees that your data never leaves the primary logical boundary.
+*   **Regional Pinning:** All artifacts are pinned to the **SOV-PR-1 Silo**. NomosDesk guarantees that your data never leaves the primary logical boundary.
 
 ---
 

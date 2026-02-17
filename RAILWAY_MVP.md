@@ -1,10 +1,10 @@
 
-# LexSovereign: Railway MVP Deployment Guide
+# NomosDesk: Railway MVP Deployment Guide
 
-This guide details how to run the LexSovereign architecture on **Railway.app** for an MVP while respecting our Zero-Knowledge and Sovereign constraints.
+This guide details how to run the NomosDesk architecture on **Railway.app** for an MVP while respecting our Zero-Knowledge and Sovereign constraints.
 
 ## 1. The Split-Plane Philosophy
-In a standard app, everything sits on the PaaS. In LexSovereign, we split the planes:
+In a standard app, everything sits on the PaaS. In NomosDesk, we split the planes:
 *   **Control Plane (Railway):** The UI, API logic, and Gemini Orchestration.
 *   **Data Plane (Regional):** Regional object storage (e.g., Storj, AWS S3 in Cape Town, or a local primary server).
 
@@ -17,7 +17,7 @@ To run safely on Railway, the following environment variables must be configured
 *   `SOVEREIGN_REGION_PIN`: Hardcoded to your primary silo (e.g., `SOV-PR-1`).
 
 ## 3. Deployment Steps
-1.  **Repository Sync:** Connect your LexSovereign repo to Railway.
+1.  **Repository Sync:** Connect your NomosDesk repo to Railway.
 2.  **Stateless Mode:** Ensure no persistent volumes are attached to the Railway service. This enforces the rule that no data lives in the cloud.
 3.  **Proxy Configuration:** The `services/geminiService.ts` automatically detects the environment and applies the **Blind-fold Proxy** logic.
 

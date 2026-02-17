@@ -1,13 +1,13 @@
-# LexSovereign: Global Admin Protocol (Silo Root Shell)
+# NomosDesk: Global Admin Protocol (Silo Root Shell)
 
-Welcome, Lead Architect. This manual governs the administration of the **LexSovereign Infrastructure Plane**. As a Global Admin, your role is decoupled from tenant legal data; you manage the "pipes and enclaves" that ensure document sovereignty.
+Welcome, Lead Architect. This manual governs the administration of the **NomosDesk Infrastructure Plane**. As a Global Admin, your role is decoupled from tenant legal data; you manage the "pipes and enclaves" that ensure document sovereignty.
 
 ---
 
 ## 1. Accessing the Root Shell
 The **Platform Gateway** is hidden from standard users to prevent brute-force discovery.
 1. Navigate to the primary **Identity Gateway**.
-2. Click the **"LexSovereign"** brand logo **5 times** in rapid succession.
+2. Click the **"NomosDesk"** brand logo **5 times** in rapid succession.
 3. The interface will shift into the **Silo Root Shell** (Matrix-black theme).
 4. Perform the **Hardware Root Handshake** using your assigned FIPS 140-2 Level 3 device.
 

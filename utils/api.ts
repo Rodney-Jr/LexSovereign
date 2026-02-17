@@ -1,6 +1,6 @@
 
 /**
- * LexSovereign API Utility
+ * NomosDesk API Utility
  * Provides robust fetch wrappers with automatic session handling
  */
 
@@ -26,7 +26,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     }
 
     // Add Sovereign Pin if available (Prioritize dynamic handshake, fallback to window/global)
-    const sovPin = localStorage.getItem('lexSovereign_pin') ||
+    const sovPin = localStorage.getItem('nomosdesk_pin') ||
         (window as any)._SOVEREIGN_PIN_ ||
         (typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '');
     if (sovPin) {
@@ -72,16 +72,16 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
                 }
 
                 // Clear the failing token to prevent loops during re-fetch
-                if (token && localStorage.getItem('lexSovereign_session')) {
-                    const session = JSON.parse(localStorage.getItem('lexSovereign_session')!);
+                if (token && localStorage.getItem('nomosdesk_session')) {
+                    const session = JSON.parse(localStorage.getItem('nomosdesk_session')!);
                     if (session.token === token) {
                         console.warn("[API] Clearing invalid session from storage");
-                        localStorage.removeItem('lexSovereign_session');
-                        localStorage.removeItem('lexSovereign_pin');
+                        localStorage.removeItem('nomosdesk_session');
+                        localStorage.removeItem('nomosdesk_pin');
                     }
                 }
 
-                window.dispatchEvent(new CustomEvent('lex-sovereign-auth-failed', {
+                window.dispatchEvent(new CustomEvent('nomosdesk-auth-failed', {
                     detail: { status: response.status, error: errorData.error }
                 }));
             } else {
@@ -103,7 +103,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
  */
 export function getSavedSession() {
     try {
-        const saved = localStorage.getItem('lexSovereign_session');
+        const saved = localStorage.getItem('nomosdesk_session');
         return saved ? JSON.parse(saved) : null;
     } catch (e) {
         return null;
