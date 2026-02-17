@@ -27,7 +27,8 @@ import {
    Trash2,
    Droplet,
 } from 'lucide-react';
-import { TenantUser, UserRole } from '../types';
+import { TenantUser, UserRole, Department } from '../types';
+import { usePermissions } from '../hooks/usePermissions';
 import SovereignBilling from './SovereignBilling';
 import ChatbotStudio from './ChatbotStudio';
 import BrandingSettings from './BrandingSettings';
@@ -40,16 +41,19 @@ const TenantAdministration: React.FC = () => {
       matterPrefix: 'MAT-SOV-',
       numberingPadding: 4,
       requiredFields: [] as string[],
-      encryptionMode: 'SYSTEM_MANAGED' as 'SYSTEM_MANAGED' | 'BYOK'
+      encryptionMode: 'SYSTEM_MANAGED' as 'SYSTEM_MANAGED' | 'BYOK',
+      separationMode: 'OPEN' as 'OPEN' | 'DEPARTMENTAL' | 'STRICT'
    });
 
-   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'billing' | 'chatbot' | 'branding'>('users');
+   const { setSeparationMode } = usePermissions();
+
+   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'billing' | 'chatbot' | 'branding' | 'access'>('users');
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
    const [copySuccess, setCopySuccess] = useState(false);
    const [isEmailing, setIsEmailing] = useState(false);
-   const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL' });
+   const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL', department: Department.INVESTIGATION });
    const [availableRoles, setAvailableRoles] = useState<{ id: string, name: string, isSystem: boolean }[]>([]);
    const [isLoadingRoles, setIsLoadingRoles] = useState(false);
    const [searchTerm, setSearchTerm] = useState('');
@@ -262,6 +266,7 @@ const TenantAdministration: React.FC = () => {
             <div className="flex flex-wrap gap-2 mt-4 lg:mt-0">
                <TabButton label="Users & RBAC" active={activeTab === 'users'} icon={<Users size={16} />} onClick={() => setActiveTab('users')} />
                <TabButton label="Roles" active={activeTab === 'roles'} icon={<Shield size={16} />} onClick={() => setActiveTab('roles')} />
+               <TabButton label="Access Control" active={activeTab === 'access'} icon={<ShieldCheck size={16} />} onClick={() => setActiveTab('access')} />
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
                <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
                <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
@@ -270,6 +275,72 @@ const TenantAdministration: React.FC = () => {
 
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             <div className="lg:col-span-12">
+               {activeTab === 'access' && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4">
+                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl">
+                        <div className="space-y-2">
+                           <h4 className="text-lg font-bold text-white flex items-center gap-3">
+                              <ShieldCheck className="text-purple-400" /> Departmental Separation
+                           </h4>
+                           <p className="text-sm text-slate-400">Configure how data visibility is enforced between departments (e.g., Investigation vs. Prosecution).</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                           {[
+                              { mode: 'OPEN', title: 'Open Collaboration', desc: 'All members can see all non-privileged matters. Best for standard law firms.' },
+                              { mode: 'DEPARTMENTAL', title: 'Departmental Firewall', desc: 'Members only see matters within their assigned Department. Best for Agencies.' },
+                              { mode: 'STRICT', title: 'Strict Assignment', desc: 'Members only see matters explicitly assigned to them. Zero-Trust model.' }
+                           ].map((option) => (
+                              <button
+                                 key={option.mode}
+                                 onClick={async () => {
+                                    try {
+                                       const session = getSavedSession();
+                                       if (!session?.token) return;
+                                       await authorizedFetch('/api/tenant/settings/mode', {
+                                          method: 'POST',
+                                          token: session.token,
+                                          body: JSON.stringify({ mode: option.mode })
+                                       });
+                                       setSettings(prev => ({ ...prev, separationMode: option.mode as any }));
+                                       setSeparationMode(option.mode as any);
+                                    } catch (e: any) {
+                                       alert(`Failed to update mode: ${e.message}`);
+                                    }
+                                 }}
+                                 className={`text-left p-6 rounded-2xl border transition-all ${settings.separationMode === option.mode
+                                    ? 'bg-purple-600/10 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.15)] flow-root'
+                                    : 'bg-slate-950 border-slate-800 hover:border-slate-700 opacity-60 hover:opacity-100'
+                                    }`}
+                              >
+                                 <div className="flex justify-between items-start mb-4">
+                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${settings.separationMode === option.mode ? 'border-purple-500' : 'border-slate-600'}`}>
+                                       {settings.separationMode === option.mode && <div className="w-2 h-2 rounded-full bg-purple-500" />}
+                                    </div>
+                                    {settings.separationMode === option.mode && <span className="text-[10px] font-bold uppercase text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">Active</span>}
+                                 </div>
+                                 <h5 className={`font-bold mb-2 ${settings.separationMode === option.mode ? 'text-white' : 'text-slate-300'}`}>{option.title}</h5>
+                                 <p className="text-xs text-slate-500 leading-relaxed">{option.desc}</p>
+                              </button>
+                           ))}
+                        </div>
+
+                        {settings.separationMode === 'DEPARTMENTAL' && (
+                           <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-start gap-3">
+                              <ShieldAlert className="text-blue-400 mt-0.5" size={20} />
+                              <div>
+                                 <h5 className="text-sm font-bold text-white">Partitioning Active</h5>
+                                 <p className="text-xs text-slate-400 mt-1">
+                                    Ensure all users are assigned a Department in the "Users" tab.
+                                    Users without a department will default to Strict Mode (seeing only their own assigned matters).
+                                 </p>
+                              </div>
+                           </div>
+                        )}
+                     </div>
+                  </div>
+               )}
+
                {activeTab === 'users' && (() => {
                   const filteredUsers = users.filter(u =>
                      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -306,6 +377,7 @@ const TenantAdministration: React.FC = () => {
                                     <tr>
                                        <th className="px-8 py-4">User Identity</th>
                                        <th className="px-8 py-4">Sovereign Role</th>
+                                       <th className="px-8 py-4">Department</th>
                                        <th className="px-8 py-4 text-center">Security</th>
                                        <th className="px-8 py-4 text-center">Last Session</th>
                                        <th className="px-8 py-4 text-right">Actions</th>
@@ -341,6 +413,15 @@ const TenantAdministration: React.FC = () => {
                                                    }`}>
                                                    {user.role}
                                                 </span>
+                                             </td>
+                                             <td className="px-8 py-5">
+                                                {user.department ? (
+                                                   <span className="px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase border bg-slate-800 text-slate-400 border-slate-700">
+                                                      {user.department}
+                                                   </span>
+                                                ) : (
+                                                   <span className="text-[9px] text-slate-600 italic">Unassigned</span>
+                                                )}
                                              </td>
                                              <td className="px-8 py-5">
                                                 <div className="flex justify-center">
@@ -654,6 +735,22 @@ const TenantAdministration: React.FC = () => {
                                           <option key={role.id} value={role.name}>{role.name.replace('_', ' ')}</option>
                                        ))
                                     )}
+                                 </select>
+                              </div>
+                           )}
+
+                           {inviteForm.roleName !== 'CLIENT' && (
+                              <div className="space-y-2 animate-in fade-in slide-in-from-top-3">
+                                 <label htmlFor="department-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Department</label>
+                                 <select
+                                    id="department-select"
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none text-slate-300"
+                                    value={inviteForm.department}
+                                    onChange={e => setInviteForm({ ...inviteForm, department: e.target.value as Department })}
+                                 >
+                                    {Object.values(Department).map(dept => (
+                                       <option key={dept} value={dept}>{dept}</option>
+                                    ))}
                                  </select>
                               </div>
                            )}

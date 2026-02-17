@@ -113,7 +113,7 @@ const AppContent: React.FC = () => {
     createDocument
   } = useSovereignData(isAuthenticated);
 
-  const { hasAnyPermission } = usePermissions();
+  const { hasAnyPermission, checkVisibility } = usePermissions();
 
   const [killSwitchActive, setKillSwitchActive] = useState(false);
 
@@ -268,13 +268,13 @@ const AppContent: React.FC = () => {
 
         {activeTab === 'vault' && (
           selectedMatter ? (
-            <MatterIntelligence mode={mode} onBack={() => setSelectedMatter(null)} documents={documents} />
+            <MatterIntelligence mode={mode} onBack={() => setSelectedMatter(null)} documents={documents.filter(d => checkVisibility(d))} />
           ) : (
             <div className="space-y-8">
-              <DocumentVault documents={documents} onAddDocument={createDocument} onRemoveDocument={removeDocument} />
+              <DocumentVault documents={documents.filter(d => checkVisibility(d))} onAddDocument={createDocument} onRemoveDocument={removeDocument} />
               <div className="h-[1px] bg-brand-border w-full my-4"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {matters.map(matter => (
+                {matters.filter(m => checkVisibility(m)).map(matter => (
                   <div key={matter.id} onClick={() => setSelectedMatter(matter.id)} className="bg-brand-sidebar border border-brand-border p-6 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-brand-primary/30 transition-all hover:bg-brand-sidebar/80">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-primary/10 rounded-xl group-hover:bg-brand-primary/20 transition-colors"><Scale size={20} className="text-brand-primary" /></div>

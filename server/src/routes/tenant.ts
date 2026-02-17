@@ -111,12 +111,69 @@ router.get('/settings', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_
             return;
         }
 
-        // For now, these are logical/simulated settings that we'll eventually store in a TenantSettings table
-        // But we pull the naming strategy to show how it would look.
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: req.user?.tenantId },
+            select: { separationMode: true }
+        });
+
         res.json({
             matterPrefix: 'MAT-SOV-',
             numberingPadding: 4,
-            requiredFields: ['Jurisdiction Pin', 'Client Reference']
+            requiredFields: ['Jurisdiction Pin', 'Client Reference'],
+            separationMode: tenant?.separationMode || 'OPEN'
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+// POST /api/tenant/settings/mode
+// Update Data Separation Mode
+router.post('/settings/mode', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { mode } = req.body;
+        const tenantId = req.user?.tenantId;
+
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
+        if (!['OPEN', 'DEPARTMENTAL', 'STRICT'].includes(mode)) {
+            return res.status(400).json({ error: 'Invalid mode. Must be OPEN, DEPARTMENTAL, or STRICT.' });
+        }
+
+        const updated = await prisma.tenant.update({
+            where: { id: tenantId },
+            data: { separationMode: mode }
+        });
+
+        res.json({
+            separationMode: updated.separationMode,
+            message: `Tenant separation mode updated to ${mode}`
+        });
+
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/tenant/users/:userId/department
+// Assign a user to a department
+router.post('/users/:userId/department', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { department } = req.body; // e.g. "INVESTIGATION"
+        const tenantId = req.user?.tenantId;
+
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
+
+        const updated = await prisma.user.update({
+            where: { id: userId, tenantId }, // Ensure user belongs to same tenant
+            data: { department }
+        });
+
+        res.json({
+            id: updated.id,
+            department: updated.department,
+            message: `User assigned to department: ${department}`
         });
     } catch (error: any) {
         res.status(500).json({ error: error.message });

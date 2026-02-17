@@ -76,6 +76,7 @@ export interface SessionData {
   userId: string;
   userName?: string;
   tenantId: string;
+  department?: Department;
   permissions: string[];
   mode?: AppMode;
   token?: string;
@@ -206,6 +207,7 @@ export interface Matter {
   client: string;
   type: string;
   internalCounsel: string;
+  department?: Department;
   team?: LegalProfessional[];
   region: Region;
   status: 'Open' | 'Closed' | 'Archived';
@@ -326,6 +328,7 @@ export interface BillingEntry {
   auditReason?: string;
 }
 
+
 export interface TenantMetadata {
   id: string;
   name: string;
@@ -336,20 +339,6 @@ export interface TenantMetadata {
   activeMatters: number;
   userCount: number;
   dataGravity: string;
-}
-
-export interface TenantUser {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  lastActive: string;
-  mfaEnabled: boolean;
-  maxWeeklyHours?: number;
-  roleSeniority?: number;
-  jurisdictionPins?: string[];
-  credentials?: any[];
-  attributes?: Record<string, any>;
 }
 
 export interface BrandingProfile {
@@ -368,3 +357,30 @@ export interface BrandingProfile {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export enum Department {
+  LEGAL_OPERATIONS = 'Legal Operations',
+  INVESTIGATION = 'Investigation',
+  PROSECUTION = 'Prosecution',
+  CORPORATE = 'Corporate',
+  FINANCE = 'Finance',
+  HR = 'HR',
+  EXECUTIVE = 'Executive'
+}
+
+// Re-exporting interfaces with department field
+export interface TenantUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  department?: Department; // New field
+  lastActive: string;
+  mfaEnabled: boolean;
+  maxWeeklyHours?: number;
+  roleSeniority?: number;
+  jurisdictionPins?: string[];
+  credentials?: any[];
+  attributes?: Record<string, any>;
+}
+

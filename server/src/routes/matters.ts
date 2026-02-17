@@ -7,10 +7,57 @@ import { AuditService } from '../services/auditService';
 
 const router = express.Router();
 
-// Get all matters
+// Get all matters (Scoped by Departmental Separation)
 router.get('/', authenticateToken, async (req, res) => {
     try {
+        const user = req.user;
+        if (!user || !user.tenantId) {
+            return res.status(400).json({ error: 'User context invalid' });
+        }
+
+        // 1. Fetch Tenant Mode & User Department
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: user.tenantId },
+            select: { separationMode: true }
+        });
+
+        const separationMode = tenant?.separationMode || 'OPEN';
+        let whereClause: any = { tenantId: user.tenantId }; // Filter by Tenant automatically handled by middleware, but good for explicit clarity
+
+        // 2. Apply Separation Logic
+        // GLOBAL_ADMIN and TENANT_ADMIN might bypass? For now, apply to all to be safe, or check role.
+        const isAdmin = user.role === 'GLOBAL_ADMIN' || user.role === 'TENANT_ADMIN';
+
+        if (!isAdmin) {
+            if (separationMode === 'STRICT') {
+                // Only see matters YOU are assigned to
+                whereClause = {
+                    ...whereClause,
+                    internalCounselId: user.id
+                };
+            } else if (separationMode === 'DEPARTMENTAL') {
+                // See matters in YOUR department OR assigned to you
+                // If user has no department, fall back to strict (safe default)
+                if (user.department) {
+                    whereClause = {
+                        ...whereClause,
+                        OR: [
+                            { department: user.department },
+                            { internalCounselId: user.id } // Always see your own work
+                        ]
+                    };
+                } else {
+                    whereClause = {
+                        ...whereClause,
+                        internalCounselId: user.id
+                    };
+                }
+            }
+            // If OPEN, no extra filter (Middleware handles Tenant scope)
+        }
+
         const matters = await prisma.matter.findMany({
+            where: whereClause,
             include: {
                 tenant: true,
                 internalCounsel: true
@@ -124,6 +171,12 @@ router.post('/', authenticateToken, async (req, res) => {
             }
         }
 
+        // Fetch counsel to get their department
+        const counsel = await prisma.user.findUnique({
+            where: { id: internalCounselId },
+            select: { department: true }
+        });
+
         const matter = await prisma.matter.create({
             data: {
                 name,
@@ -135,6 +188,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 complexityWeight: complexityWeight || 5.0,
                 internalCounselId,
                 tenantId,
+                department: counsel?.department // Auto-inherit department from assignee
             }
         });
 

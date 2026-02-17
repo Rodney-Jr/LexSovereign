@@ -26,6 +26,7 @@ model User {
   roleString        String    @default("INTERNAL_COUNSEL") @map("role")
   
   region            String    @default("GH_ACC_1")
+  department        String?   // e.g. "INVESTIGATION", "PROSECUTION"
   
   // Relations
   tenantId          String?
@@ -105,6 +106,7 @@ model Tenant {
   plan              String    @default("STANDARD")
   appMode           String    @default("LAW_FIRM") // "LAW_FIRM" or "ENTERPRISE"
   primaryRegion     String    @default("GH_ACC_1")
+  separationMode    String    @default("OPEN") // "OPEN", "DEPARTMENTAL", "STRICT"
   
   encryptionMode    String    @default("SYSTEM_MANAGED") // "SYSTEM_MANAGED" or "BYOK"
   
@@ -146,7 +148,9 @@ model Matter {
   riskLevel         String    @default("LOW")
   description       String?
   complexityWeight  Float     @default(5.0)
+  complexityWeight  Float     @default(5.0)
   attributes        Json?     @default("{}")
+  department        String?   // e.g. "INVESTIGATION"
 
   // Relations
   tenantId          String
