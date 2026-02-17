@@ -82,12 +82,12 @@ export default function Layout({ children }: LayoutProps) {
                         >
                             Add Intake Assistant
                         </Link>
-                        <Link
-                            to="/#demo"
+                        <button
+                            onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-chat'))}
                             className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-indigo-900/20 hover:shadow-indigo-900/40"
                         >
                             Request Demo
-                        </Link>
+                        </button>
                     </div>
 
                     {/* Mobile Menu Toggle */}
@@ -108,12 +108,15 @@ export default function Layout({ children }: LayoutProps) {
                         <MobileNavLink to="/pricing">Pricing</MobileNavLink>
                         <MobileNavLink to="/security-and-compliance">Security & Compliance</MobileNavLink>
                         <hr className="border-slate-800 my-2" />
-                        <Link
-                            to="/#demo"
+                        <button
+                            onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                window.dispatchEvent(new CustomEvent('nomosdesk-open-chat'));
+                            }}
                             className="bg-indigo-600 text-white px-6 py-3 rounded-xl text-center font-semibold"
                         >
                             Request a Demonstration
-                        </Link>
+                        </button>
                     </div>
                 )}
             </header>
@@ -164,7 +167,7 @@ export default function Layout({ children }: LayoutProps) {
                             <h4 className="font-semibold text-white mb-4">Contact</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
                                 <li><a href="mailto:access@nomosdesk.com" className="hover:text-indigo-400 transition-colors">access@nomosdesk.com</a></li>
-                                <li><Link to="/#demo" className="hover:text-indigo-400 transition-colors">Schedule Demo</Link></li>
+                                <li><button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-chat'))} className="hover:text-indigo-400 transition-colors text-left">Schedule Demo</button></li>
                             </ul>
                         </div>
                     </div>

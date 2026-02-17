@@ -2,7 +2,6 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Button, Section, SectionHeader } from '../components/ui';
-import DemoRequestForm from '../components/DemoRequestForm';
 import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -34,8 +33,8 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20"></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center relative z-10">
-                    <div className="text-left">
+                <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+                    <div className="flex flex-col items-center">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-medium mb-6 animate-fade-in">
                             <Shield className="w-4 h-4" /> Professional Responsibility & Governance
                         </div>
@@ -47,25 +46,21 @@ export default function HomePage() {
                             </span>
                         </h1>
 
-                        <p className="text-xl text-slate-300 mb-8 leading-relaxed max-w-xl">
+                        <p className="text-xl text-slate-300 mb-10 leading-relaxed max-w-2xl mx-auto">
                             NomosDesk is a secure platform designed for professional accountability.
                             Manage matters, enforce conflict checks, and protect client confidentiality
                             within a structured governance system.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                            <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Request Private Demo</Button>
+                        <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center">
+                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-chat'))} size="lg">Request Private Demo</Button>
                             <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>
                         </div>
 
-                        <p className="text-sm text-slate-500 flex items-center gap-4">
+                        <p className="text-sm text-slate-500 flex items-center gap-6 justify-center">
                             <span className="flex items-center gap-1.5"><Shield className="w-4 h-4" /> ISO 27001 Aligned</span>
                             <span className="flex items-center gap-1.5"><Lock className="w-4 h-4" /> End-to-End Encryption</span>
                         </p>
-                    </div>
-
-                    <div className="relative">
-                        <DemoRequestForm />
                     </div>
                 </div>
             </section>

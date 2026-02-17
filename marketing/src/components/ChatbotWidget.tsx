@@ -12,6 +12,12 @@ export default function ChatbotWidget() {
     const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
     const [isLoading, setIsLoading] = useState(false);
 
+    React.useEffect(() => {
+        const toggleChat = () => setIsOpen(true);
+        window.addEventListener('nomosdesk-open-chat', toggleChat);
+        return () => window.removeEventListener('nomosdesk-open-chat', toggleChat);
+    }, []);
+
     const handleSendMessage = async () => {
         if (!inputMessage.trim() || isLoading) return;
 
