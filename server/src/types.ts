@@ -7,6 +7,7 @@ export interface AuthUser {
     role: string;
     tenantId: string;
     permissions: string[];
+    department?: string;
     attributes?: Record<string, any>;
 }
 

@@ -51,7 +51,12 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             user.tenantId = CONFIG.SINGLE_TENANT_ID;
         }
 
-        req.user = user;
+        // Hydrate sensitive context from DB (Department, Attributes)
+        req.user = {
+            ...user,
+            department: dbUser.department || undefined,
+            name: dbUser.name
+        };
 
         requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {
             next();
