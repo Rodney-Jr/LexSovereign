@@ -14,27 +14,27 @@ router.get('/', async (req, res) => {
         if (configs.length === 0) {
             const defaultConfigs = [
                 {
-                    id: 'STARTER',
+                    id: 'Starter',
                     basePrice: 99,
                     pricePerUser: 10,
                     creditsIncluded: 0,
-                    features: ['Multi-tenant Storage', 'Base Guardrails', 'No Chatbot Widget'],
+                    features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'PROFESSIONAL',
+                    id: 'Professional',
                     basePrice: 149,
                     pricePerUser: 15,
                     creditsIncluded: 50,
-                    features: ['Dedicated Partition', 'Full RRE Engine', 'AI Chatbot Widget (50 Credits)', 'BYOK Ready'],
+                    features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'INSTITUTIONAL',
+                    id: 'Institutional',
                     basePrice: 0, // Contact Sales
                     pricePerUser: 25,
                     creditsIncluded: 0,
-                    features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'White-Label Chatbot (Unlimited)'],
+                    features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security'],
                     updatedAt: new Date()
                 }
             ];
@@ -51,27 +51,27 @@ router.get('/', async (req, res) => {
             console.warn('⚠️  PricingConfig table does not exist. Returning default configs. Run migrations: npx prisma migrate deploy');
             const defaultConfigs = [
                 {
-                    id: 'STARTER',
+                    id: 'Starter',
                     basePrice: 99,
                     pricePerUser: 10,
                     creditsIncluded: 0,
-                    features: ['Multi-tenant Storage', 'Base Guardrails', 'No Chatbot Widget'],
+                    features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'PROFESSIONAL',
+                    id: 'Professional',
                     basePrice: 149,
                     pricePerUser: 15,
                     creditsIncluded: 50,
-                    features: ['Dedicated Partition', 'Full RRE Engine', 'AI Chatbot Widget (50 Credits)', 'BYOK Ready'],
+                    features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support'],
                     updatedAt: new Date()
                 },
                 {
-                    id: 'INSTITUTIONAL',
+                    id: 'Institutional',
                     basePrice: 0, // Contact Sales
                     pricePerUser: 25,
                     creditsIncluded: 0,
-                    features: ['Physical TEE Access', 'Forensic Ledger', 'Zero-Knowledge Sync', 'White-Label Chatbot (Unlimited)'],
+                    features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security'],
                     updatedAt: new Date()
                 }
             ];

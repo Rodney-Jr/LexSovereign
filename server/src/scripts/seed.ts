@@ -247,27 +247,27 @@ async function main() {
         const pricingConfigs = [
             {
                 id: 'Starter',
-                basePrice: 29,
-                pricePerUser: 29,
+                basePrice: 99,
+                pricePerUser: 10,
                 creditsIncluded: 0,
                 maxUsers: 5,
-                features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'Email Support']
+                features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget']
             },
             {
                 id: 'Professional',
-                basePrice: 59,
-                pricePerUser: 59,
-                creditsIncluded: 500,
+                basePrice: 149,
+                pricePerUser: 15,
+                creditsIncluded: 50,
                 maxUsers: 50,
-                features: ['50 Users Max', 'Advanced Conflict Workflows', 'Partner Approval Gates', 'Audit Logs (30 Days)', 'Priority Support']
+                features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support']
             },
             {
                 id: 'Institutional',
                 basePrice: 0, // Custom
-                pricePerUser: 0, // Custom
-                creditsIncluded: 10000,
-                maxUsers: 10000, // Effectively unlimited
-                features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'Sovereign Data Residency', 'SSO & Custom Security']
+                pricePerUser: 25,
+                creditsIncluded: 0,
+                maxUsers: 10000, // Unlimited
+                features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
             }
         ];
 

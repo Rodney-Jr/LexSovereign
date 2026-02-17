@@ -89,7 +89,7 @@ const SovereignBilling: React.FC = () => {
                      current={billingData?.usage?.users?.current || 0}
                      max={billingData?.usage?.users?.max || 100}
                      color="purple"
-                     sub="Sovereign Chambers Tier"
+                     sub="Institutional Tier"
                   />
                </div>
 
@@ -124,7 +124,7 @@ const SovereignBilling: React.FC = () => {
                         </div>
                         <div>
                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enterprise Plan</p>
-                           <h4 className="text-lg font-bold text-white uppercase tracking-tighter">Sovereign Chambers</h4>
+                           <h4 className="text-lg font-bold text-white uppercase tracking-tighter">Institutional Tier</h4>
                         </div>
                      </div>
                      <div className="space-y-4">
