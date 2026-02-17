@@ -60,7 +60,15 @@ The marketing site (`nomosdesk-marketing`) is a separate static site deployment.
 | **CNAME** | `www` | `{{marketing-service-domain}}.up.railway.app` | Auto / 1 Hour |
 | **CNAME** (Optional) | `@` (Root) | `{{marketing-service-domain}}.up.railway.app` | Auto / 1 Hour |
 
-*(Note: Root domain CNAME flattening depends on your DNS provider, e.g., Cloudflare supports it.)*
+*(Note: Standard DNS providers like GoDaddy do not support CNAME records for the root domain `@`. Use one of the workarounds below if using GoDaddy.)*
+
+#### GoDaddy Root Domain Workaround
+If your domain is with GoDaddy, choice **A** is highly recommended:
+
+- **A: Delegate to Cloudflare (Best)**: Change your GoDaddy nameservers to Cloudflare. Cloudflare supports "CNAME Flattening" on the root `@`, allowing a direct CNAME to Railway.
+- **B: URL Forwarding (Simple)**: 
+    1. Set CNAME for `www` to `wq06hy42.up.railway.app`.
+    2. In GoDaddy, go to **Forwarding** and point `nomosdesk.com` (root) to `https://www.nomosdesk.com`.
 
 ### Step 3: Build Settings
 Ensure the service is configured correctly:
@@ -70,7 +78,31 @@ Ensure the service is configured correctly:
 
 ---
 
+## Configuration Review Checklist
+
+### 1. Railway Settings
+- [ ] **Platform Service**:
+    - Networking -> Custom Domain: `app.nomosdesk.com`
+    - Networking -> Port: `3001`
+    - Variables -> `VITE_PLATFORM_URL`: `https://app.nomosdesk.com`
+- [ ] **Marketing Service**:
+    - Networking -> Custom Domain: `www.nomosdesk.com`
+    - Networking -> Port: `4173`
+    - Variables -> `VITE_API_URL`: `https://app.nomosdesk.com`
+
+### 2. GoDaddy DNS Settings
+- [ ] **CNAME Records**:
+    - Host: `www` | Points to: `wq06hy42.up.railway.app`
+    - Host: `app` | Points to: `(Platform Service Domain).up.railway.app`
+- [ ] **Forwarding** (at the bottom of DNS settings):
+    - Domain: `nomosdesk.com` -> `https://www.nomosdesk.com`
+    - Type: `Permanent (301)`
+    - Settings: `Forward only`
+
+---
+
 ## Summary
 - **User Login**: `https://app.nomosdesk.com`
 - **Public Website**: `https://www.nomosdesk.com`
+- **Root Redirect**: `nomosdesk.com` -> `www.nomosdesk.com`
 - **API Endpoint**: `https://app.nomosdesk.com/api/...`
