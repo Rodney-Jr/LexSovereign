@@ -12,5 +12,8 @@ export default defineConfig({
                 secure: false,
             },
         },
+    },
+    preview: {
+        allowedHosts: ['extraordinary-perfection-production-5752.up.railway.app']
     }
 })
