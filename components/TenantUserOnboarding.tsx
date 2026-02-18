@@ -101,7 +101,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
 
          console.log('[Client] Join successful! User ID:', data.user.id);
 
-         localStorage.setItem('lexSovereign_session', JSON.stringify({
+         localStorage.setItem('nomosdesk_session', JSON.stringify({
             role: data.user.role,
             token: data.token,
             userId: data.user.id,

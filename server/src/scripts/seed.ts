@@ -140,6 +140,12 @@ async function main() {
     let tenantId;
     let counselId;
 
+    const globalAdminRole = await prisma.role.findFirst({ where: { name: 'GLOBAL_ADMIN', isSystem: true, tenantId: null } });
+    if (!globalAdminRole) {
+        console.error('❌ Critical: GLOBAL_ADMIN role not found after seeding!');
+        throw new Error('GLOBAL_ADMIN role missing.');
+    }
+
     if (!existingAdmin) {
         const result = await TenantService.provisionTenant({
             name: 'NomosDesk Demo',
@@ -153,20 +159,10 @@ async function main() {
 
         tenantId = result.tenantId;
 
-        // Manually update ID to keep it stable for seeding references if needed, 
-        // OR just rely on the returned ID.
-        // For seeding stability, we might want to enforce the ID, but TenantService generates random UUID.
-        // Let's just use the returned ID for subsequent relations.
         console.log(`✅ Provisioned Tenant: ${result.tenantId}`);
         console.log(`✅ Admin Credentials: admin@nomosdesk.com / password123`);
 
         console.log('🌱 Updating Admin User details...');
-        const globalAdminRole = await prisma.role.findFirst({ where: { name: 'GLOBAL_ADMIN', isSystem: true, tenantId: null } });
-        if (!globalAdminRole) {
-            console.error('❌ Critical: GLOBAL_ADMIN role not found after seeding!');
-            throw new Error('GLOBAL_ADMIN role missing.');
-        }
-
         await prisma.user.update({
             where: { id: result.adminId },
             data: {
@@ -178,7 +174,6 @@ async function main() {
         });
 
         // Create secondary user (Internal Counsel)
-        // Provisioner doesn't create secondary users.
         const counselRole = await prisma.role.findFirst({
             where: { name: 'INTERNAL_COUNSEL', tenantId: result.tenantId }
         });
@@ -195,21 +190,21 @@ async function main() {
             }
         });
         counselId = counsel.id;
-        tenantId = result.tenantId; // Ensure available for scope
-
     } else {
-        console.log('ℹ️ Default tenant already exists. Enforcing Global Admin password reset...');
+        console.log('ℹ️ Default tenant already exists. Enforcing Global Admin role and password...');
         tenantId = existingAdmin.tenantId;
 
-        // Force reset admin password to password123 during re-seed
+        // Force reset admin password and ensure role exists
         await prisma.user.update({
             where: { email: 'admin@nomosdesk.com' },
             data: {
                 passwordHash: await bcrypt.hash('password123', 10),
-                name: 'Sovereign Admin'
+                name: 'Sovereign Admin',
+                roleString: 'GLOBAL_ADMIN',
+                role: { connect: { id: globalAdminRole.id } }
             }
         });
-        console.log('✅ Global Admin password reset to password123');
+        console.log('✅ Global Admin role and password enforced.');
 
         const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@nomosdesk.com' } });
         counselId = counselUser?.id;

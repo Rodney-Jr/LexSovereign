@@ -24,7 +24,7 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
         e.preventDefault();
         setIsLoading(true);
         try {
-            const sessionData = localStorage.getItem('lexSovereign_session');
+            const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
 
             const data = await authorizedFetch('/api/platform/provision', {

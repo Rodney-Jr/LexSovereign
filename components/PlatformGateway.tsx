@@ -44,12 +44,16 @@ const PlatformGateway: React.FC<PlatformGatewayProps> = ({ onAuthenticated, onBa
         body: JSON.stringify({ email, password })
       });
 
+      console.log("[PlatformGateway] Login success data:", data);
+      addLog(`RECEIVED ROLE: ${data.user.role || 'NONE'}`);
+
       if (data.user.role !== 'GLOBAL_ADMIN') {
+        console.error("[PlatformGateway] Role mismatch. Expected GLOBAL_ADMIN, got:", data.user.role);
         throw new Error('UNAUTHORIZED: Insufficient privilege level for Root Shell');
       }
 
       // Store session securely
-      localStorage.setItem('lexSovereign_session', JSON.stringify({
+      localStorage.setItem('nomosdesk_session', JSON.stringify({
         role: data.user.role,
         token: data.token,
         userId: data.user.id,

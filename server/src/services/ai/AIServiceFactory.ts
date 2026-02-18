@@ -3,6 +3,7 @@ import { AIProvider } from "./types";
 import { GeminiProvider } from "./GeminiProvider";
 import { OpenAIProvider } from "./OpenAIProvider";
 import { AnthropicProvider } from "./AnthropicProvider";
+import { OpenRouterProvider } from "./OpenRouterProvider";
 
 export class AIServiceFactory {
     private static instance: AIProvider;
@@ -22,6 +23,10 @@ export class AIServiceFactory {
                 console.log("Initializing Anthropic Provider");
                 this.instance = new AnthropicProvider();
                 break;
+            case 'openrouter':
+                console.log(`Initializing OpenRouter Provider (model: ${process.env.OPENROUTER_MODEL || 'google/gemini-pro-1.5'})`);
+                this.instance = new OpenRouterProvider();
+                break;
             case 'gemini':
             default:
                 console.log("Initializing Gemini Provider");
@@ -33,7 +38,7 @@ export class AIServiceFactory {
     }
 
     // Force reset for testing or runtime switching
-    static setProvider(type: 'gemini' | 'openai' | 'anthropic') {
+    static setProvider(type: 'gemini' | 'openai' | 'anthropic' | 'openrouter') {
         process.env.AI_PROVIDER = type;
         this.instance = null as any;
         this.getProvider();

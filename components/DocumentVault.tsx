@@ -68,7 +68,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
 
       // Use raw fetch for blob downloading, but manually add x-sov-pin if available
       // authorizedFetch currently assumes JSON response
-      const sovPin = localStorage.getItem('lexSovereign_pin') || (window as any)._SOVEREIGN_PIN_ || '';
+      const sovPin = localStorage.getItem('nomosdesk_pin') || (window as any)._SOVEREIGN_PIN_ || '';
 
       const response = await fetch(`/api/export/${id}/export`, {
         method: 'POST',

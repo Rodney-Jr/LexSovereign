@@ -8,7 +8,7 @@ interface WorkBuffer {
 }
 
 export const useWorkPersistence = (state: Partial<WorkBuffer>) => {
-    const STORAGE_KEY = 'lexSovereign_work_buffer';
+    const STORAGE_KEY = 'nomosdesk_work_buffer';
 
     // Update effect: Sync state to storage whenever tracked values change
     useEffect(() => {

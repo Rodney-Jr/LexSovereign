@@ -32,11 +32,11 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
             role: normalizedRole,
             permissions: activePermissions
         };
-        localStorage.setItem('lexSovereign_session', JSON.stringify(sessionToSave));
+        localStorage.setItem('nomosdesk_session', JSON.stringify(sessionToSave));
 
         // 2. Immediate Pin Handshake (Crucial for Railway enclave access)
         // Optimization: Only handshake if we don't have a valid PIN or if token changed
-        const existingPin = localStorage.getItem('lexSovereign_pin');
+        const existingPin = localStorage.getItem('nomosdesk_pin');
         if (!existingPin || existingPin === 'undefined') {
             console.log(`[Auth] Initiating PIN handshake for user: ${session.userId}...`);
             try {
@@ -44,7 +44,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
                     token: session.token
                 });
                 if (data && data.pin) {
-                    localStorage.setItem('lexSovereign_pin', data.pin);
+                    localStorage.setItem('nomosdesk_pin', data.pin);
                     console.log("[Auth] Sovereign Pin Handshake Successful");
                 }
             } catch (e: any) {
@@ -71,14 +71,14 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         setTenantId(null);
         setRole('');
         setPermissions([]);
-        localStorage.removeItem('lexSovereign_session');
-        localStorage.removeItem('lexSovereign_pin');
-        sessionStorage.removeItem('lexSovereign_session');
+        localStorage.removeItem('nomosdesk_session');
+        localStorage.removeItem('nomosdesk_pin');
+        sessionStorage.removeItem('nomosdesk_session');
     }, [setRole, setPermissions]);
 
     // Initial session recovery
     useEffect(() => {
-        const saved = localStorage.getItem('lexSovereign_session');
+        const saved = localStorage.getItem('nomosdesk_session');
         if (saved) {
             try {
                 const session = JSON.parse(saved) as SessionData;

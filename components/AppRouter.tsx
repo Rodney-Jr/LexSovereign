@@ -86,7 +86,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
                         console.log('[AppRouter] onComplete called');
                         // TenantUserOnboarding already saved the session to localStorage
                         // Read it back to get the correct user data
-                        const sessionStr = localStorage.getItem('lexSovereign_session');
+                        const sessionStr = localStorage.getItem('nomosdesk_session');
                         console.log('[AppRouter] Session from localStorage:', sessionStr);
 
                         if (sessionStr) {

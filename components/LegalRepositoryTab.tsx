@@ -33,7 +33,7 @@ export const LegalRepositoryTab = () => {
     const fetchDocuments = async () => {
         setLoading(true);
         try {
-            const sessionData = localStorage.getItem('lexSovereign_session');
+            const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
             const data = await authorizedFetch('/api/platform/judicial/documents', { token });
             if (Array.isArray(data)) setDocuments(data);
@@ -61,7 +61,7 @@ export const LegalRepositoryTab = () => {
         formData.append('category', category);
 
         try {
-            const sessionData = localStorage.getItem('lexSovereign_session');
+            const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
 
             const response = await fetch('/api/platform/judicial/upload', {
@@ -92,7 +92,7 @@ export const LegalRepositoryTab = () => {
         if (!confirm('Are you sure you want to remove this document trace from the Sovereign Registry?')) return;
 
         try {
-            const sessionData = localStorage.getItem('lexSovereign_session');
+            const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
             await authorizedFetch(`/api/platform/judicial/documents/${id}`, {
                 method: 'DELETE',
@@ -171,8 +171,8 @@ export const LegalRepositoryTab = () => {
                             disabled={!selectedFile || uploading}
                             onClick={handleUpload}
                             className={`w-full py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${!selectedFile || uploading
-                                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                                    : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-xl shadow-cyan-900/20'
+                                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-xl shadow-cyan-900/20'
                                 } flex items-center justify-center gap-2`}
                         >
                             {uploading ? (
@@ -290,8 +290,8 @@ const CategoryButton = ({ label, active, onClick, icon }: any) => (
     <button
         onClick={onClick}
         className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all border ${active
-                ? 'bg-cyan-600 text-white border-cyan-500 shadow-lg'
-                : 'bg-slate-950/50 text-slate-500 border-slate-800 hover:border-slate-700'
+            ? 'bg-cyan-600 text-white border-cyan-500 shadow-lg'
+            : 'bg-slate-950/50 text-slate-500 border-slate-800 hover:border-slate-700'
             }`}
     >
         {icon}

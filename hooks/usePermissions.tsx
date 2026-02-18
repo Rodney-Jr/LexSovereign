@@ -31,7 +31,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
 
     // Load from local storage on mount if available (for persistence across refreshes)
     useEffect(() => {
-        const saved = localStorage.getItem('lexSovereign_session');
+        const saved = localStorage.getItem('nomosdesk_session');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);

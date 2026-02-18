@@ -76,13 +76,13 @@ const Layout: React.FC<LayoutProps> = ({
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showAdvanced, setShowAdvanced] = React.useState(() => {
-    return localStorage.getItem('lexSovereign_advancedMode') === 'true';
+    return localStorage.getItem('nomosdesk_advancedMode') === 'true';
   });
 
   const toggleAdvanced = () => {
     const newState = !showAdvanced;
     setShowAdvanced(newState);
-    localStorage.setItem('lexSovereign_advancedMode', newState.toString());
+    localStorage.setItem('nomosdesk_advancedMode', newState.toString());
   };
 
   React.useEffect(() => {

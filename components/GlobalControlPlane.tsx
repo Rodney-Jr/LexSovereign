@@ -62,7 +62,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
    React.useEffect(() => {
       const fetchPlatformData = async () => {
          try {
-            const sessionData = localStorage.getItem('lexSovereign_session');
+            const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
 
             // Parallel fetch for all platform signals including conversations
@@ -559,7 +559,7 @@ const LeadsTab = () => {
    React.useEffect(() => {
       const fetchLeads = async () => {
          try {
-            const sessionData = localStorage.getItem('lexSovereign_session');
+            const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
             const data = await authorizedFetch('/api/leads', { token });
             if (Array.isArray(data)) setLeads(data);
@@ -572,7 +572,7 @@ const LeadsTab = () => {
 
    const updateStatus = async (id: string, status: string) => {
       try {
-         const sessionData = localStorage.getItem('lexSovereign_session');
+         const sessionData = localStorage.getItem('nomosdesk_session');
          const token = sessionData ? JSON.parse(sessionData).token : '';
          await authorizedFetch(`/api/leads/${id}/status`, {
             method: 'PATCH',

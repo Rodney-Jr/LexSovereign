@@ -29,11 +29,11 @@ const GrowthDashboard: React.FC = () => {
     React.useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const sovPin = localStorage.getItem('sov-pin') || '';
+                const sovPin = localStorage.getItem('nomosdesk_pin') || '';
                 const rates = await fetchFxRates(sovPin);
                 setLiveRates(rates);
 
-                const sessionData = localStorage.getItem('lexSovereign_session');
+                const sessionData = localStorage.getItem('nomosdesk_session');
                 const token = sessionData ? JSON.parse(sessionData).token : '';
 
                 const response = await fetch('/api/analytics/metrics', {
