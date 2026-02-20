@@ -4,6 +4,20 @@ import { apiFetch } from '../utils/api';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
+import type { SsgOptions } from 'vite-plugin-ssg';
+
+export const ssgOptions: SsgOptions = {
+    slug: 'pricing',
+    routeUrl: '/pricing',
+    context: async (children) => {
+        const { StaticRouter, HelmetProvider } = await import('../utils/ssr-compat');
+        return (
+            <HelmetProvider>
+                <StaticRouter location="/pricing">{children}</StaticRouter>
+            </HelmetProvider>
+        );
+    },
+};
 
 interface PricingConfig {
     id: string; // Plan Name
@@ -66,14 +80,50 @@ export default function PricingPage() {
         <Layout>
             <SEO
                 title="Transparent Pricing"
-                description="Simple, scalable pricing for law firms and institutions. Choose the plan that fits your governance needs."
+                description="Simple, scalable pricing for law firms and institutions. Starter from $99/mo, Professional from $149/mo. Custom enterprise and government plans available."
+                schema={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'SoftwareApplication',
+                        name: 'NomosDesk',
+                        applicationCategory: 'BusinessApplication',
+                        operatingSystem: 'Cloud',
+                        offers: [
+                            {
+                                '@type': 'Offer',
+                                name: 'Starter',
+                                price: '99',
+                                priceCurrency: 'USD',
+                                description: 'For small firms establishing governance. Up to 5 users.',
+                            },
+                            {
+                                '@type': 'Offer',
+                                name: 'Professional',
+                                price: '149',
+                                priceCurrency: 'USD',
+                                description: 'For growing firms requiring oversight. Up to 50 users, AI chatbot included.',
+                            },
+                            {
+                                '@type': 'Offer',
+                                name: 'Institutional',
+                                price: '0',
+                                priceCurrency: 'USD',
+                                description: 'Custom pricing for enterprise and government institutions. Unlimited users.',
+                            },
+                        ],
+                    }
+                ]}
             />
 
             <Section className="pt-32">
-                <SectionHeader
-                    title="Simple, Transparent Pricing"
-                    subtitle="Choose the governance level that fits your organization. No hidden fees."
-                />
+                <div className="text-center max-w-3xl mx-auto mb-12">
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+                        Simple, Transparent Pricing
+                    </h1>
+                    <p className="text-xl text-slate-300">
+                        Choose the governance level that fits your organization. No hidden fees.
+                    </p>
+                </div>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">

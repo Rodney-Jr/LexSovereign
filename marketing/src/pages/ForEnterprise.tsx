@@ -3,13 +3,47 @@ import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
 import { Layers, Activity, Users, FileLock } from 'lucide-react';
+import RelatedInsights from '../components/RelatedInsights';
+import type { SsgOptions } from 'vite-plugin-ssg';
+
+export const ssgOptions: SsgOptions = {
+    slug: 'for-enterprise-legal',
+    routeUrl: '/for-enterprise-legal',
+    context: async (children) => {
+        const { StaticRouter, HelmetProvider } = await import('../utils/ssr-compat');
+        return (
+            <HelmetProvider>
+                <StaticRouter location="/for-enterprise-legal">{children}</StaticRouter>
+            </HelmetProvider>
+        );
+    },
+};
 
 export default function ForEnterprise() {
     return (
         <Layout>
             <SEO
                 title="Legal Governance for Enterprise"
-                description="Centralize your corporate legal department with structured oversight, access control, and outside counsel management."
+                description="Centralize your corporate legal department with structured oversight, role-based access control, and outside counsel management. Built for General Counsel and enterprise legal teams."
+                schema={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'SoftwareApplication',
+                        name: 'NomosDesk for Enterprise Legal',
+                        applicationCategory: 'BusinessApplication',
+                        operatingSystem: 'Cloud',
+                        description: 'Enterprise legal governance platform for corporate legal departments and General Counsel teams.',
+                        url: 'https://nomosdesk.com/for-enterprise-legal',
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://nomosdesk.com' },
+                            { '@type': 'ListItem', position: 2, name: 'For Enterprise Legal', item: 'https://nomosdesk.com/for-enterprise-legal' },
+                        ],
+                    },
+                ]}
             />
 
             <Section className="bg-slate-950 pt-32 pb-20">
@@ -25,7 +59,7 @@ export default function ForEnterprise() {
                         Maintain governance over contracts, litigation, and corporate records.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button asLink="/#demo">Request Consultation</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))}>Request Consultation</Button>
                     </div>
                 </div>
             </Section>
@@ -64,6 +98,14 @@ export default function ForEnterprise() {
                     <Button asLink="/#demo" size="lg">See the Dashboard</Button>
                 </div>
             </Section>
+            <RelatedInsights
+                heading="Resources for Enterprise Legal Teams"
+                articles={[
+                    { slug: '/insights/sovereign-legal-data-infrastructure', title: 'Sovereign Legal Data Infrastructure', excerpt: 'What data sovereignty means for legal institutions and why institutional-grade hosting matters.', readTime: '11 min read' },
+                    { slug: '/insights/conflict-checking-software-law-firms', title: 'Conflict Checking Software for Law Firms', excerpt: 'How automated conflict checking prevents ethical violations and malpractice exposure.', readTime: '9 min read' },
+                    { slug: '/insights/legal-software-africa-guide', title: 'Legal Software for Africa: 2026 Guide', excerpt: 'Choosing data-sovereign legal software for African markets and corporate legal departments.', readTime: '12 min read' },
+                ]}
+            />
         </Layout>
     );
 }

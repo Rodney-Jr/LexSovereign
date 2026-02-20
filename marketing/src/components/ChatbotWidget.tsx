@@ -152,7 +152,7 @@ export default function ChatbotWidget() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, showDemoForm]);
 
-    // Listen for regular chat open
+    // Listen for regular chat open — opens chat with welcome message intact
     useEffect(() => {
         const openChat = () => {
             setIsOpen(true);
@@ -162,13 +162,14 @@ export default function ChatbotWidget() {
         return () => window.removeEventListener('nomosdesk-open-chat', openChat);
     }, []);
 
-    // Listen for demo-intent open — opens chat AND shows form
+    // Listen for demo-intent open — opens chat with no welcome message, shows form directly
     useEffect(() => {
         const openDemo = () => {
             setIsOpen(true);
             setIsMinimized(false);
-            // Only show the form if it hasn't been submitted yet
             if (!submittedName) {
+                // Clear messages so no welcome greeting appears before the form
+                setMessages([]);
                 setShowDemoForm(true);
             }
         };

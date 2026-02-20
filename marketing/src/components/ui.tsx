@@ -1,7 +1,7 @@
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import clsx from 'clsx';
-import { Link } from 'react-router-dom';
+import { Link } from '../utils/ssr-compat';
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));

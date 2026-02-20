@@ -3,13 +3,47 @@ import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
 import { Landmark, Fingerprint, History, Database, CheckCircle } from 'lucide-react';
+import RelatedInsights from '../components/RelatedInsights';
+import type { SsgOptions } from 'vite-plugin-ssg';
+
+export const ssgOptions: SsgOptions = {
+    slug: 'for-government',
+    routeUrl: '/for-government',
+    context: async (children) => {
+        const { StaticRouter, HelmetProvider } = await import('../utils/ssr-compat');
+        return (
+            <HelmetProvider>
+                <StaticRouter location="/for-government">{children}</StaticRouter>
+            </HelmetProvider>
+        );
+    },
+};
 
 export default function ForGovernment() {
     return (
         <Layout>
             <SEO
                 title="Public Sector Legal Governance"
-                description="Secure case management for government institutions. Enforcing public accountability, data sovereignty, and audit transparency."
+                description="Secure legal case management for government institutions, ministries, and prosecution services. Enforcing public accountability, data sovereignty, departmental firewalls, and audit transparency."
+                schema={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'SoftwareApplication',
+                        name: 'NomosDesk for Government',
+                        applicationCategory: 'BusinessApplication',
+                        operatingSystem: 'Cloud',
+                        description: 'Secure legal governance platform for government ministries, prosecution services, and public sector legal departments.',
+                        url: 'https://nomosdesk.com/for-government',
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://nomosdesk.com' },
+                            { '@type': 'ListItem', position: 2, name: 'For Government', item: 'https://nomosdesk.com/for-government' },
+                        ],
+                    },
+                ]}
             />
 
             <Section className="bg-slate-950 pt-32 pb-20">
@@ -26,7 +60,7 @@ export default function ForGovernment() {
                         and total data sovereignty.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button asLink="/#demo">Inquire About Deployment</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))}>Inquire About Deployment</Button>
                     </div>
                 </div>
             </Section>
@@ -132,6 +166,14 @@ export default function ForGovernment() {
                     <CapabilityCard icon={<Fingerprint />} title="Identity Control" desc="Integrate with national ID systems or government SSO for secure authentication." />
                 </div>
             </Section>
+            <RelatedInsights
+                heading="Guides for Government Legal Teams"
+                articles={[
+                    { slug: '/insights/government-legal-case-management', title: 'Government Legal Case Management Systems Explained', excerpt: 'How modern governments manage legal matters, audit trails, and departmental accountability.', readTime: '10 min read' },
+                    { slug: '/insights/sovereign-legal-data-infrastructure', title: 'Sovereign Legal Data Infrastructure', excerpt: 'What data sovereignty means for legal institutions and why it matters for government sectors.', readTime: '11 min read' },
+                    { slug: '/insights/legal-software-africa-guide', title: 'Legal Software for Africa: 2026 Guide', excerpt: 'Jurisdiction-specific requirements, data sovereignty, and top platforms for African institutions.', readTime: '12 min read' },
+                ]}
+            />
         </Layout>
     );
 }

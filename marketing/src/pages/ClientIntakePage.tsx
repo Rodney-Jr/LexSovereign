@@ -3,6 +3,20 @@ import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
 import { MessageSquare, ClipboardCheck, Clock, ShieldCheck, UserCheck } from 'lucide-react';
+import type { SsgOptions } from 'vite-plugin-ssg';
+
+export const ssgOptions: SsgOptions = {
+    slug: 'client-intake-assistant',
+    routeUrl: '/client-intake-assistant',
+    context: async (children) => {
+        const { StaticRouter, HelmetProvider } = await import('../utils/ssr-compat');
+        return (
+            <HelmetProvider>
+                <StaticRouter location="/client-intake-assistant">{children}</StaticRouter>
+            </HelmetProvider>
+        );
+    },
+};
 
 export default function ClientIntakePage() {
     return (
@@ -38,7 +52,7 @@ export default function ClientIntakePage() {
                         Our secure intake assistant provides structured support without crossing the line into legal advice.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button asLink="/#demo">Add Intake Assistant</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))}>Add Intake Assistant</Button>
                     </div>
                 </div>
             </Section>

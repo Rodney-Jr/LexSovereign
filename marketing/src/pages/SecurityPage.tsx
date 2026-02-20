@@ -3,6 +3,20 @@ import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
 import { ShieldCheck, Lock, Eye, Server } from 'lucide-react';
+import type { SsgOptions } from 'vite-plugin-ssg';
+
+export const ssgOptions: SsgOptions = {
+    slug: 'security-and-compliance',
+    routeUrl: '/security-and-compliance',
+    context: async (children) => {
+        const { StaticRouter, HelmetProvider } = await import('../utils/ssr-compat');
+        return (
+            <HelmetProvider>
+                <StaticRouter location="/security-and-compliance">{children}</StaticRouter>
+            </HelmetProvider>
+        );
+    },
+};
 
 export default function SecurityPage() {
     return (

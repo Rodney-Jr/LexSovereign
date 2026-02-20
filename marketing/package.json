@@ -6,28 +6,36 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
+        "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist/ssr",
+        "generate-sitemap": "node scripts/generate-sitemap.js",
+        "prerender": "node scripts/prerender.js",
+        "build:full": "npm run generate-sitemap && npm run build && npm run build:ssr && npm run prerender",
         "preview": "vite preview",
+        "ssr": "node --loader ts-node/esm debug_ssr.js",
         "start": "vite preview --port ${PORT:-8080} --host"
     },
     "dependencies": {
         "clsx": "^2.1.1",
         "framer-motion": "^12.34.0",
         "lucide-react": "^0.344.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
         "react-helmet-async": "^2.0.5",
         "react-router-dom": "^7.13.0",
         "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4.1.18",
-        "@types/react": "^18.2.66",
-        "@types/react-dom": "^18.2.22",
-        "@vitejs/plugin-react": "^4.2.1",
+        "@tailwindcss/vite": "^4.2.0",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^5.1.4",
         "autoprefixer": "^10.4.24",
         "postcss": "^8.5.6",
         "tailwindcss": "^4.1.18",
+        "ts-node": "^10.9.2",
         "typescript": "^5.2.2",
-        "vite": "^5.1.4"
+        "vite": "^7.3.1",
+        "vite-plugin-ssg": "^0.1.0"
     }
 }

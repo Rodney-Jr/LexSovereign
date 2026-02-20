@@ -3,13 +3,48 @@ import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
 import { CheckCircle, Briefcase, Globe, Scale } from 'lucide-react';
+import RelatedInsights from '../components/RelatedInsights';
+import type { SsgOptions } from 'vite-plugin-ssg';
+
+export const ssgOptions: SsgOptions = {
+    slug: 'for-law-firms',
+    routeUrl: '/for-law-firms',
+    context: async (children) => {
+        const { StaticRouter, HelmetProvider } = await import('../utils/ssr-compat');
+        return (
+            <HelmetProvider>
+                <StaticRouter location="/for-law-firms">{children}</StaticRouter>
+            </HelmetProvider>
+        );
+    },
+};
 
 export default function ForLawFirms() {
     return (
         <Layout>
             <SEO
                 title="Legal Matter Management for Law Firms"
-                description="Empower your firm with built-in conflict checking, multi-office management, and partner oversight."
+                description="Empower your law firm with built-in conflict checking, matter governance, multi-office management, and partner oversight. Regional and mid-sized firms trust NomosDesk."
+                schema={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'SoftwareApplication',
+                        name: 'NomosDesk for Law Firms',
+                        applicationCategory: 'BusinessApplication',
+                        operatingSystem: 'Cloud',
+                        description: 'Legal matter management and governance platform for regional and mid-sized law firms.',
+                        url: 'https://nomosdesk.com/for-law-firms',
+                        offers: { '@type': 'Offer', price: '99', priceCurrency: 'USD' },
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://nomosdesk.com' },
+                            { '@type': 'ListItem', position: 2, name: 'For Law Firms', item: 'https://nomosdesk.com/for-law-firms' },
+                        ],
+                    },
+                ]}
             />
 
             <Section className="bg-slate-950 pt-32 pb-20">
@@ -116,6 +151,14 @@ export default function ForLawFirms() {
                 <h2 className="text-3xl font-bold text-white mb-6">Ready to secure your firm?</h2>
                 <Button asLink="/#demo" size="lg">Get Started</Button>
             </Section>
+            <RelatedInsights
+                heading="Guides for Law Firms"
+                articles={[
+                    { slug: '/insights/conflict-checking-software-law-firms', title: 'Conflict Checking Software for Law Firms', excerpt: 'Why manual conflict checks fail and how automated software prevents ethical violations.', readTime: '9 min read' },
+                    { slug: '/insights/legal-software-africa-guide', title: 'Legal Software for Africa: 2026 Guide', excerpt: 'Choosing the right legal software for African law firms, from data sovereignty to conflict checking.', readTime: '12 min read' },
+                    { slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'Features, pricing, African market support, and government capabilities compared in depth.', readTime: '14 min read' },
+                ]}
+            />
         </Layout>
     );
 }

@@ -3,7 +3,21 @@ import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Button, Section, SectionHeader } from '../components/ui';
 import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, StaticRouter, HelmetProvider } from '../utils/ssr-compat';
+import RelatedInsights from '../components/RelatedInsights';
+import type { SsgOptions } from 'vite-plugin-ssg';
+
+export const ssgOptions: SsgOptions = {
+    slug: 'index',
+    routeUrl: '/',
+    context: async (children) => {
+        return (
+            <HelmetProvider>
+                <StaticRouter location="/">{children}</StaticRouter>
+            </HelmetProvider>
+        );
+    },
+};
 
 export default function HomePage() {
     return (
@@ -53,7 +67,7 @@ export default function HomePage() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center">
-                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-chat'))} size="lg">Request Private Demo</Button>
+                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request Private Demo</Button>
                             <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>
                         </div>
 
@@ -247,6 +261,14 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+            <RelatedInsights
+                heading="From Our Insights Library"
+                articles={[
+                    { slug: '/insights/legal-software-africa-guide', title: 'Legal Software for Africa: 2026 Guide', excerpt: 'A complete guide to choosing data-sovereign legal software for African law firms and institutions.', readTime: '12 min read' },
+                    { slug: '/insights/conflict-checking-software-law-firms', title: 'Conflict Checking Software for Law Firms', excerpt: 'Why manual conflict checks fail and how automated conflict software protects your firm.', readTime: '9 min read' },
+                    { slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'An honest comparison of features, pricing, African market support, and data governance.', readTime: '14 min read' },
+                ]}
+            />
         </Layout >
     );
 }

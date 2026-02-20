@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from '../utils/ssr-compat';
 import { Menu, X, Shield, Lock, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
