@@ -36,6 +36,15 @@ const routesToPrerender = [
         try {
             const { appHtml, helmet } = await render(url);
 
+            // Safety Check: If appHtml contains the React Suspense error template, 
+            // we should NOT write this to disk as the primary index.html.
+            // This prevents "broken" pages from being served.
+            if (appHtml.includes('data-msg="Switched to client rendering')) {
+                console.warn(`[Prerender] Warning: ${url} aborted SSR due to Suspense. Falling back to client-only shell.`);
+                // For the root index.html, we definitely don't want to overwrite with a broken version
+                if (url === '/') continue;
+            }
+
             // Replace root div with app HTML
             let html = template.replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`);
 

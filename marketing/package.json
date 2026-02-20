@@ -5,13 +5,12 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build:vite": "vite build",
         "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist/ssr",
         "generate-sitemap": "node scripts/generate-sitemap.js",
         "prerender": "node scripts/prerender.js",
-        "build:full": "npm run generate-sitemap && npm run build && npm run build:ssr && npm run prerender",
+        "build": "npm run build:vite && npm run build:ssr && npm run generate-sitemap && npm run prerender",
         "preview": "vite preview",
-        "ssr": "node --loader ts-node/esm debug_ssr.js",
         "start": "vite preview --port ${PORT:-8080} --host"
     },
     "dependencies": {

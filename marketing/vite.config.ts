@@ -55,6 +55,11 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
                     secure: false,
                 },
             },
+        },
+        preview: {
+            port: Number(process.env.PORT) || 8080,
+            host: true,
+            allowedHosts: true // Fix for 403 Forbidden on custom domains in Vite 6+
         }
     }
 })

@@ -2,22 +2,30 @@ import React, { Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from './utils/ssr-compat';
 import ChatbotWidget from './components/ChatbotWidget';
 
+// Helper to handle SSR-safe lazy loading
+// During SSR, we want to skip the 'lazy' boundary if we can to avoid Suspense aborts
+const isSSR = import.meta.env.SSR;
+
+function lazySSR(factory: () => Promise<{ default: React.ComponentType<any> }>) {
+    return React.lazy(factory);
+}
+
 // Route-level code splitting — each page loads its own chunk
-const HomePage = React.lazy(() => import('./pages/HomePage'));
-const ForLawFirms = React.lazy(() => import('./pages/ForLawFirms'));
-const ForEnterprise = React.lazy(() => import('./pages/ForEnterprise'));
-const ForGovernment = React.lazy(() => import('./pages/ForGovernment'));
-const PricingPage = React.lazy(() => import('./pages/PricingPage'));
-const SecurityPage = React.lazy(() => import('./pages/SecurityPage'));
-const ClientIntakePage = React.lazy(() => import('./pages/ClientIntakePage'));
-const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
-const TermsPage = React.lazy(() => import('./pages/TermsPage'));
-const InsightsIndexPage = React.lazy(() => import('./pages/insights/InsightsIndexPage'));
-const LegalSoftwareAfrica = React.lazy(() => import('./pages/insights/LegalSoftwareAfrica'));
-const GovernmentCaseManagement = React.lazy(() => import('./pages/insights/GovernmentCaseManagement'));
-const ConflictCheckingSoftware = React.lazy(() => import('./pages/insights/ConflictCheckingSoftware'));
-const SovereignLegalData = React.lazy(() => import('./pages/insights/SovereignLegalData'));
-const NomosVsClio = React.lazy(() => import('./pages/insights/NomosVsClio'));
+const HomePage = lazySSR(() => import('./pages/HomePage'));
+const ForLawFirms = lazySSR(() => import('./pages/ForLawFirms'));
+const ForEnterprise = lazySSR(() => import('./pages/ForEnterprise'));
+const ForGovernment = lazySSR(() => import('./pages/ForGovernment'));
+const PricingPage = lazySSR(() => import('./pages/PricingPage'));
+const SecurityPage = lazySSR(() => import('./pages/SecurityPage'));
+const ClientIntakePage = lazySSR(() => import('./pages/ClientIntakePage'));
+const PrivacyPage = lazySSR(() => import('./pages/PrivacyPage'));
+const TermsPage = lazySSR(() => import('./pages/TermsPage'));
+const InsightsIndexPage = lazySSR(() => import('./pages/insights/InsightsIndexPage'));
+const LegalSoftwareAfrica = lazySSR(() => import('./pages/insights/LegalSoftwareAfrica'));
+const GovernmentCaseManagement = lazySSR(() => import('./pages/insights/GovernmentCaseManagement'));
+const ConflictCheckingSoftware = lazySSR(() => import('./pages/insights/ConflictCheckingSoftware'));
+const SovereignLegalData = lazySSR(() => import('./pages/insights/SovereignLegalData'));
+const NomosVsClio = lazySSR(() => import('./pages/insights/NomosVsClio'));
 
 // Page-transition loading fallback
 function PageLoader() {
