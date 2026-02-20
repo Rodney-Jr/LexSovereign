@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout';
 import SEO from '../../components/SEO';
 import { Section, Button } from '../../components/ui';
 import { Link } from '../../utils/ssr-compat';
-import { BookOpen, ArrowRight, TrendingUp, Users, Globe, Shield, Bot, Lock, Briefcase, MousePointer2, Database, Cpu, Zap, XCircle, Target, Archive, Cloud, ShieldCheck, History } from 'lucide-react';
+import { BookOpen, ArrowRight, TrendingUp, Users, Globe, Shield, Bot, Lock, Briefcase, MousePointer2, Database, Cpu, Zap, XCircle, Target, Archive, Cloud, ShieldCheck, History, BarChart3, MessageSquare, Clock, DollarSign } from 'lucide-react';
 
 const articles = [
     {
@@ -205,6 +205,102 @@ const articles = [
         category: 'Client Acquisition',
         readTime: '9 min read',
         icon: BarChart3,
+    },
+    {
+        slug: '/insights/how-ai-chatbots-increase-law-firm-revenue',
+        title: 'Chatbots Increase Revenue',
+        excerpt: 'Discover why AI-powered intake is outperforming static forms by 40% and recapture after-hours leads.',
+        category: 'Growth',
+        readTime: '10 min read',
+        icon: TrendingUp,
+    },
+    {
+        slug: '/insights/best-ai-chatbots-for-lawyers-2026',
+        title: 'Best AI Chatbots 2026',
+        excerpt: 'A comprehensive review of the top 5 legal AI chatbot platforms based on security and ROI.',
+        category: 'Technology',
+        readTime: '12 min read',
+        icon: Bot,
+    },
+    {
+        slug: '/insights/ai-vs-live-chat-for-legal-intake',
+        title: 'AI vs. Live Chat',
+        excerpt: 'Why AI intake is more scalable, consistent, and cost-effective than human live chat services.',
+        category: 'Intake',
+        readTime: '9 min read',
+        icon: MessageSquare,
+    },
+    {
+        slug: '/insights/how-to-automate-client-screening-law-firms',
+        title: 'Automate Client Screening',
+        excerpt: 'A 3-step guide for law firms to automate initial screening and identify high-value cases instantly.',
+        category: 'Automation',
+        readTime: '11 min read',
+        icon: Zap,
+    },
+    {
+        slug: '/insights/legal-intake-automation-for-small-law-firms',
+        title: 'Small Firm Intake Automation',
+        excerpt: 'How solo practitioners and boutiques use AI to provide 24/7 service and compete with Big Law.',
+        category: 'Small Firm',
+        readTime: '8 min read',
+        icon: Users,
+    },
+    {
+        slug: '/insights/enterprise-ai-intake-for-corporate-legal',
+        title: 'Enterprise AI Intake',
+        excerpt: 'Optimizing high-volume corporate legal intake with intelligent routing and sovereign data governance.',
+        category: 'Enterprise',
+        readTime: '13 min read',
+        icon: Briefcase,
+    },
+    {
+        slug: '/insights/data-privacy-in-ai-legal-chatbots',
+        title: 'Chatbot Data Privacy',
+        excerpt: 'The critical legal requirements for chatbot data: Why private LLMs and local residency matter.',
+        category: 'Security',
+        readTime: '14 min read',
+        icon: ShieldCheck,
+    },
+    {
+        slug: '/insights/how-government-agencies-use-ai-chatbots',
+        title: 'Government AI Chatbots',
+        excerpt: 'Scaling citizen services with secure, sovereign AI intake for public sector legal departments.',
+        category: 'Public Sector',
+        readTime: '12 min read',
+        icon: Globe,
+    },
+    {
+        slug: '/insights/reducing-legal-intake-costs-with-ai',
+        title: 'Reduce Intake Costs',
+        excerpt: 'Operating a 24/7 front office at a fraction of the cost of manual staff or answering services.',
+        category: 'Efficiency',
+        readTime: '10 min read',
+        icon: DollarSign,
+    },
+    {
+        slug: '/insights/ai-chatbot-roi-for-law-firms',
+        title: 'AI Chatbot ROI',
+        excerpt: 'A framework for measuring conversion uplift and time recovery from your AI intake investment.',
+        category: 'Growth',
+        readTime: '9 min read',
+        icon: BarChart3,
+    },
+    {
+        slug: '/insights/24-7-legal-intake-automation',
+        title: '24/7 Intake Automation',
+        excerpt: 'Why capturing leads at 2:00 AM is the secret to high-performance law firm growth in 2026.',
+        category: 'Intake',
+        readTime: '8 min read',
+        icon: Clock,
+    },
+    {
+        slug: '/insights/conversational-ai-for-legal-websites',
+        title: 'Conversational Legal UX',
+        excerpt: 'Why static websites are dead and how conversational interfaces are the new gold standard for law firms.',
+        category: 'Technology',
+        readTime: '11 min read',
+        icon: Bot,
     },
 ];
 

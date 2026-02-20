@@ -97,6 +97,11 @@ export default function SecurityPage() {
                         <FAQItem q="Who can access information?" a="Only authorized users within your tenant. NomosDesk support staff have no standing access to your encrypted documents." />
                         <FAQItem q="How are conflicts detected?" a="Our system indexes entities across all matters. A fuzzy-matching algorithm runs against this index during the intake process." />
                         <FAQItem q="Is the system suitable for public institutions?" a="Yes. We have specialized modules for government that handle higher classification levels and separation of duties." />
+                        <SecurityCard
+                            icon={<Zap />}
+                            title="Sovereign Chatbot Data"
+                            desc="Every interaction with our AI Chatbot is processed in your private enclave. We never use your data to train public models."
+                        />
                     </div>
                 </div>
             </Section>

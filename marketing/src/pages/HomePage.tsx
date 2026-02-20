@@ -144,7 +144,7 @@ export default function HomePage() {
                                 <span className="text-slate-300">Direct enquiries to appropriate practice areas</span>
                             </li>
                         </ul>
-                        <Button asLink="/client-intake-assistant">Learn About Client Intake Assistant</Button>
+                        <Button asLink="/ai-legal-chatbot">Learn About AI Legal Chatbot</Button>
                     </div>
                     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
                         <div className="flex flex-col gap-4">

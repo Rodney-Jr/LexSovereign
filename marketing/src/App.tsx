@@ -47,6 +47,24 @@ const ISO27001Readiness = lazySSR(() => import('./pages/insights/ISO27001Readine
 const AuditReadyRecords = lazySSR(() => import('./pages/insights/AuditReadyRecords'));
 const LegalCRMConversionOptimization = lazySSR(() => import('./pages/insights/LegalCRMConversionOptimization'));
 
+// AI Chatbot Cluster Batch 1
+const ChatbotRevenue = lazySSR(() => import('./pages/insights/ChatbotsIncreaseRevenue'));
+const BestChatbots = lazySSR(() => import('./pages/insights/BestChatbots2026'));
+const AivsLiveChat = lazySSR(() => import('./pages/insights/AivsLiveChat'));
+const AutomateScreening = lazySSR(() => import('./pages/insights/AutomateClientScreening'));
+
+// AI Chatbot Cluster Batch 2
+const SmallFirmIntake = lazySSR(() => import('./pages/insights/SmallFirmIntake'));
+const EnterpriseIntake = lazySSR(() => import('./pages/insights/EnterpriseIntake'));
+const ChatbotDataPrivacy = lazySSR(() => import('./pages/insights/ChatbotDataPrivacy'));
+const GovernmentChatbots = lazySSR(() => import('./pages/insights/GovernmentChatbots'));
+
+// AI Chatbot Cluster Batch 3
+const ReducingIntakeCosts = lazySSR(() => import('./pages/insights/ReducingIntakeCosts'));
+const ChatbotROI = lazySSR(() => import('./pages/insights/ChatbotROI'));
+const TwentyFourSevenAutomation = lazySSR(() => import('./pages/insights/TwentyFourSevenAutomation'));
+const ConversationalAILegal = lazySSR(() => import('./pages/insights/ConversationalAILegal'));
+
 
 
 
@@ -56,11 +74,17 @@ const LegalPracticeManagement = lazySSR(() => import('./pages/pillars/LegalPract
 const AILegalSoftware = lazySSR(() => import('./pages/pillars/AILegalSoftware'));
 const LawFirmCRM = lazySSR(() => import('./pages/pillars/LawFirmCRM'));
 const LegalIntakeAutomation = lazySSR(() => import('./pages/pillars/LegalIntakeAutomation'));
+const AILegalChatbot = lazySSR(() => import('./pages/pillars/AILegalChatbot'));
 
 // Comparison Pages
 const NomosVsClioComparison = lazySSR(() => import('./pages/comparisons/NomosVsClioComparison'));
 const NomosVsMyCase = lazySSR(() => import('./pages/comparisons/NomosVsMyCase'));
 const NomosVsPracticePanther = lazySSR(() => import('./pages/comparisons/NomosVsPracticePanther'));
+const ChatbotVsForms = lazySSR(() => import('./pages/comparisons/ChatbotVsForms'));
+const NomosVsGenericChatbots = lazySSR(() => import('./pages/comparisons/NomosVsGenericChatbots'));
+
+// Programmatic Practice Area Pages (Chatbots)
+const PracticeAreaChatbot = lazySSR(() => import('./pages/chatbots/PracticeAreaChatbot'));
 
 
 // Page-transition loading fallback
@@ -123,6 +147,24 @@ export default function App() {
                     <Route path="/insights/audit-ready-automated-legal-records" element={<AuditReadyRecords />} />
                     <Route path="/insights/legal-crm-conversion-optimization" element={<LegalCRMConversionOptimization />} />
 
+                    {/* AI Chatbot Cluster Batch 1 */}
+                    <Route path="/insights/how-ai-chatbots-increase-law-firm-revenue" element={<ChatbotRevenue />} />
+                    <Route path="/insights/best-ai-chatbots-for-lawyers-2026" element={<BestChatbots />} />
+                    <Route path="/insights/ai-vs-live-chat-for-legal-intake" element={<AivsLiveChat />} />
+                    <Route path="/insights/how-to-automate-client-screening-law-firms" element={<AutomateScreening />} />
+
+                    {/* AI Chatbot Cluster Batch 2 */}
+                    <Route path="/insights/legal-intake-automation-for-small-law-firms" element={<SmallFirmIntake />} />
+                    <Route path="/insights/enterprise-ai-intake-for-corporate-legal" element={<EnterpriseIntake />} />
+                    <Route path="/insights/data-privacy-in-ai-legal-chatbots" element={<ChatbotDataPrivacy />} />
+                    <Route path="/insights/how-government-agencies-use-ai-chatbots" element={<GovernmentChatbots />} />
+
+                    {/* AI Chatbot Cluster Batch 3 */}
+                    <Route path="/insights/reducing-legal-intake-costs-with-ai" element={<ReducingIntakeCosts />} />
+                    <Route path="/insights/ai-chatbot-roi-for-law-firms" element={<ChatbotROI />} />
+                    <Route path="/insights/24-7-legal-intake-automation" element={<TwentyFourSevenAutomation />} />
+                    <Route path="/insights/conversational-ai-for-legal-websites" element={<ConversationalAILegal />} />
+
 
 
 
@@ -137,6 +179,18 @@ export default function App() {
                     <Route path="/vs/nomosdesk-vs-clio" element={<NomosVsClioComparison />} />
                     <Route path="/vs/nomosdesk-vs-mycase" element={<NomosVsMyCase />} />
                     <Route path="/vs/nomosdesk-vs-practicepanther" element={<NomosVsPracticePanther />} />
+                    <Route path="/vs/ai-chatbot-vs-traditional-intake-forms" element={<ChatbotVsForms />} />
+                    <Route path="/vs/nomosdesk-ai-vs-generic-website-chatbots" element={<NomosVsGenericChatbots />} />
+
+                    {/* Chatbot Pillar & Programmatic Routes */}
+                    <Route path="/ai-legal-chatbot" element={<AILegalChatbot />} />
+                    <Route path="/ai-chatbot-for-personal-injury-lawyers" element={<PracticeAreaChatbot area="personal-injury" />} />
+                    <Route path="/ai-chatbot-for-immigration-lawyers" element={<PracticeAreaChatbot area="immigration" />} />
+                    <Route path="/ai-chatbot-for-family-lawyers" element={<PracticeAreaChatbot area="family" />} />
+                    <Route path="/ai-chatbot-for-criminal-defense-lawyers" element={<PracticeAreaChatbot area="criminal-defense" />} />
+                    <Route path="/ai-chatbot-for-corporate-law-firms" element={<PracticeAreaChatbot area="corporate" />} />
+                    <Route path="/ai-chatbot-for-government-legal-departments" element={<PracticeAreaChatbot area="government" />} />
+
 
                 </Routes>
             </Suspense>
