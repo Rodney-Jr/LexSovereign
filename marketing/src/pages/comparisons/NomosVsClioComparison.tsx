@@ -65,28 +65,28 @@ export default function NomosVsClioComparison() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-800">
-                                [
-                                {f: "Data Residency (Kenya, Nigeria, SA)", n: true, c: false },
-                                {f: "Mandatory Conflict Workflow", n: true, c: false },
-                                {f: "Departmental Firewalls", n: true, c: false },
-                                {f: "In-Chat AI Intake Assistant", n: true, c: "Add-on required" },
-                                {f: "Sovereign Audit Trails", n: true, c: false },
-                                {f: "Enterprise Matter Portals", n: true, c: true },
-                                {f: "Cloud Accessibility", n: true, c: true }
+                                {[
+                                    { f: "Data Residency (Kenya, Nigeria, SA)", n: true, c: false },
+                                    { f: "Mandatory Conflict Workflow", n: true, c: false },
+                                    { f: "Departmental Firewalls", n: true, c: false },
+                                    { f: "In-Chat AI Intake Assistant", n: true, c: "Add-on required" },
+                                    { f: "Sovereign Audit Trails", n: true, c: false },
+                                    { f: "Enterprise Matter Portals", n: true, c: true },
+                                    { f: "Cloud Accessibility", n: true, c: true }
                                 ].map((row, i) => (
-                                <tr key={i} className="hover:bg-slate-800/30 transition-colors">
-                                    <td className="p-8 text-white font-medium">{row.f}</td>
-                                    <td className="p-8">
-                                        {typeof row.n === 'boolean' ? (
-                                            row.n ? <CheckCircle className="w-6 h-6 text-emerald-500" /> : <XCircle className="w-6 h-6 text-red-500/50" />
-                                        ) : <span className="text-indigo-300 text-sm font-bold">{row.n}</span>}
-                                    </td>
-                                    <td className="p-8">
-                                        {typeof row.c === 'boolean' ? (
-                                            row.c ? <CheckCircle className="w-6 h-6 text-emerald-500" /> : <XCircle className="w-6 h-6 text-red-500/50" />
-                                        ) : <span className="text-slate-500 text-sm">{row.c}</span>}
-                                    </td>
-                                </tr>
+                                    <tr key={i} className="hover:bg-slate-800/30 transition-colors">
+                                        <td className="p-8 text-white font-medium">{row.f}</td>
+                                        <td className="p-8">
+                                            {typeof row.n === 'boolean' ? (
+                                                row.n ? <CheckCircle className="w-6 h-6 text-emerald-500" /> : <XCircle className="w-6 h-6 text-red-500/50" />
+                                            ) : <span className="text-indigo-300 text-sm font-bold">{row.n}</span>}
+                                        </td>
+                                        <td className="p-8">
+                                            {typeof row.c === 'boolean' ? (
+                                                row.c ? <CheckCircle className="w-6 h-6 text-emerald-500" /> : <XCircle className="w-6 h-6 text-red-500/50" />
+                                            ) : <span className="text-slate-500 text-sm">{row.c}</span>}
+                                        </td>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
