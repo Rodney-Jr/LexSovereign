@@ -24,8 +24,8 @@ export default function NomosVsClio() {
     return (
         <Layout>
             <SEO
-                title="NomosDesk vs Clio: Which Legal Software Is Right for You?"
-                description="An honest, in-depth comparison of NomosDesk and Clio. We compare features, pricing, African market support, government capabilities, data sovereignty, and conflict checking."
+                title="NomosDesk vs Clio: Legal Software Comparison"
+                description="In-depth comparison of NomosDesk and Clio for law firms. We compare features, pricing, African market support, and data sovereignty."
                 schema={[
                     {
                         '@context': 'https://schema.org',

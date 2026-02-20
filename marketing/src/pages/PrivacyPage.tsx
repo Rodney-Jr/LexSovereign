@@ -7,16 +7,26 @@ export default function PrivacyPage() {
     return (
         <Layout>
             <SEO
-                title="Privacy Policy"
-                description="NomosDesk's privacy policy. Learn how we collect, use, and protect your data in compliance with GDPR and applicable data protection laws."
+                title="Privacy Policy & Data Protection"
+                description="NomosDesk's commitment to data privacy. Learn how we protect your legal data in compliance with GDPR and international standards."
                 canonical="/privacy"
-                schema={{
-                    '@context': 'https://schema.org',
-                    '@type': 'WebPage',
-                    name: 'NomosDesk Privacy Policy',
-                    url: 'https://nomosdesk.com/privacy',
-                    description: 'Information about how NomosDesk collects, uses, and protects personal data.',
-                }}
+                schema={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'WebPage',
+                        name: 'NomosDesk Privacy Policy',
+                        url: 'https://nomosdesk.com/privacy',
+                        description: 'Information about how NomosDesk collects, uses, and protects personal data.',
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://nomosdesk.com' },
+                            { '@type': 'ListItem', position: 2, name: 'Privacy Policy', item: 'https://nomosdesk.com/privacy' },
+                        ],
+                    },
+                ]}
             />
 
             <Section className="pt-32 pb-20 bg-slate-950">

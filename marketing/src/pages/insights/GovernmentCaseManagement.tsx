@@ -9,8 +9,8 @@ export default function GovernmentCaseManagement() {
     return (
         <Layout>
             <SEO
-                title="Government Legal Case Management Systems Explained"
-                description="How modern governments manage legal matters, audit trails, and departmental accountability with purpose-built legal case management systems. A guide for public sector legal teams."
+                title="Government Legal Case Management Systems"
+                description="How governments manage legal matters, audit trails, and accountability with purpose-built case management. A guide for public sector legal teams."
                 schema={[
                     {
                         '@context': 'https://schema.org',

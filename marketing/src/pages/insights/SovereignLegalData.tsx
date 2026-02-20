@@ -9,8 +9,8 @@ export default function SovereignLegalData() {
     return (
         <Layout>
             <SEO
-                title="Sovereign Legal Data Infrastructure: What It Means and Why It Matters"
-                description="Understanding data sovereignty for legal institutions in Africa, the Middle East, and government sectors. What sovereign legal data infrastructure means, why it matters, and how to implement it."
+                title="Sovereign Legal Data Infrastructure Explained"
+                description="Understanding data sovereignty for legal institutions. What sovereign infrastructure means, why it matters, and how to implement it securely."
                 schema={[
                     {
                         '@context': 'https://schema.org',

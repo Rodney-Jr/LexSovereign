@@ -24,7 +24,7 @@ export default function ForEnterprise() {
         <Layout>
             <SEO
                 title="Legal Governance for Enterprise"
-                description="Centralize your corporate legal department with structured oversight, role-based access control, and outside counsel management. Built for General Counsel and enterprise legal teams."
+                description="Centralize your corporate legal department with structured oversight, role-based access control, and secure outside counsel management."
                 schema={[
                     {
                         '@context': 'https://schema.org',
@@ -32,7 +32,7 @@ export default function ForEnterprise() {
                         name: 'NomosDesk for Enterprise Legal',
                         applicationCategory: 'BusinessApplication',
                         operatingSystem: 'Cloud',
-                        description: 'Enterprise legal governance platform for corporate legal departments and General Counsel teams.',
+                        description: 'Enterprise legal governance and matter management for corporate legal departments.',
                         url: 'https://nomosdesk.com/for-enterprise-legal',
                     },
                     {

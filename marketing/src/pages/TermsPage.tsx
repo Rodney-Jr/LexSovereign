@@ -7,16 +7,26 @@ export default function TermsPage() {
     return (
         <Layout>
             <SEO
-                title="Terms of Service"
-                description="NomosDesk Terms of Service. Read the terms governing the use of the NomosDesk legal governance platform operated by Nexus Technologies Limited."
+                title="Terms of Service & Usage Agreement"
+                description="Read the terms governing the use of the NomosDesk legal governance platform. Professional responsibility and service standards."
                 canonical="/terms"
-                schema={{
-                    '@context': 'https://schema.org',
-                    '@type': 'WebPage',
-                    name: 'NomosDesk Terms of Service',
-                    url: 'https://nomosdesk.com/terms',
-                    description: 'Terms and conditions governing use of the NomosDesk platform.',
-                }}
+                schema={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'WebPage',
+                        name: 'NomosDesk Terms of Service',
+                        url: 'https://nomosdesk.com/terms',
+                        description: 'Terms and conditions governing use of the NomosDesk platform.',
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://nomosdesk.com' },
+                            { '@type': 'ListItem', position: 2, name: 'Terms of Service', item: 'https://nomosdesk.com/terms' },
+                        ],
+                    },
+                ]}
             />
 
             <Section className="pt-32 pb-20 bg-slate-950">

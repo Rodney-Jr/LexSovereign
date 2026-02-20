@@ -23,19 +23,29 @@ export default function ClientIntakePage() {
         <Layout>
             <SEO
                 title="Client Intake Assistant & Website Enquiry Tool"
-                description="A secure, structured website enquiry assistant for law firms. Capture leads 24/7, pre-screen clients, and improve service efficiency without providing automated legal advice."
-                schema={{
-                    "@context": "https://schema.org",
-                    "@type": "SoftwareApplication",
-                    "name": "NomosDesk Client Intake Assistant",
-                    "applicationCategory": "BusinessApplication",
-                    "operatingSystem": "Cloud",
-                    "offers": {
-                        "@type": "Offer",
-                        "price": "0",
-                        "priceCurrency": "USD"
+                description="A secure website enquiry assistant for law firms. Capture leads 24/7 and pre-screen clients securely without providing automated legal advice."
+                schema={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": "NomosDesk Client Intake Assistant",
+                        "applicationCategory": "BusinessApplication",
+                        "operatingSystem": "Cloud",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0",
+                            "priceCurrency": "USD"
+                        }
+                    },
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://nomosdesk.com" },
+                            { "@type": "ListItem", "position": 2, "name": "Client Intake Assistant", "item": "https://nomosdesk.com/client-intake-assistant" }
+                        ]
                     }
-                }}
+                ]}
             />
 
             {/* HERO */}

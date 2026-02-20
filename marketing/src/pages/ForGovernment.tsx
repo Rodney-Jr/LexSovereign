@@ -24,7 +24,7 @@ export default function ForGovernment() {
         <Layout>
             <SEO
                 title="Public Sector Legal Governance"
-                description="Secure legal case management for government institutions, ministries, and prosecution services. Enforcing public accountability, data sovereignty, departmental firewalls, and audit transparency."
+                description="Secure legal case management for government institutions, ministries, and prosecution services. Enforcing accountability and total data sovereignty."
                 schema={[
                     {
                         '@context': 'https://schema.org',
@@ -32,7 +32,7 @@ export default function ForGovernment() {
                         name: 'NomosDesk for Government',
                         applicationCategory: 'BusinessApplication',
                         operatingSystem: 'Cloud',
-                        description: 'Secure legal governance platform for government ministries, prosecution services, and public sector legal departments.',
+                        description: 'Secure legal governance and case management for government ministries and prosecution services.',
                         url: 'https://nomosdesk.com/for-government',
                     },
                     {

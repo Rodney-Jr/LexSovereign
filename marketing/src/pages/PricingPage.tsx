@@ -80,7 +80,7 @@ export default function PricingPage() {
         <Layout>
             <SEO
                 title="Transparent Pricing"
-                description="Simple, scalable pricing for law firms and institutions. Starter from $99/mo, Professional from $149/mo. Custom enterprise and government plans available."
+                description="Simple, scalable pricing for legal institutions. Starter from $99/mo, Professional from $149/mo. Custom institutional and government plans."
                 schema={[
                     {
                         '@context': 'https://schema.org',
@@ -111,7 +111,15 @@ export default function PricingPage() {
                                 description: 'Custom pricing for enterprise and government institutions. Unlimited users.',
                             },
                         ],
-                    }
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://nomosdesk.com' },
+                            { '@type': 'ListItem', position: 2, name: 'Pricing', item: 'https://nomosdesk.com/pricing' },
+                        ],
+                    },
                 ]}
             />
 

@@ -9,8 +9,8 @@ export default function LegalSoftwareAfrica() {
     return (
         <Layout>
             <SEO
-                title="Legal Software for Africa: 2026 Complete Guide"
-                description="A comprehensive 2026 guide to legal practice management software for African law firms and institutions. Covers data sovereignty, conflict checking, jurisdiction, and top platforms."
+                title="Legal Software for Africa: 2026 Guide"
+                description="Comprehensive 2026 guide to legal practice management for African law firms. Covers data sovereignty, conflict checking, and jurisdiction-specific needs."
                 schema={[
                     {
                         '@context': 'https://schema.org',

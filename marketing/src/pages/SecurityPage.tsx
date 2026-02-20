@@ -22,24 +22,34 @@ export default function SecurityPage() {
     return (
         <Layout>
             <SEO
-                title="Security & Compliance"
-                description="Our commitment to professional responsibility. End-to-end encryption, ISO 27001 alignment, and strict data residency."
-                schema={{
-                    "@context": "https://schema.org",
-                    "@type": "FAQPage",
-                    "mainEntity": [
-                        {
-                            "@type": "Question",
-                            "name": "Where is data stored?",
-                            "acceptedAnswer": { "@type": "Answer", "text": "We offer regional data residency options, including specialized zones for Africa and Europe." }
-                        },
-                        {
-                            "@type": "Question",
-                            "name": "Who can access information?",
-                            "acceptedAnswer": { "@type": "Answer", "text": "Access is strictly role-based. We use a Zero Trust architecture where explicit permission is required." }
-                        }
-                    ]
-                }}
+                title="Sovereign Legal Security & Compliance"
+                description="Our commitment to professional responsibility. End-to-end encryption, ISO 27001 alignment, and strict data residency for legal institutions."
+                schema={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "FAQPage",
+                        "mainEntity": [
+                            {
+                                "@type": "Question",
+                                "name": "Where is data stored?",
+                                "acceptedAnswer": { "@type": "Answer", "text": "We offer regional data residency options, including specialized zones for Africa and Europe." }
+                            },
+                            {
+                                "@type": "Question",
+                                "name": "Who can access information?",
+                                "acceptedAnswer": { "@type": "Answer", "text": "Access is strictly role-based. We use a Zero Trust architecture where explicit permission is required." }
+                            }
+                        ]
+                    },
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://nomosdesk.com" },
+                            { "@type": "ListItem", "position": 2, "name": "Security & Compliance", "item": "https://nomosdesk.com/security-and-compliance" }
+                        ]
+                    }
+                ]}
             />
 
             <Section className="bg-slate-950 pt-32 pb-20">

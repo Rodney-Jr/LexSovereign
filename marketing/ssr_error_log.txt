@@ -1,0 +1,11 @@
+Error: useLocation() may be used only in the context of a <Router> component.
+    at invariant (C:/Users/LENOVO/Desktop/LexSovereign/marketing/node_modules/react-router/dist/development/chunk-JZWAC4HX.mjs:341:11)
+    at useLocation (C:/Users/LENOVO/Desktop/LexSovereign/marketing/node_modules/react-router/dist/development/chunk-JZWAC4HX.mjs:5673:3)
+    at Layout (C:/Users/LENOVO/Desktop/LexSovereign/marketing/src/layouts/Layout.tsx:23:57)
+    at Object.react_stack_bottom_frame (C:\Users\LENOVO\Desktop\LexSovereign\marketing\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+    at renderWithHooks (C:\Users\LENOVO\Desktop\LexSovereign\marketing\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+    at renderElement (C:\Users\LENOVO\Desktop\LexSovereign\marketing\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+    at retryNode (C:\Users\LENOVO\Desktop\LexSovereign\marketing\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+    at renderNodeDestructive (C:\Users\LENOVO\Desktop\LexSovereign\marketing\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6367:11)
+    at finishFunctionComponent (C:\Users\LENOVO\Desktop\LexSovereign\marketing\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5106:13)
+    at renderElement (C:\Users\LENOVO\Desktop\LexSovereign\marketing\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5552:11)

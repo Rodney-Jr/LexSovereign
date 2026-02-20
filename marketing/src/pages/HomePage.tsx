@@ -24,19 +24,28 @@ export default function HomePage() {
         <Layout>
             <SEO
                 title="Secure Legal Matter Management & Governance Platform"
-                description="NomosDesk is a secure legal operating system for law firms, enterprise legal departments, and government institutions. Built for conflict checking, document security, and role-based governance."
-                schema={{
-                    "@context": "https://schema.org",
-                    "@type": "SoftwareApplication",
-                    "name": "NomosDesk",
-                    "applicationCategory": "BusinessApplication",
-                    "operatingSystem": "Cloud",
-                    "offers": {
-                        "@type": "Offer",
-                        "price": "0",
-                        "priceCurrency": "USD"
+                description="NomosDesk is a secure legal operating system for law firms and institutions, featuring built-in conflict checking and role-based governance."
+                schema={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": "NomosDesk",
+                        "applicationCategory": "BusinessApplication",
+                        "operatingSystem": "Cloud",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0",
+                            "priceCurrency": "USD"
+                        }
+                    },
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://nomosdesk.com" }
+                        ]
                     }
-                }}
+                ]}
             />
 
             {/* HERO */}
