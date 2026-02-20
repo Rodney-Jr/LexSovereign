@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
@@ -11,220 +8,179 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enums matching types.ts (As strings for SQLite support)
-
-// Models
-
 model User {
-  id                String    @id @default(uuid())
-  email             String    @unique
+  id                String      @id @default(uuid())
+  email             String      @unique
   passwordHash      String
   name              String
-  roleId            String?
-  role              Role?     @relation(fields: [roleId], references: [id])
-  // Legacy string role for backward compatibility during migration
-  roleString        String    @default("INTERNAL_COUNSEL") @map("role")
-  
-  region            String    @default("GH_ACC_1")
-  department        String?   // e.g. "INVESTIGATION", "PROSECUTION"
-  
-  // Relations
+  roleString        String      @default("INTERNAL_COUNSEL") @map("role")
+  region            String      @default("GH_ACC_1")
   tenantId          String?
-  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  attributes        Json?       @default("{}")
+  provider          String      @default("LOCAL")
+  providerId        String?
+  roleId            String?
+  resetToken        String?     @unique
+  resetTokenExpires DateTime?
+  credentials       Json?       @default("[]")
+  jurisdictionPins  Json?       @default("[]")
+  maxWeeklyHours    Float       @default(40.0)
+  roleSeniority     Float       @default(1.0)
+  isActive          Boolean     @default(true)
+  department        String?
+  auditLogs         AuditLog[]
   assignedMatters   Matter[]
   timeEntries       TimeEntry[]
-  auditLogs         AuditLog[]
-
-  createdAt         DateTime  @default(now())
-  attributes        Json?     @default("{}")
-  updatedAt         DateTime  @updatedAt
-
-  // OIDC / Federation
-  provider          String    @default("LOCAL")
-  providerId        String?
-
-  // Password Reset
-  resetToken        String?   @unique
-  resetTokenExpires DateTime?
-
-  // People & Capacity
-  maxWeeklyHours    Float     @default(40.0)
-  roleSeniority     Float     @default(1.0)
-  jurisdictionPins  Json?     @default("[]")
-  credentials       Json?     @default("[]")
-  
-  isActive          Boolean   @default(true)
+  role              Role?       @relation(fields: [roleId], references: [id])
+  tenant            Tenant?     @relation(fields: [tenantId], references: [id])
 }
 
 model Role {
   id          String       @id @default(uuid())
-  name        String       // e.g., "TENANT_ADMIN"
+  name        String
   description String?
-  isSystem    Boolean      @default(false) // System roles cannot be deleted
-  
-  users       User[]
-  permissions Permission[]
-  policies    Policy[]
-
-  tenantId    String?      // Null = Global Role, Set = Custom Tenant Role
+  isSystem    Boolean      @default(false)
+  tenantId    String?
   tenant      Tenant?      @relation(fields: [tenantId], references: [id])
+  users       User[]
+  permissions Permission[] @relation("PermissionToRole")
+  policies    Policy[]     @relation("PolicyToRole")
 
   @@unique([name, tenantId])
 }
 
 model Permission {
-  id          String       @id // e.g., "MATTER_CREATE"
+  id          String @id
   description String
-  resource    String       // e.g., "MATTER"
-  action      String       // e.g., "CREATE"
-  
-  roles       Role[]
+  resource    String
+  action      String
+  roles       Role[] @relation("PermissionToRole")
 }
 
 model Policy {
   id          String   @id @default(uuid())
   name        String
   description String?
-  effect      String   @default("DENY") // ALLOW or DENY
-  resource    String   // e.g. "MATTER", "AI_MODEL"
-  action      String   // e.g. "EXECUTE", "VIEW"
-  condition   String?  // JSON Logic string
+  effect      String   @default("DENY")
+  resource    String
+  action      String
+  condition   String?
   priority    Int      @default(0)
-
-  roles       Role[]   // Roles this policy applies to
-  
   tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  roles       Role[]   @relation("PolicyToRole")
 }
 
 model Tenant {
-  id                String    @id @default(uuid())
-  name              String
-  plan              String    @default("STANDARD")
-  appMode           String    @default("LAW_FIRM") // "LAW_FIRM" or "ENTERPRISE"
-  primaryRegion     String    @default("GH_ACC_1")
-  separationMode    String    @default("OPEN") // "OPEN", "DEPARTMENTAL", "STRICT"
-  
-  encryptionMode    String    @default("SYSTEM_MANAGED") // "SYSTEM_MANAGED" or "BYOK"
-  
-  users             User[]
-  roles             Role[]
-  matters           Matter[]
-  policies          Policy[]
-  invitations       Invitation[]
-  brandingProfiles  BrandingProfile[]
-  chatbotConfig     ChatbotConfig?
-  status            String    @default("ACTIVE") // ACTIVE, SUSPENDED, DELETED
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String            @id @default(uuid())
+  name             String
+  plan             String            @default("STANDARD")
+  primaryRegion    String            @default("GH_ACC_1")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  appMode          String            @default("LAW_FIRM")
+  encryptionMode   String            @default("SYSTEM_MANAGED")
+  status           String            @default("ACTIVE")
+  separationMode   String            @default("OPEN")
+  brandingProfiles BrandingProfile[]
+  chatbotConfig    ChatbotConfig?
+  invitations      Invitation[]
+  matters          Matter[]
+  policies         Policy[]
+  roles            Role[]
+  users            User[]
 }
 
 model ChatbotConfig {
   id                String   @id @default(uuid())
   tenantId          String   @unique
-  tenant            Tenant   @relation(fields: [tenantId], references: [id])
-  
   botName           String
   welcomeMessage    String
   isEnabled         Boolean  @default(true)
-  channels          Json     // { whatsapp: boolean, webWidget: boolean }
-  knowledgeBaseIds  Json     // String[]
+  channels          Json
+  knowledgeBaseIds  Json
   systemInstruction String
-  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  tenant            Tenant   @relation(fields: [tenantId], references: [id])
 }
 
 model Matter {
-  id                String    @id @default(uuid())
+  id                String           @id @default(uuid())
   name              String
   client            String
   type              String
-  status            String    @default("OPEN")
-  riskLevel         String    @default("LOW")
+  status            String           @default("OPEN")
+  riskLevel         String           @default("LOW")
   description       String?
-  complexityWeight  Float     @default(5.0)
-
-  attributes        Json?     @default("{}")
-  department        String?   // e.g. "INVESTIGATION"
-
-  // Relations
   tenantId          String
-  tenant            Tenant    @relation(fields: [tenantId], references: [id])
   internalCounselId String
-  internalCounsel   User      @relation(fields: [internalCounselId], references: [id])
-  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  attributes        Json?            @default("{}")
+  complexityWeight  Float            @default(5.0)
+  department        String?
   documents         Document[]
-  timeEntries       TimeEntry[]
+  internalCounsel   User             @relation(fields: [internalCounselId], references: [id])
+  tenant            Tenant           @relation(fields: [tenantId], references: [id])
   risks             PredictiveRisk[]
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  timeEntries       TimeEntry[]
 }
 
 model Document {
-  id                String    @id @default(uuid())
-  name              String
-  uri               String    // Path to blob storage
-  jurisdiction      String
-  privilege         String    @default("INTERNAL")
-  classification    String    @default("Confidential")
-
-  attributes        Json?     @default("{}")
-  
-  matterId          String
-  matter            Matter    @relation(fields: [matterId], references: [id])
-
-  // Metadata for Optional BYOK
-  encryptionKeyId   String?   // External ID for BYOK
-  isEncrypted       Boolean   @default(false)
-  encryptionIV      String?   // Base64 IV for AES-GCM
-
-  lastReviewed      DateTime  @default(now())
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt @default(now())
+  id              String   @id @default(uuid())
+  name            String
+  uri             String
+  jurisdiction    String
+  privilege       String   @default("INTERNAL")
+  classification  String   @default("Confidential")
+  matterId        String
+  lastReviewed    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  attributes      Json?    @default("{}")
+  encryptionKeyId String?
+  isEncrypted     Boolean  @default(false)
+  encryptionIV    String?
+  updatedAt       DateTime @default(now()) @updatedAt
+  matter          Matter   @relation(fields: [matterId], references: [id])
 }
 
 model TimeEntry {
-  id                String    @id @default(uuid())
-  description       String
-  durationMinutes   Int
-  startTime         DateTime
-  isBillable        Boolean   @default(true)
-  status            String    @default("Draft")
-
-  matterId          String
-  matter            Matter    @relation(fields: [matterId], references: [id])
-  userId            String
-  user              User      @relation(fields: [userId], references: [id])
+  id              String   @id @default(uuid())
+  description     String
+  durationMinutes Int
+  startTime       DateTime
+  isBillable      Boolean  @default(true)
+  status          String   @default("Draft")
+  matterId        String
+  userId          String
+  matter          Matter   @relation(fields: [matterId], references: [id])
+  user            User     @relation(fields: [userId], references: [id])
 }
 
 model PredictiveRisk {
-  id                String    @id @default(uuid())
-  type              String
-  probability       Float
-  impact            String
-  description       String
-
-  matterId          String
-  matter            Matter    @relation(fields: [matterId], references: [id])
+  id          String @id @default(uuid())
+  type        String
+  probability Float
+  impact      String
+  description String
+  matterId    String
+  matter      Matter @relation(fields: [matterId], references: [id])
 }
 
 model AuditLog {
-  id                String    @id @default(uuid())
-  action            String
-  timestamp         DateTime  @default(now())
-  
-  userId            String?
-  user              User?     @relation(fields: [userId], references: [id])
-  
-  details           String?   // JSON string
-  ipAddress         String?
-  resourceId        String?
+  id         String   @id @default(uuid())
+  action     String
+  timestamp  DateTime @default(now())
+  userId     String?
+  details    String?
+  ipAddress  String?
+  resourceId String?
+  user       User?    @relation(fields: [userId], references: [id])
 }
 
 model KnowledgeArtifact {
@@ -234,35 +190,33 @@ model KnowledgeArtifact {
   category    String
   sourceUri   String
   lastIndexed DateTime @default(now())
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Invitation {
-  id          String   @id @default(uuid())
-  token       String   @unique
-  email       String
-  roleName    String
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  isUsed      Boolean  @default(false)
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  token     String   @unique
+  email     String
+  roleName  String
+  tenantId  String
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
 }
 
 model DocumentTemplate {
-  id              String   @id @default(uuid())
-  name            String
-  description     String
-  category        String   // e.g. "CORPORATE", "LITIGATION", "REAL_ESTATE"
-  jurisdiction    String   // e.g. "GH_ACC_1", "GLOBAL"
-  content         String   // The markdown/liquid skeleton content
-  structure       Json     // Rich JSON schema for fields and sections
-  version         String   @default("1.0.0")
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String   @id @default(uuid())
+  name         String
+  description  String
+  category     String
+  jurisdiction String
+  content      String
+  version      String   @default("1.0.0")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  structure    Json
 }
 
 model RegulatoryRule {
@@ -273,39 +227,37 @@ model RegulatoryRule {
   blockThreshold  Float
   description     String
   isActive        Boolean  @default(true)
-  region          String? 
-  
+  region          String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
 model PricingConfig {
-  id              String   @id // e.g. "STANDARD", "SOVEREIGN", "ENCLAVE"
+  id              String   @id
   basePrice       Float
   pricePerUser    Float
   creditsIncluded Int      @default(0)
-  maxUsers        Int      @default(5)
-  features        Json     // Array of strings
+  features        Json
   updatedAt       DateTime @updatedAt
+  maxUsers        Int      @default(5)
 }
 
 model BrandingProfile {
-  id                String   @id @default(uuid())
-  name              String
-  logoUrl           String?
-  primaryColor      String   @default("#4F46E5")
-  secondaryColor    String   @default("#6366F1")
-  primaryFont       String   @default("Times New Roman")
-  headerText        String?
-  footerText        String?
-  coverPageEnabled  Boolean  @default(false)
-  watermarkText     String?
-  version           Int      @default(1)
-
-  tenantId          String
-  tenant            Tenant   @relation(fields: [tenantId], references: [id])
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String   @id @default(uuid())
+  name             String
+  logoUrl          String?
+  primaryFont      String   @default("Times New Roman")
+  headerText       String?
+  footerText       String?
+  coverPageEnabled Boolean  @default(false)
+  watermarkText    String?
+  version          Int      @default(1)
+  tenantId         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  primaryColor     String   @default("#4F46E5")
+  secondaryColor   String   @default("#6366F1")
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
 }
 
 model Lead {
@@ -313,58 +265,52 @@ model Lead {
   email     String
   name      String
   company   String?
+  status    String   @default("NEW")
+  source    String   @default("WEB_MODAL")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   phone     String?
-  status    String   @default("NEW") // NEW, CONTACTED, CONVERTED, ARCHIVED
-  source    String   @default("WEB_MODAL") // WEB_MODAL, CHATBOT
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
 }
 
 model GazetteEmbedding {
-  id              String   @id @default(uuid())
-  region          String   // GH, NG, KE
-  title           String
-  contentChunk    String   // The text excerpt
-  embedding       Json?    // Standard JSON storage for raw embeddings
-  sourceUrl       String?  // Reference to original PDF
-  metadata        Json?    @default("{}")
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String   @id @default(uuid())
+  region       String
+  title        String
+  contentChunk String
+  embedding    Json?
+  sourceUrl    String?
+  metadata     Json?    @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([region])
 }
 
 model DailyFxRate {
   id            String   @id @default(uuid())
-  currencyPair  String   // e.g. "USD_GHS", "GBP_GHS"
+  currencyPair  String
   rate          Float
   provider      String   @default("EXCHANGERATE_API")
-  
-  effectiveDate DateTime // The date the rate is valid for
+  effectiveDate DateTime
   capturedAt    DateTime @default(now())
 
   @@unique([currencyPair, effectiveDate])
 }
 
 model ChatConversation {
-  id            String   @id @default(uuid())
-  sessionId     String   // Unique session ID for the visitor
-  visitorEmail  String?  // Optional email if provided
-  visitorName   String?  // Optional name if provided
-  messages      Json     // Array of {role: 'user'|'assistant', content: string, timestamp: string}
-  source        String   @default("MARKETING_WIDGET") // MARKETING_WIDGET, etc.
-  status        String   @default("ACTIVE") // ACTIVE, ARCHIVED
-  
-  isLead        Boolean  @default(false)
-  intentScore   Float    @default(0.0) // 0 to 1 scale
-  
-  metadata      Json?    // For analytics: { faqHit: string, ragHits: number, language: string }
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  id           String   @id @default(uuid())
+  sessionId    String
+  visitorEmail String?
+  visitorName  String?
+  messages     Json
+  source       String   @default("MARKETING_WIDGET")
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  intentScore  Float    @default(0.0)
+  isLead       Boolean  @default(false)
+  metadata     Json?
+
   @@index([sessionId])
   @@index([createdAt])
   @@index([isLead])
