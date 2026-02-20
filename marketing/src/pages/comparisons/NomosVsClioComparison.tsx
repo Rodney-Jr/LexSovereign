@@ -2,10 +2,20 @@ import React from 'react';
 import Layout from '../../layouts/Layout';
 import SEO from '../../components/SEO';
 import { Section, Button } from '../../components/ui';
-import { Shield, Lock, Zap, Globe, CheckCircle, XCircle, ArrowRight, Briefcase, Users } from 'lucide-react';
+import { Shield, Lock, Zap, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { Link } from '../../utils/ssr-compat';
 
 export default function NomosVsClioComparison() {
+    const comparisonData = [
+        { f: "Data Residency (Kenya, Nigeria, SA)", n: true, c: false },
+        { f: "Mandatory Conflict Workflow", n: true, c: false },
+        { f: "Departmental Firewalls", n: true, c: false },
+        { f: "In-Chat AI Intake Assistant", n: true, c: "Add-on required" },
+        { f: "Sovereign Audit Trails", n: true, c: false },
+        { f: "Enterprise Matter Portals", n: true, c: true },
+        { f: "Cloud Accessibility", n: true, c: true }
+    ];
+
     return (
         <Layout>
             <SEO
@@ -65,15 +75,7 @@ export default function NomosVsClioComparison() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-800">
-                                {[
-                                    { f: "Data Residency (Kenya, Nigeria, SA)", n: true, c: false },
-                                    { f: "Mandatory Conflict Workflow", n: true, c: false },
-                                    { f: "Departmental Firewalls", n: true, c: false },
-                                    { f: "In-Chat AI Intake Assistant", n: true, c: "Add-on required" },
-                                    { f: "Sovereign Audit Trails", n: true, c: false },
-                                    { f: "Enterprise Matter Portals", n: true, c: true },
-                                    { f: "Cloud Accessibility", n: true, c: true }
-                                ].map((row, i) => (
+                                {comparisonData.map((row, i) => (
                                     <tr key={i} className="hover:bg-slate-800/30 transition-colors">
                                         <td className="p-8 text-white font-medium">{row.f}</td>
                                         <td className="p-8">
@@ -116,49 +118,6 @@ export default function NomosVsClioComparison() {
                     <p className="text-slate-300 text-lg leading-relaxed mb-8">
                         While Clio offers third-party integrations for intake, NomosDesk includes a native **AI Intake Assistant**. This chatbot lives on your website, qualifies leads 24/7, performs preliminary conflict checks, and pushes data directly into your CRM—all within the same secure environment.
                     </p>
-                </div>
-            </Section>
-
-            {/* Differential Values */}
-            <Section darker className="py-24">
-                <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12">
-                    <div className="p-10 bg-slate-900 border border-slate-800 rounded-3xl">
-                        <Lock className="w-12 h-12 text-indigo-400 mb-6" />
-                        <h3 className="text-2xl font-bold text-white mb-4">The Governance Edge</h3>
-                        <p className="text-slate-400 mb-8">NomosDesk provides unalterable audit trails and departmental firewalls that allow multiple government bodies or distinct firm offices to share a platform while keeping data strictly segregated.</p>
-                        <Link to="/security-and-compliance" className="text-indigo-400 font-bold flex items-center gap-2">
-                            Security Deep Dive <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </div>
-                    <div className="p-10 bg-slate-900 border border-slate-800 rounded-3xl">
-                        <Zap className="w-12 h-12 text-emerald-400 mb-6" />
-                        <h3 className="text-2xl font-bold text-white mb-4">The AI Edge</h3>
-                        <p className="text-slate-400 mb-8">Our Judicial Intelligence models are grounded in regional law, preventing the general-purpose hallucinations common in unsanctioned AI usage.</p>
-                        <Link to="/ai-for-law-firms" className="text-emerald-400 font-bold flex items-center gap-2">
-                            Explore Judicial AI <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </div>
-                </div>
-            </Section>
-
-            {/* Related Links */}
-            <Section className="py-20 bg-slate-950">
-                <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-bold text-white mb-8">Explore More Comparisons</h2>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <Link to="/vs/nomosdesk-vs-mycase" className="p-6 bg-slate-900 border border-slate-800 rounded-2xl hover:border-indigo-500/30 transition-all">
-                            <h4 className="text-white font-bold mb-2">vs. MyCase</h4>
-                            <p className="text-slate-500 text-xs text-center">Enterprise security comparison.</p>
-                        </Link>
-                        <Link to="/vs/nomosdesk-vs-practicepanther" className="p-6 bg-slate-900 border border-slate-800 rounded-2xl hover:border-indigo-500/30 transition-all">
-                            <h4 className="text-white font-bold mb-2">vs. PracticePanther</h4>
-                            <p className="text-slate-500 text-xs text-center">Governance and controls comparison.</p>
-                        </Link>
-                        <Link to="/legal-practice-management-software" className="p-6 bg-slate-900 border border-slate-800 rounded-2xl hover:border-indigo-500/30 transition-all">
-                            <h4 className="text-white font-bold mb-2">LPM Guide</h4>
-                            <p className="text-slate-500 text-xs text-center">Complete institutional guide.</p>
-                        </Link>
-                    </div>
                 </div>
             </Section>
 
