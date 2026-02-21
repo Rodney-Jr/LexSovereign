@@ -268,7 +268,7 @@ const AppContent: React.FC = () => {
 
         {activeTab === 'vault' && (
           selectedMatter ? (
-            <MatterIntelligence mode={mode} onBack={() => setSelectedMatter(null)} documents={documents.filter(d => checkVisibility(d))} />
+            <MatterIntelligence matterId={selectedMatter} mode={mode} onBack={() => setSelectedMatter(null)} documents={documents.filter(d => checkVisibility(d))} />
           ) : (
             <div className="space-y-8">
               <DocumentVault documents={documents.filter(d => checkVisibility(d))} onAddDocument={createDocument} onRemoveDocument={removeDocument} />

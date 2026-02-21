@@ -40,7 +40,7 @@ interface GlobalControlPlaneProps {
 }
 
 const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNavigate }) => {
-   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'leads' | 'conversations' | 'repository'>('telemetry');
+   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'ai-registry' | 'leads' | 'conversations' | 'repository'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
@@ -120,6 +120,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                      className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'admins' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                      Admin Fleet
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('ai-registry')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'ai-registry' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                     AI Registry
                   </button>
                   <button
                      onClick={() => setActiveTab('leads')}
@@ -219,23 +225,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                         ))}
                      </div>
 
-                     {/* Model Registry Module */}
-                     <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
-                        <div className="flex items-center justify-between">
-                           <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                              <Database size={16} className="text-purple-400" /> Global Model Registry
-                           </h4>
-                           <button className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest hover:underline">Deploy Update</button>
-                        </div>
-                        <div className="space-y-3">
-                           <ModelRow name="Gemini 1.5 Pro" regions="Global" users="Sovereign+" version="v1.5.0" status="PROD" />
-                           <ModelRow name="Gemini 1.5 Flash" regions="Global" users="Standard" version="v1.5.0" status="PROD" />
-                           <ModelRow name="Claude 3.5 Sonnet" regions="Global" users="Sovereign+" version="latest" status="PROD" />
-                           <ModelRow name="GPT-4 Turbo" regions="Global" users="Enterprise" version="2024-04-09" status="PROD" />
-                           <ModelRow name="Llama-3-Sovereign-70B" regions="Primary, Secondary" users="Enclave Only" version="v0.9.8" status="BETA" />
-                           <ModelRow name="Legal-Mistral-Enclave" regions="Secondary" users="Enclave Only" version="v0.8.2" status="STAGING" />
-                        </div>
-                     </div>
+                     {/* Model Registry Module — live signals now from /api/platform/ai-registry */}
+                     <LiveModelRegistryWidget stats={stats} />
                   </div>
 
                   {/* Global Security & Incident Response */}
@@ -435,6 +426,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
          )}
 
          {activeTab === 'leads' && <LeadsTab />}
+
+         {activeTab === 'ai-registry' && <GlobalModelRegistry />}
 
          {activeTab === 'conversations' && <ConversationsTab conversations={conversations} />}
 
@@ -698,4 +691,268 @@ const ModelRow = ({ name, regions, users, version, status }: any) => (
    </div>
 );
 
+// ── Live Model Registry Widget (inline card on Telemetry tab) ─────────────
+const LiveModelRegistryWidget = ({ stats }: { stats: any }) => {
+   const isOpenRouter = (stats.activeAiProvider || 'openrouter') === 'openrouter';
+   return (
+      <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 space-y-6 shadow-2xl">
+         <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+               <Database size={16} className="text-purple-400" /> Global Model Registry
+            </h4>
+            <div className="flex items-center gap-2">
+               <div className={`w-1.5 h-1.5 rounded-full ${isOpenRouter ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse`} />
+               <span className="text-[9px] font-mono text-slate-400 uppercase">{stats.activeAiProvider || 'openrouter'}</span>
+            </div>
+         </div>
+
+         {/* Active Provider Banner */}
+         <div className="flex items-center gap-4 p-4 bg-purple-500/5 border border-purple-500/20 rounded-2xl">
+            <div className="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
+               <Zap size={18} className="text-purple-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+               <p className="text-xs font-bold text-white">OpenRouter <span className="text-purple-400">· Active Default</span></p>
+               <p className="text-[10px] text-slate-500 font-mono truncate">{stats.activeAiModel || 'google/gemini-pro-1.5'}</p>
+            </div>
+            <span className="text-[8px] font-bold text-emerald-400 bg-emerald-400/5 px-2 py-0.5 rounded-full border border-emerald-400/10 uppercase">LIVE</span>
+         </div>
+
+         <div className="space-y-2">
+            {[
+               { name: 'Gemini Pro 1.5', tier: 'Primary', color: 'blue' },
+               { name: 'Mistral 7B Instruct', tier: 'Fast', color: 'green' },
+               { name: 'Claude 3.5 Sonnet', tier: 'Premium', color: 'orange' },
+               { name: 'GPT-4o', tier: 'Premium', color: 'cyan' },
+               { name: 'Llama 3.1 70B', tier: 'Open', color: 'yellow' },
+               { name: 'DeepSeek R1', tier: 'Open', color: 'pink' },
+            ].map(m => (
+               <div key={m.name} className="flex items-center justify-between px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl hover:border-purple-500/30 transition-all">
+                  <span className="text-[11px] text-slate-300 font-medium">{m.name}</span>
+                  <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700`}>{m.tier}</span>
+               </div>
+            ))}
+         </div>
+      </div>
+   );
+};
+
+// ── Full GlobalModelRegistry Tab ──────────────────────────────────────────
+const GlobalModelRegistry = () => {
+   const [registry, setRegistry] = useState<any>(null);
+   const [loading, setLoading] = useState(true);
+   const [switching, setSwitching] = useState(false);
+   const [selectedProvider, setSelectedProvider] = useState('openrouter');
+   const [primaryModel, setPrimaryModel] = useState('google/gemini-pro-1.5');
+   const [fastModel, setFastModel] = useState('mistralai/mistral-7b-instruct');
+   const [successMsg, setSuccessMsg] = useState('');
+
+   const getToken = () => {
+      const s = localStorage.getItem('nomosdesk_session');
+      return s ? JSON.parse(s).token : '';
+   };
+
+   React.useEffect(() => {
+      const fetch = async () => {
+         setLoading(true);
+         try {
+            const data = await authorizedFetch('/api/platform/ai-registry', { token: getToken() });
+            setRegistry(data);
+            setSelectedProvider(data.activeProvider || 'openrouter');
+            setPrimaryModel(data.activeModel || 'google/gemini-pro-1.5');
+            setFastModel(data.fastModel || 'mistralai/mistral-7b-instruct');
+         } catch (e) { console.error(e); }
+         finally { setLoading(false); }
+      };
+      fetch();
+   }, []);
+
+   const handleSwitch = async () => {
+      setSwitching(true);
+      setSuccessMsg('');
+      try {
+         await authorizedFetch('/api/platform/ai-registry/switch', {
+            method: 'POST',
+            token: getToken(),
+            body: JSON.stringify({ provider: selectedProvider, model: primaryModel, fastModel })
+         });
+         setSuccessMsg(`✓ Provider switched to ${selectedProvider} — active immediately`);
+      } catch (e) {
+         console.error(e);
+      } finally {
+         setSwitching(false);
+      }
+   };
+
+   const OPENROUTER_MODELS = [
+      'google/gemini-pro-1.5',
+      'google/gemini-flash-1.5',
+      'anthropic/claude-3.5-sonnet',
+      'anthropic/claude-3-haiku',
+      'openai/gpt-4o',
+      'openai/gpt-4o-mini',
+      'meta-llama/llama-3.1-70b-instruct',
+      'meta-llama/llama-3.1-8b-instruct',
+      'mistralai/mistral-7b-instruct',
+      'mistralai/mixtral-8x7b-instruct',
+      'deepseek/deepseek-r1',
+      'deepseek/deepseek-chat',
+      'cohere/command-r-plus',
+      'nousresearch/hermes-3-llama-3.1-70b',
+   ];
+
+   if (loading) return (
+      <div className="flex items-center justify-center h-64">
+         <RefreshCw size={28} className="animate-spin text-purple-400" />
+      </div>
+   );
+
+   return (
+      <div className="space-y-10 animate-in slide-in-from-right-4 duration-500">
+         <div className="flex items-center justify-between px-2">
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+               <Database size={14} className="text-purple-400" /> Global AI Model Registry
+            </h4>
+            {successMsg && (
+               <span className="text-[10px] text-emerald-400 font-bold animate-pulse">{successMsg}</span>
+            )}
+         </div>
+
+         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Provider Cards */}
+            <div className="lg:col-span-5 space-y-4">
+               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Available Providers</p>
+               {(registry?.providers || []).map((p: any) => (
+                  <button
+                     key={p.id}
+                     onClick={() => setSelectedProvider(p.id)}
+                     className={`w-full text-left p-6 rounded-3xl border transition-all ${selectedProvider === p.id
+                           ? 'bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10'
+                           : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                        }`}
+                  >
+                     <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                           <div className={`p-2 rounded-xl ${selectedProvider === p.id ? 'bg-purple-500/20' : 'bg-slate-800'}`}>
+                              <Zap size={16} className={selectedProvider === p.id ? 'text-purple-400' : 'text-slate-500'} />
+                           </div>
+                           <div>
+                              <p className="text-sm font-bold text-white">{p.name}</p>
+                              <p className="text-[9px] text-slate-500">{p.description}</p>
+                           </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                           <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full border ${p.status === 'ACTIVE'
+                                 ? 'text-emerald-400 bg-emerald-400/5 border-emerald-400/20'
+                                 : 'text-slate-500 bg-slate-800 border-slate-700'
+                              }`}>{p.status}</span>
+                           {p.isDefault && <span className="text-[7px] text-purple-400 font-bold">DEFAULT</span>}
+                        </div>
+                     </div>
+                  </button>
+               ))}
+            </div>
+
+            {/* Configuration Panel */}
+            <div className="lg:col-span-7 space-y-6">
+               <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                        <Activity size={18} className="text-purple-400" />
+                     </div>
+                     <div>
+                        <h5 className="font-bold text-white text-sm">Provider Configuration</h5>
+                        <p className="text-[10px] text-slate-500">Changes are applied immediately — no server restart required.</p>
+                     </div>
+                  </div>
+
+                  {selectedProvider === 'openrouter' && (
+                     <div className="space-y-6">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Primary Model</label>
+                           <p className="text-[9px] text-slate-600">Used for complex legal reasoning, briefings, document analysis</p>
+                           <select
+                              value={primaryModel}
+                              onChange={e => setPrimaryModel(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 text-sm text-white p-3 rounded-xl focus:outline-none focus:border-purple-500 transition-all"
+                           >
+                              {OPENROUTER_MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+                           </select>
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fast Model</label>
+                           <p className="text-[9px] text-slate-600">Used for billing narration, audit logs, RRE evaluation</p>
+                           <select
+                              value={fastModel}
+                              onChange={e => setFastModel(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 text-sm text-white p-3 rounded-xl focus:outline-none focus:border-purple-500 transition-all"
+                           >
+                              {OPENROUTER_MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+                           </select>
+                        </div>
+                     </div>
+                  )}
+
+                  {selectedProvider !== 'openrouter' && (
+                     <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
+                        <p className="text-[11px] text-amber-400 leading-relaxed">
+                           ⚠ Switching away from OpenRouter will use the direct provider API. Ensure the corresponding API key is configured in your environment variables.
+                        </p>
+                     </div>
+                  )}
+
+                  {/* Active Registry Status */}
+                  <div className="p-5 bg-slate-950 border border-slate-800 rounded-2xl space-y-3 font-mono text-[10px]">
+                     <p className="text-slate-500 uppercase tracking-widest text-[8px] font-bold">Current Runtime State</p>
+                     <p className="text-cyan-400">&gt; AI_PROVIDER = <span className="text-white">{registry?.activeProvider}</span></p>
+                     <p className="text-cyan-400">&gt; OPENROUTER_MODEL = <span className="text-white">{registry?.activeModel}</span></p>
+                     <p className="text-cyan-400">&gt; OPENROUTER_FAST_MODEL = <span className="text-white">{registry?.fastModel}</span></p>
+                     <p className="text-cyan-400">&gt; STATUS = <span className="text-emerald-400">ACTIVE</span></p>
+                  </div>
+
+                  <button
+                     onClick={handleSwitch}
+                     disabled={switching}
+                     className="w-full py-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-2xl font-bold uppercase tracking-widest text-xs transition-all shadow-xl shadow-purple-900/40 flex items-center justify-center gap-2 active:scale-95"
+                  >
+                     {switching ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} />}
+                     {switching ? 'Activating…' : `Deploy ${selectedProvider} as Active Provider`}
+                  </button>
+               </div>
+
+               {/* Feature Matrix */}
+               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
+                  <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">OpenRouter Coverage — NomosDesk AI Features</h5>
+                  <div className="space-y-2">
+                     {[
+                        'Legal Chat Assistant',
+                        'Executive Briefing Generation',
+                        'Document Content Scrubbing (PII)',
+                        'Regulatory Rule Evaluation (RRE)',
+                        'Billing Description Narration',
+                        'Audit Log Generation',
+                        'Document Export Validation',
+                        'Template Hydration',
+                        'Public Chatbot (Marketing Widget)',
+                        'Clause Explanation',
+                        'Pricing Model Generation',
+                        'Time Entry AI Narration',
+                     ].map(f => (
+                        <div key={f} className="flex items-center gap-3 px-3 py-2 bg-slate-950 rounded-xl border border-slate-800">
+                           <div className="w-4 h-4 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center shrink-0">
+                              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+                           </div>
+                           <span className="text-[11px] text-slate-300">{f}</span>
+                           <span className="ml-auto text-[8px] font-bold text-purple-400 uppercase">OpenRouter</span>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   );
+};
+
 export default GlobalControlPlane;
+

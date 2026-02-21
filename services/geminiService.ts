@@ -145,4 +145,36 @@ export class LexGeminiService {
   async sanitizeForMobile(text: string) { return { sanitized: text, entitiesRemoved: 0 }; }
   async generateComplianceReport(logs: any[]) { return "Report backend pending."; }
   async suggestMetadata(fileName: string) { return {}; }
+
+  async getMatterIntelligence(id: string): Promise<{ matter: any, metrics: { docCycleTime: number, totalHours: number }, team: any[] }> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${id}/intelligence`, {
+      token: session?.token
+    });
+  }
+
+  async getMatterNotes(id: string): Promise<any[]> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${id}/notes`, {
+      token: session?.token
+    });
+  }
+
+  async addMatterNote(id: string, text: string): Promise<any> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${id}/notes`, {
+      method: 'POST',
+      token: session?.token,
+      body: JSON.stringify({ text })
+    });
+  }
+
+  async addTimeEntry(id: string, entry: Partial<TimeEntry>): Promise<any> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${id}/time-entries`, {
+      method: 'POST',
+      token: session?.token,
+      body: JSON.stringify(entry)
+    });
+  }
 }

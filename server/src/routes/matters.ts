@@ -295,4 +295,138 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// GET intelligence for a specific matter (Team, Velocity, Ledger)
+router.get('/:id/intelligence', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        if (!tenantId) {
+            return res.status(401).json({ error: 'Unauthorized: Missing tenant context' });
+        }
+
+        const matter = await prisma.matter.findUnique({
+            where: { id },
+            include: {
+                internalCounsel: true,
+                timeEntries: {
+                    include: { user: true },
+                    orderBy: { startTime: 'desc' }
+                },
+                documents: true,
+                collaborationMessages: {
+                    include: { author: true },
+                    orderBy: { createdAt: 'desc' },
+                    take: 10
+                }
+            }
+        });
+
+        if (!matter || matter.tenantId !== tenantId) {
+            return res.status(404).json({ error: 'Matter not found' });
+        }
+
+        // Calculate Velocity Metrics
+        let avgCycleTime = 0;
+        if (matter.documents.length > 0) {
+            const cycleTimes = matter.documents.map(d =>
+                new Date(d.updatedAt).getTime() - new Date(d.createdAt).getTime()
+            );
+            avgCycleTime = cycleTimes.reduce((a, b) => a + b, 0) / cycleTimes.length;
+        }
+
+        // Fetch Legal Team peers (everyone in the same department/tenant)
+        const teamPeers = await prisma.user.findMany({
+            where: {
+                tenantId,
+                department: matter.department
+            },
+            select: {
+                id: true,
+                name: true,
+                roleString: true
+            },
+            take: 5
+        });
+
+        res.json({
+            matter,
+            metrics: {
+                docCycleTime: avgCycleTime, // in ms
+                totalHours: matter.timeEntries.reduce((acc, te) => acc + te.durationMinutes, 0) / 60
+            },
+            team: teamPeers
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET collaboration notes
+router.get('/:id/notes', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const notes = await prisma.collaborationMessage.findMany({
+            where: { matterId: id },
+            include: { author: true },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(notes);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST collaboration note
+router.post('/:id/notes', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { text } = req.body;
+        const userId = req.user?.id;
+
+        if (!text || !userId) {
+            return res.status(400).json({ error: 'Missing text or user context' });
+        }
+
+        const note = await prisma.collaborationMessage.create({
+            data: {
+                text,
+                matterId: id,
+                authorId: userId
+            },
+            include: { author: true }
+        });
+
+        res.json(note);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST a time entry to the ledger
+router.post('/:id/time-entries', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { description, durationMinutes, startTime, isBillable } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+        const entry = await prisma.timeEntry.create({
+            data: {
+                description,
+                durationMinutes,
+                startTime: new Date(startTime),
+                isBillable: isBillable ?? true,
+                matterId: id,
+                userId
+            }
+        });
+
+        res.json(entry);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

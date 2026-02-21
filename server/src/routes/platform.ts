@@ -130,12 +130,14 @@ router.get('/stats', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (re
             matters: matterCount,
             documents: docCount,
             silos: 4,
-            storageTB: (docCount * 0.05 / 1024).toFixed(2), // 50MB per doc heuristic
-            computeNodes: 42, // Simulated physical nodes
-            aiTokens: '1.4M', // Simulated daily throughput
+            storageTB: (docCount * 0.05 / 1024).toFixed(2),
+            computeNodes: 42,
+            aiTokens: '1.4M',
             margin: '64.2%',
             egress: 'Policy Enforced',
-            systemHealth: 99.98
+            systemHealth: 99.98,
+            activeAiProvider: process.env.AI_PROVIDER || 'gemini',
+            activeAiModel: process.env.OPENROUTER_MODEL || process.env.GEMINI_MODEL || 'default'
         });
     } catch (err: any) {
         console.error("Platform Stats Error:", err);
@@ -222,6 +224,67 @@ router.get('/silos', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (re
 
 import multer from 'multer';
 import { JudicialIngestionService } from '../services/JudicialIngestionService';
+import { AIServiceFactory } from '../services/ai/AIServiceFactory';
+
+const AVAILABLE_PROVIDERS = [
+    {
+        id: 'openrouter',
+        name: 'OpenRouter',
+        description: 'Unified gateway to 100+ models (Gemini, Claude, GPT-4, Llama, Mistral)',
+        status: 'ACTIVE',
+        isDefault: true,
+        models: [
+            { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5', tier: 'primary', envKey: 'OPENROUTER_MODEL' },
+            { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B Instruct', tier: 'fast', envKey: 'OPENROUTER_FAST_MODEL' },
+            { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', tier: 'premium', envKey: null },
+            { id: 'openai/gpt-4o', name: 'GPT-4o', tier: 'premium', envKey: null },
+            { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', tier: 'open', envKey: null },
+            { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', tier: 'open', envKey: null }
+        ]
+    },
+    { id: 'gemini', name: 'Google Gemini', description: 'Direct Gemini API', status: 'STANDBY', isDefault: false, models: [] },
+    { id: 'openai', name: 'OpenAI', description: 'Direct OpenAI API', status: 'STANDBY', isDefault: false, models: [] },
+    { id: 'anthropic', name: 'Anthropic Claude', description: 'Direct Anthropic API', status: 'STANDBY', isDefault: false, models: [] }
+];
+
+/**
+ * GET /api/platform/ai-registry
+ * Returns the current AI model registry state.
+ */
+router.get('/ai-registry', authenticateToken, requireRole(['GLOBAL_ADMIN']), (req, res) => {
+    const activeProvider = process.env.AI_PROVIDER || 'openrouter';
+    const activeModel = process.env.OPENROUTER_MODEL || 'google/gemini-pro-1.5';
+    const fastModel = process.env.OPENROUTER_FAST_MODEL || 'mistralai/mistral-7b-instruct';
+    res.json({
+        activeProvider,
+        activeModel,
+        fastModel,
+        providers: AVAILABLE_PROVIDERS
+    });
+});
+
+/**
+ * POST /api/platform/ai-registry/switch
+ * Hot-swap the active AI provider at runtime (no restart needed).
+ */
+router.post('/ai-registry/switch', authenticateToken, requireRole(['GLOBAL_ADMIN']), (req, res) => {
+    const { provider, model, fastModel } = req.body;
+    const validProviders = ['gemini', 'openai', 'anthropic', 'openrouter'];
+    if (!validProviders.includes(provider)) {
+        return res.status(400).json({ error: `Invalid provider. Must be one of: ${validProviders.join(', ')}` });
+    }
+    AIServiceFactory.setProvider(provider as any);
+    if (model) process.env.OPENROUTER_MODEL = model;
+    if (fastModel) process.env.OPENROUTER_FAST_MODEL = fastModel;
+    console.log(`[AI Registry] Provider switched to: ${provider} (model: ${model || 'default'})`);
+    res.json({
+        message: `AI provider switched to ${provider}`,
+        activeProvider: provider,
+        activeModel: model || process.env.OPENROUTER_MODEL,
+        fastModel: fastModel || process.env.OPENROUTER_FAST_MODEL
+    });
+});
+
 
 const upload = multer({ storage: multer.memoryStorage() });
 

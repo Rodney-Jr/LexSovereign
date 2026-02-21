@@ -33,6 +33,7 @@ model User {
   auditLogs         AuditLog[]
   assignedMatters   Matter[]
   timeEntries       TimeEntry[]
+  collaborationMessages CollaborationMessage[]
   role              Role?       @relation(fields: [roleId], references: [id])
   tenant            Tenant?     @relation(fields: [tenantId], references: [id])
 }
@@ -129,6 +130,7 @@ model Matter {
   tenant            Tenant           @relation(fields: [tenantId], references: [id])
   risks             PredictiveRisk[]
   timeEntries       TimeEntry[]
+  collaborationMessages CollaborationMessage[]
 }
 
 model Document {
@@ -170,6 +172,16 @@ model PredictiveRisk {
   description String
   matterId    String
   matter      Matter @relation(fields: [matterId], references: [id])
+}
+
+model CollaborationMessage {
+  id        String   @id @default(uuid())
+  text      String
+  authorId  String
+  matterId  String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  matter    Matter   @relation(fields: [matterId], references: [id])
 }
 
 model AuditLog {
