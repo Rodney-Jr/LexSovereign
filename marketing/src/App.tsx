@@ -83,8 +83,26 @@ const NomosVsPracticePanther = lazySSR(() => import('./pages/comparisons/NomosVs
 const ChatbotVsForms = lazySSR(() => import('./pages/comparisons/ChatbotVsForms'));
 const NomosVsGenericChatbots = lazySSR(() => import('./pages/comparisons/NomosVsGenericChatbots'));
 
+// Content Engine — New Comparison Pages (Batch 2)
+const NomosVsFilevine = lazySSR(() => import('./pages/comparisons/NomosVsFilevine'));
+const NomosVsSmokeball = lazySSR(() => import('./pages/comparisons/NomosVsSmokeball'));
+
 // Programmatic Practice Area Pages (Chatbots)
 const PracticeAreaChatbot = lazySSR(() => import('./pages/chatbots/PracticeAreaChatbot'));
+
+// Content Engine — New Practice Area Chatbot Pages
+const ContractLawAiAssistant = lazySSR(() => import('./pages/chatbot/ContractLawAiAssistant'));
+const EmploymentLawAiAssistant = lazySSR(() => import('./pages/chatbot/EmploymentLawAiAssistant'));
+const PropertyLawAiAssistant = lazySSR(() => import('./pages/chatbot/PropertyLawAiAssistant'));
+
+// Content Engine — New Insight Articles
+const AiContractReviewSoftware = lazySSR(() => import('./pages/insights/AiContractReviewSoftware'));
+const LegalDocumentAutomationGuide = lazySSR(() => import('./pages/insights/LegalDocumentAutomationGuide'));
+const LawFirmBillingSoftwareComparison = lazySSR(() => import('./pages/insights/LawFirmBillingSoftwareComparison'));
+const AiMatterManagementSoftware = lazySSR(() => import('./pages/insights/AiMatterManagementSoftware'));
+const LegalComplianceManagementSoftware = lazySSR(() => import('./pages/insights/LegalComplianceManagementSoftware'));
+const AiForGovernmentLegalDepartments = lazySSR(() => import('./pages/insights/AiForGovernmentLegalDepartments'));
+const DocumentManagementForLawFirms = lazySSR(() => import('./pages/insights/DocumentManagementForLawFirms'));
 
 
 // Page-transition loading fallback
@@ -182,6 +200,10 @@ export default function App() {
                     <Route path="/vs/ai-chatbot-vs-traditional-intake-forms" element={<ChatbotVsForms />} />
                     <Route path="/vs/nomosdesk-ai-vs-generic-website-chatbots" element={<NomosVsGenericChatbots />} />
 
+                    {/* Content Engine — Comparison Pages Batch 2 */}
+                    <Route path="/vs/nomosdesk-vs-filevine" element={<NomosVsFilevine />} />
+                    <Route path="/vs/nomosdesk-vs-smokeball" element={<NomosVsSmokeball />} />
+
                     {/* Chatbot Pillar & Programmatic Routes */}
                     <Route path="/ai-legal-chatbot" element={<AILegalChatbot />} />
                     <Route path="/ai-chatbot-for-personal-injury-lawyers" element={<PracticeAreaChatbot area="personal-injury" />} />
@@ -190,6 +212,20 @@ export default function App() {
                     <Route path="/ai-chatbot-for-criminal-defense-lawyers" element={<PracticeAreaChatbot area="criminal-defense" />} />
                     <Route path="/ai-chatbot-for-corporate-law-firms" element={<PracticeAreaChatbot area="corporate" />} />
                     <Route path="/ai-chatbot-for-government-legal-departments" element={<PracticeAreaChatbot area="government" />} />
+
+                    {/* Content Engine — Practice Area Chatbot Pages */}
+                    <Route path="/ask/contract-law" element={<ContractLawAiAssistant />} />
+                    <Route path="/ask/employment-law" element={<EmploymentLawAiAssistant />} />
+                    <Route path="/ask/property-law" element={<PropertyLawAiAssistant />} />
+
+                    {/* Content Engine — New Insight Articles */}
+                    <Route path="/insights/ai-contract-review-software" element={<AiContractReviewSoftware />} />
+                    <Route path="/insights/legal-document-automation-guide" element={<LegalDocumentAutomationGuide />} />
+                    <Route path="/insights/law-firm-billing-software-comparison" element={<LawFirmBillingSoftwareComparison />} />
+                    <Route path="/insights/ai-matter-management-software" element={<AiMatterManagementSoftware />} />
+                    <Route path="/insights/legal-compliance-management-software" element={<LegalComplianceManagementSoftware />} />
+                    <Route path="/insights/ai-for-government-legal-departments" element={<AiForGovernmentLegalDepartments />} />
+                    <Route path="/insights/document-management-for-law-firms" element={<DocumentManagementForLawFirms />} />
 
 
                 </Routes>

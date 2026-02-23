@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const files = {
-    'src/main.tsx': `import React from 'react';
+  'src/main.tsx': `import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>,
 );`,
-    'src/index.css': `@tailwind base;
+  'src/index.css': `@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -47,7 +47,7 @@ body {
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }`,
-    'src/App.tsx': `import React, { useEffect, useState } from 'react';
+  'src/App.tsx': `import React, { useEffect, useState } from 'react';
 import { 
   Shield, 
   Cpu, 
@@ -215,7 +215,6 @@ export default App;`
 if (!fs.existsSync('src')) fs.mkdirSync('src');
 
 for (const [file, content] of Object.entries(files)) {
-    console.log(\`Writing \${file}...\`);
+  console.log('Writing ' + file + '...');
   fs.writeFileSync(file, content, 'utf8');
 }
-`

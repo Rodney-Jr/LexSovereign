@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
-import { ShieldCheck, Lock, Eye, Server } from 'lucide-react';
+import { ShieldCheck, Lock, Eye, Server, Zap } from 'lucide-react';
 import type { SsgOptions } from 'vite-plugin-ssg';
 
 export const ssgOptions: SsgOptions = {

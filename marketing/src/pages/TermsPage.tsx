@@ -36,110 +36,98 @@ export default function TermsPage() {
 
                     <div className="prose prose-invert max-w-none space-y-10 text-slate-300 leading-relaxed">
 
+                        <p className="text-lg">
+                            By accessing or using the NomosDesk platform ("Service"), provided by Nexus Technologies Limited (Company Registration No. CS339712014), trading as NomosDesk ("Company", "we", "us"), you agree to be bound by these Terms of Service ("Terms"). Nexus Technologies Limited is a registered company incorporated in Accra, Ghana, with its registered office at 50 Caloundra Street, New Ashongman Estates, GE-208-4173 Accra, Ghana.
+                        </p>
+
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">1. Platform Positioning & Not Legal Advice</h2>
                             <p>
-                                By accessing or using the NomosDesk platform ("Service"), provided by Nexus Technologies Limited ("Company", "we", "us"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, you may not use the Service.
-                            </p>
-                            <p className="mt-4">
-                                These Terms apply to all users including individual legal professionals, law firms, enterprise legal departments, and government institutions.
+                                NomosDesk is a secure legal matter management and governance platform. As detailed in our Regulatory Classification, we strictly provide B2B SaaS infrastructure. NomosDesk is not a law firm, and our software does not constitute legal advice or professional legal services. Your use of the Services does not create an attorney-client relationship. You remain solely responsible for your professional obligations, ethical compliance, and the quality of the legal representation you provide.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">2. Description of Service</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">2. License & Account Access</h2>
                             <p>
-                                NomosDesk is a secure legal matter management and governance platform. The Service includes conflict checking workflows, document management, role-based access control, judicial research tools, client intake tooling, and related features as described on our website.
-                            </p>
-                            <p className="mt-4">
-                                Features may be updated, modified, or discontinued at our discretion. We will provide reasonable notice of significant changes.
+                                Subject to these Terms, we grant you a limited, non-exclusive, non-transferable right to access and use the Services for your internal business purposes. You are responsible for safeguarding your account credentials and for all activities occurring under your account.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">3. Accounts & Access</h2>
-                            <h3 className="text-lg font-semibold text-white mb-2">3.1 Registration</h3>
-                            <p>You must provide accurate and complete information when creating an account. You are responsible for maintaining the security of your credentials.</p>
-
-                            <h3 className="text-lg font-semibold text-white mb-2 mt-6">3.2 Tenant Responsibility</h3>
-                            <p>Each subscribing organization is a "Tenant". The Tenant Administrator is responsible for managing user access within their organization and ensuring all users comply with these Terms.</p>
-
-                            <h3 className="text-lg font-semibold text-white mb-2 mt-6">3.3 Unauthorized Access</h3>
-                            <p>You must not attempt to access another tenant's data, circumvent access controls, or use the Service to conduct any activity that would violate applicable laws or professional codes of conduct.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">4. Acceptable Use</h2>
-                            <p>You agree to use NomosDesk only for lawful purposes within the scope of legitimate legal practice or institutional governance. You must not:</p>
+                            <h2 className="text-2xl font-bold text-white mb-4">3. Acceptable Use</h2>
+                            <p>You agree not to:</p>
                             <ul className="list-disc list-inside space-y-2 mt-2 text-slate-300">
-                                <li>Use the Service to process data in violation of any applicable data protection law</li>
-                                <li>Upload unlawful, defamatory, or infringing content</li>
-                                <li>Attempt to reverse-engineer the platform or copy its proprietary features</li>
-                                <li>Use automated tools to scrape or extract data without written authorization</li>
-                                <li>Interfere with the security or integrity of the Service</li>
+                                <li>Use the Services for illegal purposes or to facilitate the unauthorized practice of law.</li>
+                                <li>Upload malicious code, viruses, or attempts to breach our security.</li>
+                                <li>Reverse engineer or attempt to copy the platform's underlying technology.</li>
                             </ul>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">5. Data Ownership</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">4. AI Tool Acknowledgment & Disclaimers</h2>
+                            <p>The platform features automated AI assistance ("AI Tools").</p>
+                            <ul className="list-disc list-inside space-y-2 mt-2 text-slate-300">
+                                <li><strong>Assistive Only:</strong> AI Tools are designed to assist, not replace, professional human judgment. You must independently review, verify, and validate all AI-generated content before relying upon it.</li>
+                                <li><strong>No Warranty on Output:</strong> NomosDesk does not guarantee the accuracy, completeness, or jurisdictional validity of AI outputs (which may contain "hallucinations" or errors).</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold text-white mb-4">5. Conflict Checking Limitation</h2>
                             <p>
-                                You retain full ownership of all data, documents, and matter information you upload to NomosDesk. By using the Service, you grant us a limited, non-exclusive license to process your data solely for the purpose of delivering the Service to you.
-                            </p>
-                            <p className="mt-4">
-                                We do not claim any intellectual property rights over your legal content.
+                                Our internal search and indexing features may aid in identifying potential conflicts; however, they are purely administrative aids. You agree not to rely exclusively on NomosDesk to clear legal conflicts of interest. You maintain full responsibility for executing manual conflict checks required by your jurisdiction.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">6. Subscription & Payment</h2>
-                            <h3 className="text-lg font-semibold text-white mb-2">6.1 Plans</h3>
-                            <p>Subscription plans (Starter, Professional, Institutional) are billed monthly or annually as selected. All fees are shown on our Pricing page and are non-refundable except where required by law.</p>
-
-                            <h3 className="text-lg font-semibold text-white mb-2 mt-6">6.2 Cancellation</h3>
-                            <p>You may cancel your subscription at any time. Access continues until the end of the current billing period. No prorated refunds are issued for unused time.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">7. Intellectual Property</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">6. User Data & Confidentiality</h2>
                             <p>
-                                All elements of the NomosDesk platform — including its code, interface, branding, and proprietary workflows — are the intellectual property of Nexus Technologies Limited. No part of the Service may be reproduced, distributed, or used outside the scope of these Terms without our written consent.
+                                You retain ownership of the data you upload ("Customer Data"). You grant NomosDesk a limited license to process this data solely to provide the Services. We will protect Customer Data using industry-standard security measures.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">8. Disclaimers</h2>
-                            <p>
-                                NomosDesk is a practice management and governance tool. It does not constitute legal advice. The platform's AI-assisted research features are for informational support only and must be reviewed by qualified legal professionals before reliance.
-                            </p>
-                            <p className="mt-4">
-                                The Service is provided "as is" without warranties of any kind, either express or implied, to the maximum extent permitted by law.
+                            <h2 className="text-2xl font-bold text-white mb-4">7. Warranties and Disclaimers</h2>
+                            <p className="uppercase">
+                                THE SERVICES ARE PROVIDED "AS IS" AND "AS AVAILABLE." WE EXPRESSLY DISCLAIM ALL WARRANTIES, WHETHER EXPRESS OR IMPLIED, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT GUARANTEE THAT THE SERVICES WILL BE UNINTERRUPTED, ERROR-FREE, OR PERFECTLY SECURE.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">9. Limitation of Liability</h2>
-                            <p>
-                                To the maximum extent permitted by applicable law, Nexus Technologies Limited shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service. Our total liability shall not exceed the fees paid by you in the 12 months preceding the claim.
+                            <h2 className="text-2xl font-bold text-white mb-4">8. Limitation of Liability</h2>
+                            <p className="uppercase">
+                                TO THE MAXIMUM EXTENT PERMITTED BY LAW, NOMOSDESK SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING LOSS OF PROFITS, LOSS OF DATA, OR MALPRACTICE CLAIMS).
+                            </p>
+                            <p className="uppercase mt-4">
+                                OUR TOTAL CUMULATIVE LIABILITY ARISING OUT OF THIS AGREEMENT SHALL NOT EXCEED THE TOTAL AMOUNTS PAID BY YOU TO NOMOSDESK IN THE <strong>[TWELVE (12)]</strong> MONTHS PRECEDING THE CLAIM.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">10. Governing Law</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">9. Indemnification</h2>
                             <p>
-                                These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Nexus Technologies Limited is incorporated, without regard to its conflict of law provisions.
+                                You agree to defend and indemnify NomosDesk from any claims or damages arising from (a) your breach of these Terms, (b) your violation of applicable laws or ethical rules, or (c) claims from third parties regarding your substantive legal representation.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">11. Changes to Terms</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">10. Service Modification & Termination</h2>
                             <p>
-                                We reserve the right to modify these Terms at any time. Material changes will be communicated with at least 30 days' notice. Continued use of the Service after changes take effect constitutes acceptance.
+                                We reserve the right to modify or interrupt the Services for maintenance. We are not liable for any resulting downtime (Force Majeure events excepted). You may cancel your subscription at any time. We may suspend or terminate your access for violating these Terms.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold text-white mb-4">11. Governing Law & Dispute Resolution</h2>
+                            <p>
+                                These Terms are governed by the laws of <strong>[INSERT STATE, e.g., Delaware]</strong>. Any disputes shall be resolved exclusively in the state or federal courts located in <strong>[INSERT COUNTY/STATE]</strong>.
                             </p>
                         </section>
 
                         <section>
                             <h2 className="text-2xl font-bold text-white mb-4">12. Contact</h2>
-                            <p>If you have questions about these Terms, contact us at:</p>
+                            <p>For questions regarding these Terms, please contact:</p>
                             <address className="not-italic mt-4 text-slate-300">
                                 <strong className="text-white">Nexus Technologies Limited</strong><br />
                                 Legal & Compliance<br />

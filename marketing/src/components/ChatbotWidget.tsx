@@ -24,12 +24,14 @@ function DemoRequestForm({ onSubmit, onSkip }: {
 }) {
     const [form, setForm] = useState<DemoFormData>({ name: '', email: '', company: '', phone: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errors, setErrors] = useState<Partial<DemoFormData>>({});
+    const [errors, setErrors] = useState<Partial<DemoFormData & { consent: string }>>({});
+    const [hasConsent, setHasConsent] = useState(false);
 
     const validate = () => {
-        const e: Partial<DemoFormData> = {};
+        const e: Partial<DemoFormData & { consent: string }> = {};
         if (!form.name.trim()) e.name = 'Required';
         if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = 'Valid email required';
+        if (!hasConsent) e.consent = 'You must acknowledge the legal disclaimer to proceed.';
         return e;
     };
 
@@ -43,7 +45,7 @@ function DemoRequestForm({ onSubmit, onSkip }: {
     };
 
     return (
-        <div className="bg-slate-800 rounded-2xl rounded-tl-sm p-4 max-w-[90%] space-y-3 border border-indigo-500/20">
+        <div className="bg-slate-800 rounded-2xl rounded-tl-sm p-4 max-w-[95%] space-y-3 border border-indigo-500/20">
             <div className="flex items-center gap-2 mb-1">
                 <Calendar size={14} className="text-indigo-400" />
                 <p className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Book a Demo</p>
@@ -51,51 +53,82 @@ function DemoRequestForm({ onSubmit, onSkip }: {
             <p className="text-xs text-slate-400 leading-relaxed">
                 Fill in your details and our team will reach out to schedule a personalised walkthrough.
             </p>
-            <form onSubmit={handleSubmit} className="space-y-2.5">
-                {/* Name */}
-                <div>
+            <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Inputs Row 1 */}
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Full Name *"
+                            value={form.name}
+                            onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setErrors(er => ({ ...er, name: '' })); }}
+                            className={`w-full bg-slate-900 border rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all ${errors.name ? 'border-red-500' : 'border-slate-700'}`}
+                        />
+                        {errors.name && <p className="text-red-400 text-[10px] mt-0.5 ml-1">{errors.name}</p>}
+                    </div>
+                    <div>
+                        <input
+                            type="email"
+                            placeholder="Work Email *"
+                            value={form.email}
+                            onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setErrors(er => ({ ...er, email: '' })); }}
+                            className={`w-full bg-slate-900 border rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all ${errors.email ? 'border-red-500' : 'border-slate-700'}`}
+                        />
+                        {errors.email && <p className="text-red-400 text-[10px] mt-0.5 ml-1">{errors.email}</p>}
+                    </div>
+                </div>
+                {/* Inputs Row 2 */}
+                <div className="grid grid-cols-2 gap-2">
                     <input
                         type="text"
-                        placeholder="Full Name *"
-                        value={form.name}
-                        onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setErrors(er => ({ ...er, name: '' })); }}
-                        className={`w-full bg-slate-900 border rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all ${errors.name ? 'border-red-500' : 'border-slate-700'}`}
+                        placeholder="Organisation"
+                        value={form.company}
+                        onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
                     />
-                    {errors.name && <p className="text-red-400 text-[10px] mt-0.5 ml-1">{errors.name}</p>}
-                </div>
-                {/* Email */}
-                <div>
                     <input
-                        type="email"
-                        placeholder="Work Email *"
-                        value={form.email}
-                        onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setErrors(er => ({ ...er, email: '' })); }}
-                        className={`w-full bg-slate-900 border rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all ${errors.email ? 'border-red-500' : 'border-slate-700'}`}
+                        type="tel"
+                        placeholder="Phone Number"
+                        value={form.phone}
+                        onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
                     />
-                    {errors.email && <p className="text-red-400 text-[10px] mt-0.5 ml-1">{errors.email}</p>}
                 </div>
-                {/* Company */}
-                <input
-                    type="text"
-                    placeholder="Organisation / Firm"
-                    value={form.company}
-                    onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
-                />
-                {/* Phone */}
-                <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
-                />
+
+                {/* AI Intake Legal Acknowledgment checkbox */}
+                <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 mt-2">
+                    <label className="flex items-start gap-2 cursor-pointer group">
+                        <div className="relative flex items-center mt-0.5 shrink-0">
+                            <input
+                                type="checkbox"
+                                checked={hasConsent}
+                                onChange={(e) => {
+                                    setHasConsent(e.target.checked);
+                                    if (e.target.checked) setErrors(er => ({ ...er, consent: '' }));
+                                }}
+                                className="peer appearance-none w-4 h-4 border border-slate-600 rounded bg-slate-800 checked:bg-indigo-500 checked:border-indigo-500 transition-all cursor-pointer"
+                            />
+                            <svg className="absolute w-4 h-4 pointer-events-none opacity-0 peer-checked:opacity-100 text-white p-0.5 transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-[10px] text-slate-400 leading-snug">
+                                By submitting this form, you acknowledge that you are interacting with an automated AI assistant.
+                                <strong className="text-slate-300 font-medium mx-1">Submitting your information does not establish an attorney-client relationship.</strong>
+                                The receiving firm determines when representation begins and controls confidentiality.
+                            </p>
+                        </div>
+                    </label>
+                    {errors.consent && <p className="text-red-400 text-[10px] mt-1.5 ml-6 animate-pulse">{errors.consent}</p>}
+                </div>
+
                 {/* Actions */}
                 <div className="flex gap-2 pt-1">
                     <button
                         type="submit"
-                        disabled={isSubmitting}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                        disabled={isSubmitting || !hasConsent}
+                        className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                     >
                         {isSubmitting ? (
                             <><Loader2 size={12} className="animate-spin" /> Submitting...</>
@@ -106,7 +139,7 @@ function DemoRequestForm({ onSubmit, onSkip }: {
                     <button
                         type="button"
                         onClick={onSkip}
-                        className="px-3 py-2 text-slate-500 hover:text-slate-300 text-xs transition-colors rounded-xl hover:bg-slate-700"
+                        className="px-3 py-2 text-slate-500 hover:text-slate-300 text-xs transition-colors rounded-xl hover:bg-slate-700/50"
                     >
                         Skip
                     </button>

@@ -35,114 +35,92 @@ export default function PrivacyPage() {
                     <p className="text-slate-400 text-sm mb-12">Last updated: February 2026</p>
 
                     <div className="prose prose-invert max-w-none space-y-10 text-slate-300 leading-relaxed">
-
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">1. Introduction</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">1. Data Roles: Controller vs. Processor</h2>
                             <p>
-                                NomosDesk ("we", "us", or "our") is operated by Nexus Technologies Limited. We are committed to protecting the privacy and confidentiality of personal data entrusted to us. This Privacy Policy explains how we collect, use, store, and disclose information when you use our platform, website, or services.
+                                NomosDesk is operated by Nexus Technologies Limited (Company Registration No. CS339712014), registered at 50 Caloundra Street, New Ashongman Estates, GE-208-4173 Accra, Ghana.
                             </p>
                             <p className="mt-4">
-                                NomosDesk is designed for legal professionals and institutions. We understand the heightened sensitivity of legal data and apply industry-leading standards to its protection.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">2. Data We Collect</h2>
-                            <h3 className="text-lg font-semibold text-white mb-2">2.1 Account Data</h3>
-                            <p>When you create an account, we collect your name, email address, organization name, and role. This is required to provide access to the platform.</p>
-
-                            <h3 className="text-lg font-semibold text-white mb-2 mt-6">2.2 Usage Data</h3>
-                            <p>We collect anonymized usage logs including feature interactions, page views, and session duration to improve platform performance and user experience.</p>
-
-                            <h3 className="text-lg font-semibold text-white mb-2 mt-6">2.3 Matter & Document Data</h3>
-                            <p>Legal matter data, documents, conflict check records, and case files submitted to NomosDesk are stored encrypted and logically isolated per tenant. We do not access this data except for authorized support purposes with explicit written consent.</p>
-
-                            <h3 className="text-lg font-semibold text-white mb-2 mt-6">2.4 Communications</h3>
-                            <p>If you contact us via email or the demo request form, we retain the content of your communications and your contact details to respond and improve our services.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">3. How We Use Your Data</h2>
-                            <ul className="list-disc list-inside space-y-2 text-slate-300">
-                                <li>To provide and maintain the NomosDesk platform</li>
-                                <li>To communicate important service updates and security notices</li>
-                                <li>To process demo requests and sales inquiries</li>
-                                <li>To improve platform features through anonymized analytics</li>
-                                <li>To comply with applicable legal and regulatory obligations</li>
-                            </ul>
-                            <p className="mt-4">We do not sell, rent, or share your personal data with third parties for marketing purposes.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">4. Data Residency & Storage</h2>
-                            <p>
-                                NomosDesk offers configurable data residency options. Institutional and government clients may elect to have their data stored within a specific jurisdiction (e.g., within Africa, the EU, or a private deployment). Default cloud storage uses enterprise-grade, ISO 27001-aligned data centers.
+                                <strong>As a Controller:</strong> We control the data necessary to manage your account (e.g., your name, billing email, payment information, and usage analytics).
                             </p>
                             <p className="mt-4">
-                                All data is encrypted at rest using AES-256 and in transit using TLS 1.3.
+                                <strong>As a Processor:</strong> For the legal case files, client data, and matter details you upload into the platform ("Customer Data"), you (the law firm) act as the Data Controller. We act strictly as a Data Processor operating under your instructions.
+                            </p>
+                            <p className="mt-4">
+                                <strong>No Data Brokerage:</strong> NomosDesk is not a data broker and expressly prohibits the sale of any personal data.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">5. Data Retention</h2>
-                            <p>
-                                Account data is retained for the duration of the active subscription plus an additional 90-day grace period post-termination. Upon confirmed account deletion, all data is permanently purged within 30 days. Legal matter data is retained per the data retention policy agreed in your service agreement.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">6. Your Rights</h2>
-                            <p>Depending on your jurisdiction, you may have the right to:</p>
+                            <h2 className="text-2xl font-bold text-white mb-4">2. Information We Collect</h2>
                             <ul className="list-disc list-inside space-y-2 mt-2 text-slate-300">
-                                <li>Access the personal data we hold about you</li>
-                                <li>Request correction of inaccurate data</li>
-                                <li>Request deletion of your data ("Right to be Forgotten")</li>
-                                <li>Object to or restrict certain processing</li>
-                                <li>Receive a portable copy of your data</li>
-                            </ul>
-                            <p className="mt-4">To exercise any of these rights, contact us at <a href="mailto:privacy@nomosdesk.com" className="text-indigo-400 hover:text-indigo-300">privacy@nomosdesk.com</a>.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">7. Cookies</h2>
-                            <p>
-                                NomosDesk uses essential cookies only to maintain session state and security tokens. We do not use advertising cookies or third-party tracking pixels. Analytics, where used, are anonymized and aggregated.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">8. Third-Party Services</h2>
-                            <p>We use a limited set of trusted third-party services to operate the platform. Each is bound by data processing agreements:</p>
-                            <ul className="list-disc list-inside space-y-2 mt-2 text-slate-300">
-                                <li>Cloud infrastructure providers (encrypted hosting)</li>
-                                <li>Email delivery services (transactional alerts only)</li>
+                                <li><strong>Account Information:</strong> Name, email, firm details, and payment processing information (handled via secure third parties like Stripe).</li>
+                                <li><strong>Platform Usage Data:</strong> IP addresses, browser types, and interaction metrics to help us improve the system.</li>
+                                <li><strong>Customer Data:</strong> The specific legal documents and client information you choose to host on our platform.</li>
                             </ul>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">9. Children's Privacy</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">3. How We Use Information</h2>
+                            <p>We use your information to:</p>
+                            <ul className="list-disc list-inside space-y-2 mt-2 text-slate-300">
+                                <li>Provide, maintain, and secure the NomosDesk platform.</li>
+                                <li>Process your subscription payments.</li>
+                                <li>Communicate with you regarding updates, support, and platform notices.</li>
+                                <li>Detect and prevent fraud or security incidents.</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold text-white mb-4">4. Artificial Intelligence & Data Usage</h2>
                             <p>
-                                NomosDesk is not directed at individuals under 18 years of age. We do not knowingly collect personal data from minors.
+                                We use third-party AI providers via secure APIs to power the "Drafting Studio" and generative features.
+                            </p>
+                            <p className="mt-4">
+                                <strong>No Training on Customer Data:</strong> The specific case files, prompts, and client data you submit to our AI tools are processed for immediate output generation only. We DO NOT use your Customer Data to train our foundational models, and our API agreements legally prohibit our third-party AI providers from using your data to train their models.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">10. Changes to This Policy</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">5. Data Sharing & Subprocessors</h2>
                             <p>
-                                We may update this Privacy Policy from time to time. Material changes will be communicated via email or platform notification at least 14 days in advance of taking effect.
+                                We do not sell your data. We share data only with trusted third-party service providers (subprocessors) necessary to run our infrastructure (e.g., cloud hosting, email delivery, payment routing). These providers are bound by strict confidentiality and data protection agreements.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-bold text-white mb-4">11. Contact</h2>
-                            <p>For any privacy-related questions or concerns, please contact:</p>
+                            <h2 className="text-2xl font-bold text-white mb-4">6. Security Practices</h2>
+                            <p>
+                                We implement industry-standard security practices, including data encryption in transit and at rest, secure access protocols, and regular system monitoring, to protect your data from unauthorized access. (Note: While we strive to protect your data, no internet transmission is 100% secure).
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold text-white mb-4">7. Data Retention</h2>
+                            <p>
+                                We retain your account information as long as your account is active. When you cancel, we will delete or anonymize your Customer Data according to our internal deletion schedules, unless legal obligations require further retention.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold text-white mb-4">8. Your Rights</h2>
+                            <p>
+                                Depending on your jurisdiction, you may have the right to access, correct, or delete your personal data. Please contact us to exercise these rights regarding your account information.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold text-white mb-4">9. Contact Us</h2>
+                            <p>For privacy inquiries, please contact our Data Protection Officer at:</p>
                             <address className="not-italic mt-4 text-slate-300">
-                                <strong className="text-white">Nexus Technologies Limited (NomosDesk)</strong><br />
-                                Data Protection Officer<br />
-                                <a href="mailto:privacy@nomosdesk.com" className="text-indigo-400 hover:text-indigo-300">privacy@nomosdesk.com</a>
+                                <strong className="text-white">Nexus Technologies Limited</strong><br />
+                                50 Caloundra Street<br />
+                                New Ashongman Estates<br />
+                                GE-208-4173 Accra<br />
+                                Ghana<br />
+                                <a href="mailto:privacy@nomosdesk.com" className="text-indigo-400 hover:text-indigo-300 mt-2 block">privacy@nomosdesk.com</a>
                             </address>
                         </section>
-
                     </div>
                 </div>
             </Section>
