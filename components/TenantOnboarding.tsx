@@ -71,22 +71,33 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
   const [pricingLoading, setPricingLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Recover formData and step if returning from Stripe
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    const returnStatus = params.get('status');
+    const savedData = sessionStorage.getItem('onboarding_form_data');
+    const savedEntityType = sessionStorage.getItem('onboarding_entity_type');
+
+    if (sessionId && returnStatus === 'success' && savedData) {
+      setFormData(JSON.parse(savedData));
+      if (savedEntityType) setEntityType(savedEntityType as AppMode);
+      setStep(4); // Move straight to Handshake
+      runProvisioning(sessionId);
+      sessionStorage.removeItem('onboarding_form_data');
+      sessionStorage.removeItem('onboarding_entity_type');
+    }
+
     const fetchPricing = async () => {
       try {
         const data = await authorizedFetch('/api/pricing');
         if (data && !data.error) {
           setPricingConfigs(data);
 
-          // Pre-select plan from URL
-          const params = new URLSearchParams(window.location.search);
           const planParam = params.get('plan');
           if (planParam) {
-            // Match case-insensitively or exactly as per seed IDs
             const matchedPlan = data.find((p: any) => p.id.toLowerCase() === planParam.toLowerCase());
             if (matchedPlan) {
               setFormData(prev => ({ ...prev, plan: matchedPlan.id as SaaSPlan }));
-              // If we already have a plan, we could skip to a later step, 
-              // but usually the user still needs to fill in their name/email.
             }
           }
         }
@@ -107,7 +118,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
     setProvisionLogs(prev => [`> ${msg}`, ...prev.slice(0, 5)]);
   };
 
-  const runProvisioning = async () => {
+  const runProvisioning = async (stripeSessionId?: string) => {
     setIsProvisioning(true);
     setProvisionLogs([]);
 
@@ -121,7 +132,8 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
           appMode: entityType || AppMode.LAW_FIRM,
           region: formData.region,
           adminEmail: formData.adminEmail,
-          adminPassword: formData.adminPassword
+          adminPassword: formData.adminPassword,
+          stripeSessionId
         })
       });
 
@@ -174,10 +186,34 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
     }
   };
 
+  const handleStripeRedirect = async () => {
+    try {
+      setIsProvisioning(true); // Re-use loading state
+      const response = await authorizedFetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        body: JSON.stringify({
+          planId: formData.plan,
+          adminEmail: formData.adminEmail
+        })
+      });
+
+      if (response.url) {
+        // Save state to recover on return
+        sessionStorage.setItem('onboarding_form_data', JSON.stringify(formData));
+        if (entityType) sessionStorage.setItem('onboarding_entity_type', entityType);
+        window.location.href = response.url;
+      } else {
+        throw new Error("Failed to generate payment session");
+      }
+    } catch (e: any) {
+      alert(`Payment Error: ${e.message}`);
+      setIsProvisioning(false);
+    }
+  };
+
   const next = () => {
     if (step === 3) {
-      runProvisioning();
-      setStep(4);
+      handleStripeRedirect();
     } else {
       setStep(s => Math.min(s + 1, 6));
     }
@@ -316,30 +352,49 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                 <p className="text-slate-400 text-sm max-w-lg leading-relaxed">Resource allocation defines your cryptographic isolation level and AI throughput.</p>
               </div>
 
-              <div className="grid grid-cols-3 gap-6">
-                <PlanCard
-                  plan={SaaSPlan.STARTER}
-                  active={formData.plan === SaaSPlan.STARTER}
-                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.STARTER })}
-                  pricing={getPricingForPlan(SaaSPlan.STARTER)}
-                  loading={pricingLoading}
-                />
-                <PlanCard
-                  plan={SaaSPlan.PROFESSIONAL}
-                  active={formData.plan === SaaSPlan.PROFESSIONAL}
-                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.PROFESSIONAL })}
-                  pricing={getPricingForPlan(SaaSPlan.PROFESSIONAL)}
-                  loading={pricingLoading}
-                  highlight={true}
-                />
-                <PlanCard
-                  plan={SaaSPlan.INSTITUTIONAL}
-                  active={formData.plan === SaaSPlan.INSTITUTIONAL}
-                  onClick={() => setFormData({ ...formData, plan: SaaSPlan.INSTITUTIONAL })}
-                  pricing={getPricingForPlan(SaaSPlan.INSTITUTIONAL)}
-                  loading={pricingLoading}
-                />
-              </div>
+              {formData.plan ? (
+                <div className="bg-slate-900/50 border border-slate-800 p-10 rounded-[2.5rem] flex flex-col items-center gap-8 shadow-2xl">
+                  <div className="p-6 bg-emerald-500/10 rounded-3xl border border-emerald-500/20 text-emerald-400">
+                    <Sparkles size={48} />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Plan Selected from Marketing Pulse</p>
+                    <h4 className="text-4xl font-bold text-white tracking-tighter uppercase">{formData.plan} TIER</h4>
+                    <p className="text-xs text-slate-400">Cryptographically isolated sovereign environment with peak AI performance.</p>
+                  </div>
+                  <div className="w-full h-[1px] bg-slate-800"></div>
+                  <div className="flex items-center gap-4 text-xs font-medium text-slate-300">
+                    <div className="flex items-center gap-2"><CheckCircle2 size={14} className="text-emerald-500" /> Primary Data Residency</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 size={14} className="text-emerald-500" /> Priority HSM Access</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 size={14} className="text-emerald-500" /> Full Security Suite</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-6">
+                  <PlanCard
+                    plan={SaaSPlan.STARTER}
+                    active={formData.plan === SaaSPlan.STARTER}
+                    onClick={() => setFormData({ ...formData, plan: SaaSPlan.STARTER })}
+                    pricing={getPricingForPlan(SaaSPlan.STARTER)}
+                    loading={pricingLoading}
+                  />
+                  <PlanCard
+                    plan={SaaSPlan.PROFESSIONAL}
+                    active={formData.plan === SaaSPlan.PROFESSIONAL}
+                    onClick={() => setFormData({ ...formData, plan: SaaSPlan.PROFESSIONAL })}
+                    pricing={getPricingForPlan(SaaSPlan.PROFESSIONAL)}
+                    loading={pricingLoading}
+                    highlight={true}
+                  />
+                  <PlanCard
+                    plan={SaaSPlan.INSTITUTIONAL}
+                    active={formData.plan === SaaSPlan.INSTITUTIONAL}
+                    onClick={() => setFormData({ ...formData, plan: SaaSPlan.INSTITUTIONAL })}
+                    pricing={getPricingForPlan(SaaSPlan.INSTITUTIONAL)}
+                    loading={pricingLoading}
+                  />
+                </div>
+              )}
             </div>
           )}
 

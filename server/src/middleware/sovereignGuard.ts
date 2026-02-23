@@ -23,12 +23,13 @@ export const sovereignGuard = (req: Request, res: Response, next: NextFunction) 
         if (!sovPin) {
             console.error(`[SovereignGuard] ACCESS DENIED: Missing x-sov-pin for ${req.path}`);
         } else {
-            console.error(`[SovereignGuard] ACCESS DENIED: Invalid x-sov-pin for ${req.path}. Received: ${String(sovPin).substring(0, 3)}...`);
+            console.error(`[SovereignGuard] ACCESS DENIED: Invalid x-sov-pin for ${req.path}. Received: ${String(sovPin).substring(0, 3)}... (Expected: ${EXPECTED_PIN ? EXPECTED_PIN.substring(0, 3) : 'NONE'})`);
         }
         return res.status(403).json({
             error: 'Sovereign Enclave Access Denied',
             code: 'INVALID_SOVEREIGN_PIN',
-            message: 'A valid Sovereign Pin is required to access the enclave layer.'
+            message: 'A valid Sovereign Pin is required to access the enclave layer.',
+            path: req.path
         });
     }
 

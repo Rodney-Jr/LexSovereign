@@ -4,10 +4,15 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
 import crypto from 'crypto';
+import Stripe from 'stripe';
+import { StripeService } from '../services/StripeService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { GoogleAuthService } from '../services/googleAuthService';
 
 const router = express.Router();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-02-11-preview' as any,
+});
 
 async function checkTenantUserLimit(tenantId: string) {
     const tenant = await prisma.tenant.findUnique({
@@ -36,9 +41,31 @@ async function checkTenantUserLimit(tenantId: string) {
 
 // 1. Atomic Onboard (New Silo + Admin) - PUBLIC
 router.post('/onboard-silo', async (req, res) => {
-    const { name, plan, appMode, region, adminEmail, adminPassword } = req.body;
+    const { name, plan, appMode, region, adminEmail, adminPassword, stripeSessionId } = req.body;
 
     try {
+        let stripeData: any = {};
+
+        // 1. Validate Payment if session ID is provided (Industry Standard)
+        if (stripeSessionId) {
+            console.log(`[Stripe] Validating session: ${stripeSessionId}`);
+            const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
+                expand: ['subscription']
+            });
+
+            if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
+                throw new Error("Payment session has not been completed.");
+            }
+
+            const subscription = session.subscription as Stripe.Subscription;
+            stripeData = {
+                stripeCustomerId: session.customer as string,
+                stripeSubscriptionId: subscription?.id,
+                subscriptionStatus: subscription?.status || 'active'
+            };
+            console.log(`[Stripe] Validated session for ${adminEmail}. Status: ${stripeData.subscriptionStatus}`);
+        }
+
         const result = await prisma.$transaction(async (tx) => {
             // Create Tenant
             const tenant = await tx.tenant.create({
@@ -46,7 +73,8 @@ router.post('/onboard-silo', async (req, res) => {
                     name,
                     plan: plan || 'Starter', // Default to Starter
                     appMode: appMode || 'LAW_FIRM',
-                    primaryRegion: region || 'GH_ACC_1'
+                    primaryRegion: region || 'GH_ACC_1',
+                    ...stripeData
                 }
             });
 
@@ -83,6 +111,13 @@ router.post('/onboard-silo', async (req, res) => {
             tenantId: result.user.tenantId,
             appMode: result.tenant.appMode
         }, JWT_SECRET, { expiresIn: '8h' });
+
+        // After successful onboarding, sync seat count (Industry Standard)
+        if (result.tenant.stripeSubscriptionId) {
+            StripeService.syncSubscriptionQuantity(result.tenant.id).catch(err =>
+                console.error(`[Stripe Sync Error] ${err.message}`)
+            );
+        }
 
         res.status(201).json({
             token,
@@ -244,6 +279,13 @@ router.post('/join-silo', async (req, res) => {
 
             return { user, tenant: invitation.tenant };
         });
+
+        // Sync seat count after user joins
+        if (result.tenant.stripeSubscriptionId) {
+            StripeService.syncSubscriptionQuantity(result.tenant.id).catch(err =>
+                console.error(`[Stripe Sync Error] ${err.message}`)
+            );
+        }
 
         const permissions = result.user.role?.permissions.map(p => p.id) || [];
         const jwtToken = jwt.sign({

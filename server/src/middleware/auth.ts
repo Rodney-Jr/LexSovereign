@@ -28,39 +28,44 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             });
         }
 
-        // Check User & Tenant Status
-        const dbUser = await requestContext.run({ tenantId: user.tenantId, userId: user.id }, () =>
-            prisma.user.findUnique({
-                where: { id: user.id },
-                include: { tenant: { select: { status: true } } }
-            })
-        );
+        try {
+            // Check User & Tenant Status
+            const dbUser = await requestContext.run({ tenantId: user.tenantId, userId: user.id }, () =>
+                prisma.user.findUnique({
+                    where: { id: user.id },
+                    include: { tenant: { select: { status: true } } }
+                })
+            );
 
-        if (!dbUser || !dbUser.isActive) {
-            return res.status(403).json({ error: 'Account disabled. Contact platform admin.', code: 'ACCOUNT_DISABLED' });
+            if (!dbUser || !dbUser.isActive) {
+                return res.status(403).json({ error: 'Account disabled. Contact platform admin.', code: 'ACCOUNT_DISABLED' });
+            }
+
+            if (dbUser.tenant && dbUser.tenant.status === 'SUSPENDED') {
+                return res.status(403).json({ error: 'Tenant enclave suspended. Access denied.', code: 'TENANT_SUSPENDED' });
+            }
+
+            console.log(`[Auth] JWT Verified for user: ${user.email} (Role: ${user.role})`);
+
+            // Deployment Adaptation: On-Premise Enclaves are Single Tenant
+            if (!CONFIG.ENABLE_MULTI_TENANCY) {
+                user.tenantId = CONFIG.SINGLE_TENANT_ID;
+            }
+
+            // Hydrate sensitive context from DB (Department, Attributes)
+            req.user = {
+                ...user,
+                department: dbUser.department || undefined,
+                name: dbUser.name
+            };
+
+            requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {
+                next();
+            });
+        } catch (dbErr: any) {
+            console.error(`[Auth] Critical Exception in authenticateToken: ${dbErr.message}`);
+            res.status(500).json({ error: 'Authentication internal error', code: 'INTERNAL_ERROR' });
         }
-
-        if (dbUser.tenant && dbUser.tenant.status === 'SUSPENDED') {
-            return res.status(403).json({ error: 'Tenant enclave suspended. Access denied.', code: 'TENANT_SUSPENDED' });
-        }
-
-        console.log(`[Auth] JWT Verified for user: ${user.email} (Role: ${user.role})`);
-
-        // Deployment Adaptation: On-Premise Enclaves are Single Tenant
-        if (!CONFIG.ENABLE_MULTI_TENANCY) {
-            user.tenantId = CONFIG.SINGLE_TENANT_ID;
-        }
-
-        // Hydrate sensitive context from DB (Department, Attributes)
-        req.user = {
-            ...user,
-            department: dbUser.department || undefined,
-            name: dbUser.name
-        };
-
-        requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {
-            next();
-        });
     });
 };
 

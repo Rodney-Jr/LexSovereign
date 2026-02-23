@@ -27,6 +27,8 @@ import tenantRouter from './routes/tenant';
 import leadsRouter from './routes/leads';
 import chatConversationsRouter from './routes/chatConversations';
 import fxRatesRouter from './routes/fxRates';
+import contentEngineRouter from './routes/contentEngine';
+import stripeRouter from './routes/stripe';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
@@ -57,6 +59,11 @@ app.use(helmet({
     },
 }));
 app.use(cors());
+
+// Stripe Webhook needs raw body for signature verification
+// This must be BEFORE express.json()
+app.use('/api/stripe/webhook', stripeRouter);
+
 app.use(express.json());
 
 // Routes
@@ -67,6 +74,7 @@ app.get('/health', (req, res) => {
 // Public / Lead Generation
 app.use('/api/leads', leadsRouter);
 app.use('/api/pricing', pricingRouter);
+app.use('/api/stripe', stripeRouter);
 
 // Chat Conversations (Public for widget, Protected for admin)
 app.use('/api/chat-conversations', chatConversationsRouter);

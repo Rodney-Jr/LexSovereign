@@ -61,7 +61,7 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
-            select: { name: true, plan: true }
+            select: { name: true, plan: true, subscriptionStatus: true, stripeCustomerId: true }
         });
 
         if (!tenant) {
@@ -85,6 +85,8 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
         res.json({
             plan: tenant.plan,
             name: tenant.name,
+            subscriptionStatus: tenant.subscriptionStatus || 'active',
+            hasStripeCustomer: !!tenant.stripeCustomerId,
             pricing: pricing || { basePrice: 499, pricePerUser: 50, features: [], creditsIncluded: 10000 },
             usage: {
                 aiCredits: { current: Math.min(matterCount * 120, 10000), max: pricing?.creditsIncluded || 10000 },

@@ -45,6 +45,21 @@ const SovereignBilling: React.FC = () => {
       setTimeout(() => setIsSyncing(false), 1500);
    };
 
+   const handleManageBilling = async () => {
+      try {
+         const response = await authorizedFetch('/api/stripe/portal', {
+            method: 'POST'
+         });
+         if (response.url) {
+            window.location.href = response.url;
+         } else {
+            alert("Billing portal is only available for paid subscriptions.");
+         }
+      } catch (e) {
+         console.error("[Stripe Portal] Error:", e);
+      }
+   };
+
    return (
       <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
          {/* Usage Meters */}
@@ -135,10 +150,15 @@ const SovereignBilling: React.FC = () => {
                      </div>
                   </div>
                   <div className="space-y-3 relative z-10 pt-8 mt-8 border-t border-slate-800">
-                     <button className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all border border-slate-700">
-                        Plan Settings
+                     <button
+                        onClick={handleManageBilling}
+                        className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all border border-slate-700 active:scale-95"
+                     >
+                        {billingData?.hasStripeCustomer ? 'Manage Subscription' : 'Plan Settings'}
                      </button>
-                     <p className="text-[9px] text-slate-500 text-center font-medium italic">Next renewal: June 01, 2024 via Primary Payment Method</p>
+                     <p className="text-[9px] text-slate-500 text-center font-medium italic">
+                        {billingData?.subscriptionStatus === 'active' ? 'Next renewal: Automatic via Stripe' : `Status: ${billingData?.subscriptionStatus || 'PROVISIONED'}`}
+                     </p>
                   </div>
                </div>
             </div>

@@ -94,6 +94,9 @@ model Tenant {
   policies         Policy[]
   roles            Role[]
   users            User[]
+  stripeCustomerId   String?           @unique
+  stripeSubscriptionId String?         @unique
+  subscriptionStatus String?
 }
 
 model ChatbotConfig {
@@ -252,6 +255,7 @@ model PricingConfig {
   features        Json
   updatedAt       DateTime @updatedAt
   maxUsers        Int      @default(5)
+  stripePriceId   String?
 }
 
 model BrandingProfile {

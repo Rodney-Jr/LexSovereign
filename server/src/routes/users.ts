@@ -1,5 +1,6 @@
 import express from 'express';
 import { prisma } from '../db';
+import { StripeService } from '../services/StripeService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = express.Router();
@@ -94,6 +95,20 @@ router.delete('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_AD
         await prisma.user.delete({
             where: { id: userId }
         });
+
+        // 4. Sync Stripe seats
+        if (user.tenantId) {
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: user.tenantId },
+                select: { stripeSubscriptionId: true }
+            });
+
+            if (tenant?.stripeSubscriptionId) {
+                StripeService.syncSubscriptionQuantity(user.tenantId).catch(err =>
+                    console.error(`[Stripe Sync Error] ${err.message}`)
+                );
+            }
+        }
 
         res.json({ success: true, message: 'User removed successfully' });
     } catch (error: any) {

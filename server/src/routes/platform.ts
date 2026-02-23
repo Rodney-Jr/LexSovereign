@@ -153,16 +153,18 @@ router.get('/admins', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (r
     try {
         const admins = await prisma.user.findMany({
             where: {
-                role: {
-                    name: 'GLOBAL_ADMIN'
-                }
+                OR: [
+                    { role: { name: 'GLOBAL_ADMIN' } },
+                    { roleString: 'GLOBAL_ADMIN' }
+                ]
             },
             select: {
                 id: true,
                 name: true,
                 email: true,
                 createdAt: true,
-                provider: true
+                provider: true,
+                roleString: true
             }
         });
 
