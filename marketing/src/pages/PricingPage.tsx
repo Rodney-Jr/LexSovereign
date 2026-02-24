@@ -227,7 +227,7 @@ function PricingCard({ title, price, userMonth, pricePerUser, description, featu
             </div>
 
             <Button variant={featured ? 'primary' : 'outline'} asLink={price === 'Custom' ? '/#demo' : `${import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000'}/?plan=${title}`} className="w-full">
-                {price === 'Custom' ? 'Contact Sales' : 'Start Trial'}
+                {price === 'Custom' ? 'Contact Sales' : `Deploy ${title}`}
             </Button>
         </div>
     );

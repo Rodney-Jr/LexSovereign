@@ -157,7 +157,7 @@ const SovereignBilling: React.FC = () => {
                         {billingData?.hasStripeCustomer ? 'Manage Subscription' : 'Plan Settings'}
                      </button>
                      <p className="text-[9px] text-slate-500 text-center font-medium italic">
-                        {billingData?.subscriptionStatus === 'active' ? 'Next renewal: Automatic via Stripe' : `Status: ${billingData?.subscriptionStatus || 'PROVISIONED'}`}
+                        {billingData?.subscriptionStatus === 'active' ? 'Deployment Status: Active' : `Status: ${billingData?.subscriptionStatus || 'PROVISIONED'}`}
                      </p>
                   </div>
                </div>
