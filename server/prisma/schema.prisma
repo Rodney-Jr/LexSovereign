@@ -248,14 +248,15 @@ model RegulatoryRule {
 }
 
 model PricingConfig {
-  id              String   @id
-  basePrice       Float
-  pricePerUser    Float
-  creditsIncluded Int      @default(0)
-  features        Json
-  updatedAt       DateTime @updatedAt
-  maxUsers        Int      @default(5)
-  stripePriceId   String?
+  id                 String   @id
+  basePrice          Float
+  pricePerUser       Float
+  creditsIncluded    Int      @default(0)
+  features           Json
+  updatedAt          DateTime @updatedAt
+  maxUsers           Int      @default(5)
+  stripeBasePriceId  String?
+  stripeUserPriceId  String?
 }
 
 model BrandingProfile {

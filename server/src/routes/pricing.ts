@@ -86,15 +86,17 @@ router.get('/', async (req, res) => {
 router.put('/:id', sovereignGuard, authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { id } = req.params;
-        const { basePrice, pricePerUser, creditsIncluded, features } = req.body;
+        const { basePrice, pricePerUser, creditsIncluded, features, stripeBasePriceId, stripeUserPriceId } = req.body;
 
-        const updated = await prisma.pricingConfig.update({
+        const updated = await (prisma.pricingConfig as any).update({
             where: { id },
             data: {
                 basePrice,
                 pricePerUser,
                 creditsIncluded,
-                features
+                features,
+                stripeBasePriceId,
+                stripeUserPriceId
             }
         });
 

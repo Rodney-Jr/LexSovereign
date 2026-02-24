@@ -248,7 +248,9 @@ async function main() {
                 pricePerUser: 10,
                 creditsIncluded: 0,
                 maxUsers: 5,
-                features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget']
+                features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget'],
+                stripeBasePriceId: 'price_1T4QyqE9NGotUyVqu2oTicMx',
+                stripeUserPriceId: 'price_1T4QyqE9NGotUyVq4GQNKdb6'
             },
             {
                 id: 'Professional',
@@ -256,7 +258,9 @@ async function main() {
                 pricePerUser: 15,
                 creditsIncluded: 50,
                 maxUsers: 50,
-                features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support']
+                features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support'],
+                stripeBasePriceId: 'price_1T4QyrE9NGotUyVqjYt2IifS',
+                stripeUserPriceId: 'price_1T4QysE9NGotUyVqoTcL3Wjo'
             },
             {
                 id: 'Institutional',
