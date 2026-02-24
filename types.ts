@@ -42,13 +42,13 @@ export enum AppMode {
 }
 
 export enum SaaSPlan {
-  STARTER = 'STARTER',
-  STANDARD = 'STANDARD',
-  SOVEREIGN = 'SOVEREIGN',
-  ENCLAVE = 'ENCLAVE',
-  ENCLAVE_EXCLUSIVE = 'ENCLAVE_EXCLUSIVE',
-  PROFESSIONAL = 'PROFESSIONAL',
-  INSTITUTIONAL = 'INSTITUTIONAL'
+  STARTER = 'Starter',
+  STANDARD = 'Standard',
+  SOVEREIGN = 'Sovereign',
+  ENCLAVE = 'Enclave',
+  ENCLAVE_EXCLUSIVE = 'Enclave Exclusive',
+  PROFESSIONAL = 'Professional',
+  INSTITUTIONAL = 'Institutional'
 }
 
 export enum UserRole {
