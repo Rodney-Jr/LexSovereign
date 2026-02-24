@@ -11,7 +11,8 @@ const PLATFORM_URL = process.env.VITE_PLATFORM_URL || 'http://localhost:3000';
 export class StripeService {
     /**
      * Create a Stripe Checkout Session for a new tenant
-     static async createCheckoutSession(planId: string, adminEmail: string) {
+     */
+    static async createCheckoutSession(planId: string, adminEmail: string) {
         const pricing = await prisma.pricingConfig.findUnique({
             where: { id: planId }
         });
