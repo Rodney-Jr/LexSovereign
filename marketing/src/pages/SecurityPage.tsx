@@ -108,7 +108,7 @@ export default function SecurityPage() {
 
             <Section className="text-center py-24">
                 <h2 className="text-2xl font-bold text-white mb-6">Review Our Full Security Whitepaper</h2>
-                <Button asLink="/#demo">Request Security Packet</Button>
+                <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))}>Request Security Packet</Button>
             </Section>
         </Layout>
     );

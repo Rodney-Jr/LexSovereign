@@ -9,26 +9,29 @@ interface Message {
     content: string;
 }
 
-interface DemoFormData {
+interface LeadFormData {
     name: string;
     email: string;
     company: string;
     phone: string;
+    source?: string;
 }
 
-// ─── In-Chat Demo Form ────────────────────────────────────────────────────────
+// ─── In-Chat Lead Form ────────────────────────────────────────────────────────
 
-function DemoRequestForm({ onSubmit, onSkip }: {
-    onSubmit: (data: DemoFormData) => void;
+function LeadRequestForm({ onSubmit, onSkip, title, source }: {
+    onSubmit: (data: LeadFormData) => void;
     onSkip: () => void;
+    title: string;
+    source: string;
 }) {
-    const [form, setForm] = useState<DemoFormData>({ name: '', email: '', company: '', phone: '' });
+    const [form, setForm] = useState<LeadFormData>({ name: '', email: '', company: '', phone: '', source });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errors, setErrors] = useState<Partial<DemoFormData & { consent: string }>>({});
+    const [errors, setErrors] = useState<Partial<LeadFormData & { consent: string }>>({});
     const [hasConsent, setHasConsent] = useState(false);
 
     const validate = () => {
-        const e: Partial<DemoFormData & { consent: string }> = {};
+        const e: Partial<LeadFormData & { consent: string }> = {};
         if (!form.name.trim()) e.name = 'Required';
         if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = 'Valid email required';
         if (!hasConsent) e.consent = 'You must acknowledge the legal disclaimer to proceed.';
@@ -48,10 +51,10 @@ function DemoRequestForm({ onSubmit, onSkip }: {
         <div className="bg-slate-800 rounded-2xl rounded-tl-sm p-4 max-w-[95%] space-y-3 border border-indigo-500/20">
             <div className="flex items-center gap-2 mb-1">
                 <Calendar size={14} className="text-indigo-400" />
-                <p className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Book a Demo</p>
+                <p className="text-xs font-bold text-indigo-300 uppercase tracking-wider">{title}</p>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-                Fill in your details and our team will reach out to schedule a personalised walkthrough.
+                Fill in your details and our team will reached out to initiate your sovereign deployment.
             </p>
             <form onSubmit={handleSubmit} className="space-y-3">
                 {/* Inputs Row 1 */}
@@ -133,7 +136,7 @@ function DemoRequestForm({ onSubmit, onSkip }: {
                         {isSubmitting ? (
                             <><Loader2 size={12} className="animate-spin" /> Submitting...</>
                         ) : (
-                            <><ChevronRight size={12} /> Request Demo</>
+                            <><ChevronRight size={12} /> {title}</>
                         )}
                     </button>
                     <button
@@ -159,7 +162,7 @@ function SuccessBubble({ name }: { name: string }) {
                 <p className="text-xs font-bold text-emerald-300">Demo Request Received!</p>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-                Thanks, <span className="font-semibold text-white">{name}</span>! Our team will be in touch within 24 hours to schedule your personalised NomosDesk walkthrough. In the meantime, feel free to ask me anything about the platform.
+                Thanks, <span className="font-semibold text-white">{name}</span>! Our team has been notified. We will be in touch within 24 hours to schedule your personalised NomosDesk walkthrough. In the meantime, feel free to ask me anything about the platform.
             </p>
         </div>
     );
@@ -170,7 +173,8 @@ function SuccessBubble({ name }: { name: string }) {
 export default function ChatbotWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
-    const [showDemoForm, setShowDemoForm] = useState(false);
+    const [showLeadForm, setShowLeadForm] = useState(false);
+    const [leadFormConfig, setLeadFormConfig] = useState({ title: 'Book a Demo', source: 'CHATBOT_DEMO' });
     const [submittedName, setSubmittedName] = useState('');
     const [messages, setMessages] = useState<Message[]>([
         { role: 'assistant', content: 'Hi! How can I help you learn more about NomosDesk?' }
@@ -183,7 +187,7 @@ export default function ChatbotWidget() {
     // Auto-scroll to latest message
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, showDemoForm]);
+    }, [messages, showLeadForm]);
 
     // Listen for regular chat open — opens chat with welcome message intact
     useEffect(() => {
@@ -195,22 +199,37 @@ export default function ChatbotWidget() {
         return () => window.removeEventListener('nomosdesk-open-chat', openChat);
     }, []);
 
-    // Listen for demo-intent open — opens chat with no welcome message, shows form directly
+    // Listen for demo-intent open
     useEffect(() => {
         const openDemo = () => {
             setIsOpen(true);
             setIsMinimized(false);
             if (!submittedName) {
-                // Clear messages so no welcome greeting appears before the form
                 setMessages([]);
-                setShowDemoForm(true);
+                setLeadFormConfig({ title: 'Book a Demo', source: 'CHATBOT_DEMO' });
+                setShowLeadForm(true);
             }
         };
         window.addEventListener('nomosdesk-open-demo', openDemo);
         return () => window.removeEventListener('nomosdesk-open-demo', openDemo);
     }, [submittedName]);
 
-    const handleDemoSubmit = async (data: DemoFormData) => {
+    // Listen for sales-intent open
+    useEffect(() => {
+        const openSales = () => {
+            setIsOpen(true);
+            setIsMinimized(false);
+            if (!submittedName) {
+                setMessages([]);
+                setLeadFormConfig({ title: 'Contact Sales', source: 'CHATBOT_SALES' });
+                setShowLeadForm(true);
+            }
+        };
+        window.addEventListener('nomosdesk-open-sales', openSales);
+        return () => window.removeEventListener('nomosdesk-open-sales', openSales);
+    }, [submittedName]);
+
+    const handleLeadSubmit = async (data: LeadFormData) => {
         try {
             await apiFetch('/api/leads', {
                 method: 'POST',
@@ -219,21 +238,19 @@ export default function ChatbotWidget() {
                     email: data.email,
                     company: data.company,
                     phone: data.phone,
-                    source: 'CHATBOT_DEMO'
+                    source: data.source
                 })
             });
         } catch (err) {
             console.error('Lead submission error:', err);
-            // Still show success — don't penalise user for network issues
         }
         setSubmittedName(data.name);
-        setShowDemoForm(false);
-        // Add a success message into the chat stream
+        setShowLeadForm(false);
         setMessages(prev => [...prev, { role: 'success', content: data.name }]);
     };
 
-    const handleDemoSkip = () => {
-        setShowDemoForm(false);
+    const handleLeadSkip = () => {
+        setShowLeadForm(false);
         setMessages(prev => [...prev, {
             role: 'assistant',
             content: 'No problem! Feel free to ask me anything about NomosDesk — features, pricing, security, or how it compares to other platforms.'
@@ -352,12 +369,14 @@ export default function ChatbotWidget() {
                                 );
                             })}
 
-                            {/* In-chat demo form — appears after messages */}
-                            {showDemoForm && (
+                            {/* In-chat form */}
+                            {showLeadForm && (
                                 <div className="flex justify-start animate-in slide-in-from-bottom-2 duration-300">
-                                    <DemoRequestForm
-                                        onSubmit={handleDemoSubmit}
-                                        onSkip={handleDemoSkip}
+                                    <LeadRequestForm
+                                        title={leadFormConfig.title}
+                                        source={leadFormConfig.source}
+                                        onSubmit={handleLeadSubmit}
+                                        onSkip={handleLeadSkip}
                                     />
                                 </div>
                             )}
@@ -377,8 +396,8 @@ export default function ChatbotWidget() {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Input — hidden while demo form is showing */}
-                        {!showDemoForm && (
+                        {/* Input — hidden while lead form is showing */}
+                        {!showLeadForm && (
                             <div className="p-4 bg-slate-900 border-t border-slate-800 shrink-0">
                                 <div className="flex gap-2">
                                     <input

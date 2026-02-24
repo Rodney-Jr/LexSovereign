@@ -129,7 +129,7 @@ export default function ForGovernment() {
                                 <span className="text-slate-300">Closed casefile indexing for precedent retrieval</span>
                             </li>
                         </ul>
-                        <Button asLink="/#demo" variant="outline">Learn About Judicial Enclaves</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} variant="outline">Learn About Judicial Enclaves</Button>
                     </div>
                     <div className="relative">
                         <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full"></div>

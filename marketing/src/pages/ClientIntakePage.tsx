@@ -180,7 +180,7 @@ export default function ClientIntakePage() {
                 <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
                     Improve client satisfaction and reducing administrative overhead with a secure, 24/7 digital assistant.
                 </p>
-                <Button asLink="/#demo" size="lg">Add Intake Assistant</Button>
+                <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Add Intake Assistant</Button>
             </Section>
         </Layout>
     );

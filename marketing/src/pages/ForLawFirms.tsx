@@ -61,7 +61,7 @@ export default function ForLawFirms() {
                         keep your firm compliant and efficient.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button asLink="/#demo">Schedule Demo</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))}>Schedule Demo</Button>
                     </div>
                 </div>
             </Section>
@@ -149,7 +149,7 @@ export default function ForLawFirms() {
 
             <Section className="text-center bg-indigo-900/20 border-t border-indigo-900/30">
                 <h2 className="text-3xl font-bold text-white mb-6">Ready to secure your firm?</h2>
-                <Button asLink="/#demo" size="lg">Get Started</Button>
+                <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Get Started</Button>
             </Section>
             <RelatedInsights
                 heading="Guides for Law Firms"

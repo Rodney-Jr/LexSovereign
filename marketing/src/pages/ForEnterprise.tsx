@@ -95,7 +95,7 @@ export default function ForEnterprise() {
                     <p className="text-slate-300 mb-8">
                         "NomosDesk gives me the dashboard I need to report to the Board, while giving my team the tools they need to execute."
                     </p>
-                    <Button asLink="/#demo" size="lg">See the Dashboard</Button>
+                    <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">See the Dashboard</Button>
                 </div>
             </Section>
             <RelatedInsights

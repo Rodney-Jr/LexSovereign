@@ -183,7 +183,7 @@ export default function PricingPage() {
                         <p className="text-slate-300 mb-6">
                             We advocate for rule of law worldwide. Special pricing is available for qualifying institutions in emerging markets.
                         </p>
-                        <Button asLink="/#demo" variant="outline">Contact for Eligibility</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales'))} variant="outline">Contact for Eligibility</Button>
                     </div>
                 </div>
             </Section>
@@ -226,7 +226,12 @@ function PricingCard({ title, price, userMonth, pricePerUser, description, featu
                 ))}
             </div>
 
-            <Button variant={featured ? 'primary' : 'outline'} asLink={price === 'Custom' ? '/#demo' : `${import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000'}/?plan=${title}`} className="w-full">
+            <Button
+                variant={featured ? 'primary' : 'outline'}
+                asLink={price === 'Custom' ? undefined : `${import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000'}/?plan=${title}`}
+                onClick={price === 'Custom' ? () => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales')) : undefined}
+                className="w-full"
+            >
                 {price === 'Custom' ? 'Contact Sales' : `Deploy ${title}`}
             </Button>
         </div>
