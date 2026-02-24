@@ -11,8 +11,8 @@ async function repair() {
 
     // Clear BOTH potential failed migrations
     const migrationsToClear = [
-        "20260212054430_add_gazette_vector",
-        "20260212061500_add_gazette_standard"
+        "20260224155600_add_stripe_fields",
+        "20260224221632_add_dual_stripe_price_ids"
     ];
 
     try {
