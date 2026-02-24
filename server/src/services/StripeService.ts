@@ -13,8 +13,8 @@ export class StripeService {
      * Create a Stripe Checkout Session for a new tenant
      */
     static async createCheckoutSession(planId: string, adminEmail: string) {
-        const pricing = await prisma.pricingConfig.findUnique({
-            where: { id: planId }
+        const pricing = await prisma.pricingConfig.findFirst({
+            where: { id: { equals: planId, mode: 'insensitive' } }
         });
 
         if (!pricing || !pricing.stripeBasePriceId || !pricing.stripeUserPriceId) {
@@ -38,7 +38,7 @@ export class StripeService {
             success_url: `${PLATFORM_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}&status=success&plan=${planId}`,
             cancel_url: `${PLATFORM_URL}/onboarding?status=cancelled`,
             metadata: {
-                planId,
+                planId: pricing.id, // Use normalized ID from DB
                 adminEmail
             }
         });
@@ -79,8 +79,8 @@ export class StripeService {
 
         if (!tenant?.stripeSubscriptionId) return;
 
-        const pricing = await prisma.pricingConfig.findUnique({
-            where: { id: tenant.plan }
+        const pricing = await prisma.pricingConfig.findFirst({
+            where: { id: { equals: tenant.plan, mode: 'insensitive' } }
         });
 
         if (!pricing || !pricing.stripeUserPriceId) {
