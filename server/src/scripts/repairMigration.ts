@@ -1,41 +1,45 @@
 
-import { PrismaClient } from '@prisma/client';
+import { Client } from 'pg';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const prisma = new PrismaClient();
-
 async function repair() {
-    console.log("🛠️ Starting Robust Migration Repair (Standard PG)...");
+    console.log("🛠️ Starting Aggressive Migration Repair (pg-native)...");
 
-    // Clear BOTH potential failed migrations
-    const migrationsToClear = [
-        "20260224155600_add_stripe_fields",
-        "20260224221632_add_dual_stripe_price_ids"
-    ];
+    const client = new Client({
+        connectionString: process.env.DATABASE_URL,
+    });
 
     try {
-        for (const failedMigrationName of migrationsToClear) {
-            console.log(`🧹 Checking for failed migration: ${failedMigrationName}...`);
-            const migration: any[] = await prisma.$queryRawUnsafe(
-                `SELECT * FROM "_prisma_migrations" WHERE migration_name = $1`,
-                failedMigrationName
-            );
+        await client.connect();
+        console.log("✅ Database connected via pg-native.");
 
-            if (migration.length > 0 && !migration[0].finished_at) {
-                console.log(`⚠️ Found failed migration record. Deleting to allow retry...`);
-                await prisma.$executeRawUnsafe(
-                    `DELETE FROM "_prisma_migrations" WHERE migration_name = $1`,
-                    failedMigrationName
-                );
-                console.log("✅ Failed migration state cleared.");
-            }
-        }
+        // 1. Terminate other sessions holding locks on the migration table
+        // This is crucial for Railway where migrations might hang and lock the table
+        console.log("🧙 Terminating blocking database sessions...");
+        await client.query(`
+            SELECT pg_terminate_backend(pid) 
+            FROM pg_stat_activity 
+            WHERE pid <> pg_backend_pid()
+              AND query LIKE '%_prisma_migrations%'
+              AND wait_event_type = 'Lock';
+        `);
+
+        // 2. Clear ANY failed migrations (missing finished_at)
+        console.log("🧹 Identifying and clearing stale migration states...");
+        const result = await client.query(`
+            DELETE FROM "_prisma_migrations" 
+            WHERE finished_at IS NULL;
+        `);
+
+        console.log(`✅ Cleared ${result.rowCount} failed migration records.`);
+
     } catch (error: any) {
-        console.error("❌ Repair failed:", error.message);
+        console.error("❌ Aggressive repair failed:", error.message);
     } finally {
-        await prisma.$disconnect();
+        await client.end();
+        console.log("🏁 Repair sequence complete.");
     }
 }
 
