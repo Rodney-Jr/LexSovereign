@@ -7,7 +7,7 @@ import { prisma } from '../db';
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-02-11-preview' as any,
+    apiVersion: '2025-01-27.acacia' as any,
 });
 
 // 1. Create Checkout Session

@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { prisma } from '../db';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-02-11-preview' as any,
+    apiVersion: '2025-01-27.acacia' as any,
 });
 
 const PLATFORM_URL = process.env.VITE_PLATFORM_URL || 'http://localhost:3000';
