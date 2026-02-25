@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { StripeService } from '../services/StripeService';
 
 const router = express.Router();
 
@@ -61,8 +62,8 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
-            select: { name: true, plan: true, subscriptionStatus: true, stripeCustomerId: true }
-        });
+            select: { name: true, plan: true, subscriptionStatus: true, stripeCustomerId: true } as any
+        }) as any;
 
         if (!tenant) {
             res.status(404).json({ error: 'Tenant not found' });
@@ -79,8 +80,37 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
         const userCount = await prisma.user.count({ where: { tenantId } });
         const docCount = await prisma.document.count({ where: { matter: { tenantId } } });
 
-        // Storage calculation: ~50MB per document as a heuristic for now
-        const storageUsedGB = (docCount * 0.05).toFixed(2);
+        // Calculate AI Credits from AuditLog
+        const aiUsageCount = await prisma.auditLog.count({
+            where: {
+                user: { tenantId },
+                action: { startsWith: 'AI_ACCESS_' }
+            }
+        });
+
+        // Each AI action is weighted as 10 credits by default for now
+        const currentAiCredits = aiUsageCount * 10;
+
+        // Calculate Burn Rate (Credits spent in last 24 hours / 24)
+        const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const dailyAiUsage = await prisma.auditLog.count({
+            where: {
+                user: { tenantId },
+                action: { startsWith: 'AI_ACCESS_' },
+                timestamp: { gte: last24h }
+            }
+        });
+        const burnRate = (dailyAiUsage * 10 / 24).toFixed(1);
+
+        // Storage calculation: ~10MB per document as a heuristic (0.01 GB)
+        const storageUsedGB = (docCount * 0.01).toFixed(2);
+
+        // Fetch real invoices from Stripe
+        const history = tenant.stripeCustomerId
+            ? await StripeService.getInvoices(tenant.stripeCustomerId)
+            : [
+                { id: 'draft_01', cycle: 'Current Cycle', delta: `+${docCount} Documents`, amount: `$${pricing?.basePrice || 499}`, status: 'DRAFT' }
+            ];
 
         res.json({
             plan: tenant.plan,
@@ -89,14 +119,12 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             hasStripeCustomer: !!tenant.stripeCustomerId,
             pricing: pricing || { basePrice: 499, pricePerUser: 50, features: [], creditsIncluded: 10000 },
             usage: {
-                aiCredits: { current: Math.min(matterCount * 120, 10000), max: pricing?.creditsIncluded || 10000 },
+                aiCredits: { current: currentAiCredits, max: pricing?.creditsIncluded || 10000 },
                 storage: { current: parseFloat(storageUsedGB), max: 50, unit: 'GB' },
-                users: { current: userCount, max: 100 }
+                users: { current: userCount, max: pricing?.maxUsers || 100 },
+                burnRate
             },
-            history: [
-                { id: 'inv_01', cycle: 'Current Cycle', delta: `+${docCount} Documents`, amount: `$${pricing?.basePrice || 499}`, status: 'DRAFT' },
-                { id: 'inv_02', cycle: 'Previous Cycle', delta: '+150 Documents', amount: '$499.00', status: 'PAID' }
-            ]
+            history
         });
     } catch (error: any) {
         res.status(500).json({ error: error.message });

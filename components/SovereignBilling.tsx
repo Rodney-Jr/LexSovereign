@@ -112,7 +112,7 @@ const SovereignBilling: React.FC = () => {
                   <div className="flex items-center gap-6">
                      <div className="space-y-0.5">
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Burn Rate</p>
-                        <p className="text-xl font-bold text-white tracking-tight">42.2 Credits <span className="text-slate-600 text-xs">/ hr</span></p>
+                        <p className="text-xl font-bold text-white tracking-tight">{billingData?.usage?.burnRate || '0.0'} Credits <span className="text-slate-600 text-xs">/ hr</span></p>
                      </div>
                      <div className="w-[1px] h-10 bg-slate-800"></div>
                      <div className="space-y-0.5">
@@ -184,7 +184,7 @@ const SovereignBilling: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-800/50 text-xs">
                      {billingData?.history?.map((row: any) => (
-                        <InvoiceRow key={row.id} cycle={row.cycle} delta={row.delta} amount={row.amount} status={row.status} />
+                        <InvoiceRow key={row.id} cycle={row.cycle} delta={row.delta} amount={row.amount} status={row.status} downloadUrl={row.downloadUrl} />
                      )) || (
                            <tr><td colSpan={4} className="px-8 py-4 text-center text-slate-500">Retrieving ledger...</td></tr>
                         )}
@@ -234,7 +234,7 @@ const PlanFeature = ({ label }: { label: string }) => (
    </div>
 );
 
-const InvoiceRow = ({ cycle, delta, amount, status }: any) => (
+const InvoiceRow = ({ cycle, delta, amount, status, downloadUrl }: any) => (
    <tr className="hover:bg-slate-800/20 transition-all group">
       <td className="px-8 py-5 font-bold text-slate-200">{cycle}</td>
       <td className="px-8 py-5 font-mono text-slate-500">{delta}</td>
@@ -245,9 +245,17 @@ const InvoiceRow = ({ cycle, delta, amount, status }: any) => (
                }`}>
                {status}
             </span>
-            <button title="Download Invoice" className="p-2 hover:bg-slate-800 rounded-xl text-slate-600 hover:text-blue-400 transition-all opacity-0 group-hover:opacity-100">
-               <Download size={14} />
-            </button>
+            {downloadUrl && (
+               <a
+                  href={downloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Download Invoice"
+                  className="p-2 hover:bg-slate-800 rounded-xl text-slate-600 hover:text-blue-400 transition-all opacity-0 group-hover:opacity-100"
+               >
+                  <Download size={14} />
+               </a>
+            )}
          </div>
       </td>
    </tr>

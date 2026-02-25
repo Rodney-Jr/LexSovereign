@@ -2,19 +2,17 @@
 import express from 'express';
 import { StripeService } from '../services/StripeService';
 import { authenticateToken } from '../middleware/auth';
-import Stripe from 'stripe';
+import { stripe } from '../stripe';
 import { prisma } from '../db';
+import Stripe from 'stripe';
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-01-27.acacia' as any,
-});
 
 // 1. Create Checkout Session
 router.post('/create-checkout-session', async (req, res) => {
-    const { planId, adminEmail } = req.body;
+    const { planId, adminEmail, userCount } = req.body;
     try {
-        const session = await StripeService.createCheckoutSession(planId, adminEmail);
+        const session = await StripeService.createCheckoutSession(planId, adminEmail, userCount);
         res.json({ url: session.url });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -39,33 +37,57 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const sig = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    let event;
+    if (!sig) {
+        return res.status(400).send("Missing signature");
+    }
+
+    let event: Stripe.Event;
 
     try {
-        if (!sig || !webhookSecret) throw new Error("Missing signature or secret");
-        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret || '');
     } catch (err: any) {
         console.error(`[Stripe Webhook] Error: ${err.message}`);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // Handle the event
-    switch (event.type) {
-        case 'checkout.session.completed':
-            const session = event.data.object as Stripe.Checkout.Session;
-            console.log(`[Stripe] Checkout Session Completed: ${session.id}`);
-            // Logic to tag tenant as paid or provision if not already done
-            break;
-        case 'customer.subscription.updated':
-            const subscription = event.data.object as Stripe.Subscription;
-            await handleSubscriptionUpdate(subscription);
-            break;
-        case 'customer.subscription.deleted':
-            const deletedSub = event.data.object as Stripe.Subscription;
-            await handleSubscriptionDeletion(deletedSub);
-            break;
-        default:
-            console.log(`[Stripe] Unhandled event type ${event.type}`);
+    try {
+        switch (event.type) {
+            case 'checkout.session.completed': {
+                const session = event.data.object as any;
+                const customerId = session.customer as string;
+                const adminEmail = session.metadata?.adminEmail;
+                console.log(`[Stripe Webhook] Checkout Completed: ${adminEmail}`);
+
+                await prisma.tenant.updateMany({
+                    where: { stripeCustomerId: customerId } as any,
+                    data: { status: 'active', subscriptionStatus: 'active' } as any
+                });
+                break;
+            }
+            case 'invoice.payment_succeeded': {
+                const session = event.data.object as any;
+                const customerId = session.customer as string;
+                await prisma.tenant.updateMany({
+                    where: { stripeCustomerId: customerId } as any,
+                    data: { status: 'active', subscriptionStatus: 'active' } as any
+                });
+                break;
+            }
+            case 'customer.subscription.updated': {
+                const subscription = event.data.object as Stripe.Subscription;
+                await handleSubscriptionUpdate(subscription);
+                break;
+            }
+            case 'customer.subscription.deleted': {
+                const subscription = event.data.object as Stripe.Subscription;
+                await handleSubscriptionDeletion(subscription);
+                break;
+            }
+            default:
+                console.log(`[Stripe] Unhandled event type ${event.type}`);
+        }
+    } catch (error: any) {
+        console.error(`[Stripe Webhook Handler Error] ${error.message}`);
     }
 
     res.json({ received: true });
@@ -74,22 +96,22 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     const stripeCustomerId = subscription.customer as string;
     await prisma.tenant.updateMany({
-        where: { stripeCustomerId },
+        where: { stripeCustomerId } as any,
         data: {
             subscriptionStatus: subscription.status,
             stripeSubscriptionId: subscription.id
-        }
+        } as any
     });
 }
 
 async function handleSubscriptionDeletion(subscription: Stripe.Subscription) {
     const stripeCustomerId = subscription.customer as string;
     await prisma.tenant.updateMany({
-        where: { stripeCustomerId },
+        where: { stripeCustomerId } as any,
         data: {
             subscriptionStatus: 'canceled',
-            status: 'SUSPENDED' // Suspend access on cancellation
-        }
+            status: 'SUSPENDED'
+        } as any
     });
 }
 

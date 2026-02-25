@@ -8,11 +8,9 @@ import Stripe from 'stripe';
 import { StripeService } from '../services/StripeService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { GoogleAuthService } from '../services/googleAuthService';
+import { stripe } from '../stripe';
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-01-27.acacia' as any,
-});
 
 async function checkTenantUserLimit(tenantId: string) {
     const tenant = await prisma.tenant.findUnique({
@@ -113,7 +111,7 @@ router.post('/onboard-silo', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '8h' });
 
         // After successful onboarding, sync seat count (Industry Standard)
-        if (result.tenant.stripeSubscriptionId) {
+        if ((result.tenant as any).stripeSubscriptionId) {
             StripeService.syncSubscriptionQuantity(result.tenant.id).catch(err =>
                 console.error(`[Stripe Sync Error] ${err.message}`)
             );
@@ -281,7 +279,7 @@ router.post('/join-silo', async (req, res) => {
         });
 
         // Sync seat count after user joins
-        if (result.tenant.stripeSubscriptionId) {
+        if ((result.tenant as any).stripeSubscriptionId) {
             StripeService.syncSubscriptionQuantity(result.tenant.id).catch(err =>
                 console.error(`[Stripe Sync Error] ${err.message}`)
             );

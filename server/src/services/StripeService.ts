@@ -1,10 +1,5 @@
-
-import Stripe from 'stripe';
+import { stripe } from '../stripe';
 import { prisma } from '../db';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-01-27.acacia' as any,
-});
 
 const PLATFORM_URL = process.env.VITE_PLATFORM_URL || 'http://localhost:3000';
 
@@ -12,12 +7,12 @@ export class StripeService {
     /**
      * Create a Stripe Checkout Session for a new tenant
      */
-    static async createCheckoutSession(planId: string, adminEmail: string) {
+    static async createCheckoutSession(planId: string, adminEmail: string, userCount: number = 1) {
         const pricing = await prisma.pricingConfig.findFirst({
             where: { id: { equals: planId, mode: 'insensitive' } }
         });
 
-        if (!pricing || !pricing.stripeBasePriceId || !pricing.stripeUserPriceId) {
+        if (!pricing || !(pricing as any).stripeBasePriceId || !(pricing as any).stripeUserPriceId) {
             throw new Error(`Plan ${planId} is not configured for Stripe payments (Base or User Price ID missing).`);
         }
 
@@ -25,12 +20,12 @@ export class StripeService {
             payment_method_types: ['card'],
             line_items: [
                 {
-                    price: pricing.stripeBasePriceId!,
+                    price: (pricing as any).stripeBasePriceId!,
                     quantity: 1, // Platform Base Fee
                 },
                 {
-                    price: pricing.stripeUserPriceId!,
-                    quantity: 1, // Initial User Seat
+                    price: (pricing as any).stripeUserPriceId!,
+                    quantity: userCount, // User Seats
                 }
             ],
             mode: 'subscription',
@@ -38,7 +33,7 @@ export class StripeService {
             success_url: `${PLATFORM_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}&status=success&plan=${planId}`,
             cancel_url: `${PLATFORM_URL}/onboarding?status=cancelled`,
             metadata: {
-                planId: pricing.id, // Use normalized ID from DB
+                planId: (pricing as any).id,
                 adminEmail
             }
         });
@@ -52,7 +47,7 @@ export class StripeService {
     static async createPortalSession(tenantId: string) {
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
-            select: { stripeCustomerId: true }
+            select: { id: true, stripeCustomerId: true } as any
         });
 
         if (!tenant?.stripeCustomerId) {
@@ -60,7 +55,7 @@ export class StripeService {
         }
 
         const session = await stripe.billingPortal.sessions.create({
-            customer: tenant.stripeCustomerId,
+            customer: (tenant as any).stripeCustomerId,
             return_url: `${PLATFORM_URL}/settings/billing`,
         });
 
@@ -74,17 +69,17 @@ export class StripeService {
     static async syncSubscriptionQuantity(tenantId: string) {
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
-            select: { stripeSubscriptionId: true, plan: true }
+            select: { id: true, stripeSubscriptionId: true, plan: true } as any
         });
 
-        if (!tenant?.stripeSubscriptionId) return;
+        if (!tenant || !(tenant as any).stripeSubscriptionId) return;
 
         const pricing = await prisma.pricingConfig.findFirst({
-            where: { id: { equals: tenant.plan, mode: 'insensitive' } }
+            where: { id: { equals: (tenant as any).plan as string, mode: 'insensitive' } }
         });
 
-        if (!pricing || !pricing.stripeUserPriceId) {
-            console.error(`[Stripe] Cannot sync quantity: Plan ${tenant.plan} not configured with User Price ID.`);
+        if (!pricing || !(pricing as any).stripeUserPriceId) {
+            console.error(`[Stripe] Cannot sync quantity: Plan ${(tenant as any).plan} not configured with User Price ID.`);
             return;
         }
 
@@ -93,10 +88,10 @@ export class StripeService {
         });
 
         // Fetch subscription to get the per-user item ID
-        const subscription = await stripe.subscriptions.retrieve(tenant.stripeSubscriptionId);
+        const subscription = await stripe.subscriptions.retrieve((tenant as any).stripeSubscriptionId as string);
 
         // Find the item specifically for the per-user price
-        const subscriptionItemId = subscription.items.data.find(item => item.price.id === pricing.stripeUserPriceId)?.id;
+        const subscriptionItemId = subscription.items.data.find(item => item.price.id === (pricing as any).stripeUserPriceId)?.id;
 
         if (subscriptionItemId) {
             await stripe.subscriptionItems.update(subscriptionItemId, {
@@ -104,5 +99,25 @@ export class StripeService {
             });
             console.log(`[Stripe] Synced tenant ${tenantId} to ${userCount} seats.`);
         }
+    }
+
+    /**
+     * Fetch recent invoices for a tenant
+     */
+    static async getInvoices(stripeCustomerId: string, limit = 5) {
+        if (!stripeCustomerId) return [];
+        const invoices = await stripe.invoices.list({
+            customer: stripeCustomerId,
+            limit,
+        });
+
+        return invoices.data.map(inv => ({
+            id: inv.id,
+            cycle: inv.period_end ? new Date(inv.period_end * 1000).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown',
+            delta: inv.lines.data.map(l => l.description).join(', '),
+            amount: `$${(inv.amount_paid / 100).toFixed(2)}`,
+            status: inv.status?.toUpperCase() || 'UNKNOWN',
+            downloadUrl: inv.invoice_pdf
+        }));
     }
 }

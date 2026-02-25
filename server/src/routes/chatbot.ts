@@ -75,7 +75,7 @@ router.post('/deploy', async (req, res) => {
             status: 'DEPLOYED',
             version: `v${Date.now()}`,
             url: `https://widget.nomosdesk.com/${config.id || 'bot_default'}`,
-            scriptTag: `<script src="${generateWidgetScriptUrl()}" data-bot-id="${config.id || 'bot_default'}"></script>`,
+            scriptTag: `<script src="${generateWidgetScriptUrl(req)}" data-bot-id="${config.id || 'bot_default'}"></script>`,
             timestamp: new Date().toISOString()
         });
     } catch (err: any) {
@@ -83,8 +83,10 @@ router.post('/deploy', async (req, res) => {
     }
 });
 
-function generateWidgetScriptUrl() {
-    const baseUrl = process.env.PLATFORM_URL || 'http://localhost:3000';
+function generateWidgetScriptUrl(req: express.Request) {
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const baseUrl = process.env.PLATFORM_URL || `${protocol}://${host}`;
     return `${baseUrl}/widget.js`;
 }
 

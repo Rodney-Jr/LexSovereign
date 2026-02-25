@@ -64,7 +64,8 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
     region: Region.PRIMARY,
     encryption: 'SYSTEM',
     adminEmail: '',
-    adminPassword: ''
+    adminPassword: '',
+    userCount: 1
   });
 
   const [pricingConfigs, setPricingConfigs] = useState<PricingConfig[]>([]);
@@ -193,7 +194,8 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         method: 'POST',
         body: JSON.stringify({
           planId: formData.plan,
-          adminEmail: formData.adminEmail
+          adminEmail: formData.adminEmail,
+          userCount: formData.userCount
         })
       });
 
@@ -363,6 +365,34 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                     <p className="text-xs text-slate-400">Cryptographically isolated sovereign environment with peak AI performance.</p>
                   </div>
                   <div className="w-full h-[1px] bg-slate-800"></div>
+
+                  {/* Seat Count Selector */}
+                  <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 px-4">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-white flex items-center gap-2">
+                        <Layers size={14} className="text-indigo-400" /> Allocated User Seats
+                      </p>
+                      <p className="text-[10px] text-slate-500">Scale your silo capacity instantly.</p>
+                    </div>
+                    <div className="flex items-center gap-4 bg-slate-950 border border-slate-800 p-2 rounded-2xl">
+                      <button
+                        onClick={() => setFormData(prev => ({ ...prev, userCount: Math.max(1, prev.userCount - 1) }))}
+                        className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-indigo-500 transition-all"
+                      >
+                        -
+                      </button>
+                      <span className="text-xl font-bold text-white w-8 text-center">{formData.userCount}</span>
+                      <button
+                        onClick={() => setFormData(prev => ({ ...prev, userCount: prev.userCount + 1 }))}
+                        className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-indigo-500 transition-all"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="w-full h-[1px] bg-slate-800"></div>
+
                   <div className="flex items-center gap-4 text-xs font-medium text-slate-300">
                     <div className="flex items-center gap-2"><CheckCircle2 size={14} className="text-emerald-500" /> Primary Data Residency</div>
                     <div className="flex items-center gap-2"><CheckCircle2 size={14} className="text-emerald-500" /> Priority HSM Access</div>
