@@ -7,7 +7,7 @@
         "seed": "node dist/scripts/seed.js || node server/dist/scripts/seed.js"
     },
     "scripts": {
-        "start": "(node server/dist/scripts/repairMigration.js || node dist/scripts/repairMigration.js || echo '⚠️ Repair Step Skipped'); npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)",
+        "start": "(node server/dist/scripts/repairMigration.js || node dist/scripts/repairMigration.js || echo '⚠️ Migration Repair Skipped'); npx prisma migrate deploy && (node server/dist/scripts/repairStripeIds.js || node dist/scripts/repairStripeIds.js || echo '⚠️ Stripe ID Repair Skipped') && (node server/dist/index.js || node dist/index.js)",
         "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
         "build": "npx prisma generate && tsc",
         "seed": "npx prisma db seed",

@@ -210,6 +210,55 @@ async function main() {
         counselId = counselUser?.id;
     }
 
+    // === Pricing Configs: Always upsert so Stripe IDs are guaranteed fresh ===
+    console.log('🌱 Upserting Pricing Configurations with live Stripe IDs...');
+    const pricingConfigs = [
+        {
+            id: 'Starter',
+            basePrice: 99,
+            pricePerUser: 10,
+            creditsIncluded: 0,
+            maxUsers: 5,
+            features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget'],
+            stripeBasePriceId: 'price_1T4QyqE9NGotUyVqu2oTicMx',
+            stripeUserPriceId: 'price_1T4QyqE9NGotUyVq4GQNKdb6'
+        },
+        {
+            id: 'Professional',
+            basePrice: 149,
+            pricePerUser: 15,
+            creditsIncluded: 50,
+            maxUsers: 50,
+            features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support'],
+            stripeBasePriceId: 'price_1T4QyrE9NGotUyVqjYt2IifS',
+            stripeUserPriceId: 'price_1T4QysE9NGotUyVqoTcL3Wjo'
+        },
+        {
+            id: 'Institutional',
+            basePrice: 0,
+            pricePerUser: 25,
+            creditsIncluded: 0,
+            maxUsers: 10000,
+            features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
+        }
+    ];
+    for (const config of pricingConfigs) {
+        await prisma.pricingConfig.upsert({
+            where: { id: config.id },
+            update: {
+                stripeBasePriceId: (config as any).stripeBasePriceId ?? null,
+                stripeUserPriceId: (config as any).stripeUserPriceId ?? null,
+                basePrice: config.basePrice,
+                pricePerUser: config.pricePerUser,
+                maxUsers: config.maxUsers,
+                features: config.features
+            },
+            create: config as any
+        });
+        console.log(`  ✅ Upserted PricingConfig: ${config.id}`);
+    }
+    console.log('✅ Pricing Configurations upserted.');
+
     // Update Matter creation to use dynamic IDs
     if (counselId) {
         // Matters ...
@@ -240,43 +289,7 @@ async function main() {
         });
         console.log('✅ Seeded Encrypted Mock Document');
 
-        console.log('🌱 Seeding Pricing Configurations...');
-        const pricingConfigs = [
-            {
-                id: 'Starter',
-                basePrice: 99,
-                pricePerUser: 10,
-                creditsIncluded: 0,
-                maxUsers: 5,
-                features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget'],
-                stripeBasePriceId: 'price_1T4QyqE9NGotUyVqu2oTicMx',
-                stripeUserPriceId: 'price_1T4QyqE9NGotUyVq4GQNKdb6'
-            },
-            {
-                id: 'Professional',
-                basePrice: 149,
-                pricePerUser: 15,
-                creditsIncluded: 50,
-                maxUsers: 50,
-                features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support'],
-                stripeBasePriceId: 'price_1T4QyrE9NGotUyVqjYt2IifS',
-                stripeUserPriceId: 'price_1T4QysE9NGotUyVqoTcL3Wjo'
-            },
-            {
-                id: 'Institutional',
-                basePrice: 0, // Custom
-                pricePerUser: 25,
-                creditsIncluded: 0,
-                maxUsers: 10000, // Unlimited
-                features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
-            }
-        ];
-
-        console.log('🌱 Bulk Seeding Pricing Configurations...');
-        await prisma.pricingConfig.createMany({
-            data: pricingConfigs,
-            skipDuplicates: true
-        });
+        // Pricing configs already upserted above
 
         // Regulatory Rules
         const rules = [
