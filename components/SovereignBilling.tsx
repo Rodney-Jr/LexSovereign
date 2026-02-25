@@ -120,7 +120,10 @@ const SovereignBilling: React.FC = () => {
                         <p className="text-xl font-bold text-emerald-500 tracking-tight">$0.00</p>
                      </div>
                   </div>
-                  <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase transition-all shadow-xl shadow-emerald-900/20 active:scale-95 flex items-center gap-2">
+                  <button
+                     onClick={handleManageBilling}
+                     className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase transition-all shadow-xl shadow-emerald-900/20 active:scale-95 flex items-center gap-2"
+                  >
                      <Plus size={16} /> Allocate Credits
                   </button>
                </div>
