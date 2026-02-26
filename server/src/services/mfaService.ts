@@ -30,7 +30,8 @@ export class MfaService {
      */
     static verifyToken(token: string, secret: string): boolean {
         try {
-            return verifySync({ token, secret });
+            const result = verifySync({ token, secret });
+            return result.valid;
         } catch (error) {
             console.error('[MFA] Verification Error:', error);
             return false;
