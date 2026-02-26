@@ -37,6 +37,9 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    const [logoClicks, setLogoClicks] = useState(0);
    const [isForgotPassword, setIsForgotPassword] = useState(false);
    const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+   const [mfaRequired, setMfaRequired] = useState(false);
+   const [mfaToken, setMfaToken] = useState<string | null>(null);
+   const [mfaCode, setMfaCode] = useState('');
 
    const handleLogoClick = () => {
       const nextClicks = logoClicks + 1;
@@ -100,13 +103,21 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             throw new Error(data.error || 'Authentication failed');
          }
 
+         if (data.mfaRequired) {
+            setMfaRequired(true);
+            setMfaToken(data.mfaToken);
+            setIsProcessing(false);
+            return;
+         }
+
          await onAuthenticated({
             role: data.user.role,
             permissions: data.user.permissions || [],
             userId: data.user.id,
             tenantId: data.user.tenantId,
             token: data.token,
-            userName: data.user.name
+            userName: data.user.name,
+            mfaEnabled: data.user.mfaEnabled || false
          });
       } catch (err: unknown) {
          setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -138,16 +149,58 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             throw new Error(data.error || 'Google Authentication failed');
          }
 
+         if (data.mfaRequired) {
+            setMfaRequired(true);
+            setMfaToken(data.mfaToken);
+            setIsProcessing(false);
+            return;
+         }
+
          await onAuthenticated({
             role: data.user.role,
             permissions: data.user.permissions || [],
             userId: data.user.id,
             tenantId: data.user.tenantId,
             token: data.token,
-            userName: data.user.name
+            userName: data.user.name,
+            mfaEnabled: data.user.mfaEnabled || false
          });
       } catch (err: unknown) {
          setError(err instanceof Error ? err.message : 'Google Authentication failed');
+      } finally {
+         setIsProcessing(false);
+      }
+   };
+   const handleMfaVerify = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsProcessing(true);
+      setError(null);
+
+      try {
+         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+         const response = await fetch('/api/auth/mfa/verify', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
+            },
+            body: JSON.stringify({ mfaToken, code: mfaCode })
+         });
+
+         const data = await response.json();
+         if (!response.ok) throw new Error(data.error || 'MFA Verification failed');
+
+         await onAuthenticated({
+            role: data.user.role,
+            permissions: data.user.permissions || [],
+            userId: data.user.id,
+            tenantId: data.user.tenantId,
+            token: data.token,
+            userName: data.user.name,
+            mfaEnabled: true
+         });
+      } catch (err: any) {
+         setError(err.message);
       } finally {
          setIsProcessing(false);
       }
@@ -174,7 +227,57 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl">
-               {isForgotPassword ? (
+               {mfaRequired ? (
+                  <form onSubmit={handleMfaVerify} className="space-y-6">
+                     <div className="space-y-2">
+                        <h3 className="text-2xl font-bold text-white">Sovereign 2FA</h3>
+                        <p className="text-slate-400 text-sm leading-relaxed">
+                           Enter the 6-digit code from your authenticator app or a recovery key.
+                        </p>
+                     </div>
+
+                     {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in shake duration-300">
+                           <AlertCircle size={18} />
+                           <p>{error}</p>
+                        </div>
+                     )}
+
+                     <div className="relative group">
+                        <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
+                        <input
+                           type="text"
+                           required
+                           autoFocus
+                           value={mfaCode}
+                           onChange={e => setMfaCode(e.target.value.toUpperCase())}
+                           className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-mono tracking-widest"
+                           placeholder="CODE"
+                        />
+                     </div>
+
+                     <button
+                        type="submit"
+                        disabled={isProcessing}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20 group active:scale-95"
+                     >
+                        {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
+                        {isProcessing ? "Verifying..." : "Verify Authority"}
+                     </button>
+
+                     <button
+                        type="button"
+                        onClick={() => {
+                           setMfaRequired(false);
+                           setMfaToken(null);
+                           setMfaCode('');
+                        }}
+                        className="w-full text-xs text-slate-500 hover:text-white font-bold uppercase tracking-widest text-center transition-colors"
+                     >
+                        Cancel
+                     </button>
+                  </form>
+               ) : isForgotPassword ? (
                   <form onSubmit={handleForgotPassword} className="space-y-6">
                      <div className="space-y-2">
                         <h3 className="text-2xl font-bold text-white">Reset Access</h3>

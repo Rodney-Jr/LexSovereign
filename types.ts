@@ -80,6 +80,7 @@ export interface SessionData {
   permissions: string[];
   mode?: AppMode;
   token?: string;
+  mfaEnabled?: boolean;
 }
 
 export interface ChatbotConfig {

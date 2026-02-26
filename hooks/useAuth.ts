@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { UserRole, AppMode, SessionData } from '../types';
+import { AppMode, SessionData } from '../types';
 import { ROLE_DEFAULT_PERMISSIONS } from '../constants';
-import { getSavedSession, authorizedFetch } from '../utils/api';
+import { authorizedFetch } from '../utils/api';
 import { usePermissions } from './usePermissions';
 import { useWorkPersistence } from './useWorkPersistence';
-
-
 
 export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const { setPermissions, setRole, role: contextRole } = usePermissions();
@@ -13,20 +11,19 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const [userId, setUserId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
     const [tenantId, setTenantId] = useState<string | null>(null);
+    const [token, setToken] = useState<string | null>(null);
+    const [mfaEnabled, setMfaEnabled] = useState(false);
     const [mode, setMode] = useState<AppMode>(AppMode.LAW_FIRM);
     const { recoverWork } = useWorkPersistence({ activeTab, selectedMatterId: selectedMatter });
 
     const handleAuthenticated = useCallback(async (session: SessionData) => {
-        // Safely extract role - handle both string and object types
         const roleValue = typeof session.role === 'string'
             ? session.role
             : (session.role as any)?.name || 'UNKNOWN';
         const normalizedRole = roleValue.toUpperCase();
 
-        // Hydrate permissions from constants or session
         const activePermissions = ROLE_DEFAULT_PERMISSIONS[normalizedRole] || session.permissions || [];
 
-        // 1. Persist session first (so subsequent fetches have the token)
         const sessionToSave = {
             ...session,
             role: normalizedRole,
@@ -34,32 +31,29 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         };
         localStorage.setItem('nomosdesk_session', JSON.stringify(sessionToSave));
 
-        // 2. Immediate Pin Handshake (Crucial for Railway enclave access)
-        // Optimization: Only handshake if we don't have a valid PIN or if token changed
         const existingPin = localStorage.getItem('nomosdesk_pin');
         if (!existingPin || existingPin === 'undefined') {
-            console.log(`[Auth] Initiating PIN handshake for user: ${session.userId}...`);
             try {
                 const data = await authorizedFetch('/api/auth/pin', {
                     token: session.token
                 });
                 if (data && data.pin) {
                     localStorage.setItem('nomosdesk_pin', data.pin);
-                    console.log("[Auth] Sovereign Pin Handshake Successful");
                 }
             } catch (e: any) {
                 console.error("[Auth] Pin Handshake Failed during login:", e.message);
             }
         }
 
-        // 3. Update state (Only if changed to prevent loops)
         setRole(normalizedRole);
         setPermissions(activePermissions);
-        setUserId(prev => (prev === session.userId ? prev : session.userId));
-        setUserName(prev => (prev === (session.userName || null) ? prev : (session.userName || null)));
-        setTenantId(prev => (prev === session.tenantId ? prev : session.tenantId));
-        if (session.mode) setMode(prev => (prev === session.mode ? prev : session.mode!));
-        setIsAuthenticated(prev => (prev === true ? prev : true));
+        setUserId(session.userId);
+        setUserName(session.userName || null);
+        setTenantId(session.tenantId);
+        setToken(session.token || null);
+        setMfaEnabled(!!session.mfaEnabled);
+        if (session.mode) setMode(session.mode);
+        setIsAuthenticated(true);
 
         return normalizedRole;
     }, [setRole, setPermissions]);
@@ -69,6 +63,8 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         setUserId(null);
         setUserName(null);
         setTenantId(null);
+        setToken(null);
+        setMfaEnabled(false);
         setRole('');
         setPermissions([]);
         localStorage.removeItem('nomosdesk_session');
@@ -76,7 +72,6 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         sessionStorage.removeItem('nomosdesk_session');
     }, [setRole, setPermissions]);
 
-    // Initial session recovery
     useEffect(() => {
         const saved = localStorage.getItem('nomosdesk_session');
         if (saved) {
@@ -97,6 +92,8 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         userId,
         userName,
         tenantId,
+        token,
+        mfaEnabled,
         mode,
         setMode,
         contextRole,

@@ -14,6 +14,8 @@ import {
   CloudLightning
 } from 'lucide-react';
 import { IdentityProvider, MobileSession } from '../types';
+import MfaSetup from './MfaSetup';
+import { useAuth } from '../hooks/useAuth'; // Assuming useAuth provides the token
 
 const IdentityHub: React.FC = () => {
   const [providers, setProviders] = useState<IdentityProvider[]>([
@@ -25,6 +27,9 @@ const IdentityHub: React.FC = () => {
     { id: 'sess_1', userId: 'Senior Counsel', platform: 'Whist (Secure)', status: 'Active', sanitizationLevel: 'Strict', expiresAt: '12m' },
     { id: 'sess_2', userId: 'Junior Associate', platform: 'iOS (Managed)', status: 'Active', sanitizationLevel: 'Metadata-Only', expiresAt: '45m' }
   ]);
+
+  const [showMfaSetup, setShowMfaSetup] = useState(false);
+  const { token, mfaEnabled } = useAuth('identity', null);
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
@@ -93,6 +98,25 @@ const IdentityHub: React.FC = () => {
               </div>
             </div>
 
+            <div className="space-y-4">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sovereign 2FA</p>
+              <div className={`p-4 rounded-2xl border ${mfaEnabled ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-800/50 border-slate-800'}`}>
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-bold ${mfaEnabled ? 'text-emerald-400' : 'text-slate-400'}`}>
+                    {mfaEnabled ? 'ENFORCED' : 'PROTECTION OFF'}
+                  </span>
+                  {!mfaEnabled && (
+                    <button
+                      onClick={() => setShowMfaSetup(true)}
+                      className="text-[10px] font-bold text-blue-400 hover:text-blue-300 underline underline-offset-4"
+                    >
+                      Configure
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-3">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Recent Signings</p>
               <div className="space-y-2">
@@ -100,15 +124,23 @@ const IdentityHub: React.FC = () => {
                 <SigningLog label="JWT.Sovereign.Admin" time="45s ago" />
               </div>
             </div>
-
-            <div className="pt-4 border-t border-slate-800">
-              <button className="w-full py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">
-                Rotate Master Keys
-              </button>
-            </div>
           </div>
         </div>
       </div>
+
+      {showMfaSetup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm">
+          <MfaSetup
+            token={token || ''}
+            onCancel={() => setShowMfaSetup(false)}
+            onComplete={() => {
+              setShowMfaSetup(false);
+              // In a real app, refresh user state here
+              window.location.reload();
+            }}
+          />
+        </div>
+      )}
 
       {/* Active Mobile Sessions */}
       <div className="space-y-6">

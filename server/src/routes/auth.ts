@@ -10,6 +10,7 @@ import { authenticateToken, requireRole } from '../middleware/auth';
 import { GoogleAuthService } from '../services/googleAuthService';
 import { stripe } from '../stripe';
 import { sendInvitationEmail, sendPasswordResetEmail, sendTenantWelcomeEmail } from '../services/EmailService';
+import { MfaService } from '../services/mfaService';
 
 const router = express.Router();
 
@@ -493,6 +494,20 @@ router.post('/login', async (req, res) => {
         const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
 
+        // MFA Integration - Two-Step Flow
+        if (user.mfaEnabled) {
+            console.log(`[AuthFlow] MFA Required for user: ${email}`);
+            const mfaToken = jwt.sign({
+                id: user.id,
+                purpose: 'mfa_verification'
+            }, JWT_SECRET, { expiresIn: '10m' });
+
+            return res.json({
+                mfaRequired: true,
+                mfaToken
+            });
+        }
+
         const token = jwt.sign({
             id: user.id,
             email: user.email,
@@ -588,6 +603,20 @@ router.post('/google-login', async (req, res) => {
 
         const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+
+        // MFA Integration - Two-Step Flow for Google (Optional policy)
+        if (user.mfaEnabled) {
+            console.log(`[AuthFlow] Google Login requires second factor for: ${email}`);
+            const mfaToken = jwt.sign({
+                id: user.id,
+                purpose: 'mfa_verification'
+            }, JWT_SECRET, { expiresIn: '10m' });
+
+            return res.json({
+                mfaRequired: true,
+                mfaToken
+            });
+        }
 
         const token = jwt.sign({
             id: user.id,
@@ -799,6 +828,127 @@ router.post('/reset-password', async (req, res) => {
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+// ─── MFA Endpoints ──────────────────────────────────────────────────────────
+
+// 1. Setup MFA (Authenticated)
+router.post('/mfa/setup', authenticateToken, async (req: any, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const secret = MfaService.generateSecret();
+        const qrCode = await MfaService.generateQRCode(user.email, secret);
+
+        // Store secret temporarily (or just return it for the user to verify in next step)
+        // We'll store it permanently only after first successful verification
+        res.json({ secret, qrCode });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 2. Enable MFA (Authenticated)
+router.post('/mfa/enable', authenticateToken, async (req: any, res) => {
+    try {
+        const { secret, token } = req.body;
+        const userId = req.user.id;
+
+        const isValid = MfaService.verifyToken(token, secret);
+        if (!isValid) return res.status(400).json({ error: 'Invalid verification code' });
+
+        // Generate backup codes
+        const { plaintext, hashed } = MfaService.generateBackupCodes();
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                mfaEnabled: true,
+                mfaSecret: secret,
+                mfaBackupCodes: hashed as any
+            }
+        });
+
+        res.json({ success: true, backupCodes: plaintext });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 3. Verify MFA (Second Factor during Login)
+router.post('/mfa/verify', async (req, res) => {
+    try {
+        const { mfaToken, code } = req.body;
+
+        // 1. Verify mfaToken
+        const decoded = jwt.verify(mfaToken, JWT_SECRET) as any;
+        if (decoded.purpose !== 'mfa_verification') {
+            return res.status(401).json({ error: 'Invalid MFA session' });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.id },
+            include: { role: { include: { permissions: true } }, tenant: true }
+        });
+
+        if (!user || !user.mfaSecret) {
+            return res.status(401).json({ error: 'MFA not configured or user not found' });
+        }
+
+        // 2. Verify Code (Check TOTP or Backup Code)
+        let isValid = MfaService.verifyToken(code, user.mfaSecret);
+        let updatedBackupCodes: string[] | null = null;
+
+        if (!isValid && Array.isArray(user.mfaBackupCodes)) {
+            const result = MfaService.verifyBackupCode(code, user.mfaBackupCodes as string[]);
+            if (result.isValid) {
+                isValid = true;
+                updatedBackupCodes = result.updatedCodes;
+            }
+        }
+
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid code or recovery key' });
+        }
+
+        // 3. Update backup codes if one was used
+        if (updatedBackupCodes) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { mfaBackupCodes: updatedBackupCodes as any }
+            });
+        }
+
+        // 4. Issue full JWT
+        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+
+        const token = jwt.sign({
+            id: user.id,
+            email: user.email,
+            role: (user as any)?.role?.name || 'UNKNOWN',
+            permissions,
+            tenantId: user.tenantId,
+            appMode
+        }, JWT_SECRET, { expiresIn: '8h' });
+
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role?.name,
+                tenantId: user.tenantId,
+                permissions,
+                mode: appMode
+            }
+        });
+    } catch (error: any) {
+        res.status(401).json({ error: 'MFA verification timed out or invalid' });
     }
 });
 

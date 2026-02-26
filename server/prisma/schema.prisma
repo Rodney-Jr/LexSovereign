@@ -31,6 +31,8 @@ model User {
   isActive          Boolean     @default(true)
   lastActiveAt      DateTime    @default(now())
   mfaEnabled        Boolean     @default(false)
+  mfaSecret         String?
+  mfaBackupCodes    Json?       @default("[]")
   department        String?
   auditLogs         AuditLog[]
   assignedMatters   Matter[]
