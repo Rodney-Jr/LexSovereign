@@ -29,6 +29,8 @@ model User {
   maxWeeklyHours    Float       @default(40.0)
   roleSeniority     Float       @default(1.0)
   isActive          Boolean     @default(true)
+  lastActiveAt      DateTime    @default(now())
+  mfaEnabled        Boolean     @default(false)
   department        String?
   auditLogs         AuditLog[]
   assignedMatters   Matter[]
@@ -87,6 +89,7 @@ model Tenant {
   encryptionMode   String            @default("SYSTEM_MANAGED")
   status           String            @default("ACTIVE")
   separationMode   String            @default("OPEN")
+  attributes       Json?             @default("{}")
   brandingProfiles BrandingProfile[]
   chatbotConfig    ChatbotConfig?
   invitations      Invitation[]

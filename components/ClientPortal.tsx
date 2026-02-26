@@ -25,8 +25,19 @@ const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
    const clientMatters = matters.filter(m => checkVisibility(m));
    const latestMatter = clientMatters[0]; // Assuming most recent for the snapshot
 
-   // Mock PII count based on matter count for now (representing active scanning)
-   const piiScrubbed = clientMatters.length * 7;
+   // Calculate PII scrubbed count from actual document metadata attributes if available
+   const piiScrubbed = documents.reduce((acc, doc) => {
+      const attr = (doc.attributes as any) || {};
+      return acc + (attr.scrubbedEntities || 0);
+   }, 0) || (clientMatters.length * 7); // Fallback to heuristic if no data
+
+   // Calculate matter progress based on status or attributes
+   const getProgress = (matter: any) => {
+      if (matter.status === 'CLOSED') return 100;
+      if (matter.status === 'REVIEW') return 80;
+      const attr = (matter.attributes as any) || {};
+      return attr.progress || 45; // Default to 45% if unknown
+   };
 
    return (
       <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-right-8 duration-700 pb-20">
@@ -67,10 +78,10 @@ const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
                         <div className="space-y-3">
                            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400">
                               <span>Legal Review Status</span>
-                              <span className="text-blue-400">45%</span>
+                              <span className="text-blue-400">{getProgress(latestMatter)}%</span>
                            </div>
                            <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue-500 w-[45%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]"></div>
+                              <div className="h-full bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]" style={{ width: `${getProgress(latestMatter)}%` }}></div>
                            </div>
                         </div>
 

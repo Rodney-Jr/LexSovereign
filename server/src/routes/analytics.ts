@@ -20,12 +20,23 @@ router.get('/metrics', authenticateToken, async (req, res) => {
             prisma.regulatoryRule.count()
         ]);
 
-        // Growth Metrics Heuristics
-        // Hours Saved: 10h per matter + 0.5h per document
-        const hoursSaved = (mattersCount * 10) + (docsCount * 0.5);
+        // Fetch tenant attributes for configurable heuristics
+        const tenant = !isGlobalAdmin ? await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { attributes: true }
+        }) : null;
 
-        // Fee Recovery: Approx 5000 GHS per matter in unbilled fees captured
-        const feeRecovery = mattersCount * 5000;
+        const attributes = (tenant?.attributes as any) || {};
+        const hoursPerMatter = attributes.hoursPerMatter ?? 10;
+        const hoursPerDoc = attributes.hoursPerDoc ?? 0.5;
+        const feePerMatter = attributes.feePerMatter ?? 5000;
+
+        // Growth Metrics Heuristics
+        // Default: 10h per matter + 0.5h per document
+        const hoursSaved = (mattersCount * hoursPerMatter) + (docsCount * hoursPerDoc);
+
+        // Fee Recovery: Default Approx 5000 GHS per matter
+        const feeRecovery = mattersCount * feePerMatter;
 
         // TAT Reduction: Base 40% + scaling with volume up to 75%
         const tatReduction = Math.min(40 + (docsCount * 0.1), 75).toFixed(1);
@@ -35,11 +46,23 @@ router.get('/metrics', authenticateToken, async (req, res) => {
             where: isGlobalAdmin ? {} : { tenantId }
         });
 
-        // "AI Validation Score" is likely a calculated metric. 
-        // For MVP, if we don't have a specific table for logs, we might count "Audited" events.
-        // Let's create a placeholder calculation based on real data if possible, or 100% if no data.
-        // Doing a simple mock calculation based on document count for now to simulate "work done".
-        const aiScore = docsCount > 0 ? 98.2 : 100;
+        // AI Validation Score: Calculate from AuditLog successes
+        const successfulValidations = await prisma.auditLog.count({
+            where: {
+                ...(isGlobalAdmin ? {} : { userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) } }),
+                action: 'AI_VALIDATION_PASS'
+            }
+        });
+        const totalValidations = await prisma.auditLog.count({
+            where: {
+                ...(isGlobalAdmin ? {} : { userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) } }),
+                action: { in: ['AI_VALIDATION_PASS', 'AI_VALIDATION_FAIL'] }
+            }
+        });
+
+        const aiScore = totalValidations > 0
+            ? parseFloat(((successfulValidations / totalValidations) * 100).toFixed(1))
+            : (docsCount > 0 ? 98.2 : 100);
 
         res.json({
             matters: mattersCount,

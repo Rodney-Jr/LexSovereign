@@ -1,17 +1,13 @@
 import express from 'express';
 import { ChatbotService } from '../services/ChatbotService';
 import { LexAIService } from '../services/LexAIService';
+import { prisma } from '../db';
 import { KnowledgeArtifact } from '../types';
 
 const router = express.Router();
 const gemini = new LexAIService();
 
-// Mock Knowledge Base until connected to DB or vector store
-const MOCK_KNOWLEDGE: KnowledgeArtifact[] = [
-    { id: 'k1', title: 'Onboarding Process', category: 'OnboardingProcess', content: 'Our client onboarding takes 48 hours. We require Identity verification and a Conflict Check.', lastIndexed: '2h ago' },
-    { id: 'k2', title: 'Corporate Practice', category: 'PracticeArea', content: 'We specialize in corporate governance and structural property disputes.', lastIndexed: '1d ago' },
-    { id: 'k3', title: 'Fee Structure', category: 'Faq', content: 'Initial consultation is standard. We use statutory Scale of Fees for litigation.', lastIndexed: '3d ago' }
-];
+// Knowledge Base is now connected to DB table KnowledgeArtifact
 
 router.get('/config/public/:botId', async (req, res) => {
     try {
@@ -66,8 +62,8 @@ router.post('/deploy', async (req, res) => {
         }
 
         // Save state as 'production' version
-        // TODO: Get tenantId from session
-        const tenantId = 'demo-tenant-id';
+        // Get tenantId from session
+        const tenantId = (req as any).user?.tenantId || 'demo-tenant-id';
         await ChatbotService.saveConfig(tenantId, config);
 
         // Return success with deployment metadata
@@ -95,12 +91,14 @@ router.post('/chat', async (req, res) => {
     try {
         const { message, config } = req.body;
 
-        // Filter knowledge artifacts based on current config selection
-        const activeKnowledge = MOCK_KNOWLEDGE.filter(k =>
-            config.knowledgeBaseIds.includes(k.id)
-        );
+        // Fetch knowledge artifacts from DB based on current config selection
+        const activeKnowledge = await prisma.knowledgeArtifact.findMany({
+            where: {
+                id: { in: config.knowledgeBaseIds }
+            }
+        });
 
-        const response = await gemini.publicChat(message, config, activeKnowledge);
+        const response = await gemini.publicChat(message, config, activeKnowledge as any);
         res.json(response);
     } catch (err: any) {
         console.error("Chat Error:", err);

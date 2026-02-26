@@ -31,7 +31,9 @@ router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN'])
                 maxWeeklyHours: true,
                 roleSeniority: true,
                 jurisdictionPins: true,
-                credentials: true
+                credentials: true,
+                lastActiveAt: true,
+                mfaEnabled: true
             },
             orderBy: {
                 createdAt: 'desc'
@@ -44,8 +46,8 @@ router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN'])
             name: u.name,
             email: u.email,
             role: u.roleString,
-            lastActive: 'Recently', // Placeholder
-            mfaEnabled: true,       // Placeholder
+            lastActive: u.lastActiveAt.toISOString(),
+            mfaEnabled: u.mfaEnabled,
             maxWeeklyHours: u.maxWeeklyHours,
             roleSeniority: u.roleSeniority,
             jurisdictionPins: u.jurisdictionPins as string[],
