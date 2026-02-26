@@ -32,6 +32,7 @@ import stripeRouter from './routes/stripe';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
+import { startFxWebSocket } from './services/fxWebSocketService';
 
 const app = express();
 // Force reload for env var update (Key Rotation 2)
@@ -160,6 +161,9 @@ app.listen(Number(port), '0.0.0.0', () => {
 
     // Initialize Sovereign Cron System
     initCronJobs();
+
+    // Start FastForex real-time WebSocket feed
+    startFxWebSocket();
 
     // Async Seeding (Non-blocking for Railway Healthcheck)
     if (process.env.NODE_ENV === 'production') {
