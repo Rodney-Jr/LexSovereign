@@ -127,7 +127,10 @@ export enum Region {
     PRIMARY = 'SOV-PR-1',
     SECONDARY = 'SOV-SC-1',
     GLOBAL = 'GL-ALL-1',
-    USA = 'US-EAS-1'
+    USA = 'US-EAS-1',
+    ACCRA = 'GH-ACC-1',
+    LAGOS = 'NG-LAG-1',
+    NAIROBI = 'KE-NBO-1'
 }
 
 export enum ReviewStatus {
