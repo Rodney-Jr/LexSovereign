@@ -52,3 +52,27 @@ export class FxRateService {
 }
 
 export const syncDailyRates = () => FxRateService.syncRates();
+
+/**
+ * Returns the most recent rate for a given currency pair.
+ * Accepts both "USD_GHS" and "USD/GHS" notation.
+ */
+export async function getLatestRate(pair: string): Promise<{ rate: number; date: string; isFallback: boolean }> {
+    // Normalise underscore notation (USD_GHS) to slash notation (USD/GHS)
+    const normalisedPair = pair.replace('_', '/');
+
+    const record = await prisma.dailyFxRate.findFirst({
+        where: { currencyPair: normalisedPair },
+        orderBy: { effectiveDate: 'desc' }
+    });
+
+    if (!record) {
+        return { rate: 0, date: 'N/A', isFallback: true };
+    }
+
+    return {
+        rate: record.rate,
+        date: record.effectiveDate.toISOString().split('T')[0],
+        isFallback: false
+    };
+}
