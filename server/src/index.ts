@@ -105,28 +105,38 @@ app.use('/api/analytics', authenticateToken, analyticsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 
-// Serve static files from the React app
-// Priority 1: Check root dist (Standard Vite) - DISABLE default index.html serving here
-app.use(express.static(path.join(__dirname, '../../dist'), { index: false }));
+// Resolve static directory paths using process.cwd() for reliability in root-run environments
+const DIST_PATH = path.join(process.cwd(), 'dist');
+const PUBLIC_PATH = path.join(process.cwd(), 'server', 'public');
+
+console.log(`[Static] Serving assets from: ${DIST_PATH}`);
+
+// Priority 1: Check root dist (Standard Vite)
+app.use(express.static(DIST_PATH, { index: false }));
+
 // Priority 2: Check server/public (Legacy/Fallback)
-app.use(express.static(path.join(__dirname, '../public'), { index: false }));
+app.use(express.static(PUBLIC_PATH, { index: false }));
 
 import fs from 'fs';
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file with runtime injections.
 app.get('*', (req, res) => {
-    const distPath = path.join(__dirname, '../../dist/index.html');
+    // SECURITY: Do not serve index.html for missing assets (prevents MIME type errors)
+    if (req.url.startsWith('/assets/')) {
+        console.warn(`[Static] Asset not found: ${req.url}`);
+        return res.status(404).send('Asset not found');
+    }
 
-    if (fs.existsSync(distPath)) {
+    const indexHtmlPath = path.join(DIST_PATH, 'index.html');
+
+    if (fs.existsSync(indexHtmlPath)) {
         try {
-            let html = fs.readFileSync(distPath, 'utf8');
+            let html = fs.readFileSync(indexHtmlPath, 'utf8');
 
-            // Inject runtime variables (Fixes build-time environment variable issues)
+            // Inject runtime variables
             const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
             const sovereignPin = process.env.SOVEREIGN_PIN || '';
-
-            console.log(`[Runtime Injection] URL: ${req.url} | ClientID: ${googleClientId ? 'PRESENT' : 'MISSING'}`);
 
             const injection = `
     <script>
@@ -135,16 +145,14 @@ app.get('*', (req, res) => {
       console.log("[Runtime] Credentials injected into client pulse.");
     </script>`;
 
-            // Insert into head using regex for robustness
             html = html.replace(/<head>/i, `<head>${injection}`);
-
             res.send(html);
         } catch (error) {
             console.error("[Runtime Error] Failed to serve index.html:", error);
             res.status(500).send("Internal Server Error");
         }
     } else {
-        res.status(404).send("Application dist not found. Please run 'npm run build' first.");
+        res.status(404).send("Application dist not found. Please ensure the frontend is built.");
     }
 });
 
