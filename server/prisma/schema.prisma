@@ -97,6 +97,7 @@ model Tenant {
   policies         Policy[]
   roles            Role[]
   users            User[]
+  bridges          Bridge[]
   stripeCustomerId   String?           @unique
   stripeSubscriptionId String?         @unique
   subscriptionStatus String?
@@ -334,4 +335,19 @@ model ChatConversation {
   @@index([sessionId])
   @@index([createdAt])
   @@index([isLead])
+}
+
+model Bridge {
+  id              String   @id @default(uuid())
+  name            String
+  category        String
+  provider        String
+  status          String   @default("Nominal")
+  encapsulation   String
+  priority        String   @default("P0")
+  lastActivity    String?
+  tenantId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
 }

@@ -3,8 +3,8 @@ import { LocalStorageAdapter } from './LocalStorageAdapter';
 
 export enum StorageType {
     LOCAL = 'LOCAL',
-    ONEDRIVE = 'ONEDRIVE', // Placeholder
-    S3 = 'S3' // Placeholder
+    ONEDRIVE = 'ONEDRIVE', // Future: Microsoft OneDrive Adapter
+    S3 = 'S3'             // Future: AWS S3 Adapter
 }
 
 export class StorageFactory {

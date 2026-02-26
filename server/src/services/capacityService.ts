@@ -53,15 +53,33 @@ export class CapacityService {
             };
         }
 
-        // 2. Credential Check (Mock logic for MVP)
-        const credentials = (user.credentials as any[]) || [];
-        const expired = credentials.some(c => c.expiresAt && new Date(c.expiresAt) < new Date());
-        if (expired) {
+        // 2. Credential Check — validates required license types and expiry
+        interface Credential { type: string; expiresAt?: string; jurisdiction?: string; }
+        const credentials = (user.credentials as unknown as Credential[]) || [];
+
+        // Check for any expired credentials
+        const expiredCred = credentials.find(c => c.expiresAt && new Date(c.expiresAt) < new Date());
+        if (expiredCred) {
             return {
                 allowed: false,
-                reason: 'Practitioner has expired credentials on file.',
+                reason: `Practitioner has an expired credential: ${expiredCred.type}.`,
                 severity: 'BLOCK'
             };
+        }
+
+        // Check that the practitioner holds a BAR_LICENSE covering the required jurisdiction
+        if (matterData.region) {
+            const hasLicense = credentials.some(c =>
+                c.type === 'JURISDICTION_BAR_LICENSE' &&
+                (!c.jurisdiction || c.jurisdiction === matterData.region)
+            );
+            if (!hasLicense) {
+                return {
+                    allowed: false,
+                    reason: `Practitioner lacks a JURISDICTION_BAR_LICENSE for region: ${matterData.region}.`,
+                    severity: 'BLOCK'
+                };
+            }
         }
 
         // 3. Capacity Check
