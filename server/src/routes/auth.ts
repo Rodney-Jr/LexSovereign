@@ -9,6 +9,7 @@ import { StripeService } from '../services/StripeService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { GoogleAuthService } from '../services/googleAuthService';
 import { stripe } from '../stripe';
+import { sendInvitationEmail, sendPasswordResetEmail, sendTenantWelcomeEmail } from '../services/EmailService';
 
 const router = express.Router();
 
@@ -110,12 +111,21 @@ router.post('/onboard-silo', async (req, res) => {
             appMode: result.tenant.appMode
         }, JWT_SECRET, { expiresIn: '8h' });
 
-        // After successful onboarding, sync seat count (Industry Standard)
+        // After successful onboarding, sync seat count
         if ((result.tenant as any).stripeSubscriptionId) {
             StripeService.syncSubscriptionQuantity(result.tenant.id).catch(err =>
                 console.error(`[Stripe Sync Error] ${err.message}`)
             );
         }
+
+        // Send welcome email (non-blocking)
+        sendTenantWelcomeEmail({
+            to: adminEmail,
+            adminName: `${name} Administrator`,
+            tenantName: name,
+            tempPassword: adminPassword,
+            loginUrl: `${process.env.PLATFORM_URL || 'https://app.nomosdesk.com'}/login`
+        }).catch(err => console.error('[Email] Welcome email failed:', err));
 
         res.status(201).json({
             token,
@@ -364,9 +374,20 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 // 4.5 Dispatch Invitation - PROTECTED
 router.post('/dispatch-invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
-        const { token, email } = req.body;
-        // In a real app, this would trigger an ESM/SMTP dispatch
+        const { token, email, roleName, tenantName } = req.body;
+        const inviterName = req.user?.email || 'Your Administrator';
+
         console.log(`[Notification] Dispatching Sovereign Invitation for ${email} with token ${token}`);
+
+        // Fire Resend email (non-blocking)
+        sendInvitationEmail({
+            to: email,
+            inviterName,
+            tenantName: tenantName || 'your organisation',
+            roleName: roleName || 'Team Member',
+            inviteToken: token
+        }).catch(err => console.error('[Email] Invitation dispatch failed:', err));
+
         res.json({ success: true, message: 'Invitation dispatched successfully.' });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -717,9 +738,9 @@ router.post('/forgot-password', async (req, res) => {
             }
         });
 
-        // LOGGING TOKEN FOR DEMO
-        console.log(`[AUTH] Password Reset Token for ${email}: ${token}`);
-        console.log(`[AUTH] URL: http://localhost:5173/?resetToken=${token}`);
+        // Send real password reset email via Resend
+        sendPasswordResetEmail({ to: email, resetToken: token })
+            .catch(err => console.error('[Email] Password reset email failed:', err));
 
         res.json({ success: true, message: 'Instructions sent to email.' });
     } catch (error: any) {

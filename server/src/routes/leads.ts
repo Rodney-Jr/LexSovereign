@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { sendLeadAcknowledgmentEmail } from '../services/EmailService';
 
 const router = express.Router();
 
@@ -23,6 +24,10 @@ router.post('/', async (req, res) => {
                 status: 'NEW'
             }
         });
+
+        // Send acknowledgment email (non-blocking)
+        sendLeadAcknowledgmentEmail({ to: email, name })
+            .catch(err => console.error('[Email] Lead ack email failed:', err));
 
         res.status(201).json(lead);
     } catch (error: any) {
