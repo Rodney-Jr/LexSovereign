@@ -188,6 +188,7 @@ export interface DocumentMetadata {
   uploadedBy?: string;
   uploadedAt?: string;
   content?: string; // Optional content for creation/preview
+  status?: string;
 
   // Approval Workflow Fields
   creatorId?: string;

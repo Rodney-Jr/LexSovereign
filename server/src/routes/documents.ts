@@ -214,4 +214,55 @@ router.get('/review-needed', authenticateToken, async (req, res) => {
     }
 });
 
+// Get audit logs for a client (scoped to their matters)
+router.get('/client-audit', authenticateToken, async (req, res) => {
+    try {
+        if (!req.user || !req.user.tenantId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // 1. Fetch matters for this tenant
+        const matters = await prisma.matter.findMany({
+            where: { tenantId: req.user.tenantId },
+            select: { id: true }
+        });
+
+        const matterIds = matters.map(m => m.id);
+
+        // 2. Fetch audit logs related to these matters or their documents
+        // Since resourceId in audit logs can be matterId or documentId
+        // We need to find logs where resourceId is in matterIds OR 
+        // logs where resourceId is a documentId belonging to these matters
+
+        const documents = await prisma.document.findMany({
+            where: { matterId: { in: matterIds } },
+            select: { id: true }
+        });
+
+        const docIds = documents.map(d => d.id);
+        const allTargetIds = [...matterIds, ...docIds];
+
+        const logs = await prisma.auditLog.findMany({
+            where: {
+                resourceId: { in: allTargetIds }
+            },
+            take: 10,
+            orderBy: { timestamp: 'desc' }
+        });
+
+        const formattedLogs = logs.map(log => ({
+            id: log.id,
+            type: log.action.includes('ENCLAVE') ? 'ENCLAVE' :
+                log.action.includes('AI') ? 'AI' :
+                    log.action.includes('SECURITY') || log.action.includes('SCRUB') ? 'SECURITY' : 'JURISDICTION',
+            message: log.details.length > 50 ? `${log.details.substring(0, 50)}...` : log.details,
+            timestamp: new Date(log.timestamp).toLocaleTimeString() + ' ' + new Date(log.timestamp).toLocaleDateString()
+        }));
+
+        res.json(formattedLogs);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
