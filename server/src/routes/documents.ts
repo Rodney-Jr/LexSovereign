@@ -230,10 +230,6 @@ router.get('/client-audit', authenticateToken, async (req, res) => {
         const matterIds = matters.map(m => m.id);
 
         // 2. Fetch audit logs related to these matters or their documents
-        // Since resourceId in audit logs can be matterId or documentId
-        // We need to find logs where resourceId is in matterIds OR 
-        // logs where resourceId is a documentId belonging to these matters
-
         const documents = await prisma.document.findMany({
             where: { matterId: { in: matterIds } },
             select: { id: true }
@@ -251,13 +247,14 @@ router.get('/client-audit', authenticateToken, async (req, res) => {
         });
 
         const formattedLogs = logs.map(log => {
-            const details = log.details || "";
+            // SAFE NULL CHECK for details
+            const logDetails = log.details || "";
             return {
                 id: log.id,
                 type: log.action.includes('ENCLAVE') ? 'ENCLAVE' :
                     log.action.includes('AI') ? 'AI' :
                         log.action.includes('SECURITY') || log.action.includes('SCRUB') ? 'SECURITY' : 'JURISDICTION',
-                message: details.length > 50 ? `${details.substring(0, 50)}...` : details,
+                message: logDetails.length > 50 ? `${logDetails.substring(0, 50)}...` : logDetails,
                 timestamp: new Date(log.timestamp).toLocaleTimeString() + ' ' + new Date(log.timestamp).toLocaleDateString()
             };
         });
