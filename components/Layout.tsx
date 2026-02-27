@@ -123,12 +123,12 @@ const Layout: React.FC<LayoutProps> = ({
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <a href={import.meta.env.VITE_MARKETING_URL || 'https://nomosdesk.com'} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="bg-emerald-500/20 p-2 rounded-lg">
               <ShieldCheck className="text-emerald-400 w-6 h-6" />
             </div>
             <span className="font-bold text-xl tracking-tight text-white">NomosDesk</span>
-          </div>
+          </a>
           <button
             className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-brand-muted"
             onClick={() => setIsSidebarOpen(false)}

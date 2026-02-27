@@ -214,14 +214,16 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
 
          <div className="w-full max-w-lg z-10 space-y-8 animate-in fade-in duration-700">
             <div className="text-center space-y-3">
-               <div
-                  onClick={handleLogoClick}
-                  className="inline-flex items-center gap-3 bg-slate-900 border border-slate-800 px-5 py-2.5 rounded-2xl shadow-2xl cursor-pointer active:scale-95 transition-transform"
-               >
-                  <div className="p-1.5 bg-emerald-500/20 rounded-lg">
+               <div className="inline-flex items-center gap-3 bg-slate-900 border border-slate-800 px-5 py-2.5 rounded-2xl shadow-2xl transition-transform">
+                  <div
+                     onClick={handleLogoClick}
+                     className="p-1.5 bg-emerald-500/20 rounded-lg cursor-pointer active:scale-95"
+                  >
                      <ShieldCheck className="text-emerald-400" size={24} />
                   </div>
-                  <span className="font-bold text-2xl tracking-tight text-white select-none">NomosDesk</span>
+                  <a href={import.meta.env.VITE_MARKETING_URL || 'https://nomosdesk.com'} className="font-bold text-2xl tracking-tight text-white select-none hover:text-emerald-400 transition-colors">
+                     NomosDesk
+                  </a>
                </div>
                <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] select-none">Secure Legal Intelligence</p>
             </div>

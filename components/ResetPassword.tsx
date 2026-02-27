@@ -80,12 +80,12 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ token, onComplete, onBack
 
             <div className="w-full max-w-lg z-10 space-y-8 animate-in fade-in duration-700">
                 <div className="text-center space-y-3">
-                    <div className="inline-flex items-center gap-3 bg-slate-900 border border-slate-800 px-5 py-2.5 rounded-2xl shadow-2xl">
+                    <a href={import.meta.env.VITE_MARKETING_URL || 'https://nomosdesk.com'} className="inline-flex items-center gap-3 bg-slate-900 border border-slate-800 px-5 py-2.5 rounded-2xl shadow-2xl hover:opacity-80 transition-opacity">
                         <div className="p-1.5 bg-emerald-500/20 rounded-lg">
                             <ShieldCheck className="text-emerald-400" size={24} />
                         </div>
                         <span className="font-bold text-2xl tracking-tight text-white">NomosDesk</span>
-                    </div>
+                    </a>
                 </div>
 
                 <div className="bg-slate-900 border border-slate-800 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl">
