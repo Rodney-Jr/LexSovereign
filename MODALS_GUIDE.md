@@ -1,6 +1,6 @@
-# LexSovereign Modals Guide
+# NomosDesk Modals Guide
 
-This document provides a comprehensive overview of all modals in the LexSovereign platform, their purpose, usage patterns, and implementation details.
+This document provides a comprehensive overview of all modals in the NomosDesk platform, their purpose, usage patterns, and implementation details.
 
 ---
 
@@ -252,7 +252,7 @@ interface RoleTemplateMarketplaceProps {
 
 ### Common Implementation Pattern
 
-All modals in LexSovereign follow a consistent design pattern:
+All modals in NomosDesk follow a consistent design pattern:
 
 ```tsx
 // 1. State Management
@@ -382,4 +382,4 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 ---
 
 **Last Updated:** 2026-02-12  
-**Maintained By:** LexSovereign Engineering Team
+**Maintained By:** NomosDesk Engineering Team

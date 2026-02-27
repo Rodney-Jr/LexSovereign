@@ -11,7 +11,7 @@ Currently, the ingestion system supports:
 ## 2. File Placement
 Place your new files in the `law_knowlege_base` directory. You can organize them into subfolders (e.g., by Year, Type, or Jurisdiction). The folder name immediately under the source root is used as the **Category**.
 
-**Path:** `c:\Users\LENOVO\Desktop\LexSovereign\law_knowlege_base\fg`
+**Path:** `c:\Users\LENOVO\Desktop\NomosDesk\law_knowlege_base\fg`
 
 ### Example Structure:
 ```text

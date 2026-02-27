@@ -18,7 +18,7 @@ export class MfaService {
      */
     static async generateQRCode(email: string, secret: string): Promise<string> {
         const otpauth = generateURI({
-            issuer: 'LexSovereign',
+            issuer: 'NomosDesk',
             label: email,
             secret
         });

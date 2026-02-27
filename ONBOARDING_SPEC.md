@@ -1,6 +1,6 @@
-# LexSovereign: Onboarding & Deployment Specification (Sovereign-First)
+# NomosDesk: Onboarding & Deployment Specification (Sovereign-First)
 
-This document outlines the sovereign onboarding protocols for the **LexSovereign** platform. Our architecture prioritizes **Logical Sovereignty**, ensuring that sensitive legal data remains isolated via software-defined silos and Cloud-KMS encryption.
+This document outlines the sovereign onboarding protocols for the **NomosDesk** platform. Our architecture prioritizes **Logical Sovereignty**, ensuring that sensitive legal data remains isolated via software-defined silos and Cloud-KMS encryption.
 
 ---
 
@@ -36,7 +36,7 @@ The first user created during Tenant Inception is automatically assigned the **T
 
 ### The Handshake Sequence:
 1.  **Hardware Verification:** The Admin must perform a **Deterministic Key Handshake** (biometric or hardware key) to bind their local device to the Silo's HSM root.
-2.  **RBAC Matrix Setup:** Define custom roles or use LexSovereign defaults:
+2.  **RBAC Matrix Setup:** Define custom roles or use NomosDesk defaults:
     *   *Law Firm:* Partner, Associate, Clerk, Legal Secretary.
     *   *Legal Dept:* General Counsel, Legal Analyst, Compliance Officer.
 3.  **DAS Policy Config:** Configure the **Data Access Service (DAS)** Proxy level (e.g., "Always scrub PII for Associates," "Full access for Partners").
@@ -50,7 +50,7 @@ Once the Silo is active, the Admin invites practitioners into the environment.
 ### The Invitation Loop:
 1.  **OIDC Invitation:** Admin triggers an invitation via the `TenantAdministration` panel.
 2.  **Sovereign Link:** User receives a one-time "Sovereign Link" that only resolves when accessed via the corporate domain.
-3.  **ZK-Proof Enrollment:** User performs their first MFA event. LexSovereign generates a unique **Identity Fragment** on the user's hardware enclave.
+3.  **ZK-Proof Enrollment:** User performs their first MFA event. NomosDesk generates a unique **Identity Fragment** on the user's hardware enclave.
 4.  **Role Acceptance:**
     *   **Law Firm User:** Signs the "Ethical Use Affidavit" (digital trace recorded in the ledger) acknowledging Professional Ethics guardrails.
     *   **Legal Dept User:** Completes the "Internal Compliance Briefing" regarding PII handling.

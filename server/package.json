@@ -1,7 +1,7 @@
 {
     "name": "nomosdesk-server",
     "version": "1.0.1",
-    "description": "Sovereign Control Plane API",
+    "description": "NomosDesk Control Plane API",
     "main": "dist/index.js",
     "prisma": {
         "seed": "node dist/scripts/seed.js || node server/dist/scripts/seed.js"

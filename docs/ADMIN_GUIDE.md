@@ -1,7 +1,7 @@
-# LexSovereign Administrator Guide
+# NomosDesk Administrator Guide
 
 ## 1. Role Management
-LexSovereign uses a **Role-Based Access Control (RBAC)** system enhanced with **Attribute-Based Access Control (ABAC)** policies.
+NomosDesk uses a **Role-Based Access Control (RBAC)** system enhanced with **Attribute-Based Access Control (ABAC)** policies.
 
 ### Creating Custom Roles
 Tenant Administrators can create custom roles via the Settings UI or API.

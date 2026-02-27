@@ -8,7 +8,7 @@ This document details the precise alignment of NomosDesk's **Sovereign Silos** w
 
 NomosDesk does not simply "host" data; we **pin** jurisdictional logic to physical hardware optimized for legal latency and statutory compliance.
 
-### Sovereign Mapping Table
+### NomosDesk: Jurisdictional Silo to Railway Region Mapping
 
 | NomosDesk Silo | Jurisdictional Target | Railway Region ID | Placement Logic | Infrastructure Tier |
 | :--- | :--- | :--- | :--- | :--- |

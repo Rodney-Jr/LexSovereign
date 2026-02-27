@@ -1,4 +1,4 @@
-This guide provides technical specifications and operational workflows for provisioning the **LexSovereign Enterprise Tier**. Our architecture is built on the **Sovereign Integrity Promise**: every tenant operates within a cryptographically isolated **Silo**, which is physically mapped to a trusted **Regional Datacenter** to ensure absolute Data Residency compliance.
+This guide provides technical specifications and operational workflows for provisioning the **NomosDesk Enterprise Tier**. Our architecture is built on the **Sovereign Integrity Promise**: every tenant operates within a cryptographically isolated **Silo**, which is physically mapped to a trusted **Regional Datacenter** to ensure absolute Data Residency compliance.
 
 > [!IMPORTANT]
 > For a detailed mapping of jurisdictional Silos to physical Railway datacenters, refer to the [RAILWAY_SILO_MAPPING.md](file:///c:/Users/LENOVO/Desktop/LexSovereign/docs/RAILWAY_SILO_MAPPING.md).

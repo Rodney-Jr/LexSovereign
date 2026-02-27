@@ -14,7 +14,8 @@ import {
    Filter,
    Search,
    Database,
-   Globe
+   Globe,
+   LogOut
 } from 'lucide-react';
 
 import { useSovereignData } from '../hooks/useSovereignData';
@@ -22,7 +23,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import MatterJourney from './MatterJourney';
 import ActivityFeed from './ActivityFeed';
 
-const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
+const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ userName, onLogout }) => {
    const { matters, documents } = useSovereignData(true);
    const { checkVisibility } = usePermissions();
    const [docFilter, setDocFilter] = useState<'all' | 'drafts' | 'final'>('all');
@@ -77,6 +78,18 @@ const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
                   </p>
                </div>
             </div>
+
+            <div className="flex-1" />
+
+            <button
+               onClick={onLogout}
+               className="flex items-center gap-3 px-6 py-3 bg-slate-900/50 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-2xl border border-slate-800 hover:border-red-500/30 transition-all group shadow-xl"
+            >
+               <div className="p-2 bg-slate-800 group-hover:bg-red-500/20 rounded-xl transition-colors">
+                  <LogOut size={16} />
+               </div>
+               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Sign Out</span>
+            </button>
          </div>
 
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -154,8 +167,8 @@ const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
                               key={filter}
                               onClick={() => setDocFilter(filter as any)}
                               className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all ${docFilter === filter
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-                                    : 'text-slate-500 hover:text-white'
+                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
+                                 : 'text-slate-500 hover:text-white'
                                  }`}
                            >
                               {filter}
@@ -210,7 +223,7 @@ const ClientPortal: React.FC<{ userName: string }> = ({ userName }) => {
                <Fingerprint className="text-emerald-500" size={32} />
             </div>
             <div className="flex-1 space-y-2 text-center md:text-left">
-               <h5 className="text-xl font-bold text-white tracking-tight italic">LexSovereign Data Guarantee</h5>
+               <h5 className="text-xl font-bold text-white tracking-tight italic">NomosDesk Data Guarantee</h5>
                <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
                   As our premier client, you retain <strong>Absolute Sovereignty</strong> over your legal work product.
                   Encrypted shards are isolated within your local regional enclosure and never cross national borders

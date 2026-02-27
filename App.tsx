@@ -295,7 +295,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'status' && <ProjectStatus />}
         {activeTab === 'tenant-settings' && <TenantSettings userRole={contextRole as any} setUserRole={() => { }} />}
         {activeTab === 'system-settings' && <GlobalSettings />}
-        {activeTab === 'client-portal' && <ClientPortal userName={userName || 'Valued Client'} />}
+        {activeTab === 'client-portal' && <ClientPortal userName={userName || 'Valued Client'} onLogout={handleLogout} />}
       </div>
 
       {showMatterModal && (

@@ -1,7 +1,7 @@
 # System Architecture
 
 ## Overview
-LexSovereign is a Legal Operations Platform designed for **Data Sovereignty** and **AI Governance**. It employs a Hexagonal Architecture (Ports & Adapters) to isolate core logic from external providers.
+NomosDesk is a Legal Operations Platform designed for **Data Sovereignty** and **AI Governance**. It employs a Hexagonal Architecture (Ports & Adapters) to isolate core logic from external providers.
 
 ## Core Components
 

@@ -3,11 +3,11 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: lexsovereign-db
+    container_name: nomosdesk-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: lexsovereign
+      POSTGRES_DB: nomosdesk
     ports:
       - "5434:5432"
     volumes:
@@ -20,7 +20,7 @@ services:
 
   db-admin:
     image: adminer
-    container_name: lexsovereign-adminer
+    container_name: nomosdesk-adminer
     ports:
       - "8080:8080"
     restart: always

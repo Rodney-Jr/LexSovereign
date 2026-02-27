@@ -1,4 +1,4 @@
-# NomosDesk Reporting & Compliance Modal Guide
+# NomosDesk Reporting & Compliance Export Guide
 
 This document explains the "Reporting Modal" functionality within NomosDesk, focusing on how compliance reports are generated, accessed, and used for regulatory oversight.
 
