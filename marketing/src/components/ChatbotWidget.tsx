@@ -154,15 +154,22 @@ function LeadRequestForm({ onSubmit, onSkip, title, source }: {
 
 // ─── Success Bubble ───────────────────────────────────────────────────────────
 
-function SuccessBubble({ name }: { name: string }) {
+function SuccessBubble({ name, source }: { name: string, source?: string }) {
+    const isSecurityPacket = source === 'SECURITY_PACKET';
+
     return (
         <div className="bg-emerald-900/40 border border-emerald-500/30 rounded-2xl rounded-tl-sm p-4 max-w-[90%]">
             <div className="flex items-center gap-2 mb-2">
                 <CheckCircle size={16} className="text-emerald-400" />
-                <p className="text-xs font-bold text-emerald-300">Demo Request Received!</p>
+                <p className="text-xs font-bold text-emerald-300">
+                    {isSecurityPacket ? 'Security Request Received!' : 'Demo Request Received!'}
+                </p>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-                Thanks, <span className="font-semibold text-white">{name}</span>! Our team has been notified. We will be in touch within 24 hours to schedule your personalised NomosDesk walkthrough. In the meantime, feel free to ask me anything about the platform.
+                {isSecurityPacket
+                    ? `Thanks, ${name}! Our technical team has been notified. We will verify your details and dispatch the full Sovereign Security Architecture packet to your email shortly. Still have questions? Feel free to ask me.`
+                    : `Thanks, ${name}! Our team has been notified. We will be in touch within 24 hours to schedule your personalised NomosDesk walkthrough. In the meantime, feel free to ask me anything about the platform.`
+                }
             </p>
         </div>
     );
@@ -229,6 +236,21 @@ export default function ChatbotWidget() {
         return () => window.removeEventListener('nomosdesk-open-sales', openSales);
     }, [submittedName]);
 
+    // Listen for security packet open
+    useEffect(() => {
+        const openSecurityPacket = () => {
+            setIsOpen(true);
+            setIsMinimized(false);
+            if (!submittedName) {
+                setMessages([]);
+                setLeadFormConfig({ title: 'Request Security Packet', source: 'SECURITY_PACKET' });
+                setShowLeadForm(true);
+            }
+        };
+        window.addEventListener('nomosdesk-open-security-packet', openSecurityPacket);
+        return () => window.removeEventListener('nomosdesk-open-security-packet', openSecurityPacket);
+    }, [submittedName]);
+
     const handleLeadSubmit = async (data: LeadFormData) => {
         try {
             await apiFetch('/api/leads', {
@@ -246,7 +268,7 @@ export default function ChatbotWidget() {
         }
         setSubmittedName(data.name);
         setShowLeadForm(false);
-        setMessages(prev => [...prev, { role: 'success', content: data.name }]);
+        setMessages(prev => [...prev, { role: 'success', content: JSON.stringify({ name: data.name, source: data.source }) }]);
     };
 
     const handleLeadSkip = () => {
@@ -346,9 +368,15 @@ export default function ChatbotWidget() {
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950">
                             {messages.map((msg, idx) => {
                                 if (msg.role === 'success') {
+                                    let contentObj = { name: msg.content, source: '' };
+                                    try {
+                                        contentObj = JSON.parse(msg.content);
+                                    } catch (e) {
+                                        // Legacy fallback if content wasn't JSON
+                                    }
                                     return (
                                         <div key={idx} className="flex justify-start">
-                                            <SuccessBubble name={msg.content} />
+                                            <SuccessBubble name={contentObj.name} source={contentObj.source} />
                                         </div>
                                     );
                                 }
