@@ -89,6 +89,37 @@ export default function SecurityPage() {
                 </div>
             </Section>
 
+            <Section className="bg-slate-900 border-y border-slate-800 py-24">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold text-white mb-6">Compliance Architecture & Alignment</h2>
+                        <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                            Our infrastructure and operational protocols are designed in strict alignment with major global security and privacy frameworks, ensuring verifiable trust for legal professionals without falsely claiming formal certifications.
+                        </p>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-8">
+                        <div className="p-8 bg-slate-950 rounded-[2rem] border border-slate-800 hover:border-indigo-500/30 transition-colors">
+                            <h3 className="font-bold text-white text-xl mb-3">SOC 2 Type II Alignment</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed">
+                                Our systems reflect the Trust Services Criteria for Security, Availability, and Confidentiality through strict access controls, encryption, and immutable audit trails.
+                            </p>
+                        </div>
+                        <div className="p-8 bg-slate-950 rounded-[2rem] border border-slate-800 hover:border-indigo-500/30 transition-colors">
+                            <h3 className="font-bold text-white text-xl mb-3">ISO/IEC 27001 Preparedness</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed">
+                                Fundamental information security management principles are baked into our development lifecycle, vendor vetting, and daily operational protocols.
+                            </p>
+                        </div>
+                        <div className="p-8 bg-slate-950 rounded-[2rem] border border-slate-800 hover:border-indigo-500/30 transition-colors">
+                            <h3 className="font-bold text-white text-xl mb-3">GDPR & Data Protection</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed">
+                                Built to explicitly support the rapid execution of Data Processing Agreements (DPAs) with strict adherence to data minimization and purpose limitation principles.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+
             <Section darker>
                 <div className="max-w-3xl mx-auto">
                     <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
