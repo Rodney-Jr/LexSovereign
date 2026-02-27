@@ -17,19 +17,82 @@ router.get('/admin-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOB
             return;
         }
 
-        const [userCount, matterCount, docCount] = await Promise.all([
+        const [userCount, matterCount, docCount, failCount] = await Promise.all([
             prisma.user.count({ where: isGlobalAdmin ? {} : { tenantId } }),
             prisma.matter.count({ where: isGlobalAdmin ? {} : { tenantId } }),
-            prisma.document.count({ where: isGlobalAdmin ? {} : { matter: { tenantId } } })
+            prisma.document.count({ where: isGlobalAdmin ? {} : { matter: { tenantId } } }),
+            prisma.auditLog.count({
+                where: {
+                    ...(isGlobalAdmin ? {} : { user: { tenantId } }),
+                    action: { contains: 'FAIL' }
+                }
+            })
         ]);
 
         res.json({
             users: userCount,
             matters: matterCount,
             documents: docCount,
-            siloHealth: 'NOMINAL',
+            siloHealth: failCount > 5 ? 'DEGRADED' : failCount > 0 ? 'WARNING' : 'NOMINAL',
             lastAudit: new Date().toISOString()
         });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/tenant/insights
+// Returns operational insights for the dashboard
+router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
+
+        const insights = [];
+
+        // Check for high capacity silos (simulated logic based on documents)
+        const regionStats = await (prisma.document.groupBy({
+            by: ['jurisdiction'],
+            where: { matter: { tenantId } },
+            _count: { id: true }
+        }) as any);
+
+        for (const reg of (regionStats as any[])) {
+            if (reg._count?.id > 50) { // Higher threshold for documents
+                insights.push({
+                    level: 'CRITICAL',
+                    message: `Silo ${reg.jurisdiction} is approaching storage limits (${reg._count.id} assets).`
+                });
+            }
+        }
+
+        // Check for unreviewed documents
+        const unreviewedCount = await prisma.document.count({
+            where: {
+                matter: { tenantId },
+                OR: [
+                    { attributes: { equals: {} } },
+                    { attributes: { path: ['scrubbedEntities'], equals: undefined } }
+                ]
+            }
+        });
+
+        if (unreviewedCount > 0) {
+            insights.push({
+                level: 'WARNING',
+                message: `${unreviewedCount} documents pending Sovereign PII review.`
+            });
+        }
+
+        // Add a stable insight if things are good
+        if (insights.length === 0) {
+            insights.push({
+                level: 'STABLE',
+                message: 'All jurisdictional silos are operating within nominal capacity bounds.'
+            });
+        }
+
+        res.json(insights);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

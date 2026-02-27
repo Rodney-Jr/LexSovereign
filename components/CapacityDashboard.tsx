@@ -21,11 +21,13 @@ const CapacityDashboard: React.FC = () => {
     });
 
     const [practitioners, setPractitioners] = useState<TenantUser[]>([]);
+    const [insights, setInsights] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchPractitioners();
+        fetchInsights();
     }, []);
 
     const fetchPractitioners = async () => {
@@ -39,6 +41,17 @@ const CapacityDashboard: React.FC = () => {
             console.error("Failed to fetch capacity data:", e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchInsights = async () => {
+        try {
+            const session = getSavedSession();
+            if (!session?.token) return;
+            const data = await authorizedFetch('/api/tenant/insights', { token: session.token });
+            setInsights(data);
+        } catch (e) {
+            console.error("Failed to fetch insights:", e);
         }
     };
 
@@ -119,7 +132,7 @@ const CapacityDashboard: React.FC = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-800/50">
                                         {practitioners.filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(p => {
-                                            const currentHours = Math.floor(Math.random() * 20 + 10); // Placeholder for calculation
+                                            const currentHours = 15; // In a real app, sum(timeEntries.duration)
                                             const loadState = getLoadState(currentHours, p.maxWeeklyHours);
                                             return (
                                                 <tr key={p.id} className="group hover:bg-slate-800/20 transition-all">
@@ -132,13 +145,13 @@ const CapacityDashboard: React.FC = () => {
                                                         </div>
                                                     </td>
                                                     <td className="py-4 text-xs font-mono text-slate-500 tracking-tighter uppercase">
-                                                        {p.jurisdictionPins?.[0] || 'GH_ACC_1'}
+                                                        {(p as any).jurisdictionPins?.[0] || 'GH_ACC_1'}
                                                     </td>
                                                     <td className="py-4">
                                                         <div className="flex justify-center">
                                                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${loadState === 'RED' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                                                                    loadState === 'AMBER' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                                                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                                loadState === 'AMBER' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                                                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                                                 }`}>
                                                                 {loadState}
                                                             </span>
@@ -166,18 +179,13 @@ const CapacityDashboard: React.FC = () => {
                         </h4>
 
                         <div className="space-y-4">
-                            <InsightItem
-                                level="CRITICAL"
-                                message="Silo GH_ACC_1 is at 98% capacity. Future matters targeting this region will be blocked."
-                            />
-                            <InsightItem
-                                level="WARNING"
-                                message="3 Practitioner credentials expiring in < 30 days. Renewal required to prevent compliance lockout."
-                            />
-                            <InsightItem
-                                level="STABLE"
-                                message="Drafting velocity has increased by 15% due to balanced capacity across the Junior tier."
-                            />
+                            {insights.map((insight, idx) => (
+                                <InsightItem
+                                    key={idx}
+                                    level={insight.level}
+                                    message={insight.message}
+                                />
+                            ))}
                         </div>
 
                         <button className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-300 transition-all flex items-center justify-center gap-2 group">
@@ -206,13 +214,13 @@ const StatCard: React.FC<{ title: string, value: string, icon: React.ReactNode, 
 
 const InsightItem: React.FC<{ level: 'CRITICAL' | 'WARNING' | 'STABLE', message: string }> = ({ level, message }) => (
     <div className={`p-4 rounded-2xl border ${level === 'CRITICAL' ? 'bg-rose-500/5 border-rose-500/20' :
-            level === 'WARNING' ? 'bg-amber-500/5 border-amber-500/20' :
-                'bg-emerald-500/5 border-emerald-500/20'
+        level === 'WARNING' ? 'bg-amber-500/5 border-amber-500/20' :
+            'bg-emerald-500/5 border-emerald-500/20'
         } space-y-1`}>
         <div className="flex items-center justify-between">
             <span className={`text-[9px] font-black tracking-widest uppercase ${level === 'CRITICAL' ? 'text-rose-400' :
-                    level === 'WARNING' ? 'text-amber-400' :
-                        'text-emerald-400'
+                level === 'WARNING' ? 'text-amber-400' :
+                    'text-emerald-400'
                 }`}>{level}</span>
         </div>
         <p className="text-xs text-slate-300 leading-relaxed font-medium">{message}</p>

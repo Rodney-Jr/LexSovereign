@@ -29,8 +29,26 @@ router.post('/briefing', authenticateToken, async (req: Request, res) => {
 
 router.post('/scrub', authenticateToken, async (req: Request, res) => {
     try {
-        const { content, role, privilege } = req.body;
+        const { content, role, privilege, documentId } = req.body;
         const result = await geminiService.getScrubbedContent(content, role, privilege);
+
+        // If documentId is provided, persist the count to attributes
+        if (documentId && result.scrubbedEntities > 0) {
+            const doc = await prisma.document.findUnique({ where: { id: documentId } });
+            if (doc) {
+                const existingAttr = (doc.attributes as any) || {};
+                await prisma.document.update({
+                    where: { id: documentId },
+                    data: {
+                        attributes: {
+                            ...existingAttr,
+                            scrubbedEntities: result.scrubbedEntities
+                        }
+                    }
+                });
+            }
+        }
+
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

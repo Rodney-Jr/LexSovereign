@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 import {
   CheckCircle2,
   Clock,
@@ -35,10 +36,27 @@ const INITIAL_REVIEWS: ReviewArtifact[] = [
 ];
 
 const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
-  const [reviews, setReviews] = useState<ReviewArtifact[]>(INITIAL_REVIEWS);
+  const [reviews, setReviews] = useState<ReviewArtifact[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [scrubbedView, setScrubbedView] = useState<{ content: string; count: number } | null>(null);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      setLoading(true);
+      try {
+        const session = getSavedSession();
+        if (!session?.token) return;
+        const data = await authorizedFetch('/api/documents/review-needed', { token: session.token });
+        setReviews(data);
+      } catch (e) {
+        console.error("Failed to fetch review queue:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReviews();
+  }, []); const [scrubbedView, setScrubbedView] = useState<{ content: string; count: number } | null>(null);
 
   const gemini = new LexGeminiService();
   const selectedArtifact = reviews.find(r => r.id === selectedId);
@@ -90,7 +108,17 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
           </div>
 
           <div className="space-y-3">
-            {reviews.map(artifact => (
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-slate-900/20 rounded-[2rem] border border-slate-800/50 space-y-4">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Enclave Synchronizing...</p>
+              </div>
+            ) : reviews.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-slate-900/20 rounded-[2rem] border border-slate-800/50 space-y-4">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500/50" />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center px-8">Queue Clear: All artifacts verified for this region.</p>
+              </div>
+            ) : reviews.map(artifact => (
               <div
                 key={artifact.id}
                 onClick={() => handleOpenReview(artifact)}
@@ -114,7 +142,7 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
                 </div>
                 <h5 className={`font-bold text-sm mb-1 ${selectedId === artifact.id ? 'text-white' : 'text-slate-300'}`}>{artifact.title}</h5>
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">{artifact.matterId} • {artifact.jurisdiction}</p>
+                  <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">{artifact.matterId || 'MATTER'} • {artifact.jurisdiction}</p>
                   <ChevronRight size={14} className={`transition-all ${selectedId === artifact.id ? 'translate-x-1 text-blue-400' : 'text-slate-600'}`} />
                 </div>
               </div>

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 import {
     ShieldAlert,
     Search,
@@ -10,17 +11,46 @@ import { GHANA_LEGAL_HEURISTICS, detectMonetaryValue } from '../utils/ghanaRules
 import { fetchFxRates, LiveFxRates } from '../utils/ghanaFinanceService';
 import SentinelSidebar from './SentinelSidebar';
 
-const GhanaReviewScreen: React.FC = () => {
-    const [contractText, setContractText] = useState(`This Agreement is made between Parties for commercial services. 
+const DEFAULT_CONTRACT = `This Agreement is made between Parties for commercial services. 
 Any Dispute Resolution shall be settled through Litigation in Accra.
 Confidentiality and Data Protection is of utmost importance.
 The Contract Value shall be $100,000 payable upon execution.
 Stamp Duty is payable on all documents under the law.
-This Agreement is governed by the laws of England and Wales.`);
+This Agreement is governed by the laws of England and Wales.`;
 
+interface GhanaReviewScreenProps {
+    documentId?: string;
+}
+
+const GhanaReviewScreen: React.FC<GhanaReviewScreenProps> = ({ documentId }) => {
+    const [contractText, setContractText] = useState('');
+    const [loading, setLoading] = useState(!!documentId);
     const [isSyncing, setIsSyncing] = useState(false);
     const [orcStatus, setOrcStatus] = useState<'idle' | 'syncing' | 'verified'>('idle');
     const [liveRates, setLiveRates] = useState<LiveFxRates | null>(null);
+    const [scrubbedText, setScrubbedText] = useState('');
+
+    useEffect(() => {
+        if (documentId) {
+            loadDocument();
+        } else {
+            setContractText(DEFAULT_CONTRACT);
+        }
+    }, [documentId]);
+
+    const loadDocument = async () => {
+        setLoading(true);
+        try {
+            const session = getSavedSession();
+            if (!session?.token) return;
+            const doc = await authorizedFetch(`/api/documents/${documentId}`, { token: session.token });
+            setContractText(doc.content || `[Vault Trace: ${doc.name}]\n\nPlain text unavailable. Secure enclave hashing active.`);
+        } catch (e) {
+            console.error("Failed to load document:", e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     React.useEffect(() => {
         const sovPin = localStorage.getItem('sov-pin') || '';
@@ -39,13 +69,31 @@ This Agreement is governed by the laws of England and Wales.`);
         return detectMonetaryValue(contractText);
     }, [contractText]);
 
-    const handleOrcSync = () => {
+    const handleOrcSync = async () => {
         setIsSyncing(true);
         setOrcStatus('syncing');
-        setTimeout(() => {
-            setIsSyncing(false);
+
+        try {
+            const session = getSavedSession();
+            if (!session?.token) throw new Error("No session");
+
+            const data = await authorizedFetch('/api/scrub', {
+                method: 'POST',
+                token: session.token,
+                body: JSON.stringify({
+                    content: contractText,
+                    documentId: documentId
+                })
+            });
+
+            setScrubbedText(data.scrubbedContent);
             setOrcStatus('verified');
-        }, 2000);
+        } catch (e) {
+            console.error("OCR Sync failed:", e);
+            setOrcStatus('idle');
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
     return (

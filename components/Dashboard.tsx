@@ -64,7 +64,9 @@ const Dashboard: React.FC<{
         </div>
         <div className="flex items-center gap-3 bg-brand-sidebar border border-brand-border px-4 py-2 rounded-2xl">
           <Activity size={16} className="text-brand-primary" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Silo Pulse: Nominal</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Silo Pulse: <span className={metrics?.siloHealth === 'DEGRADED' ? 'text-rose-400' : 'text-emerald-400'}>{metrics?.siloHealth || 'Nominal'}</span>
+          </span>
         </div>
       </div>
 

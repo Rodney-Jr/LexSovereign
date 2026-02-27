@@ -154,8 +154,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                </div>
             </div>
             <div className="bg-slate-900 border border-slate-800 px-6 py-3 rounded-2xl flex items-center gap-3">
-               <div className={`w-2 h-2 rounded-full shadow-[0_0_8px] ${globalStatus === 'NOMINAL' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-500 shadow-red-500/50'}`}></div>
-               <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Platform: {globalStatus}</span>
+               <div className={`w-2 h-2 rounded-full shadow-[0_0_8px] ${(stats.systemHealth || 100) >= 90 ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-500 shadow-red-500/50'}`}></div>
+               <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Platform: {(stats.systemHealth || 100) >= 90 ? 'NOMINAL' : 'DEGRADED'}</span>
             </div>
          </div>
 
@@ -827,8 +827,8 @@ const GlobalModelRegistry = () => {
                      key={p.id}
                      onClick={() => setSelectedProvider(p.id)}
                      className={`w-full text-left p-6 rounded-3xl border transition-all ${selectedProvider === p.id
-                           ? 'bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10'
-                           : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                        ? 'bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10'
+                        : 'bg-slate-900 border-slate-800 hover:border-slate-700'
                         }`}
                   >
                      <div className="flex items-center justify-between mb-2">
@@ -843,8 +843,8 @@ const GlobalModelRegistry = () => {
                         </div>
                         <div className="flex flex-col items-end gap-1">
                            <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full border ${p.status === 'ACTIVE'
-                                 ? 'text-emerald-400 bg-emerald-400/5 border-emerald-400/20'
-                                 : 'text-slate-500 bg-slate-800 border-slate-700'
+                              ? 'text-emerald-400 bg-emerald-400/5 border-emerald-400/20'
+                              : 'text-slate-500 bg-slate-800 border-slate-700'
                               }`}>{p.status}</span>
                            {p.isDefault && <span className="text-[7px] text-purple-400 font-bold">DEFAULT</span>}
                         </div>

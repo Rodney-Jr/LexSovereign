@@ -38,7 +38,8 @@ router.get('/', authenticateToken, async (req, res) => {
             region: doc.jurisdiction,
             classification: doc.classification,
             matterId: doc.matterId,
-            matterName: doc.matter.name
+            matterName: doc.matter.name,
+            attributes: doc.attributes || {}
         }));
 
         res.json(mapped);
@@ -163,6 +164,52 @@ router.post('/', authenticateToken, async (req, res) => {
 
     } catch (error: any) {
         console.error("Document creation failed:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get documents needing review
+router.get('/review-needed', authenticateToken, async (req, res) => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
+        const documents = await prisma.document.findMany({
+            where: {
+                matter: isGlobalAdmin ? {} : {
+                    tenantId: req.user.tenantId
+                },
+                // Heuristic for needing review: older than 30 days or never reviewed
+                OR: [
+                    { lastReviewed: { lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+                    { lastReviewed: { equals: new Date(0) } }
+                ]
+            },
+            include: {
+                matter: true
+            },
+            take: 10,
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        const artifacts = documents.map(doc => ({
+            id: doc.id,
+            title: doc.name,
+            matter: doc.matter.name,
+            jurisdiction: doc.jurisdiction,
+            lastActivity: doc.updatedAt.toLocaleDateString(),
+            complianceScore: 92, // Placeholder for actual calculation
+            riskLevel: (doc.classification === 'Strictly Confidential') ? 'HIGH' : 'LOW',
+            tags: [doc.classification, 'Awaiting Review']
+        }));
+
+        res.json(artifacts);
+    } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
 });
