@@ -15,22 +15,25 @@ import {
     AlertCircle
 } from 'lucide-react';
 
-import { GHANA_LEGAL_HEURISTICS, detectMonetaryValue } from '../utils/ghanaRules';
-import { fetchFxRates, LiveFxRates } from '../utils/ghanaFinanceService';
+import { getJurisdictionConfig } from '../utils/jurisdictionEngine';
 
 const GrowthDashboard: React.FC = () => {
-    const [partnerRate, setPartnerRate] = useState(5625); // GHS approx for $450
+    const [partnerRate, setPartnerRate] = useState(5625); // Approx for $450
     const [hoursSaved, setHoursSaved] = useState(0);
     const [staffCount, setStaffCount] = useState(0);
     const [feeRecovery, setFeeRecovery] = useState(0);
     const [tatReduction, setTatReduction] = useState(0);
-    const [liveRates, setLiveRates] = useState<LiveFxRates | null>(null);
+    const [liveRates, setLiveRates] = useState<any | null>(null);
+
+    const config = useMemo(() => {
+        const sovPin = localStorage.getItem('nomosdesk_pin') || 'GHANA';
+        return getJurisdictionConfig(sovPin);
+    }, []);
 
     React.useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const sovPin = localStorage.getItem('nomosdesk_pin') || '';
-                const rates = await fetchFxRates(sovPin);
+                const rates = await config.getLiveRates();
                 setLiveRates(rates);
 
                 const sessionData = localStorage.getItem('nomosdesk_session');
@@ -102,27 +105,27 @@ const GrowthDashboard: React.FC = () => {
                             </div>
                             <h4 className="font-bold text-brand-muted uppercase tracking-widest text-xs">Financial Performance</h4>
                             <div className="ml-auto flex flex-col items-end">
-                                <span className={`text-[9px] px-2 py-1 rounded border uppercase font-bold tracking-tighter ${liveRates?.USD_GHS ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
-                                    {liveRates?.USD_GHS ? `LIVE RATE: ${liveRates.USD_GHS.date}` : 'PILOT RATE'}
+                                <span className={`text-[9px] px-2 py-1 rounded border uppercase font-bold tracking-tighter ${(liveRates?.USD_GHS || liveRates?.USD_USD) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                                    {(liveRates?.USD_GHS || liveRates?.USD_USD) ? `LIVE RATE: ${(liveRates?.USD_GHS || liveRates?.USD_USD).date}` : 'PILOT RATE'}
                                 </span>
-                                {liveRates?.USD_GHS && (
-                                    <span className="text-[8px] text-brand-muted font-mono mt-1">$1 = GHS {liveRates.USD_GHS.rate.toFixed(2)}</span>
+                                {(liveRates?.USD_GHS || liveRates?.USD_USD) && (
+                                    <span className="text-[8px] text-brand-muted font-mono mt-1">$1 = {config.currencySymbol} {(liveRates?.USD_GHS || liveRates?.USD_USD).rate.toFixed(2)}</span>
                                 )}
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <p className="text-5xl font-black text-brand-text">
-                                GHS {revenueProtected.toLocaleString()}
+                                {config.currencySymbol} {revenueProtected.toLocaleString()}
                             </p>
                             <h2 className="text-xl font-bold text-brand-muted">Total Revenue Protected from Overhead</h2>
                         </div>
 
                         <div className="grid grid-cols-2 gap-8 pt-8 border-t border-brand-border">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest italic">Senior Partner Rate (GHS)</p>
+                                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest italic">Senior Partner Rate ({config.currencyCode})</p>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-brand-text font-bold">GHS</span>
+                                    <span className="text-brand-text font-bold">{config.currencySymbol}</span>
                                     <input
                                         type="number"
                                         value={partnerRate}
@@ -170,7 +173,7 @@ const GrowthDashboard: React.FC = () => {
                 <MetricCard
                     icon={<TrendingUp size={24} />}
                     label="Unbilled Fee Recovery"
-                    value={`GHS ${feeRecovery.toLocaleString()}`}
+                    value={`${config.currencySymbol} ${feeRecovery.toLocaleString()}`}
                     sub="Captured from automated tracing"
                     color="primary"
                 />

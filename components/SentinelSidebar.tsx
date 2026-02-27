@@ -12,22 +12,20 @@ import {
     AlertCircle,
     ChevronDown
 } from 'lucide-react';
-import { LegalHeuristic } from '../utils/ghanaRules';
+import { LegalHeuristic } from '../utils/jurisdictions/ghana/rules';
 import {
-    calculateDetailedStampDuty,
     INSTRUMENT_TYPES,
-    convertUSDtoGHS,
-    fetchFxRates,
     LiveFxRates
-} from '../utils/ghanaFinanceService';
+} from '../utils/jurisdictions/ghana/finance';
 
 interface SentinelSidebarProps {
     activeFlags: LegalHeuristic[];
-    detectedValue: { amount: number, currency: 'USD' | 'GHS' | null };
+    detectedValue: { amount: number, currency: string | null };
     isSyncing: boolean;
     orcStatus: 'idle' | 'syncing' | 'verified';
     onOrcSync: () => void;
-    liveRates: LiveFxRates | null;
+    liveRates: any;
+    config: any;
 }
 
 const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
@@ -36,18 +34,19 @@ const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
     isSyncing,
     orcStatus,
     onOrcSync,
-    liveRates
+    liveRates,
+    config
 }) => {
     const [instrumentType, setInstrumentType] = useState(INSTRUMENT_TYPES.COMMERCIAL);
 
-    const exchangeRate = liveRates?.USD_GHS.rate || 12.5;
-    const ghsValue = detectedValue.currency === 'USD'
-        ? convertUSDtoGHS(detectedValue.amount, exchangeRate)
+    const exchangeRate = liveRates?.USD_USD?.rate || liveRates?.USD_GHS?.rate || 12.5;
+    const localValue = detectedValue.currency === 'USD' && config.currencyCode !== 'USD'
+        ? detectedValue.amount * exchangeRate
         : detectedValue.amount;
 
-    const taxResults = calculateDetailedStampDuty(ghsValue, instrumentType);
-    const isFallback = liveRates?.USD_GHS.isFallback ?? true;
-    const rateDate = liveRates?.USD_GHS.date || 'System Default';
+    const taxResults = config.calculateDetailedDuty(localValue, instrumentType);
+    const isFallback = (liveRates?.USD_USD || liveRates?.USD_GHS)?.isFallback ?? true;
+    const rateDate = (liveRates?.USD_USD || liveRates?.USD_GHS)?.date || 'System Default';
 
     return (
         <div className="space-y-8 h-[700px] overflow-auto pr-2 custom-scrollbar">
@@ -63,8 +62,8 @@ const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
                             <Scale size={14} className="text-brand-primary" /> Tax & Filing Summary
                         </h4>
                         <div className="flex flex-col items-end gap-1">
-                            {detectedValue.currency === 'USD' && (
-                                <span className="text-[8px] px-2 py-1 bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/20 font-bold">BoG RATE: $1 = GHS {exchangeRate}</span>
+                            {detectedValue.currency === 'USD' && config.currencyCode !== 'USD' && (
+                                <span className="text-[8px] px-2 py-1 bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/20 font-bold">RATE: $1 = {config.currencySymbol} {exchangeRate}</span>
                             )}
                             <span className={`text-[7px] px-1.5 py-0.5 rounded border uppercase font-black tracking-tighter ${isFallback ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
                                 {isFallback ? `FALLBACK: ${rateDate}` : `LIVE: ${rateDate}`}
@@ -93,7 +92,7 @@ const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
                         <div className="grid grid-cols-2 gap-4 pt-2">
                             <div className="space-y-1">
                                 <p className="text-[9px] text-brand-muted uppercase tracking-tighter">Duty Payable</p>
-                                <p className="text-xl font-black text-brand-primary">GHS {taxResults.dutyPayableGHS.toLocaleString()}</p>
+                                <p className="text-xl font-black text-brand-primary">{config.currencySymbol} {taxResults.dutyPayable.toLocaleString()}</p>
                             </div>
                             <div className="space-y-1 text-right">
                                 <p className="text-[9px] text-brand-muted uppercase tracking-tighter">Filing Category</p>
@@ -139,7 +138,7 @@ const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
 
             {/* Sentinel Audit Checklist */}
             <div className="space-y-4 pt-4 border-t border-brand-border">
-                <h4 className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-4">Sentinel Audit (Ghana Silo)</h4>
+                <h4 className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-4">Sentinel Audit ({config.name} Silo)</h4>
 
                 {activeFlags.length === 0 ? (
                     <div className="bg-brand-primary/5 border border-brand-primary/10 p-8 rounded-[2rem] flex flex-col items-center text-center space-y-4">
@@ -172,7 +171,7 @@ const SentinelSidebar: React.FC<SentinelSidebarProps> = ({
             <div className="p-6 bg-brand-primary/5 border border-brand-primary/10 rounded-2xl flex items-start gap-3">
                 <Info className="text-brand-primary shrink-0" size={16} />
                 <p className="text-[10px] leading-relaxed text-brand-muted">
-                    <strong>Value Detection:</strong> The Sentinel automatically detects monetary values in USD/GHS and triggers duty assessment according to the <strong>Stamp Duty Act (Act 689)</strong>.
+                    <strong>Value Detection:</strong> The Sentinel automatically detects monetary values and triggers duty assessment according to the designated jurisdiction rules.
                 </p>
             </div>
         </div>

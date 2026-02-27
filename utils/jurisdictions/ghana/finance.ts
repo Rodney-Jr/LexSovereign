@@ -21,7 +21,7 @@ export const INSTRUMENT_TYPES = {
     CONVEYANCE: 'Conveyance/Transfers',
 };
 
-import { authorizedFetch } from './api';
+import { authorizedFetch } from '../../api';
 
 /**
  * Fetches live exchange rates from the Sovereign Control Plane backend.

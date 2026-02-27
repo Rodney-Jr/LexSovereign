@@ -7,8 +7,8 @@ import {
     Zap,
     Layout
 } from 'lucide-react';
-import { GHANA_LEGAL_HEURISTICS, detectMonetaryValue } from '../utils/ghanaRules';
-import { fetchFxRates, LiveFxRates } from '../utils/ghanaFinanceService';
+import { getJurisdictionConfig } from '../utils/jurisdictionEngine';
+import { LiveFxRates } from '../utils/jurisdictions/ghana/finance';
 import SentinelSidebar from './SentinelSidebar';
 
 const DEFAULT_CONTRACT = `This Agreement is made between Parties for commercial services. 
@@ -18,11 +18,13 @@ The Contract Value shall be $100,000 payable upon execution.
 Stamp Duty is payable on all documents under the law.
 This Agreement is governed by the laws of England and Wales.`;
 
-interface GhanaReviewScreenProps {
+interface SovereignReviewScreenProps {
     documentId?: string;
+    jurisdictionContext?: string;
 }
 
-const GhanaReviewScreen: React.FC<GhanaReviewScreenProps> = ({ documentId }) => {
+const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentId, jurisdictionContext }) => {
+    const config = useMemo(() => getJurisdictionConfig(jurisdictionContext || localStorage.getItem('sov-pin') || 'GHANA'), [jurisdictionContext]);
     const [contractText, setContractText] = useState('');
     const [loading, setLoading] = useState(!!documentId);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -53,12 +55,11 @@ const GhanaReviewScreen: React.FC<GhanaReviewScreenProps> = ({ documentId }) => 
     };
 
     React.useEffect(() => {
-        const sovPin = localStorage.getItem('sov-pin') || '';
-        fetchFxRates(sovPin).then(setLiveRates);
-    }, []);
+        config.getLiveRates().then(setLiveRates);
+    }, [config]);
 
     const activeFlags = useMemo(() => {
-        return GHANA_LEGAL_HEURISTICS.filter(rule => {
+        return config.heuristics.filter(rule => {
             const hasPattern = rule.pattern.test(contractText);
             const missingMandatory = rule.negativePattern && !rule.negativePattern.test(contractText);
             return hasPattern && missingMandatory;
@@ -66,8 +67,8 @@ const GhanaReviewScreen: React.FC<GhanaReviewScreenProps> = ({ documentId }) => 
     }, [contractText]);
 
     const detectedValue = useMemo(() => {
-        return detectMonetaryValue(contractText);
-    }, [contractText]);
+        return config.detectMonetaryValue(contractText);
+    }, [contractText, config]);
 
     const handleOrcSync = async () => {
         setIsSyncing(true);
@@ -105,10 +106,10 @@ const GhanaReviewScreen: React.FC<GhanaReviewScreenProps> = ({ documentId }) => 
                         <div className="p-3 bg-brand-primary/10 rounded-2xl border border-brand-primary/20 shadow-lg shadow-brand-primary/10">
                             <ShieldAlert className="text-brand-primary" size={28} />
                         </div>
-                        Ghana Sovereign Sentinel
+                        {config.name} Sovereign Sentinel
                     </h3>
                     <p className="text-brand-muted text-sm italic">
-                        Automated statutory compliance audit for the Ghana legal jurisdiction.
+                        {config.getSentinelDescription()}
                     </p>
                 </div>
                 <div className="flex items-center gap-4 bg-brand-sidebar p-2 rounded-2xl border border-brand-border">
@@ -154,6 +155,7 @@ const GhanaReviewScreen: React.FC<GhanaReviewScreenProps> = ({ documentId }) => 
                         orcStatus={orcStatus}
                         onOrcSync={handleOrcSync}
                         liveRates={liveRates}
+                        config={config}
                     />
                 </div>
             </div>
@@ -161,4 +163,4 @@ const GhanaReviewScreen: React.FC<GhanaReviewScreenProps> = ({ documentId }) => 
     );
 };
 
-export default GhanaReviewScreen;
+export default SovereignReviewScreen;

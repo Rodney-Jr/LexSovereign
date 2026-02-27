@@ -162,6 +162,72 @@ export default function HomePage() {
                 </div>
             </Section>
 
+            {/* JURISDICTION ENGINE SECTION */}
+            <Section darker>
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="order-2 md:order-1 bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                            <Globe size={120} />
+                        </div>
+                        <div className="flex flex-col gap-6 relative z-10">
+                            {/* Mock UI: Ghana Silo */}
+                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50">
+                                <div className="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3">
+                                    <div className="flex items-center gap-2">
+                                        <Shield className="w-4 h-4 text-emerald-400" />
+                                        <span className="text-sm font-semibold text-white">Ghana Sovereign Sentinel</span>
+                                    </div>
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">GHS / Act 689</span>
+                                </div>
+                                <div className="text-xs text-slate-400 space-y-2">
+                                    <div className="flex justify-between"><span>Revenue Protected</span><span className="text-white font-mono">GHS 56,250</span></div>
+                                    <div className="flex justify-between"><span>Registry Sync</span><span className="text-emerald-400">Nominal</span></div>
+                                </div>
+                            </div>
+
+                            {/* Mock UI: UK Silo */}
+                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50 opacity-90">
+                                <div className="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3">
+                                    <div className="flex items-center gap-2">
+                                        <Shield className="w-4 h-4 text-indigo-400" />
+                                        <span className="text-sm font-semibold text-white">UK Compliance Auditor</span>
+                                    </div>
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">GBP / GDPR</span>
+                                </div>
+                                <div className="text-xs text-slate-400 space-y-2">
+                                    <div className="flex justify-between"><span>Revenue Protected</span><span className="text-white font-mono">£ 4,500</span></div>
+                                    <div className="flex justify-between"><span>ICO Framework</span><span className="text-emerald-400">Aligned</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="order-1 md:order-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium mb-6">
+                            JURISDICTION ENGINE
+                        </div>
+                        <h2 className="text-3xl font-bold mb-6 text-white">Global Reach, Local Intelligence</h2>
+                        <p className="text-slate-300 text-lg mb-6 leading-relaxed">
+                            A borderless legal practice requires borderless intelligence. NomosDesk dynamically adapts its entire compliance structure based on your matter's jurisdiction.
+                        </p>
+                        <ul className="space-y-4 mb-8">
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-indigo-500 shrink-0" />
+                                <span className="text-slate-300"><strong>Localized Heuristics:</strong> Real-time statutory checks customized for Ghana, Nigeria, Kenya, the UK, and beyond.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-indigo-500 shrink-0" />
+                                <span className="text-slate-300"><strong>Dynamic Financials:</strong> Automated stamp duty and fee recovery assessments calculated against live treasury rates.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-indigo-500 shrink-0" />
+                                <span className="text-slate-300"><strong>Unified Control:</strong> Manage international portfolios securely from a single, centralized Sovereign Silo.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </Section>
+
             {/* AUDIENCES */}
             <Section>
                 <div className="grid md:grid-cols-2 gap-12 items-center">
