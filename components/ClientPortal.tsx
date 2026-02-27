@@ -7,11 +7,7 @@ import {
    FileCheck,
    ChevronRight,
    Fingerprint,
-   Info,
-   CheckCircle2,
-   AlertCircle,
    Activity,
-   Filter,
    Search,
    Database,
    Globe,
@@ -21,7 +17,6 @@ import {
 import { useSovereignData } from '../hooks/useSovereignData';
 import { usePermissions } from '../hooks/usePermissions';
 import MatterJourney from './MatterJourney';
-import ActivityFeed from './ActivityFeed';
 
 const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ userName, onLogout }) => {
    const { matters, documents } = useSovereignData(true);
@@ -39,11 +34,6 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
       if (docFilter === 'final') return d.status === 'APPROVED' || d.classification === 'Public';
       return true;
    });
-
-   const piiScrubbed = documents.reduce((acc, doc) => {
-      const attr = (doc.attributes as any) || {};
-      return acc + (attr.scrubbedEntities || 0);
-   }, 0) || (clientMatters.length * 12);
 
    const getProgress = (matter: any) => {
       if (matter.status === 'CLOSED') return 100;
@@ -94,7 +84,7 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
 
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             {/* Left Column: Matter Journey & Overview */}
-            <div className="lg:col-span-4 space-y-10">
+            <div className="lg:col-span-4">
                <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden group border-t-blue-500/20 border-t-2">
                   <div className="flex items-center justify-between">
                      <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
@@ -122,36 +112,10 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                      </div>
                   )}
                </div>
-
-               <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-6 shadow-2xl relative overflow-hidden group border-t-emerald-500/20 border-t-2">
-                  <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
-                     <Activity size={16} className="text-emerald-400" /> Enclave Telemetry
-                  </h4>
-                  <ActivityFeed />
-               </div>
             </div>
 
-            {/* Right Column: Document Repo & Transparency */}
-            <div className="lg:col-span-8 space-y-10">
-               {/* Transparency Stats */}
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-3xl space-y-2 hover:border-slate-700 transition-colors backdrop-blur-md">
-                     <p className="text-3xl font-bold text-white tracking-tighter">{piiScrubbed}</p>
-                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Entities Redacted</p>
-                  </div>
-                  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-3xl space-y-2 hover:border-slate-700 transition-colors backdrop-blur-md">
-                     <div className="flex items-center gap-2">
-                        <Lock size={14} className="text-emerald-500" />
-                        <p className="text-2xl font-bold text-emerald-500 tracking-tighter uppercase">BYOK</p>
-                     </div>
-                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Vault Key Status</p>
-                  </div>
-                  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-3xl space-y-2 hover:border-slate-700 transition-colors backdrop-blur-md">
-                     <p className="text-3xl font-bold text-blue-400 tracking-tighter">100%</p>
-                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Silo Availability</p>
-                  </div>
-               </div>
-
+            {/* Right Column: Document Repo */}
+            <div className="lg:col-span-8">
                {/* Document Repository */}
                <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
                   <div className="p-8 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-slate-900/50 backdrop-blur-xl">
@@ -215,24 +179,6 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                   </div>
                </div>
             </div>
-         </div>
-
-         {/* Guarantee Banner */}
-         <div className="bg-emerald-500/5 border border-emerald-500/10 p-10 rounded-[3rem] flex flex-col md:flex-row items-center gap-8 shadow-inner">
-            <div className="p-6 bg-emerald-500/10 rounded-[2.5rem] border border-emerald-500/20">
-               <Fingerprint className="text-emerald-500" size={32} />
-            </div>
-            <div className="flex-1 space-y-2 text-center md:text-left">
-               <h5 className="text-xl font-bold text-white tracking-tight italic">NomosDesk Data Guarantee</h5>
-               <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
-                  As our premier client, you retain <strong>Absolute Sovereignty</strong> over your legal work product.
-                  Encrypted shards are isolated within your local regional enclosure and never cross national borders
-                  for AI inference without your session-bound cryptographic signature.
-               </p>
-            </div>
-            <button className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/20 transition-all border border-emerald-400/20">
-               Audit Provenance
-            </button>
          </div>
       </div>
    );
