@@ -250,14 +250,17 @@ router.get('/client-audit', authenticateToken, async (req, res) => {
             orderBy: { timestamp: 'desc' }
         });
 
-        const formattedLogs = logs.map(log => ({
-            id: log.id,
-            type: log.action.includes('ENCLAVE') ? 'ENCLAVE' :
-                log.action.includes('AI') ? 'AI' :
-                    log.action.includes('SECURITY') || log.action.includes('SCRUB') ? 'SECURITY' : 'JURISDICTION',
-            message: log.details.length > 50 ? `${log.details.substring(0, 50)}...` : log.details,
-            timestamp: new Date(log.timestamp).toLocaleTimeString() + ' ' + new Date(log.timestamp).toLocaleDateString()
-        }));
+        const formattedLogs = logs.map(log => {
+            const details = log.details || "";
+            return {
+                id: log.id,
+                type: log.action.includes('ENCLAVE') ? 'ENCLAVE' :
+                    log.action.includes('AI') ? 'AI' :
+                        log.action.includes('SECURITY') || log.action.includes('SCRUB') ? 'SECURITY' : 'JURISDICTION',
+                message: details.length > 50 ? `${details.substring(0, 50)}...` : details,
+                timestamp: new Date(log.timestamp).toLocaleTimeString() + ' ' + new Date(log.timestamp).toLocaleDateString()
+            };
+        });
 
         res.json(formattedLogs);
     } catch (error: any) {
