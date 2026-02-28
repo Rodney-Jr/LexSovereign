@@ -153,6 +153,10 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 
         // Each AI action is weighted as 10 credits by default for now
         const currentAiCredits = aiUsageCount * 10;
+        const maxAiCredits = pricing?.creditsIncluded || 10000;
+
+        const overageCredits = Math.max(0, currentAiCredits - maxAiCredits);
+        const projectedOverage = overageCredits * 0.05; // $0.05 per extra credit
 
         // Calculate Burn Rate (Credits spent in last 24 hours / 24)
         const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -165,15 +169,25 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
         });
         const burnRate = (dailyAiUsage * 10 / 24).toFixed(1);
 
+        let predictiveAlertDate: string | null = null;
+        if (parseFloat(burnRate) > 0 && currentAiCredits < maxAiCredits) {
+            const remainingCredits = maxAiCredits - currentAiCredits;
+            const hoursRemaining = remainingCredits / parseFloat(burnRate);
+            if (hoursRemaining < 24 * 30) { // Alert within 30 days
+                const exhaustDate = new Date(Date.now() + hoursRemaining * 60 * 60 * 1000);
+                predictiveAlertDate = exhaustDate.toISOString();
+            }
+        } else if (currentAiCredits >= maxAiCredits) {
+            predictiveAlertDate = new Date().toISOString();
+        }
+
         // Storage calculation: ~10MB per document as a heuristic (0.01 GB)
         const storageUsedGB = (docCount * 0.01).toFixed(2);
 
         // Fetch real invoices from Stripe
         const history = tenant.stripeCustomerId
             ? await StripeService.getInvoices(tenant.stripeCustomerId)
-            : [
-                { id: 'draft_01', cycle: 'Current Cycle', delta: `+${docCount} Documents`, amount: `$${pricing?.basePrice || 499}`, status: 'DRAFT' }
-            ];
+            : [];
 
         res.json({
             plan: tenant.plan,
@@ -182,10 +196,12 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             hasStripeCustomer: !!tenant.stripeCustomerId,
             pricing: pricing || { basePrice: 499, pricePerUser: 50, features: [], creditsIncluded: 10000 },
             usage: {
-                aiCredits: { current: currentAiCredits, max: pricing?.creditsIncluded || 10000 },
+                aiCredits: { current: currentAiCredits, max: maxAiCredits },
                 storage: { current: parseFloat(storageUsedGB), max: 50, unit: 'GB' },
                 users: { current: userCount, max: pricing?.maxUsers || 100 },
-                burnRate
+                burnRate,
+                projectedOverage,
+                predictiveAlertDate
             },
             history
         });

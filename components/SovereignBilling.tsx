@@ -117,7 +117,7 @@ const SovereignBilling: React.FC = () => {
                      <div className="w-[1px] h-10 bg-slate-800"></div>
                      <div className="space-y-0.5">
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Projected Overage</p>
-                        <p className="text-xl font-bold text-emerald-500 tracking-tight">$0.00</p>
+                        <p className="text-xl font-bold text-emerald-500 tracking-tight">${billingData?.usage?.projectedOverage?.toFixed(2) || '0.00'}</p>
                      </div>
                   </div>
                   <button
@@ -186,27 +186,35 @@ const SovereignBilling: React.FC = () => {
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/50 text-xs">
-                     {billingData?.history?.map((row: any) => (
-                        <InvoiceRow key={row.id} cycle={row.cycle} delta={row.delta} amount={row.amount} status={row.status} downloadUrl={row.downloadUrl} />
-                     )) || (
-                           <tr><td colSpan={4} className="px-8 py-4 text-center text-slate-500">Retrieving ledger...</td></tr>
-                        )}
+                     {billingData?.history ? (
+                        billingData.history.length > 0 ? (
+                           billingData.history.map((row: any) => (
+                              <InvoiceRow key={row.id} cycle={row.cycle} delta={row.delta} amount={row.amount} status={row.status} downloadUrl={row.downloadUrl} />
+                           ))
+                        ) : (
+                           <tr><td colSpan={4} className="px-8 py-6 text-center text-slate-500 italic font-medium">No cryptographic billing records found for this silo.</td></tr>
+                        )
+                     ) : (
+                        <tr><td colSpan={4} className="px-8 py-4 text-center text-slate-500">Retrieving ledger...</td></tr>
+                     )}
                   </tbody>
                </table>
             </div>
          </div>
 
-         <div className="bg-amber-500/5 border border-amber-500/10 p-8 rounded-[2.5rem] flex items-start gap-6">
-            <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 shrink-0">
-               <AlertCircle className="text-amber-500" size={24} />
+         {billingData?.usage?.predictiveAlertDate && (
+            <div className="bg-amber-500/5 border border-amber-500/10 p-8 rounded-[2.5rem] flex items-start gap-6">
+               <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 shrink-0">
+                  <AlertCircle className="text-amber-500" size={24} />
+               </div>
+               <div className="space-y-1">
+                  <h5 className="font-bold text-xs text-amber-400 uppercase tracking-widest">Predictive Quota Alert</h5>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                     Based on current matter velocity, you will consume your allocated <strong>{billingData?.usage?.aiCredits?.max?.toLocaleString() || '10,000'} Credits</strong> by {new Date(billingData.usage.predictiveAlertDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. Autonomous credit top-up is currently <strong className="text-slate-200">DISABLED</strong> per organization policy.
+                  </p>
+               </div>
             </div>
-            <div className="space-y-1">
-               <h5 className="font-bold text-xs text-amber-400 uppercase tracking-widest">Predictive Quota Alert</h5>
-               <p className="text-[10px] text-slate-400 leading-relaxed">
-                  Based on current matter velocity (Phase 2), you will consume your allocated <strong>10,000 Credits</strong> by June 12th. Autonomous credit top-up is currently <strong className="text-slate-200">DISABLED</strong> per organization policy.
-               </p>
-            </div>
-         </div>
+         )}
       </div>
    );
 };
