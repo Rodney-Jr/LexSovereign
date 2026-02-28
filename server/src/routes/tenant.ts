@@ -70,10 +70,9 @@ router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_
         const unreviewedCount = await prisma.document.count({
             where: {
                 matter: { tenantId },
-                OR: [
-                    { attributes: { equals: {} } },
-                    { attributes: { path: ['scrubbedEntities'], equals: undefined } }
-                ]
+                attributes: {
+                    equals: {}
+                }
             }
         });
 
@@ -184,6 +183,16 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
         // Storage calculation: ~10MB per document as a heuristic (0.01 GB)
         const storageUsedGB = (docCount * 0.01).toFixed(2);
 
+        // Task: Fix 500 Errors & Debug Provisioning
+
+        // [/] Fix Dashboard Insights Prisma Error (`tenant.ts`)
+        // [ ] Create & Run `repair-permissions.ts`
+        // [ ] Improve Provisioning Logs in `TenantService.ts`
+        // [/] Fix NaN values in `GlobalControlPlane.tsx` metrics
+        // [ ] Verification
+        //     [ ] Run repair script
+        //     [ ] Verify provisioning flow
+        //     [ ] Verify dashboard insights
         // Fetch real invoices from Stripe
         const history = tenant.stripeCustomerId
             ? await StripeService.getInvoices(tenant.stripeCustomerId)

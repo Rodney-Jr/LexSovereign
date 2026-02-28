@@ -39,11 +39,11 @@ export class TenantService {
         const adminId = randomUUID();
         const tenantId = randomUUID();
 
-        // Transaction ensures atomicity - no half-baked tenants
         try {
+            console.log(`[TenantService] Starting provisioning for: ${name} (${adminEmail})`);
             await prisma.$transaction(async (tx) => {
-                // ... (rest of the transaction logic remains unchanged)
                 // 1. Create Tenant
+                console.log(`[Provisioning] Step 1: Creating Tenant: ${tenantId}`);
                 const tenant = await tx.tenant.create({
                     data: {
                         id: tenantId,
@@ -55,6 +55,7 @@ export class TenantService {
                 });
 
                 // 2. Create Roles (TENANT_ADMIN, INTERNAL_COUNSEL)
+                console.log(`[Provisioning] Step 2: Creating Admin Role`);
                 const adminRole = await tx.role.create({
                     data: {
                         name: 'TENANT_ADMIN',
@@ -70,6 +71,7 @@ export class TenantService {
                     }
                 });
 
+                console.log(`[Provisioning] Step 3: Creating User Role`);
                 const userRole = await tx.role.create({
                     data: {
                         name: process.env.DEFAULT_USER_ROLE || 'INTERNAL_COUNSEL',
@@ -86,6 +88,7 @@ export class TenantService {
                 });
 
                 // 3. Create Admin User
+                console.log(`[Provisioning] Step 4: Creating Admin User: ${adminId}`);
                 await tx.user.create({
                     data: {
                         id: adminId,
@@ -100,6 +103,7 @@ export class TenantService {
                 });
 
                 // 4. Create Chatbot Config
+                console.log(`[Provisioning] Step 5: Creating Chatbot Config`);
                 await tx.chatbotConfig.create({
                     data: {
                         tenantId: tenant.id,
@@ -112,6 +116,7 @@ export class TenantService {
                 });
 
                 // 5. Create Default Branding
+                console.log(`[Provisioning] Step 6: Creating Default Branding Profile`);
                 await tx.brandingProfile.create({
                     data: {
                         tenantId: tenant.id,
@@ -125,9 +130,13 @@ export class TenantService {
                     }
                 });
             });
-            console.log(`✅ Database transaction successful for tenant: ${tenantId}`);
-        } catch (error) {
-            console.error("❌ Provisioning Transaction Failed:", error);
+            console.log(`✅ [TenantService] Database transaction successful for tenant: ${tenantId}`);
+        } catch (error: any) {
+            console.error("❌ [TenantService] Provisioning Transaction Failed!");
+            console.error("Error Detail:", error.message || error);
+            if (error.code === 'P2025') {
+                console.error("Tip: This error usually means one of the connected permissions (manage_tenant, etc) is missing from the database.");
+            }
             throw error;
         }
 

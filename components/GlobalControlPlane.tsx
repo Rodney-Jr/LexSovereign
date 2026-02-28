@@ -153,9 +153,17 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                   </button>
                </div>
             </div>
-            <div className="bg-slate-900 border border-slate-800 px-6 py-3 rounded-2xl flex items-center gap-3">
-               <div className={`w-2 h-2 rounded-full shadow-[0_0_8px] ${(stats.systemHealth || 100) >= 90 ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-500 shadow-red-500/50'}`}></div>
-               <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Platform: {(stats.systemHealth || 100) >= 90 ? 'NOMINAL' : 'DEGRADED'}</span>
+            <div className="flex flex-col md:flex-row items-center gap-4">
+               <button
+                  onClick={() => setShowProvisionModal(true)}
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl shadow-cyan-900/20 active:scale-95"
+               >
+                  <PlusCircle size={18} /> Deploy Sovereign Silo
+               </button>
+               <div className="bg-slate-900 border border-slate-800 px-6 py-3 rounded-2xl flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full shadow-[0_0_8px] ${(stats.systemHealth || 100) >= 90 ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-500 shadow-red-500/50'}`}></div>
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Platform: {(stats.systemHealth || 100) >= 90 ? 'NOMINAL' : 'DEGRADED'}</span>
+               </div>
             </div>
          </div>
 
@@ -170,10 +178,10 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
             <>
                {/* Global Telemetry Grid */}
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <GlobalMetric label="Total Sovereign Tenants" value={stats.tenants} sub="+12 this month" icon={<Users className="text-blue-400" />} />
-                  <GlobalMetric label="Infrastructure Margin" value={stats.margin} sub="Target: 65.0%" icon={<TrendingUp className="text-emerald-400" />} />
-                  <GlobalMetric label="Active Compute Silos" value={stats.silos} sub="Global TEE instances" icon={<Cpu className="text-purple-400" />} />
-                  <GlobalMetric label="Cross-Border Egress" value={stats.egress} sub="Policy Enforcement: 100%" icon={<ShieldCheck className="text-cyan-400" />} />
+                  <GlobalMetric label="Total Sovereign Tenants" value={stats.tenants || 0} sub="+12 this month" icon={<Users className="text-blue-400" />} />
+                  <GlobalMetric label="Infrastructure Margin" value={stats.margin || '0%'} sub="Target: 65.0%" icon={<TrendingUp className="text-emerald-400" />} />
+                  <GlobalMetric label="Active Compute Silos" value={stats.silos || 0} sub="Global TEE instances" icon={<Cpu className="text-purple-400" />} />
+                  <GlobalMetric label="Cross-Border Egress" value={stats.egress || 'Active'} sub="Policy Enforcement: 100%" icon={<ShieldCheck className="text-cyan-400" />} />
                </div>
 
                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
