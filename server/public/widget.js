@@ -4,7 +4,7 @@
     const baseUrl = new URL(scriptTag.src).origin;
 
     if (!botId) {
-        console.error("LexSovereign Widget: data-bot-id attribute is missing.");
+        console.error("NomosDesk Widget: data-bot-id attribute is missing.");
         return;
     }
 
@@ -142,7 +142,7 @@
             <button class="ls-send-btn" id="ls-send">Send</button>
         </div>
         <div class="ls-footer">
-            Powered by LexSovereign
+            Powered by NomosDesk
         </div>
     `;
 
