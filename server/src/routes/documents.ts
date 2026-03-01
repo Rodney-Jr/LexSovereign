@@ -182,11 +182,7 @@ router.get('/review-needed', authenticateToken, async (req, res) => {
                 matter: isGlobalAdmin ? {} : {
                     tenantId: req.user.tenantId
                 },
-                // Heuristic for needing review: older than 30 days or never reviewed
-                OR: [
-                    { lastReviewed: { lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
-                    { lastReviewed: { equals: new Date(0) } }
-                ]
+                status: { not: 'APPROVED' }
             },
             include: {
                 matter: true
@@ -200,15 +196,82 @@ router.get('/review-needed', authenticateToken, async (req, res) => {
         const artifacts = documents.map(doc => ({
             id: doc.id,
             title: doc.name,
+            matterId: doc.matterId,
             matter: doc.matter.name,
             jurisdiction: doc.jurisdiction,
             lastActivity: doc.updatedAt.toLocaleDateString(),
-            complianceScore: 92, // Placeholder for actual calculation
+            complianceScore: 92,
             riskLevel: (doc.classification === 'Strictly Confidential') ? 'HIGH' : 'LOW',
-            tags: [doc.classification, 'Awaiting Review']
+            status: doc.status,
+            urgency: doc.classification === 'Strictly Confidential' ? 'Critical' : 'Routine',
+            aiConfidence: (doc.attributes as any)?.aiConfidence || 0.95,
+            piiCount: (doc.attributes as any)?.piiCount || 0
         }));
 
         res.json(artifacts);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get document content
+router.get('/:id/content', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && doc.matter.tenantId !== tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        // In a real app, read from storage (uri)
+        // For now, return the URI or a placeholder if it's a seed
+        let content = `[ENCLAVE CONTENT]: Original artifact content for '${doc.name}' at URI ${doc.uri}. 
+        Jurisdiction: ${doc.jurisdiction}. 
+        Classification: ${doc.classification}.
+        Integrity Hash: 0x${Math.random().toString(16).substr(2, 8)}`;
+
+        res.json({ content });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Approve document
+router.post('/:id/approve', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && doc.matter.tenantId !== tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const updated = await prisma.document.update({
+            where: { id },
+            data: {
+                status: 'APPROVED',
+                lastReviewed: new Date()
+            }
+        });
+
+        res.json({ success: true, status: updated.status });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

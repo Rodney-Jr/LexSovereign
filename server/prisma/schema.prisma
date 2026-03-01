@@ -158,6 +158,7 @@ model Document {
   isEncrypted     Boolean  @default(false)
   encryptionIV    String?
   updatedAt       DateTime @default(now()) @updatedAt
+  status          String   @default("AI_DRAFTED")
   matter          Matter   @relation(fields: [matterId], references: [id])
 }
 

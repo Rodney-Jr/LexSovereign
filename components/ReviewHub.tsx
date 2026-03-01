@@ -67,17 +67,36 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
     setSelectedId(artifact.id);
     setIsProcessing(true);
 
-    // Simulate fetching content and applying DAS proxy with generic text
-    const rawContent = `DRAFT ARTIFACT [${artifact.id}]: Regarding '${artifact.title}'. This document contains sensitive jurisdictional clauses for ${artifact.jurisdiction}. It has been processed through the Sovereign Data Anonymization Service to ensure compliance with organization-wide RBAC policies. Full counsel work product is maintained within the secure enclave.`;
-    const result = await gemini.getScrubbedContent(rawContent, userRole, PrivilegeStatus.PRIVILEGED);
+    try {
+      const session = getSavedSession();
+      if (!session?.token) return;
 
-    setScrubbedView({ content: result.content, count: result.scrubbedEntities });
-    setIsProcessing(false);
+      const { content } = await authorizedFetch(`/api/documents/${artifact.id}/content`, { token: session.token });
+      const result = await gemini.getScrubbedContent(content, userRole, PrivilegeStatus.PRIVILEGED);
+
+      setScrubbedView({ content: result.content, count: result.scrubbedEntities });
+    } catch (e) {
+      console.error("Failed to fetch document content:", e);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleApprove = (id: string) => {
-    setReviews(prev => prev.map(r => r.id === id ? { ...r, status: ReviewStatus.APPROVED } : r));
-    setSelectedId(null);
+  const handleApprove = async (id: string) => {
+    try {
+      const session = getSavedSession();
+      if (!session?.token) return;
+
+      await authorizedFetch(`/api/documents/${id}/approve`, {
+        method: 'POST',
+        token: session.token
+      });
+
+      setReviews(prev => prev.filter(r => r.id !== id));
+      setSelectedId(null);
+    } catch (e) {
+      console.error("Failed to approve artifact:", e);
+    }
   };
 
   return (
