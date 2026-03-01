@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { getCachedRate } from '../services/fxWebSocketService';
 import { getLatestRate } from '../services/fxRateService';
-import { sovereignGuard } from '../middleware/sovereignGuard';
 
 const router = Router();
 
@@ -10,7 +9,7 @@ const router = Router();
  * Returns latest exchange rates for the Ghana jurisdiction.
  * Prefers live in-memory cache from FastForex WebSocket, falls back to DB records.
  */
-router.get('/', sovereignGuard, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         // Try live WebSocket cache first (fastest)
         const liveUSD = getCachedRate('USDGHS');

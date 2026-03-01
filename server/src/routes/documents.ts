@@ -48,6 +48,33 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+// Get a single document by ID (used by Sovereign Sentinel and Review hub)
+router.get('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && doc.matter.tenantId !== req.user.tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        // Build a content string from available fields
+        const content = `[VAULT DOCUMENT: ${doc.name}]\n\nJurisdiction: ${doc.jurisdiction}\nClassification: ${doc.classification}\nPrivilege: ${doc.privilege}\n\n---\n\n${doc.uri || 'Content pending vault integration.'}`;
+
+        res.json({ ...doc, content });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get documents for a specific matter
 router.get('/matter/:matterId', authenticateToken, async (req, res) => {
     try {

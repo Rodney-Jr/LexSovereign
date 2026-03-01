@@ -87,7 +87,7 @@ const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentI
                 })
             });
 
-            setScrubbedText(data.scrubbedContent);
+            setScrubbedText(data.content || data.scrubbedContent || '');
             setOrcStatus('verified');
         } catch (e) {
             console.error("OCR Sync failed:", e);
