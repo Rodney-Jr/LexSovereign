@@ -41,6 +41,7 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [scrubbedView, setScrubbedView] = useState<{ content: string; count: number } | null>(null);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -57,7 +58,7 @@ const ReviewHub: React.FC<{ userRole: UserRole }> = ({ userRole }) => {
       }
     };
     fetchReviews();
-  }, []); const [scrubbedView, setScrubbedView] = useState<{ content: string; count: number } | null>(null);
+  }, []);
 
   const gemini = new LexGeminiService();
   const selectedArtifact = reviews.find(r => r.id === selectedId);
