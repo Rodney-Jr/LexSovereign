@@ -3,6 +3,7 @@ import { LexAIService } from '../services/LexAIService';
 import { DocumentAssemblyService } from '../services/DocumentAssemblyService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { prisma } from '../db';
+import complianceRouter from './compliance';
 
 const router = express.Router();
 const geminiService = new LexAIService();
@@ -213,5 +214,6 @@ router.post('/explain-clause', authenticateToken, async (req: Request, res) => {
     }
 });
 
+router.use('/compliance', complianceRouter);
 
 export default router;

@@ -32,6 +32,8 @@ import { usePermissions } from '../hooks/usePermissions';
 import SovereignBilling from './SovereignBilling';
 import ChatbotStudio from './ChatbotStudio';
 import BrandingSettings from './BrandingSettings';
+import TemplateManager from './TemplateManager';
+import ComplianceRiskCenter from './ComplianceRiskCenter';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 const TenantAdministration: React.FC = () => {
@@ -47,7 +49,7 @@ const TenantAdministration: React.FC = () => {
 
    const { setSeparationMode } = usePermissions();
 
-   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'billing' | 'chatbot' | 'branding' | 'access'>('users');
+   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'billing' | 'chatbot' | 'branding' | 'access' | 'templates' | 'compliance'>('users');
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [generatedLink, setGeneratedLink] = useState('');
    const [isGenerating, setIsGenerating] = useState(false);
@@ -269,6 +271,8 @@ const TenantAdministration: React.FC = () => {
                <TabButton label="Access Control" active={activeTab === 'access'} icon={<ShieldCheck size={16} />} onClick={() => setActiveTab('access')} />
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
                <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
+               <TabButton label="Templates" active={activeTab === 'templates'} icon={<FileText size={16} />} onClick={() => setActiveTab('templates')} />
+               <TabButton label="Compliance & Risk" active={activeTab === 'compliance'} icon={<ShieldCheck size={16} />} onClick={() => setActiveTab('compliance')} />
                {import.meta.env.VITE_SHOW_PRICING === 'true' && (
                   <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
                )}
@@ -611,6 +615,10 @@ const TenantAdministration: React.FC = () => {
                {activeTab === 'chatbot' && <ChatbotStudio />}
 
                {activeTab === 'branding' && <BrandingSettings />}
+
+               {activeTab === 'templates' && <TemplateManager />}
+
+               {activeTab === 'compliance' && <ComplianceRiskCenter />}
 
                {activeTab === 'billing' && import.meta.env.VITE_SHOW_PRICING === 'true' && <SovereignBilling />}
             </div>

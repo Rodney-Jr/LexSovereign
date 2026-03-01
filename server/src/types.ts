@@ -289,6 +289,9 @@ export interface PredictiveRisk {
     probability: number;
     impact: string;
     description: string;
+    mitigationPlan?: string;
+    riskCategory: string;
+    status: string;
     billingEntry?: BillingEntry;
 }
 

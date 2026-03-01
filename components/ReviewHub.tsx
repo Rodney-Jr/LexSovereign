@@ -15,7 +15,8 @@ import {
   ChevronRight,
   UserCheck,
   Zap,
-  Briefcase
+  Briefcase,
+  Loader2
 } from 'lucide-react';
 import { ReviewArtifact, ReviewStatus, UserRole, PrivilegeStatus } from '../types';
 import { LexGeminiService } from '../services/geminiService';

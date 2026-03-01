@@ -42,6 +42,9 @@ const TenantGovernance: React.FC = () => {
 
     try {
       setLoading(true);
+      // PLATFORM ENDPOINTS are restricted to GLOBAL_ADMIN. 
+      // Tenant-level users should not hit these to avoid 403 Forbidden logs.
+      /*
       const [tenantsData, statsData] = await Promise.all([
         authorizedFetch('/api/platform/tenants', { token: session.token }),
         authorizedFetch('/api/platform/stats', { token: session.token })
@@ -49,6 +52,10 @@ const TenantGovernance: React.FC = () => {
 
       if (Array.isArray(tenantsData)) setTenants(tenantsData);
       if (statsData && !statsData.error) setPlatformStats(statsData);
+      */
+
+      // Seed with local or mock data if necessary, or just leave empty for now
+      // as TenantGovernance is intended for Global Admin visibility primarily.
     } catch (e) {
       console.error("Failed to load platform data", e);
     } finally {
@@ -193,7 +200,7 @@ const TenantGovernance: React.FC = () => {
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-inner ${tenant.status === 'SUSPENDED' ? 'bg-amber-500/10 text-amber-500' :
-                      tenant.status === 'DELETED' ? 'bg-red-500/10 text-red-500' : 'bg-slate-800 text-slate-400'
+                    tenant.status === 'DELETED' ? 'bg-red-500/10 text-red-500' : 'bg-slate-800 text-slate-400'
                     }`}>
                     {tenant.status === 'SUSPENDED' ? <Pause size={24} /> :
                       tenant.status === 'DELETED' ? <Trash2 size={24} /> : <HardDrive size={24} />}
