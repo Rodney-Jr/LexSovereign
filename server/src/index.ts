@@ -89,7 +89,7 @@ app.use('/api/auth', authRouter);
 // Tenant Actions (Must be above /api catchall)
 app.use('/api/tenant', authenticateToken, tenantRouter);
 app.use('/api/platform', sovereignGuard, platformRouter);
-app.use('/api/document-templates', sovereignGuard, documentTemplatesRouter);
+app.use('/api/document-templates', authenticateToken, documentTemplatesRouter);
 app.use('/api/branding-profiles', sovereignGuard, brandingRouter);
 app.use('/api/documents', sovereignGuard, documentsRouter);
 app.use('/api/rules', sovereignGuard, rulesRouter);

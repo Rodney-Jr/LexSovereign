@@ -35,8 +35,9 @@ const TemplateManager: React.FC = () => {
     const [newTemplate, setNewTemplate] = useState({
         name: '',
         description: '',
-        category: 'CORPORATE',
-        jurisdiction: 'PRIMARY',
+        category: 'GENERAL',
+        jurisdiction: 'GH_ACC_1',
+        region: 'GH_ACC_1',
         content: '',
         version: '1.0.0'
     });
@@ -73,15 +74,19 @@ const TemplateManager: React.FC = () => {
             await authorizedFetch('/api/document-templates', {
                 method: 'POST',
                 token: session.token,
-                body: JSON.stringify(newTemplate)
+                body: JSON.stringify({
+                    ...newTemplate,
+                    jurisdiction: newTemplate.region || newTemplate.jurisdiction
+                })
             });
 
             setShowUploadModal(false);
             setNewTemplate({
                 name: '',
                 description: '',
-                category: 'CORPORATE',
-                jurisdiction: 'PRIMARY',
+                category: 'GENERAL',
+                jurisdiction: 'GH_ACC_1',
+                region: 'GH_ACC_1',
                 content: '',
                 version: '1.0.0'
             });
