@@ -26,6 +26,7 @@ import {
    Bot,
    Trash2,
    Droplet,
+   FileText,
 } from 'lucide-react';
 import { TenantUser, UserRole, Department } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
