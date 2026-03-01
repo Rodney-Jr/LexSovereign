@@ -230,10 +230,12 @@ const BlueprintCard = ({ icon, title, desc, region, price, onDeploy }: any) => (
             </div>
         </div>
         <div className="flex items-center justify-between pt-6 border-t border-slate-800">
-            <div>
-                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Pricing Tier</p>
-                <p className="text-sm font-bold text-white uppercase italic">{price}</p>
-            </div>
+            {import.meta.env.VITE_SHOW_PRICING === 'true' && (
+                <div>
+                    <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Pricing Tier</p>
+                    <p className="text-sm font-bold text-white uppercase italic">{price}</p>
+                </div>
+            )}
             <button
                 onClick={onDeploy}
                 title={`Deploy ${title}`}

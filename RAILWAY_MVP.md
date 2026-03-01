@@ -15,6 +15,7 @@ To run safely on Railway, the following environment variables must be configured
 *   `GEMINI_API_KEY`: Your Gemini Pro API Key.
 *   `DAS_SCRUBBING_LEVEL`: Set to `3` (Aggressive) for PaaS deployments to ensure no PII reaches Railway logs.
 *   `SOVEREIGN_REGION_PIN`: Hardcoded to your primary silo (e.g., `SOV-PR-1`).
+*   `VITE_SHOW_PRICING`: Set to `false` to hide pricing until launch.
 
 ## 3. Deployment Steps
 1.  **Repository Sync:** Connect your NomosDesk repo to Railway.

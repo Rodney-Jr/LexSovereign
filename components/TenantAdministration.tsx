@@ -269,7 +269,9 @@ const TenantAdministration: React.FC = () => {
                <TabButton label="Access Control" active={activeTab === 'access'} icon={<ShieldCheck size={16} />} onClick={() => setActiveTab('access')} />
                <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
                <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
-               <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
+               {import.meta.env.VITE_SHOW_PRICING === 'true' && (
+                  <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
+               )}
             </div>
          </div>
 
@@ -610,7 +612,7 @@ const TenantAdministration: React.FC = () => {
 
                {activeTab === 'branding' && <BrandingSettings />}
 
-               {activeTab === 'billing' && <SovereignBilling />}
+               {activeTab === 'billing' && import.meta.env.VITE_SHOW_PRICING === 'true' && <SovereignBilling />}
             </div>
          </div>
 

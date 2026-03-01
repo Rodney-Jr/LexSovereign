@@ -77,7 +77,7 @@ export default function HomePage() {
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center">
                             <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request Private Demo</Button>
-                            <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>
+                            {import.meta.env.VITE_SHOW_PRICING === 'true' && <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>}
                         </div>
 
                         <p className="text-sm text-slate-500 flex items-center gap-6 justify-center">
@@ -332,7 +332,7 @@ export default function HomePage() {
                     </p>
                     <div className="flex justify-center gap-4">
                         <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Request Access</Button>
-                        <Button asLink="/pricing" variant="outline" size="lg">View Pricing</Button>
+                        {import.meta.env.VITE_SHOW_PRICING === 'true' && <Button asLink="/pricing" variant="outline" size="lg">View Pricing</Button>}
                     </div>
                 </div>
             </section>
@@ -341,7 +341,7 @@ export default function HomePage() {
                 articles={[
                     { slug: '/insights/legal-software-africa-guide', title: 'Legal Software for Africa: 2026 Guide', excerpt: 'A complete guide to choosing data-sovereign legal software for African law firms and institutions.', readTime: '12 min read' },
                     { slug: '/insights/conflict-checking-software-law-firms', title: 'Conflict Checking Software for Law Firms', excerpt: 'Why manual conflict checks fail and how automated conflict software protects your firm.', readTime: '9 min read' },
-                    { slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'An honest comparison of features, pricing, African market support, and data governance.', readTime: '14 min read' },
+                    ...(import.meta.env.VITE_SHOW_PRICING === 'true' ? [{ slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'An honest comparison of features, pricing, African market support, and data governance.', readTime: '14 min read' }] : []),
                 ]}
             />
         </Layout >

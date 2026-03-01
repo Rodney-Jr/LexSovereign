@@ -260,7 +260,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'growth' && <GrowthDashboard />}
         {activeTab === 'sentinel' && <SovereignReviewScreen />}
         {activeTab === 'sentinel-demo' && <SovereignReviewScreen />}
-        {activeTab === 'pricing-calib' && <PricingGovernance />}
+        {activeTab === 'pricing-calib' && import.meta.env.VITE_SHOW_PRICING === 'true' && <PricingGovernance />}
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
         {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} matterId={selectedMatter} />}

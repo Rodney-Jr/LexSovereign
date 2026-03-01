@@ -67,7 +67,7 @@ export default function Layout({ children }: LayoutProps) {
                         <NavLink to="/for-law-firms">For Law Firms</NavLink>
                         <NavLink to="/for-enterprise-legal">For Enterprise</NavLink>
                         <NavLink to="/for-government">For Government</NavLink>
-                        <NavLink to="/pricing">Pricing</NavLink>
+                        {import.meta.env.VITE_SHOW_PRICING === 'true' && <NavLink to="/pricing">Pricing</NavLink>}
                         <div className="h-4 w-px bg-slate-800" />
                         <Link to="/security-and-compliance" className="text-sm font-medium text-slate-400 hover:text-emerald-400 transition-colors flex items-center gap-1.5">
                             <Lock className="w-3 h-3" /> Security
@@ -105,7 +105,7 @@ export default function Layout({ children }: LayoutProps) {
                         <MobileNavLink to="/for-law-firms">For Law Firms</MobileNavLink>
                         <MobileNavLink to="/for-enterprise-legal">For Enterprise</MobileNavLink>
                         <MobileNavLink to="/for-government">For Government</MobileNavLink>
-                        <MobileNavLink to="/pricing">Pricing</MobileNavLink>
+                        {import.meta.env.VITE_SHOW_PRICING === 'true' && <MobileNavLink to="/pricing">Pricing</MobileNavLink>}
                         <MobileNavLink to="/security-and-compliance">Security & Compliance</MobileNavLink>
                         <hr className="border-slate-800 my-2" />
                         <button
@@ -150,7 +150,7 @@ export default function Layout({ children }: LayoutProps) {
                                 <li><Link to="/for-law-firms" className="hover:text-indigo-400 transition-colors">Law Firms</Link></li>
                                 <li><Link to="/for-enterprise-legal" className="hover:text-indigo-400 transition-colors">Enterprise Legal</Link></li>
                                 <li><Link to="/for-government" className="hover:text-indigo-400 transition-colors">Government</Link></li>
-                                <li><Link to="/pricing" className="hover:text-indigo-400 transition-colors">Pricing</Link></li>
+                                {import.meta.env.VITE_SHOW_PRICING === 'true' && <li><Link to="/pricing" className="hover:text-indigo-400 transition-colors">Pricing</Link></li>}
                             </ul>
                         </div>
 

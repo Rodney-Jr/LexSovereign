@@ -145,12 +145,14 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                   >
                      Legal Repository
                   </button>
-                  <button
-                     onClick={() => onNavigate?.('pricing-calib')}
-                     className="px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all text-slate-500 hover:text-cyan-400 border border-transparent hover:border-cyan-500/30 hover:bg-cyan-500/10"
-                  >
-                     Pricing
-                  </button>
+                  {import.meta.env.VITE_SHOW_PRICING === 'true' && (
+                     <button
+                        onClick={() => onNavigate?.('pricing-calib')}
+                        className="px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all text-slate-500 hover:text-cyan-400 border border-transparent hover:border-cyan-500/30 hover:bg-cyan-500/10"
+                     >
+                        Pricing
+                     </button>
+                  )}
                </div>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-4">

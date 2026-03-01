@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Routes, Route, useLocation } from './utils/ssr-compat';
+import { Routes, Route, useLocation, Navigate } from './utils/ssr-compat';
 import ChatbotWidget from './components/ChatbotWidget';
 
 // Helper to handle SSR-safe lazy loading
@@ -133,7 +133,14 @@ export default function App() {
                     <Route path="/for-law-firms" element={<ForLawFirms />} />
                     <Route path="/for-enterprise-legal" element={<ForEnterprise />} />
                     <Route path="/for-government" element={<ForGovernment />} />
-                    <Route path="/pricing" element={<PricingPage />} />
+                    <Route
+                        path="/pricing"
+                        element={
+                            import.meta.env.VITE_SHOW_PRICING === 'true'
+                                ? <PricingPage />
+                                : <Navigate to="/" replace />
+                        }
+                    />
                     <Route path="/security-and-compliance" element={<SecurityPage />} />
                     <Route path="/client-intake-assistant" element={<ClientIntakePage />} />
                     <Route path="/privacy" element={<PrivacyPage />} />
