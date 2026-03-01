@@ -1,0 +1,99 @@
+{
+    "template_name": "Master Service Agreement (MSA)",
+    "category": "Commercial",
+    "jurisdiction": "GLOBAL",
+    "risk_level": "Medium",
+    "version": "1.0.0",
+    "clauses": [
+        {
+            "clause_key": "parties_and_date",
+            "clause_title": "Parties and Effective Date",
+            "clause_text": "This Master Service Agreement (the \"Agreement\") is entered into as of {{effective_date}} (the \"Effective Date\") by and between {{service_provider_name}}, a company incorporated under the laws of {{service_provider_jurisdiction}}, with its principal place of business at {{service_provider_address}} (\"Service Provider\"), and {{client_name}}, a company incorporated under the laws of {{client_jurisdiction}}, with its principal place of business at {{client_address}} (\"Client\"). The parties are collectively referred to as the \"Parties\" and individually as a \"Party\".",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "scope_of_services",
+            "clause_title": "Scope of Services",
+            "clause_text": "Service Provider shall provide the services described in one or more Statements of Work (\"SOW\") or Service Orders executed by the Parties from time to time (the \"Services\"). Each SOW shall be incorporated into and governed by this Agreement. In the event of a conflict between this Agreement and an SOW, the terms of the SOW shall prevail with respect to that particular engagement only.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "term",
+            "clause_title": "Term",
+            "clause_text": "This Agreement shall commence on the Effective Date and shall continue for an initial term of {{initial_term}} years (the \"Initial Term\"). Thereafter, it shall automatically renew for successive {{renewal_term}}-year periods unless either Party provides written notice of non-renewal at least {{notice_days}} days prior to the end of the then-current term.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "fees_and_payment",
+            "clause_title": "Fees and Payment",
+            "clause_text": "Client shall pay Service Provider the fees set forth in each applicable SOW (the \"Fees\"). Unless otherwise specified in the relevant SOW, invoices are due and payable within {{payment_terms}} days of the invoice date. Late payments shall accrue interest at a rate of {{late_interest_rate}}% per month from the due date until the date of actual payment.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "cross_border_payments",
+            "clause_title": "Cross-Border Payments and Currency",
+            "clause_text": "All payments under this Agreement shall be made in {{payment_currency}}. Each Party shall be responsible for any taxes, duties, levies, or withholding requirements imposed by its own jurisdiction. The Parties agree to cooperate in good faith to minimize the overall tax burden on cross-border payments and shall execute any documentation reasonably required for that purpose.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "intellectual_property",
+            "clause_title": "Intellectual Property Rights",
+            "clause_text": "All pre-existing intellectual property of each Party remains the sole property of that Party. Any work product, deliverables, inventions, or developments created by Service Provider specifically for Client under a SOW (\"Deliverables\") shall, upon full payment of all applicable Fees, be considered works made for hire and shall vest in Client. Service Provider retains a royalty-free, non-exclusive license to use any general methodologies or know-how developed in connection with the Services.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "confidentiality",
+            "clause_title": "Confidentiality",
+            "clause_text": "Each Party (the \"Receiving Party\") agrees to hold in strict confidence all non-public information of the other Party (the \"Disclosing Party\") that is designated as confidential, or that reasonably should be understood to be confidential given the nature of the information and circumstances of disclosure (\"Confidential Information\"). The Receiving Party shall use the Confidential Information solely for the purpose of performing its obligations or exercising its rights under this Agreement. This obligation shall survive for a period of {{confidentiality_survival_years}} years after expiration or termination of this Agreement.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "data_protection",
+            "clause_title": "Data Protection and Cross-Border Transfers",
+            "clause_text": "Where Service Provider processes personal data on behalf of Client, the Parties shall enter into a separate Data Processing Agreement (\"DPA\") governing such processing. Each Party warrants that it shall comply with all applicable data protection laws in its respective jurisdiction, including any requirements governing the cross-border transfer of personal data. Service Provider shall not transfer Client personal data outside of the agreed processing territories without the prior written consent of Client.",
+            "clause_type": "optional"
+        },
+        {
+            "clause_key": "warranties",
+            "clause_title": "Warranties",
+            "clause_text": "Service Provider warrants that: (a) it shall perform the Services in a professional and workmanlike manner consistent with industry standards; (b) it has the right to enter into this Agreement and to grant any rights granted herein; and (c) the Services and Deliverables shall materially conform to the specifications set forth in the applicable SOW. EXCEPT AS EXPRESSLY SET FORTH HEREIN, THE SERVICES ARE PROVIDED \"AS IS\" AND SERVICE PROVIDER DISCLAIMS ALL OTHER WARRANTIES.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "limitation_of_liability",
+            "clause_title": "Limitation of Liability",
+            "clause_text": "TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, NEITHER PARTY SHALL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING OUT OF OR RELATED TO THIS AGREEMENT. EACH PARTY'S TOTAL AGGREGATE LIABILITY SHALL NOT EXCEED THE TOTAL FEES PAID OR PAYABLE BY CLIENT UNDER THE APPLICABLE SOW IN THE {{liability_cap_period}} MONTHS PRECEDING THE EVENT GIVING RISE TO THE CLAIM.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "dispute_resolution",
+            "clause_title": "Dispute Resolution and Governing Law",
+            "clause_text": "This Agreement shall be governed by and construed in accordance with the laws of {{governing_law_jurisdiction}}, without regard to its conflict of law principles. Any dispute arising out of or in connection with this Agreement shall first be referred to senior representatives of each Party for good-faith negotiation for a period of {{negotiation_period_days}} days. If unresolved, the dispute shall be submitted to binding arbitration under the rules of {{arbitration_body}}, conducted in the {{arbitration_seat}} language, in {{arbitration_city}}.",
+            "clause_type": "variable"
+        },
+        {
+            "clause_key": "termination_for_convenience",
+            "clause_title": "Termination for Convenience",
+            "clause_text": "Either Party may terminate this Agreement or any SOW for convenience by providing {{termination_notice_days}} days' prior written notice to the other Party. Upon termination, Client shall pay Service Provider for all Services performed up to the effective date of termination, together with any non-cancellable costs reasonably incurred by Service Provider prior to receipt of the termination notice.",
+            "clause_type": "optional"
+        },
+        {
+            "clause_key": "force_majeure",
+            "clause_title": "Force Majeure",
+            "clause_text": "Neither Party shall be liable for any delay or failure in performance arising from causes beyond its reasonable control, including acts of God, pandemic, war, government sanctions, or infrastructure failures (a \"Force Majeure Event\"). The affected Party shall promptly notify the other Party and shall use commercially reasonable efforts to resume performance. If a Force Majeure Event continues for more than {{force_majeure_days}} days, either Party may terminate the affected SOW upon written notice without liability.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "entire_agreement",
+            "clause_title": "Entire Agreement",
+            "clause_text": "This Agreement, together with all SOWs, schedules, and exhibits attached hereto, constitutes the entire agreement between the Parties with respect to its subject matter and supersedes all prior or contemporaneous agreements, representations, warranties, and understandings. No amendment to this Agreement shall be valid unless in writing and signed by authorized representatives of both Parties.",
+            "clause_type": "locked"
+        },
+        {
+            "clause_key": "signatures",
+            "clause_title": "Signatures",
+            "clause_text": "IN WITNESS WHEREOF, the Parties have executed this Master Service Agreement as of the Effective Date.\n\nSERVICE PROVIDER:\nCompany: {{service_provider_name}}\nSignature: _________________________\nName: {{service_provider_signatory_name}}\nTitle: {{service_provider_signatory_title}}\nDate: _____________________________\n\nCLIENT:\nCompany: {{client_name}}\nSignature: _________________________\nName: {{client_signatory_name}}\nTitle: {{client_signatory_title}}\nDate: _____________________________",
+            "clause_type": "locked"
+        }
+    ]
+}

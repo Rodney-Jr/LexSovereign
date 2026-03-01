@@ -115,7 +115,7 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                             desc="Standard MSA for cross-border service engagements."
                             region="PRIMARY"
                             price="Standard"
-                            onDeploy={() => setSelectedTemplateId('template-master-service-agreement-(msa)')}
+                            onDeploy={() => setSelectedTemplateId('template-master-service-agreement--msa-')}
                         />
                         <BlueprintCard
                             icon={<FileText className="text-emerald-400" />}
@@ -123,7 +123,7 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                             desc="Standard non-disclosure agreement for mutual exchange of information."
                             region="GLOBAL"
                             price="Standard"
-                            onDeploy={() => setSelectedTemplateId('template-mutual-non-disclosure-agreement')}
+                            onDeploy={() => setSelectedTemplateId('template-standard-mutual-non-disclosure-agreement')}
                         />
                         <BlueprintCard
                             icon={<ShieldCheck className="text-purple-400" />}
