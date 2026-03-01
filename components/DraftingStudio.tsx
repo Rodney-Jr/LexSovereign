@@ -81,6 +81,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     const [sectionValues, setSectionValues] = useState<Record<string, boolean>>({});
 
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [isHydrating, setIsHydrating] = useState(false);
     const [isAssembling, setIsAssembling] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
@@ -147,6 +148,10 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             const data = await authorizedFetch(`/api/document-templates/${templateId}`, {
                 token: session.token
             });
+            if (data?.error) {
+                setLoadError(data.error);
+                return;
+            }
             setTemplate(data);
 
             // Initialize State
@@ -237,8 +242,9 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             setPreviewContent(compileTemplate(data.content, initialFields, initialSections));
             setValidationErrors([]);
 
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
+            setLoadError(e.message || "Failed to load template");
         } finally {
             setIsLoading(false);
         }

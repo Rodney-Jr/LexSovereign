@@ -91,7 +91,7 @@ app.use('/api/tenant', authenticateToken, tenantRouter);
 app.use('/api/platform', sovereignGuard, platformRouter);
 app.use('/api/document-templates', authenticateToken, documentTemplatesRouter);
 app.use('/api/branding-profiles', sovereignGuard, brandingRouter);
-app.use('/api/documents', sovereignGuard, documentsRouter);
+app.use('/api/documents', authenticateToken, documentsRouter);
 app.use('/api/rules', sovereignGuard, rulesRouter);
 app.use('/api/users', sovereignGuard, usersRouter);
 app.use('/api', sovereignGuard, apiRouter);
