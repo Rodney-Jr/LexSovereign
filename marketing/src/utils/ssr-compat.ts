@@ -1,6 +1,8 @@
 import {
     Link,
+    NavLink,
     useLocation,
+    Navigate,
     BrowserRouter,
     Routes,
     Route
@@ -15,7 +17,9 @@ const MemoryRouter = RouterPkgAny.MemoryRouter;
 
 export {
     Link,
+    NavLink,
     useLocation,
+    Navigate,
     BrowserRouter,
     Routes,
     Route,
