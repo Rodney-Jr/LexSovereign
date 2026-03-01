@@ -12,7 +12,7 @@ export class GeminiProvider implements AIProvider {
     name = "Google Gemini";
 
     // Default model to use if not overridden
-    private defaultModel = "gemini-1.5-flash-001";
+    private defaultModel = "gemini-2.5-flash";
 
     private getAI() {
         if (!process.env.GEMINI_API_KEY) {
