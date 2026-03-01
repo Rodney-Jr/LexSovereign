@@ -39,7 +39,7 @@ export interface AIProvider {
 
     evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }>;
 
-    publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }>;
+    publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }>;
 
     generateBillingDescription(rawNotes: string): Promise<string>;
 

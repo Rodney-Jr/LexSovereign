@@ -110,7 +110,7 @@ export class LexGeminiService {
     });
   }
 
-  async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]) {
+  async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[]): Promise<{ text: string; confidence: number; provider: string }> {
     const session = getSavedSession();
     // Public chat might not need token but authorizedFetch handles both cases gracefully
     return authorizedFetch(`${this.baseUrl}/chatbot/chat`, {

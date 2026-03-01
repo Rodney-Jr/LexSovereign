@@ -281,7 +281,7 @@ export class OpenRouterProvider implements AIProvider {
         config: ChatbotConfig,
         knowledge: KnowledgeArtifact[],
         history?: ChatMessage[]
-    ): Promise<{ text: string; confidence: number }> {
+    ): Promise<{ text: string; confidence: number; provider: string }> {
         const client = this.getClient();
         try {
             const knowledgeStr = knowledge.slice(0, 5).map(k => `Q: ${k.title}\nA: ${k.content}`).join('\n\n');
@@ -305,9 +305,9 @@ export class OpenRouterProvider implements AIProvider {
             });
 
             const text = response.choices[0].message.content || "I'm unable to assist right now.";
-            return { text, confidence: 0.85 };
+            return { text, confidence: 0.85, provider: this.id };
         } catch (e) {
-            return { text: "Service temporarily unavailable.", confidence: 0 };
+            return { text: "Service temporarily unavailable.", confidence: 0, provider: this.id };
         }
     }
 

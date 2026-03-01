@@ -277,8 +277,8 @@ export class GeminiProvider implements AIProvider {
         }
     }
 
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }> {
-        if (!config.isEnabled) return { text: "Chatbot is currently disabled.", confidence: 1 };
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }> {
+        if (!config.isEnabled) return { text: "Chatbot is currently disabled.", confidence: 1, provider: this.id };
 
         const ai = this.getAI();
         const knowledgeContext = knowledge.map(k => `${k.title}: ${k.content}`).join('\n\n');
@@ -301,7 +301,7 @@ export class GeminiProvider implements AIProvider {
             config: { temperature: 0.3 }
         });
 
-        return { text: response.text || "I am unable to answer that at this time.", confidence: 0.9 };
+        return { text: response.text || "I am unable to answer that at this time.", confidence: 0.9, provider: this.id };
     }
 
     async generateBillingDescription(rawNotes: string): Promise<string> {

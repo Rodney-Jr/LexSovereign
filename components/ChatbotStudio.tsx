@@ -51,7 +51,7 @@ const ChatbotStudio: React.FC = () => {
 
   const [knowledge, setKnowledge] = useState<KnowledgeArtifact[]>(INITIAL_KNOWLEDGE);
   const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot', text: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot', text: string, provider?: string }[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isIndexing, setIsIndexing] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
@@ -67,7 +67,7 @@ const ChatbotStudio: React.FC = () => {
 
     try {
       const result = await gemini.publicChat(userMsg, config, knowledge);
-      setChatMessages(prev => [...prev, { role: 'bot', text: result.text }]);
+      setChatMessages(prev => [...prev, { role: 'bot', text: result.text, provider: result.provider }]);
     } catch (e) {
       setChatMessages(prev => [...prev, { role: 'bot', text: "Error: Secure tunnel disrupted." }]);
     } finally {
@@ -269,7 +269,9 @@ const ChatbotStudio: React.FC = () => {
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                 <h5 className="text-[10px] font-bold text-white uppercase tracking-widest">Public Sandbox Preview</h5>
               </div>
-              <span className="text-[9px] font-mono text-slate-500">PROVIDER: GEMINI-3-FLASH</span>
+              <span className="text-[9px] font-mono text-slate-500">
+                GATEWAY: {chatMessages.filter(m => m.role === 'bot').slice(-1)[0]?.provider?.toUpperCase() || 'READY'}
+              </span>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">

@@ -64,7 +64,7 @@ export class LexAIService {
         return this.getProvider().evaluateRRE(text, rules);
     }
 
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number }> {
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }> {
         return this.getProvider().publicChat(input, config, knowledge, history);
     }
 
