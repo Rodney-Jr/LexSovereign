@@ -24,7 +24,7 @@ export class AIServiceFactory {
                 this.instance = new AnthropicProvider();
                 break;
             case 'openrouter':
-                console.log(`Initializing OpenRouter Provider (model: ${process.env.OPENROUTER_MODEL || 'google/gemini-pro-1.5'})`);
+                console.log(`Initializing OpenRouter Provider (model: ${process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001'})`);
                 this.instance = new OpenRouterProvider();
                 break;
             case 'gemini':

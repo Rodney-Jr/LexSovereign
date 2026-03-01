@@ -36,7 +36,7 @@ export class OpenRouterProvider implements AIProvider {
 
     // Primary model for complex legal reasoning
     private get primaryModel(): string {
-        return process.env.OPENROUTER_MODEL || "google/gemini-pro-1.5";
+        return process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001";
     }
 
     // Cheaper/faster model for simple tasks (audit logs, billing descriptions)
