@@ -200,104 +200,105 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
                             </p>
                         </div>
                     </div>
+                </div>
             )}
 
-                    {/* Right Section: Repository List */}
-                    <div className={`space-y-6 ${userRole === 'GLOBAL_ADMIN' ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
-                        <div className="flex items-center justify-between px-2">
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                <Database size={14} className="text-cyan-400" /> Sovereign Registry Pulse
-                            </h4>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
-                                <input
-                                    type="text"
-                                    placeholder="Search Registry..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition-all w-64"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                            {loading ? (
-                                <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
-                                    <Loader2 className="animate-spin w-10 h-10 text-cyan-500" />
-                                    <p className="font-mono text-[10px] animate-pulse">Syncing with Judicial Registry...</p>
-                                </div>
-                            ) : (
-                                <table className="w-full text-left">
-                                    <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                                        <tr>
-                                            <th className="px-8 py-5">Judicial Instrument</th>
-                                            <th className="px-8 py-5">Category</th>
-                                            <th className="px-8 py-5">Ingested</th>
-                                            <th className="px-8 py-5 text-right">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-800/50">
-                                        {filteredDocs.map(doc => (
-                                            <tr key={doc.id} className="hover:bg-slate-800/20 transition-all group">
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-cyan-400 border border-slate-700">
-                                                            <FileText size={18} />
-                                                        </div>
-                                                        <div className="max-w-[300px]">
-                                                            <p className="text-sm font-bold text-white truncate">{doc.title}</p>
-                                                            <p className="text-[10px] text-slate-500 font-mono">ID: {doc.id.substring(0, 8)}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <span className="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-bold uppercase">
-                                                        {doc.metadata?.category || 'LEGAL_DOC'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <span className="text-[10px] font-mono text-slate-500">
-                                                        {new Date(doc.createdAt).toLocaleDateString()}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-6 text-right">
-                                                    {userRole === 'GLOBAL_ADMIN' && (
-                                                        <button
-                                                            onClick={() => handleDelete(doc.id)}
-                                                            className="p-2 hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all rounded-xl"
-                                                            title="Decommission Document"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {filteredDocs.length === 0 && (
-                                            <tr>
-                                                <td colSpan={4} className="text-center py-20">
-                                                    <p className="text-slate-500 text-sm">No judicial instruments found matching criteria.</p>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            )}
-                        </div>
+            {/* Right Section: Repository List */}
+            <div className={`space-y-6 ${userRole === 'GLOBAL_ADMIN' ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
+                <div className="flex items-center justify-between px-2">
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <Database size={14} className="text-cyan-400" /> Sovereign Registry Pulse
+                    </h4>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                        <input
+                            type="text"
+                            placeholder="Search Registry..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition-all w-64"
+                        />
                     </div>
                 </div>
-            );
+
+                <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
+                            <Loader2 className="animate-spin w-10 h-10 text-cyan-500" />
+                            <p className="font-mono text-[10px] animate-pulse">Syncing with Judicial Registry...</p>
+                        </div>
+                    ) : (
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                                <tr>
+                                    <th className="px-8 py-5">Judicial Instrument</th>
+                                    <th className="px-8 py-5">Category</th>
+                                    <th className="px-8 py-5">Ingested</th>
+                                    <th className="px-8 py-5 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800/50">
+                                {filteredDocs.map(doc => (
+                                    <tr key={doc.id} className="hover:bg-slate-800/20 transition-all group">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-cyan-400 border border-slate-700">
+                                                    <FileText size={18} />
+                                                </div>
+                                                <div className="max-w-[300px]">
+                                                    <p className="text-sm font-bold text-white truncate">{doc.title}</p>
+                                                    <p className="text-[10px] text-slate-500 font-mono">ID: {doc.id.substring(0, 8)}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <span className="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-bold uppercase">
+                                                {doc.metadata?.category || 'LEGAL_DOC'}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <span className="text-[10px] font-mono text-slate-500">
+                                                {new Date(doc.createdAt).toLocaleDateString()}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            {userRole === 'GLOBAL_ADMIN' && (
+                                                <button
+                                                    onClick={() => handleDelete(doc.id)}
+                                                    className="p-2 hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all rounded-xl"
+                                                    title="Decommission Document"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredDocs.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="text-center py-20">
+                                            <p className="text-slate-500 text-sm">No judicial instruments found matching criteria.</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 };
 
-            const CategoryButton = ({label, active, onClick, icon}: any) => (
-            <button
-                onClick={onClick}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all border ${active
-                    ? 'bg-cyan-600 text-white border-cyan-500 shadow-lg'
-                    : 'bg-slate-950/50 text-slate-500 border-slate-800 hover:border-slate-700'
-                    }`}
-            >
-                {icon}
-                {label}
-            </button>
-            );
+const CategoryButton = ({ label, active, onClick, icon }: any) => (
+    <button
+        onClick={onClick}
+        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all border ${active
+            ? 'bg-cyan-600 text-white border-cyan-500 shadow-lg'
+            : 'bg-slate-950/50 text-slate-500 border-slate-800 hover:border-slate-700'
+            }`}
+    >
+        {icon}
+        {label}
+    </button>
+);
