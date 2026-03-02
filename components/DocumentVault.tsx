@@ -16,7 +16,9 @@ import {
   SlidersHorizontal,
   ChevronDown,
   Briefcase,
-  Sparkles
+  Sparkles,
+  Download,
+  AlertTriangle
 } from 'lucide-react';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
@@ -39,7 +41,14 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
   const [filterClassification, setFilterClassification] = useState<string>('All');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Marketplace & Studio State
+  // View state
+  const [viewingDoc, setViewingDoc] = useState<DocumentMetadata | null>(null);
+  const [viewContent, setViewContent] = useState<string>('');
+  const [viewLoading, setViewLoading] = useState(false);
+
+  // Delete state
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const [showMarketplace, setShowMarketplace] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [brandingProfiles, setBrandingProfiles] = useState<any[]>([]);
@@ -96,6 +105,42 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
     } catch (err) {
       console.error('Export Error:', err);
       alert('Failed to export document. Ensure the document is finalized.');
+    }
+  };
+
+  const handleView = async (doc: DocumentMetadata) => {
+    setViewingDoc(doc);
+    setViewContent('');
+    setViewLoading(true);
+    try {
+      const session = getSavedSession();
+      const token = session?.token || '';
+      const data = await authorizedFetch(`/api/documents/${doc.id}/content`, { token });
+      setViewContent(data?.content || 'No content available.');
+    } catch {
+      setViewContent('Failed to load document content.');
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  const handleDelete = async (doc: DocumentMetadata) => {
+    if (!window.confirm(`Permanently delete "${doc.name}" from the Sovereign Vault? This action cannot be undone.`)) return;
+    setDeletingId(doc.id);
+    try {
+      const session = getSavedSession();
+      const token = session?.token || '';
+      const response = await fetch(`/api/documents/${doc.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Delete failed');
+      onRemoveDocument(doc.id);
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete document. Please try again.');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -342,7 +387,11 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                      <button title="View Document" className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all">
+                      <button
+                        title="View Document"
+                        onClick={() => handleView(doc)}
+                        className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"
+                      >
                         <Eye size={18} />
                       </button>
                       <button
@@ -361,8 +410,9 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
                       </button>
                       <button
                         title="Delete Document"
-                        onClick={() => onRemoveDocument(doc.id)}
-                        className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-600 hover:text-red-400 transition-all"
+                        onClick={() => handleDelete(doc)}
+                        disabled={deletingId === doc.id}
+                        className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-600 hover:text-red-400 transition-all disabled:opacity-40"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -402,6 +452,76 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
       </div>
 
 
+
+      {/* Document View Modal */}
+      {viewingDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-brand-primary/10 rounded-xl">
+                  <FileText size={20} className="text-brand-primary" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white truncate max-w-xs">{viewingDoc.name}</h3>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest">{viewingDoc.matterId || 'UNCATEGORIZED'}</p>
+                </div>
+              </div>
+              <button title="Close Preview" onClick={() => setViewingDoc(null)} className="p-2 rounded-xl hover:bg-slate-800 text-slate-500 hover:text-white transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            {/* Metadata Strip */}
+            <div className="flex gap-4 px-6 py-3 bg-slate-950/50 border-b border-slate-800">
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                <MapPin size={11} className="text-blue-400" />
+                <span>{viewingDoc.region} Silo</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                <Shield size={11} className="text-emerald-400" />
+                <span>{(viewingDoc as any).encryption || 'SYSTEM'} Encryption</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px]">
+                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${viewingDoc.classification === 'Highly Sensitive'
+                  ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                  : viewingDoc.classification === 'Confidential'
+                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}>{viewingDoc.classification}</span>
+              </div>
+            </div>
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {viewLoading ? (
+                <div className="flex items-center justify-center h-32 text-slate-500 text-sm">Loading enclave content...</div>
+              ) : (
+                <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono leading-relaxed bg-slate-950/40 border border-slate-800 rounded-2xl p-5">
+                  {viewContent}
+                </pre>
+              )}
+            </div>
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between p-4 border-t border-slate-800 bg-slate-950/30">
+              <span className="text-[10px] text-slate-600 uppercase tracking-widest">Sovereign Vault · Read-Only Preview</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExport(viewingDoc.id, 'DOCX', viewingDoc.name)}
+                  className="px-4 py-2 text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl flex items-center gap-2 transition-colors"
+                >
+                  <Download size={13} /> Export DOCX
+                </button>
+                <button
+                  onClick={() => handleExport(viewingDoc.id, 'PDF', viewingDoc.name)}
+                  className="px-4 py-2 text-[11px] font-bold bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary rounded-xl flex items-center gap-2 transition-colors border border-brand-primary/20"
+                >
+                  <Download size={13} /> Export PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showIngest && (
         <DocumentIngestModal

@@ -354,4 +354,31 @@ router.get('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Delete a document
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && doc.matter.tenantId !== req.user.tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        await prisma.document.delete({ where: { id } });
+
+        res.json({ success: true, id });
+    } catch (error: any) {
+        console.error('Document deletion failed:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
