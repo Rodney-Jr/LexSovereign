@@ -232,8 +232,9 @@ router.post('/', async (req, res) => {
         // Generate AI response using LexAIService
         let aiResponseText: string;
         let faqHit: string | undefined;
+        let aiResult: any;
         try {
-            const aiResult = await lexAI.publicChat(
+            aiResult = await lexAI.publicChat(
                 message,
                 MARKETING_CHATBOT_CONFIG,
                 relevantKnowledge,
@@ -332,7 +333,8 @@ router.post('/', async (req, res) => {
         res.status(200).json({
             response: aiResponse.content,
             conversationId: conversation.id,
-            isLead: conversation.isLead
+            isLead: conversation.isLead,
+            provider: (aiResult as any).provider || 'openrouter'
         });
     } catch (error: any) {
         console.error("Chat conversation error:", error);

@@ -183,6 +183,7 @@ export default function ChatbotWidget() {
     const [showLeadForm, setShowLeadForm] = useState(false);
     const [leadFormConfig, setLeadFormConfig] = useState({ title: 'Book a Demo', source: 'CHATBOT_DEMO' });
     const [submittedName, setSubmittedName] = useState('');
+    const [currentProvider, setCurrentProvider] = useState<string>('Sovereign');
     const [messages, setMessages] = useState<Message[]>([
         { role: 'assistant', content: 'Hi! How can I help you learn more about NomosDesk?' }
     ]);
@@ -292,168 +293,172 @@ export default function ChatbotWidget() {
                 method: 'POST',
                 body: JSON.stringify({ sessionId, message: userMessage })
             });
-            const data = await response.json();
-            setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-        } catch (error) {
-            console.error('Chat error:', error);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: 'Sorry, I encountered an error. Please try again or email us at access@nomosdesk.com.'
-            }]);
-        } finally {
-            setIsLoading(false);
+        });
+        const data = await response.json();
+        if (data.provider) {
+            setCurrentProvider(data.provider);
         }
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    };
-
-    // ── Closed state: floating button ──────────────────────────────────────────
-    if (!isOpen) {
-        return (
-            <button
-                onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 z-50 group"
-                aria-label="Open chat"
-            >
-                <MessageCircle size={28} />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                    1
-                </span>
-            </button>
-        );
+        setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+    } catch (error) {
+        console.error('Chat error:', error);
+        setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: 'Sorry, I encountered an error. Please try again or email us at access@nomosdesk.com.'
+        }]);
+    } finally {
+        setIsLoading(false);
     }
+};
 
-    // ── Open state: chat window ────────────────────────────────────────────────
+const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+    }
+};
+
+// ── Closed state: floating button ──────────────────────────────────────────
+if (!isOpen) {
     return (
-        <div className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${isMinimized ? 'w-80' : 'w-96'}`}>
-            <div className={`bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden ${isMinimized ? 'h-16' : 'h-[620px]'} flex flex-col`}>
+        <button
+            onClick={() => setIsOpen(true)}
+            className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 z-50 group"
+            aria-label="Open chat"
+        >
+            <MessageCircle size={28} />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                1
+            </span>
+        </button>
+    );
+}
 
-                {/* Header */}
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                            <MessageCircle size={20} className="text-white" />
-                        </div>
-                        <div>
-                            <h3 className="text-white font-bold text-sm">NomosDesk Assistant</h3>
-                            <p className="text-indigo-200 text-xs">We typically reply instantly</p>
-                        </div>
+// ── Open state: chat window ────────────────────────────────────────────────
+return (
+    <div className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${isMinimized ? 'w-80' : 'w-96'}`}>
+        <div className={`bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden ${isMinimized ? 'h-16' : 'h-[620px]'} flex flex-col`}>
+
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <MessageCircle size={20} className="text-white" />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setIsMinimized(!isMinimized)}
-                            className="text-white/80 hover:text-white transition-colors p-1"
-                            aria-label="Minimize chat"
-                        >
-                            <Minimize2 size={18} />
-                        </button>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="text-white/80 hover:text-white transition-colors p-1"
-                            aria-label="Close chat"
-                        >
-                            <X size={18} />
-                        </button>
+                    <div>
+                        <h3 className="text-white font-bold text-sm">NomosDesk Assistant</h3>
+                        <p className="text-indigo-200 text-xs">We typically reply instantly</p>
                     </div>
                 </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsMinimized(!isMinimized)}
+                        className="text-white/80 hover:text-white transition-colors p-1"
+                        aria-label="Minimize chat"
+                    >
+                        <Minimize2 size={18} />
+                    </button>
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="text-white/80 hover:text-white transition-colors p-1"
+                        aria-label="Close chat"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+            </div>
 
-                {!isMinimized && (
-                    <>
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950">
-                            {messages.map((msg, idx) => {
-                                if (msg.role === 'success') {
-                                    let contentObj = { name: msg.content, source: '' };
-                                    try {
-                                        contentObj = JSON.parse(msg.content);
-                                    } catch (e) {
-                                        // Legacy fallback if content wasn't JSON
-                                    }
-                                    return (
-                                        <div key={idx} className="flex justify-start">
-                                            <SuccessBubble name={contentObj.name} source={contentObj.source} />
-                                        </div>
-                                    );
+            {!isMinimized && (
+                <>
+                    {/* Messages */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950">
+                        {messages.map((msg, idx) => {
+                            if (msg.role === 'success') {
+                                let contentObj = { name: msg.content, source: '' };
+                                try {
+                                    contentObj = JSON.parse(msg.content);
+                                } catch (e) {
+                                    // Legacy fallback if content wasn't JSON
                                 }
                                 return (
-                                    <div
-                                        key={idx}
-                                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                    >
-                                        <div
-                                            className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${msg.role === 'user'
-                                                ? 'bg-indigo-600 text-white rounded-br-sm'
-                                                : 'bg-slate-800 text-slate-200 rounded-bl-sm'
-                                                }`}
-                                        >
-                                            <p className="text-sm leading-relaxed">{msg.content}</p>
-                                        </div>
+                                    <div key={idx} className="flex justify-start">
+                                        <SuccessBubble name={contentObj.name} source={contentObj.source} />
                                     </div>
                                 );
-                            })}
-
-                            {/* In-chat form */}
-                            {showLeadForm && (
-                                <div className="flex justify-start animate-in slide-in-from-bottom-2 duration-300">
-                                    <LeadRequestForm
-                                        title={leadFormConfig.title}
-                                        source={leadFormConfig.source}
-                                        onSubmit={handleLeadSubmit}
-                                        onSkip={handleLeadSkip}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Typing indicator */}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-slate-800 text-slate-200 rounded-2xl rounded-bl-sm px-4 py-3">
-                                        <div className="flex gap-1">
-                                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                        </div>
+                            }
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div
+                                        className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${msg.role === 'user'
+                                            ? 'bg-indigo-600 text-white rounded-br-sm'
+                                            : 'bg-slate-800 text-slate-200 rounded-bl-sm'
+                                            }`}
+                                    >
+                                        <p className="text-sm leading-relaxed">{msg.content}</p>
                                     </div>
                                 </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
+                            );
+                        })}
 
-                        {/* Input — hidden while lead form is showing */}
-                        {!showLeadForm && (
-                            <div className="p-4 bg-slate-900 border-t border-slate-800 shrink-0">
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={inputMessage}
-                                        onChange={e => setInputMessage(e.target.value)}
-                                        onKeyPress={handleKeyPress}
-                                        placeholder="Type your message..."
-                                        className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none placeholder:text-slate-600"
-                                        disabled={isLoading}
-                                    />
-                                    <button
-                                        onClick={handleSendMessage}
-                                        disabled={!inputMessage.trim() || isLoading}
-                                        className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white p-2.5 rounded-xl transition-colors"
-                                        aria-label="Send message"
-                                    >
-                                        <Send size={18} />
-                                    </button>
-                                </div>
-                                <p className="text-[10px] text-slate-600 mt-2 text-center">
-                                    Powered by NomosDesk AI
-                                </p>
+                        {/* In-chat form */}
+                        {showLeadForm && (
+                            <div className="flex justify-start animate-in slide-in-from-bottom-2 duration-300">
+                                <LeadRequestForm
+                                    title={leadFormConfig.title}
+                                    source={leadFormConfig.source}
+                                    onSubmit={handleLeadSubmit}
+                                    onSkip={handleLeadSkip}
+                                />
                             </div>
                         )}
-                    </>
-                )}
-            </div>
+
+                        {/* Typing indicator */}
+                        {isLoading && (
+                            <div className="flex justify-start">
+                                <div className="bg-slate-800 text-slate-200 rounded-2xl rounded-bl-sm px-4 py-3">
+                                    <div className="flex gap-1">
+                                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Input — hidden while lead form is showing */}
+                    {!showLeadForm && (
+                        <div className="p-4 bg-slate-900 border-t border-slate-800 shrink-0">
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={inputMessage}
+                                    onChange={e => setInputMessage(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="Type your message..."
+                                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none placeholder:text-slate-600"
+                                    disabled={isLoading}
+                                />
+                                <button
+                                    onClick={handleSendMessage}
+                                    disabled={!inputMessage.trim() || isLoading}
+                                    className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white p-2.5 rounded-xl transition-colors"
+                                    aria-label="Send message"
+                                >
+                                    <Send size={18} />
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-slate-600 mt-2 text-center">
+                                Powered by {currentProvider} AI
+                            </p>
+                        </div>
+                    )}
+                </>
+            )}
         </div>
-    );
+    </div>
+);
 }
