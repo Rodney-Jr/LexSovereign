@@ -41,7 +41,7 @@ interface GlobalControlPlaneProps {
 }
 
 const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNavigate }) => {
-   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'ai-registry' | 'leads' | 'conversations' | 'repository'>('telemetry');
+   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'tenants' | 'ai-registry' | 'leads' | 'conversations' | 'repository'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
@@ -91,6 +91,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
       const interval = setInterval(fetchPlatformData, 30000); // Polling every 30s
       return () => clearInterval(interval);
    }, []);
+
    const handleGlobalSync = () => {
       setIsSyncing(true);
       setTimeout(() => setIsSyncing(false), 2000);
@@ -122,6 +123,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                      className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'admins' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                      Admin Fleet
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('tenants')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'tenants' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                     Tenants
                   </button>
                   <button
                      onClick={() => setActiveTab('ai-registry')}
@@ -171,7 +178,6 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
             </div>
          </div>
 
-
          {/* Render Modals */}
          {showProvisionModal && (
             <ProvisionTenantModal onClose={() => setShowProvisionModal(false)} />
@@ -181,7 +187,6 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
             <ProvisionAdminModal
                onClose={() => setShowAdminModal(false)}
                onSuccess={() => {
-                  // Re-fetch data to show the new admin immediately
                   const sessionData = localStorage.getItem('nomosdesk_session');
                   const token = sessionData ? JSON.parse(sessionData).token : '';
                   authorizedFetch('/api/platform/admins', { token }).then(data => {
@@ -194,7 +199,6 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
          {/* Content Switcher */}
          {activeTab === 'telemetry' && (
             <>
-               {/* Global Telemetry Grid */}
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <GlobalMetric label="Total Sovereign Tenants" value={stats.tenants || 0} sub="+12 this month" icon={<Users className="text-blue-400" />} />
                   <GlobalMetric label="Infrastructure Margin" value={stats.margin || '0%'} sub="Target: 65.0%" icon={<TrendingUp className="text-emerald-400" />} />
@@ -203,7 +207,6 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                </div>
 
                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                  {/* Regional Silo Map/List */}
                   <div className="lg:col-span-8 space-y-6">
                      <div className="flex items-center justify-between px-2">
                         <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -251,11 +254,9 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                         ))}
                      </div>
 
-                     {/* Model Registry Module — live signals now from /api/platform/ai-registry */}
                      <LiveModelRegistryWidget stats={stats} />
                   </div>
 
-                  {/* Global Security & Incident Response */}
                   <div className="lg:col-span-4 space-y-6 sticky top-24">
                      <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden group">
                         <h4 className="font-bold text-sm uppercase tracking-widest text-slate-500 flex items-center gap-2">
@@ -310,7 +311,6 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
 
          {activeTab === 'admins' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in slide-in-from-right-4 duration-500">
-               {/* Admin Management Workspace */}
                <div className="lg:col-span-8 space-y-6">
                   <div className="flex items-center justify-between px-2">
                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -411,7 +411,6 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                   </div>
                </div>
 
-               {/* Admin Fleet Detail/Logs */}
                <div className="lg:col-span-4 space-y-6 sticky top-24">
                   <div className="bg-slate-950 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6">
                      <div className="flex items-center justify-between">
@@ -454,6 +453,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
             </div>
          )}
 
+         {activeTab === 'tenants' && <TenantsTab />}
+
          {activeTab === 'leads' && <LeadsTab />}
 
          {activeTab === 'ai-registry' && <GlobalModelRegistry />}
@@ -461,14 +462,178 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
          {activeTab === 'conversations' && <ConversationsTab conversations={conversations} />}
 
          {activeTab === 'repository' && <LegalRepositoryTab />}
-      </div >
+      </div>
+   );
+};
+
+const TenantsTab = () => {
+   const [tenants, setTenants] = useState<any[]>([]);
+   const [loading, setLoading] = useState(true);
+
+   const fetchTenants = async () => {
+      setLoading(true);
+      try {
+         const sessionData = localStorage.getItem('nomosdesk_session');
+         const token = sessionData ? JSON.parse(sessionData).token : '';
+         const data = await authorizedFetch('/api/platform/tenants', { token });
+         if (Array.isArray(data)) setTenants(data);
+      } catch (e) {
+         console.error("Failed to fetch tenants", e);
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   React.useEffect(() => {
+      fetchTenants();
+   }, []);
+
+   const handleToggleStatus = async (id: string, currentStatus: string) => {
+      const nextStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+      try {
+         const sessionData = localStorage.getItem('nomosdesk_session');
+         const token = sessionData ? JSON.parse(sessionData).token : '';
+         await authorizedFetch(`/api/platform/tenants/${id}/status`, {
+            method: 'PATCH',
+            token,
+            body: JSON.stringify({ status: nextStatus })
+         });
+         setTenants(prev => prev.map(t => t.id === id ? { ...t, status: nextStatus } : t));
+      } catch (e) {
+         console.error("Failed to update status", e);
+      }
+   };
+
+   const handleDecommission = async (id: string) => {
+      if (!window.confirm("ARE YOU SURE? This will decommission the sovereign enclave and mark the tenant as DELETED.")) return;
+      try {
+         const sessionData = localStorage.getItem('nomosdesk_session');
+         const token = sessionData ? JSON.parse(sessionData).token : '';
+         await authorizedFetch(`/api/platform/tenants/${id}`, {
+            method: 'DELETE',
+            token
+         });
+         setTenants(prev => prev.map(t => t.id === id ? { ...t, status: 'DELETED' } : t));
+      } catch (e) {
+         console.error("Failed to decommission", e);
+      }
+   };
+
+   if (loading) return (
+      <div className="flex items-center justify-center h-64">
+         <RefreshCw size={28} className="animate-spin text-cyan-400" />
+      </div>
+   );
+
+   return (
+      <div className="grid grid-cols-1 gap-10 animate-in slide-in-from-right-4 duration-500">
+         <div className="space-y-6">
+            <div className="flex items-center justify-between px-2">
+               <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <ShieldCheck size={14} className="text-cyan-400" /> Sovereign Tenant Fleet
+               </h4>
+               <span className="text-[10px] text-slate-500 uppercase tracking-widest">
+                  {tenants.length} Enclave{tenants.length !== 1 ? 's' : ''} Provisioned
+               </span>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+               <table className="w-full text-left">
+                  <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                     <tr>
+                        <th className="px-8 py-5">Tenant Enclave</th>
+                        <th className="px-8 py-5">Geography</th>
+                        <th className="px-8 py-5">Metrics</th>
+                        <th className="px-8 py-5 text-right">Actions</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50">
+                     {tenants.map(tenant => (
+                        <tr key={tenant.id} className="hover:bg-slate-800/20 transition-all group">
+                           <td className="px-8 py-6">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-cyan-400 font-bold border border-slate-700">
+                                    <Server size={20} />
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-bold text-white">{tenant.name}</p>
+                                    <p className="text-[9px] text-slate-500 font-mono tracking-tighter">{tenant.id}</p>
+                                 </div>
+                              </div>
+                           </td>
+                           <td className="px-8 py-6">
+                              <div className="flex items-center gap-2">
+                                 <Globe size={12} className="text-slate-500" />
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{tenant.primaryRegion}</span>
+                              </div>
+                           </td>
+                           <td className="px-8 py-6">
+                              <div className="flex items-center gap-6">
+                                 <div>
+                                    <p className="text-xs font-bold text-white">{tenant.userCount}</p>
+                                    <p className="text-[8px] text-slate-500 uppercase">Users</p>
+                                 </div>
+                                 <div>
+                                    <p className="text-xs font-bold text-white">{tenant.activeMatters}</p>
+                                    <p className="text-[8px] text-slate-500 uppercase">Matters</p>
+                                 </div>
+                                 <div>
+                                    <p className="text-[10px] font-bold text-cyan-400">{tenant.plan}</p>
+                                    <p className="text-[8px] text-slate-500 uppercase">Plan</p>
+                                 </div>
+                              </div>
+                           </td>
+                           <td className="px-8 py-6 text-right">
+                              <div className="flex items-center justify-end gap-3">
+                                 <div className="text-right mr-4">
+                                    <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase border ${tenant.status === 'ACTIVE'
+                                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                       : tenant.status === 'DELETED'
+                                          ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                       }`}>
+                                       {tenant.status}
+                                    </span>
+                                 </div>
+                                 {tenant.status !== 'DELETED' && (
+                                    <>
+                                       <button
+                                          onClick={() => handleToggleStatus(tenant.id, tenant.status)}
+                                          className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all border ${tenant.status === 'ACTIVE'
+                                             ? 'border-amber-500/30 text-amber-500 hover:bg-amber-500/10'
+                                             : 'border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10'
+                                             }`}
+                                       >
+                                          {tenant.status === 'ACTIVE' ? 'Suspend' : 'Reactivate'}
+                                       </button>
+                                       <button
+                                          onClick={() => handleDecommission(tenant.id)}
+                                          className="px-3 py-1.5 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-xl text-[9px] font-bold uppercase transition-all"
+                                       >
+                                          Decommission
+                                       </button>
+                                    </>
+                                 )}
+                              </div>
+                           </td>
+                        </tr>
+                     ))}
+                     {tenants.length === 0 && (
+                        <tr>
+                           <td colSpan={4} className="px-8 py-10 text-center text-slate-500 italic text-sm">No sovereign tenants provisioned yet.</td>
+                        </tr>
+                     )}
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
    );
 };
 
 const ConversationsTab = ({ conversations }: { conversations: any[] }) => {
    const [expandedSession, setExpandedSession] = useState<string | null>(null);
 
-   // Group conversations by session - conversations already come from backend
    const sessionGroups = conversations.reduce((acc: any, conv: any) => {
       if (!acc[conv.sessionId]) {
          acc[conv.sessionId] = {
@@ -477,7 +642,8 @@ const ConversationsTab = ({ conversations }: { conversations: any[] }) => {
             visitorEmail: conv.visitorEmail,
             messages: conv.messages || [],
             createdAt: conv.createdAt,
-            updatedAt: conv.updatedAt
+            updatedAt: conv.updatedAt,
+            lastMessage: conv.updatedAt
          };
       }
       return acc;
@@ -512,7 +678,6 @@ const ConversationsTab = ({ conversations }: { conversations: any[] }) => {
                         key={session.sessionId}
                         className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl hover:border-slate-700 transition-all"
                      >
-                        {/* Session Header */}
                         <div
                            className="p-6 cursor-pointer hover:bg-slate-800/30 transition-all"
                            onClick={() => setExpandedSession(expandedSession === session.sessionId ? null : session.sessionId)}
@@ -542,7 +707,6 @@ const ConversationsTab = ({ conversations }: { conversations: any[] }) => {
                            </div>
                         </div>
 
-                        {/* Expanded Messages */}
                         {expandedSession === session.sessionId && (
                            <div className="border-t border-slate-800 bg-slate-950 p-6 space-y-3">
                               {session.messages.map((msg: any, idx: number) => (
@@ -702,25 +866,6 @@ const GlobalMetric = ({ label, value, sub, icon }: any) => (
    </div>
 );
 
-const ModelRow = ({ name, regions, users, version, status }: any) => (
-   <div className="flex items-center justify-between p-4 bg-slate-950 border border-slate-800 rounded-2xl hover:border-purple-500/30 transition-all group">
-      <div className="flex items-center gap-4">
-         <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/10 transition-colors">
-            <Zap size={18} />
-         </div>
-         <div>
-            <p className="text-sm font-bold text-white">{name}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-tighter">{regions} • {users}</p>
-         </div>
-      </div>
-      <div className="text-right">
-         <p className="text-[10px] font-mono text-slate-400">{version}</p>
-         <span className="text-[8px] font-bold text-emerald-400 bg-emerald-400/5 px-2 py-0.5 rounded-full border border-emerald-400/10 uppercase tracking-widest">{status}</span>
-      </div>
-   </div>
-);
-
-// ── Live Model Registry Widget (inline card on Telemetry tab) ─────────────
 const LiveModelRegistryWidget = ({ stats }: { stats: any }) => {
    const isOpenRouter = (stats.activeAiProvider || 'openrouter') === 'openrouter';
    return (
@@ -735,7 +880,6 @@ const LiveModelRegistryWidget = ({ stats }: { stats: any }) => {
             </div>
          </div>
 
-         {/* Active Provider Banner */}
          <div className="flex items-center gap-4 p-4 bg-purple-500/5 border border-purple-500/20 rounded-2xl">
             <div className="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
                <Zap size={18} className="text-purple-400" />
@@ -766,7 +910,6 @@ const LiveModelRegistryWidget = ({ stats }: { stats: any }) => {
    );
 };
 
-// ── Full GlobalModelRegistry Tab ──────────────────────────────────────────
 const GlobalModelRegistry = () => {
    const [registry, setRegistry] = useState<any>(null);
    const [loading, setLoading] = useState(true);
@@ -798,14 +941,18 @@ const GlobalModelRegistry = () => {
 
    const handleSwitch = async () => {
       setSwitching(true);
-      setSuccessMsg('');
       try {
-         await authorizedFetch('/api/platform/ai-registry/switch', {
-            method: 'POST',
+         await authorizedFetch('/api/platform/ai-registry', {
+            method: 'PATCH',
             token: getToken(),
-            body: JSON.stringify({ provider: selectedProvider, model: primaryModel, fastModel })
+            body: JSON.stringify({
+               activeProvider: selectedProvider,
+               activeModel: primaryModel,
+               fastModel: fastModel
+            })
          });
-         setSuccessMsg(`✓ Provider switched to ${selectedProvider} — active immediately`);
+         setSuccessMsg('Platform-wide AI strategy updated successfully.');
+         setTimeout(() => setSuccessMsg(''), 5000);
       } catch (e) {
          console.error(e);
       } finally {
@@ -813,168 +960,74 @@ const GlobalModelRegistry = () => {
       }
    };
 
-   const OPENROUTER_MODELS = [
-      'google/gemini-pro-1.5',
-      'google/gemini-flash-1.5',
-      'anthropic/claude-3.5-sonnet',
-      'anthropic/claude-3-haiku',
-      'openai/gpt-4o',
-      'openai/gpt-4o-mini',
-      'meta-llama/llama-3.1-70b-instruct',
-      'meta-llama/llama-3.1-8b-instruct',
-      'mistralai/mistral-7b-instruct',
-      'mistralai/mixtral-8x7b-instruct',
-      'deepseek/deepseek-r1',
-      'deepseek/deepseek-chat',
-      'cohere/command-r-plus',
-      'nousresearch/hermes-3-llama-3.1-70b',
-   ];
-
-   if (loading) return (
-      <div className="flex items-center justify-center h-64">
-         <RefreshCw size={28} className="animate-spin text-purple-400" />
-      </div>
-   );
+   if (loading) return <div className="p-12 text-center text-slate-500 italic">Accessing AI Kernel...</div>;
 
    return (
-      <div className="space-y-10 animate-in slide-in-from-right-4 duration-500">
-         <div className="flex items-center justify-between px-2">
-            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-               <Database size={14} className="text-purple-400" /> Global AI Model Registry
-            </h4>
-            {successMsg && (
-               <span className="text-[10px] text-emerald-400 font-bold animate-pulse">{successMsg}</span>
-            )}
-         </div>
-
-         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Provider Cards */}
-            <div className="lg:col-span-5 space-y-4">
-               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Available Providers</p>
-               {(registry?.providers || []).map((p: any) => (
-                  <button
-                     key={p.id}
-                     onClick={() => setSelectedProvider(p.id)}
-                     className={`w-full text-left p-6 rounded-3xl border transition-all ${selectedProvider === p.id
-                        ? 'bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10'
-                        : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-                        }`}
-                  >
-                     <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                           <div className={`p-2 rounded-xl ${selectedProvider === p.id ? 'bg-purple-500/20' : 'bg-slate-800'}`}>
-                              <Zap size={16} className={selectedProvider === p.id ? 'text-purple-400' : 'text-slate-500'} />
-                           </div>
-                           <div>
-                              <p className="text-sm font-bold text-white">{p.name}</p>
-                              <p className="text-[9px] text-slate-500">{p.description}</p>
-                           </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                           <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full border ${p.status === 'ACTIVE'
-                              ? 'text-emerald-400 bg-emerald-400/5 border-emerald-400/20'
-                              : 'text-slate-500 bg-slate-800 border-slate-700'
-                              }`}>{p.status}</span>
-                           {p.isDefault && <span className="text-[7px] text-purple-400 font-bold">DEFAULT</span>}
-                        </div>
-                     </div>
-                  </button>
-               ))}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in slide-in-from-right-4 duration-500">
+         <div className="lg:col-span-12 space-y-6">
+            <div className="flex items-center justify-between">
+               <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <Cpu size={14} className="text-purple-400" /> AI Failover & Model Registry
+               </h4>
+               {successMsg && <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest bg-emerald-400/5 px-4 py-1 rounded-full border border-emerald-400/20">{successMsg}</span>}
             </div>
 
-            {/* Configuration Panel */}
-            <div className="lg:col-span-7 space-y-6">
-               <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl">
-                  <div className="flex items-center gap-3">
-                     <div className="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
-                        <Activity size={18} className="text-purple-400" />
-                     </div>
-                     <div>
-                        <h5 className="font-bold text-white text-sm">Provider Configuration</h5>
-                        <p className="text-[10px] text-slate-500">Changes are applied immediately — no server restart required.</p>
-                     </div>
+            <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-10 shadow-2xl space-y-10">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Active AI Provider</label>
+                     <select
+                        value={selectedProvider}
+                        onChange={(e) => setSelectedProvider(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-purple-500 transition-all appearance-none"
+                     >
+                        <option value="openrouter">OpenRouter (Multimodal Failover)</option>
+                        <option value="openai">Direct OpenAI</option>
+                        <option value="anthropic">Direct Anthropic</option>
+                     </select>
                   </div>
 
-                  {selectedProvider === 'openrouter' && (
-                     <div className="space-y-6">
-                        <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Primary Model</label>
-                           <p className="text-[9px] text-slate-600">Used for complex legal reasoning, briefings, document analysis</p>
-                           <select
-                              value={primaryModel}
-                              onChange={e => setPrimaryModel(e.target.value)}
-                              className="w-full bg-slate-950 border border-slate-800 text-sm text-white p-3 rounded-xl focus:outline-none focus:border-purple-500 transition-all"
-                           >
-                              {OPENROUTER_MODELS.map(m => <option key={m} value={m}>{m}</option>)}
-                           </select>
-                        </div>
-                        <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fast Model</label>
-                           <p className="text-[9px] text-slate-600">Used for billing narration, audit logs, RRE evaluation</p>
-                           <select
-                              value={fastModel}
-                              onChange={e => setFastModel(e.target.value)}
-                              className="w-full bg-slate-950 border border-slate-800 text-sm text-white p-3 rounded-xl focus:outline-none focus:border-purple-500 transition-all"
-                           >
-                              {OPENROUTER_MODELS.map(m => <option key={m} value={m}>{m}</option>)}
-                           </select>
-                        </div>
-                     </div>
-                  )}
-
-                  {selectedProvider !== 'openrouter' && (
-                     <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
-                        <p className="text-[11px] text-amber-400 leading-relaxed">
-                           ⚠ Switching away from OpenRouter will use the direct provider API. Ensure the corresponding API key is configured in your environment variables.
-                        </p>
-                     </div>
-                  )}
-
-                  {/* Active Registry Status */}
-                  <div className="p-5 bg-slate-950 border border-slate-800 rounded-2xl space-y-3 font-mono text-[10px]">
-                     <p className="text-slate-500 uppercase tracking-widest text-[8px] font-bold">Current Runtime State</p>
-                     <p className="text-cyan-400">&gt; AI_PROVIDER = <span className="text-white">{registry?.activeProvider}</span></p>
-                     <p className="text-cyan-400">&gt; OPENROUTER_MODEL = <span className="text-white">{registry?.activeModel}</span></p>
-                     <p className="text-cyan-400">&gt; OPENROUTER_FAST_MODEL = <span className="text-white">{registry?.fastModel}</span></p>
-                     <p className="text-cyan-400">&gt; STATUS = <span className="text-emerald-400">ACTIVE</span></p>
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Primary Analytical Model</label>
+                     <input
+                        type="text"
+                        value={primaryModel}
+                        onChange={(e) => setPrimaryModel(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-mono text-cyan-400 focus:outline-none focus:border-cyan-500 transition-all font-bold"
+                     />
                   </div>
 
-                  <button
-                     onClick={handleSwitch}
-                     disabled={switching}
-                     className="w-full py-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-2xl font-bold uppercase tracking-widest text-xs transition-all shadow-xl shadow-purple-900/40 flex items-center justify-center gap-2 active:scale-95"
-                  >
-                     {switching ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} />}
-                     {switching ? 'Activating…' : `Deploy ${selectedProvider} as Active Provider`}
-                  </button>
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Fast/Chat Model</label>
+                     <input
+                        type="text"
+                        value={fastModel}
+                        onChange={(e) => setFastModel(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-mono text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all font-bold"
+                     />
+                  </div>
                </div>
 
-               {/* Feature Matrix */}
-               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
-                  <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">OpenRouter Coverage — NomosDesk AI Features</h5>
-                  <div className="space-y-2">
-                     {[
-                        'Legal Chat Assistant',
-                        'Executive Briefing Generation',
-                        'Document Content Scrubbing (PII)',
-                        'Regulatory Rule Evaluation (RRE)',
-                        'Billing Description Narration',
-                        'Audit Log Generation',
-                        'Document Export Validation',
-                        'Template Hydration',
-                        'Public Chatbot (Marketing Widget)',
-                        'Clause Explanation',
-                        'Pricing Model Generation',
-                        'Time Entry AI Narration',
-                     ].map(f => (
-                        <div key={f} className="flex items-center gap-3 px-3 py-2 bg-slate-950 rounded-xl border border-slate-800">
-                           <div className="w-4 h-4 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center shrink-0">
-                              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                           </div>
-                           <span className="text-[11px] text-slate-300">{f}</span>
-                           <span className="ml-auto text-[8px] font-bold text-purple-400 uppercase">OpenRouter</span>
-                        </div>
-                     ))}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-800">
+                  <div className="p-6 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex items-start gap-4">
+                     <ShieldCheck className="text-purple-400 shrink-0" size={24} />
+                     <div className="space-y-2">
+                        <h5 className="font-bold text-xs uppercase tracking-widest text-white">Kernel Failover Logic</h5>
+                        <p className="text-[10px] text-slate-500 leading-relaxed italic">
+                           "If the primary analytical model exceeds 500ms TTFT or returns a 429/500 status, NomosDesk will automatically route the request to the specified Fast Model via the sovereign gateway."
+                        </p>
+                     </div>
+                  </div>
+
+                  <div className="flex items-end flex-col justify-center">
+                     <button
+                        onClick={handleSwitch}
+                        disabled={switching}
+                        className="px-10 py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-purple-900/20 active:scale-95 disabled:opacity-50"
+                     >
+                        {switching ? 'Synchronizing Kernel...' : 'Commit Platform Strategy'}
+                     </button>
+                     <p className="text-[9px] text-slate-600 mt-3 italic mr-2 text-right">Requires Platform-Owner authorization. Action is logged globally.</p>
                   </div>
                </div>
             </div>
@@ -984,4 +1037,3 @@ const GlobalModelRegistry = () => {
 };
 
 export default GlobalControlPlane;
-
