@@ -145,25 +145,49 @@ export async function sendTenantWelcomeEmail(params: {
 }
 
 /**
- * Send a lead acknowledgment email when someone submits a demo request.
+ * Send welcome email after auto-provisioning from a demo request.
+ * This replaces the generic lead-ack and specifically communicates
+ * that the demo request resulted in a live, fully provisioned account.
  */
-export async function sendLeadAcknowledgmentEmail(params: {
+export async function sendDemoProvisionedEmail(params: {
   to: string;
-  name: string;
+  adminName: string;
+  tenantName: string;
+  tempPassword: string;
+  loginUrl: string;
 }) {
-  const { to, name } = params;
+  const { to, adminName, tenantName, tempPassword, loginUrl } = params;
 
   const content = `
-        <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#f1f5f9;">Thanks for reaching out, ${name}!</h1>
-        <p style="margin:0 0 20px;color:#94a3b8;font-size:15px;">We've received your demo request and our team will be in touch within <strong style="color:#a5b4fc;">1 business day</strong>.</p>
-        <p style="color:#cbd5e1;font-size:15px;line-height:1.6;">NomosDesk is Africa's first sovereign AI legal platform — built for law firms, government agencies, and enterprises that require the highest standards of data privacy and jurisdictional compliance.</p>
-        <p style="color:#cbd5e1;font-size:15px;line-height:1.6;">While you wait, feel free to explore our platform overview at <a href="https://nomosdesk.com" style="color:#818cf8;">nomosdesk.com</a>.</p>
+        <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#f1f5f9;">Your enclave is live, ${adminName}!</h1>
+        <p style="margin:0 0 20px;color:#94a3b8;font-size:15px;">
+          Thank you for requesting a demo. Instead of scheduling a call, we've gone ahead and
+          <strong style="color:#a5b4fc;">automatically provisioned your sovereign legal enclave</strong> so you can explore the full platform right now.
+        </p>
+        <table style="width:100%;background:#0f172a;border-radius:8px;padding:20px;margin:20px 0;" cellpadding="0" cellspacing="0">
+            <tr><td style="color:#94a3b8;font-size:13px;padding-bottom:4px;">Workspace</td></tr>
+            <tr><td style="color:#e2e8f0;font-weight:600;font-size:15px;padding-bottom:16px;">${tenantName}</td></tr>
+            <tr><td style="color:#94a3b8;font-size:13px;padding-bottom:4px;">Login Email</td></tr>
+            <tr><td style="color:#e2e8f0;font-weight:600;font-size:15px;padding-bottom:16px;">${to}</td></tr>
+            <tr><td style="color:#94a3b8;font-size:13px;padding-bottom:4px;">Temporary Password</td></tr>
+            <tr><td style="color:#e2e8f0;font-weight:600;font-size:16px;font-family:monospace;letter-spacing:2px;">${tempPassword}</td></tr>
+        </table>
+        <p style="color:#f59e0b;font-size:13px;">⚠ Please change your password immediately after your first login.</p>
+        <p style="color:#cbd5e1;font-size:14px;line-height:1.6;">
+          This is a fully functional account — not a limited demo. You have access to matter management,
+          document automation, AI legal research, client portals, and more.
+        </p>
+        ${button('Access Your Enclave Now →', loginUrl)}
+        <p style="margin-top:32px;color:#64748b;font-size:13px;">
+          A member of our team will follow up within 1 business day to walk you through the platform and answer any questions.
+        </p>
     `;
 
+  console.log(`[Email] Dispatching Demo Provisioning Email to: ${to} (Tenant: ${tenantName})`);
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: 'We received your NomosDesk demo request',
-    html: baseLayout(content, 'Demo Request Received')
+    subject: `Your NomosDesk enclave "${tenantName}" is ready — start now`,
+    html: baseLayout(content, `Welcome to NomosDesk — ${tenantName} is live`)
   });
 }

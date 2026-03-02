@@ -1,7 +1,7 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
-import { sendTenantWelcomeEmail } from '../services/EmailService';
+import { sendDemoProvisionedEmail } from '../services/EmailService';
 import { TenantService } from '../services/TenantService';
 
 const router = express.Router();
@@ -41,8 +41,8 @@ router.post('/', async (req, res) => {
                 data: { status: 'CONVERTED' }
             }).catch(() => { });
 
-            // Send welcome email with credentials
-            return sendTenantWelcomeEmail({
+            // Send demo-specific welcome email with credentials
+            return sendDemoProvisionedEmail({
                 to: email,
                 adminName: name,
                 tenantName,
