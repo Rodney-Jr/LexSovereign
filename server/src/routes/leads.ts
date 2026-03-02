@@ -1,7 +1,8 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
-import { sendLeadAcknowledgmentEmail } from '../services/EmailService';
+import { sendTenantWelcomeEmail } from '../services/EmailService';
+import { TenantService } from '../services/TenantService';
 
 const router = express.Router();
 
@@ -25,9 +26,32 @@ router.post('/', async (req, res) => {
             }
         });
 
-        // Send acknowledgment email (non-blocking)
-        sendLeadAcknowledgmentEmail({ to: email, name })
-            .catch(err => console.error('[Email] Lead ack email failed:', err));
+        // Auto-provision a sovereign tenant and send welcome email (non-blocking)
+        const tenantName = company || `${name}'s Firm`;
+        TenantService.provisionTenant({
+            name: tenantName,
+            adminEmail: email,
+            adminName: name,
+            plan: 'STANDARD',
+            region: 'GH_ACC_1'
+        }).then(async (result) => {
+            // Update lead status to CONVERTED
+            await prisma.lead.update({
+                where: { id: lead.id },
+                data: { status: 'CONVERTED' }
+            }).catch(() => { });
+
+            // Send welcome email with credentials
+            return sendTenantWelcomeEmail({
+                to: email,
+                adminName: name,
+                tenantName,
+                tempPassword: result.tempPassword,
+                loginUrl: result.loginUrl
+            });
+        }).catch(err => {
+            console.error(`[DemoAutomation] Provisioning failed for ${email}:`, err.message);
+        });
 
         res.status(201).json(lead);
     } catch (error: any) {
