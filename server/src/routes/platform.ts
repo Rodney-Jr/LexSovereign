@@ -4,6 +4,8 @@ import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { TenantService } from '../services/TenantService';
 import { z } from 'zod';
+import { PlatformService } from '../services/PlatformService';
+import { sendTenantWelcomeEmail } from '../services/EmailService';
 
 const router = express.Router();
 
@@ -33,6 +35,15 @@ router.post('/provision', authenticateToken, requireRole(['GLOBAL_ADMIN']), asyn
             message: 'Tenant Provisioned Successfully',
             details: result
         });
+
+        // Send welcome email (non-blocking)
+        sendTenantWelcomeEmail({
+            to: input.adminEmail,
+            adminName: input.adminName,
+            tenantName: input.name,
+            tempPassword: result.tempPassword,
+            loginUrl: result.loginUrl
+        }).catch(err => console.error('[Email] Tenant welcome email failed:', err));
 
     } catch (err: any) {
         if (err instanceof z.ZodError) {
@@ -154,38 +165,47 @@ router.get('/stats', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (re
  */
 router.get('/admins', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
     try {
-        const admins = await prisma.user.findMany({
-            where: {
-                OR: [
-                    { role: { name: 'GLOBAL_ADMIN' } },
-                    { roleString: 'GLOBAL_ADMIN' }
-                ]
-            },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                createdAt: true,
-                provider: true,
-                roleString: true
-            }
-        });
-
-        // Map to frontend expectation
-        const formatted = admins.map(a => ({
-            id: a.id,
-            name: a.name,
-            email: a.email,
-            hardwareEnclaveId: `FIPS-SEC-${a.id.substring(0, 4).toUpperCase()}`, // Simulated ID
-            mfaMethod: a.provider === 'GOOGLE' ? 'OIDC Hybrid' : 'ZK-Handshake',
-            status: 'Active',
-            lastHandshake: 'Recently',
-            accessLevel: 'PLATFORM_OWNER'
-        }));
-
+        const formatted = await PlatformService.listPlatformAdmins();
         res.json(formatted);
     } catch (err: any) {
+        console.error("Fetch Admins Error:", err);
         res.status(500).json({ error: 'Failed to fetch platform admins' });
+    }
+});
+
+const provisionAdminSchema = z.object({
+    name: z.string().min(2),
+    email: z.string().email(),
+    accessLevel: z.enum(['SUPER_ADMIN', 'INFRA_ADMIN', 'SECURITY_ADMIN', 'MARKETING_ADMIN'])
+});
+
+/**
+ * POST /api/platform/admins
+ * Provision a new Platform Admin.
+ */
+router.post('/admins', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const input = provisionAdminSchema.parse(req.body);
+        const result = await PlatformService.provisionAdmin(input);
+        res.status(201).json({
+            message: 'Platform Admin Provisioned',
+            details: result
+        });
+
+        // Send welcome email for platform admin (non-blocking)
+        sendTenantWelcomeEmail({
+            to: input.email,
+            adminName: input.name,
+            tenantName: 'Sovereign Control Plane',
+            tempPassword: result.tempPassword,
+            loginUrl: result.loginUrl
+        }).catch(err => console.error('[Email] Platform admin welcome email failed:', err));
+    } catch (err: any) {
+        if (err instanceof z.ZodError) {
+            return res.status(400).json({ error: err.errors });
+        }
+        console.error("Provision Admin Error:", err);
+        res.status(500).json({ error: err.message || 'Failed to provision platform admin' });
     }
 });
 

@@ -135,6 +135,7 @@ export async function sendTenantWelcomeEmail(params: {
         ${button('Access Your Enclave →', loginUrl)}
     `;
 
+  console.log(`[Email] Dispatching Welcome Email to: ${to} (Tenant: ${tenantName})`);
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,

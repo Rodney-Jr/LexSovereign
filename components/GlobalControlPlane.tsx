@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Region, GlobalAdminIdentity } from '../types';
 import { ProvisionTenantModal } from './ProvisionTenantModal';
+import { ProvisionAdminModal } from './ProvisionAdminModal';
 import { LegalRepositoryTab } from './LegalRepositoryTab';
 import { authorizedFetch } from '../utils/api';
 
@@ -44,6 +45,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
+   const [showAdminModal, setShowAdminModal] = useState(false);
    const [stats, setStats] = useState<any>({
       tenants: 0,
       matters: 0,
@@ -175,6 +177,20 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
             <ProvisionTenantModal onClose={() => setShowProvisionModal(false)} />
          )}
 
+         {showAdminModal && (
+            <ProvisionAdminModal
+               onClose={() => setShowAdminModal(false)}
+               onSuccess={() => {
+                  // Re-fetch data to show the new admin immediately
+                  const sessionData = localStorage.getItem('nomosdesk_session');
+                  const token = sessionData ? JSON.parse(sessionData).token : '';
+                  authorizedFetch('/api/platform/admins', { token }).then(data => {
+                     if (Array.isArray(data)) setPlatformAdmins(data);
+                  });
+               }}
+            />
+         )}
+
          {/* Content Switcher */}
          {activeTab === 'telemetry' && (
             <>
@@ -300,7 +316,10 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                         <ShieldCheck size={14} className="text-cyan-400" /> Platform Admin Fleet
                      </h4>
-                     <button className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all">
+                     <button
+                        onClick={() => setShowAdminModal(true)}
+                        className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all"
+                     >
                         <UserPlus size={14} /> Provision Platform Admin
                      </button>
                   </div>
