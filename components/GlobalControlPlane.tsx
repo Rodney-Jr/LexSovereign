@@ -37,10 +37,11 @@ import { authorizedFetch } from '../utils/api';
 
 interface GlobalControlPlaneProps {
    userName: string;
+   userRole?: string;
    onNavigate?: (tab: string) => void;
 }
 
-const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNavigate }) => {
+const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userRole, onNavigate }) => {
    const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'tenants' | 'ai-registry' | 'leads' | 'conversations' | 'repository'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
@@ -461,7 +462,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, onNav
 
          {activeTab === 'conversations' && <ConversationsTab conversations={conversations} />}
 
-         {activeTab === 'repository' && <LegalRepositoryTab />}
+         {activeTab === 'repository' && <LegalRepositoryTab userRole={userRole} />}
       </div>
    );
 };
@@ -977,6 +978,7 @@ const GlobalModelRegistry = () => {
                   <div className="space-y-4">
                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Active AI Provider</label>
                      <select
+                        title="Active AI Provider"
                         value={selectedProvider}
                         onChange={(e) => setSelectedProvider(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-purple-500 transition-all appearance-none"
@@ -991,6 +993,8 @@ const GlobalModelRegistry = () => {
                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Primary Analytical Model</label>
                      <input
                         type="text"
+                        title="Primary Analytical Model"
+                        placeholder="Primary Analytical Model"
                         value={primaryModel}
                         onChange={(e) => setPrimaryModel(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-mono text-cyan-400 focus:outline-none focus:border-cyan-500 transition-all font-bold"
@@ -1001,6 +1005,8 @@ const GlobalModelRegistry = () => {
                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Fast/Chat Model</label>
                      <input
                         type="text"
+                        title="Fast/Chat Model"
+                        placeholder="Fast/Chat Model"
                         value={fastModel}
                         onChange={(e) => setFastModel(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-mono text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all font-bold"
