@@ -170,8 +170,12 @@ async function main() {
             data: {
                 roleString: 'GLOBAL_ADMIN',
                 role: { connect: { id: globalAdminRole.id } },
-                jurisdictionPins: ['GH_ACC_1'],
-                credentials: [{ type: 'SYSTEM_ADMIN', id: 'SA-001' }]
+                jurisdictionPins: ['GH_ACC_1', 'SOV-PR-1'],
+                credentials: [
+                    { type: 'SYSTEM_ADMIN', id: 'SA-001' },
+                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-GH-001', region: 'GH_ACC_1' },
+                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-SOV-001', region: 'SOV-PR-1' }
+                ]
             }
         });
 
@@ -188,7 +192,12 @@ async function main() {
                 roleId: counselRole?.id,
                 roleString: 'INTERNAL_COUNSEL',
                 region: 'GH_ACC_1',
-                tenantId: result.tenantId
+                tenantId: result.tenantId,
+                jurisdictionPins: ['GH_ACC_1', 'SOV-PR-1'],
+                credentials: [
+                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-GH-002', region: 'GH_ACC_1' },
+                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-SOV-002', region: 'SOV-PR-1' }
+                ]
             }
         });
         counselId = counsel.id;

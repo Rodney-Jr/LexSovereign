@@ -22,7 +22,11 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     if (token && token !== 'undefined') {
         headers.set('Authorization', `Bearer ${token}`);
     } else {
-        console.warn(`[API-Diag] No token found for ${url}. Token Value: ${token}`);
+        // Only log warning for non-public routes
+        const isPublicAuth = url.includes('/api/auth/resolve-invite') || url.includes('/api/auth/login') || url.includes('/api/auth/register') || url.includes('/api/auth/forgot-password');
+        if (!isPublicAuth) {
+            console.warn(`[API-Diag] No token found for ${url}. Token Value: ${token}`);
+        }
     }
 
     // Add Sovereign Pin if available (Prioritize dynamic handshake, fallback to window/global)

@@ -57,6 +57,10 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
    const handleResolveLink = async (tokenOverride?: string) => {
       setIsProcessing(true);
       const tokenToResolve = tokenOverride || inviteToken;
+      if (!tokenToResolve || tokenToResolve === 'undefined') {
+         setIsProcessing(false);
+         return;
+      }
       try {
          const data = await authorizedFetch('/api/auth/resolve-invite', {
             method: 'POST',
@@ -78,11 +82,9 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
       }
    };
 
-   // Auto-populate token from URL and auto-resolve
    React.useEffect(() => {
-      if (initialToken) {
+      if (initialToken && initialToken !== 'undefined') {
          setInviteToken(initialToken);
-         // If we have an initial token, automatically try to resolve it
          handleResolveLink(initialToken);
       }
    }, [initialToken]);
