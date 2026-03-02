@@ -7,8 +7,25 @@ export class LexAIService {
     // This class is now a facade that delegates to the active AIProvider.
     // It maintains the original method signatures for backward compatibility.
 
-    private getProvider() {
-        return AIServiceFactory.getProvider();
+    private getProviders() {
+        return AIServiceFactory.getProvidersByPriority();
+    }
+
+    private async executeWithFailover<T>(operation: (provider: any) => Promise<T>): Promise<T> {
+        const providers = this.getProviders();
+        let lastError: any;
+
+        for (const provider of providers) {
+            try {
+                return await operation(provider);
+            } catch (error: any) {
+                console.warn(`[AIService] Provider ${provider.id} failed: ${error.message}. Trying next fallback...`);
+                lastError = error;
+            }
+        }
+
+        console.error("[AIService] All AI providers failed.");
+        throw lastError || new Error("AI Service Unavailable");
     }
 
     async chat(
@@ -29,27 +46,27 @@ export class LexAIService {
             useGlobalSearch,
             jurisdiction
         };
-        return this.getProvider().chat(params);
+        return this.executeWithFailover(p => p.chat(params));
     }
 
     async explainClause(clauseText: string): Promise<string> {
-        return this.getProvider().explainClause(clauseText);
+        return this.executeWithFailover(p => p.explainClause(clauseText));
     }
 
     async generateAuditLog(context: { userId: string, firmId: string, action: string, resourceType: string, resourceId: string }): Promise<string> {
-        return this.getProvider().generateAuditLog(context);
+        return this.executeWithFailover(p => p.generateAuditLog(context));
     }
 
     async validateDocumentExport(documentContent: string): Promise<{ status: 'PASS' | 'FAIL', issues: string[] }> {
-        return this.getProvider().validateDocumentExport(documentContent);
+        return this.executeWithFailover(p => p.validateDocumentExport(documentContent));
     }
 
     async generatePricingModel(features: string[]): Promise<any> {
-        return this.getProvider().generatePricingModel(features);
+        return this.executeWithFailover(p => p.generatePricingModel(features));
     }
 
     async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> {
-        return this.getProvider().generateExecutiveBriefing(matterId, documents);
+        return this.executeWithFailover(p => p.generateExecutiveBriefing(matterId, documents));
     }
 
     async getScrubbedContent(
@@ -57,22 +74,22 @@ export class LexAIService {
         role: UserRole,
         privilege: PrivilegeStatus
     ): Promise<{ content: string; scrubbedEntities: number }> {
-        return this.getProvider().getScrubbedContent(rawContent, role, privilege);
+        return this.executeWithFailover(p => p.getScrubbedContent(rawContent, role, privilege));
     }
 
     async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> {
-        return this.getProvider().evaluateRRE(text, rules);
+        return this.executeWithFailover(p => p.evaluateRRE(text, rules));
     }
 
     async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }> {
-        return this.getProvider().publicChat(input, config, knowledge, history);
+        return this.executeWithFailover(p => p.publicChat(input, config, knowledge, history));
     }
 
     async generateBillingDescription(rawNotes: string): Promise<string> {
-        return this.getProvider().generateBillingDescription(rawNotes);
+        return this.executeWithFailover(p => p.generateBillingDescription(rawNotes));
     }
 
     async hydrateTemplate(template: any, matter: any): Promise<any> {
-        return this.getProvider().hydrateTemplate(template, matter);
+        return this.executeWithFailover(p => p.hydrateTemplate(template, matter));
     }
 }

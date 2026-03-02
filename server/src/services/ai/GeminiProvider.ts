@@ -69,56 +69,45 @@ export class GeminiProvider implements AIProvider {
 
         const prompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${sanitized}`;
 
-        try {
-            const response = await ai.models.generateContent({
-                model: model,
-                contents: prompt,
-                config: config
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: prompt,
+            config: config
+        });
+
+        // Extract search grounding metadata if available
+        const groundingSources: { title: string, uri: string }[] = [];
+        const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        if (chunks) {
+            chunks.forEach((chunk: any) => {
+                if (chunk.web) {
+                    groundingSources.push({ title: chunk.web.title, uri: chunk.web.uri });
+                }
             });
-
-            // Extract search grounding metadata if available
-            const groundingSources: { title: string, uri: string }[] = [];
-            const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-            if (chunks) {
-                chunks.forEach((chunk: any) => {
-                    if (chunk.web) {
-                        groundingSources.push({ title: chunk.web.title, uri: chunk.web.uri });
-                    }
-                });
-            }
-
-            let result;
-            try {
-                result = JSON.parse(response.text || '{}');
-            } catch {
-                result = { text: response.text, confidence: 0.9, references: [] };
-            }
-
-            // 2. Auditor Check (Red Team)
-            const audit = await AuditorService.scan(result.text || "");
-            let finalText = result.text;
-
-            if (audit.flagged) {
-                finalText = `[AUDIT BLOCK] Content Redacted by Sovereign Governance Layer.\nReason: ${audit.reason}\nRisk Score: ${audit.riskScore}`;
-            }
-
-            return {
-                text: finalText || "I am analyzing the sovereign research stream...",
-                confidence: audit.flagged ? 0.0 : (result.confidence || 0),
-                provider: `Gemini (${model})`,
-                references: result.references,
-                groundingSources: groundingSources.length > 0 ? groundingSources : undefined
-            };
-        } catch (error: any) {
-            console.error("Gemini API Error (Chat):", error.message);
-            // Fallback for quota issues or errors
-            return {
-                text: `API ERROR: ${error.message}. I am operating in offline mode.`,
-                confidence: 1.0,
-                provider: "NomosDesk Local (Offline)",
-                references: []
-            }
         }
+
+        let result;
+        try {
+            result = JSON.parse(response.text || '{}');
+        } catch {
+            result = { text: response.text, confidence: 0.9, references: [] };
+        }
+
+        // 2. Auditor Check (Red Team)
+        const audit = await AuditorService.scan(result.text || "");
+        let finalText = result.text;
+
+        if (audit.flagged) {
+            finalText = `[AUDIT BLOCK] Content Redacted by Sovereign Governance Layer.\nReason: ${audit.reason}\nRisk Score: ${audit.riskScore}`;
+        }
+
+        return {
+            text: finalText || "I am analyzing the sovereign research stream...",
+            confidence: audit.flagged ? 0.0 : (result.confidence || 0),
+            provider: `Gemini (${model})`,
+            references: result.references,
+            groundingSources: groundingSources.length > 0 ? groundingSources : undefined
+        };
     }
 
     async explainClause(clauseText: string): Promise<string> {
@@ -161,22 +150,17 @@ export class GeminiProvider implements AIProvider {
 
     async validateDocumentExport(documentContent: string): Promise<{ status: 'PASS' | 'FAIL', issues: string[] }> {
         const ai = this.getAI();
-        try {
-            const response = await ai.models.generateContent({
-                model: this.defaultModel,
-                contents: `Validate this legal document content: "${documentContent.substring(0, 10000)}..."`,
-                config: {
-                    systemInstruction: "You are validating a legal document before export. Checklist: 1. All variables resolved (no {{brackets}}). 2. Clause numbering sequential. 3. No placeholder text (e.g. [INSERT DATE]). 4. Title present. 5. Footer metadata present. Output: JSON { status: 'PASS' | 'FAIL', issues: string[] }.",
-                    responseMimeType: "application/json",
-                    temperature: 0
-                }
-            });
-            const result = JSON.parse(response.text || '{ "status": "FAIL", "issues": ["AI Validation Failed"] }');
-            return result;
-        } catch (error: any) {
-            console.error("Gemini API Error (ExportValidator):", error.message);
-            return { status: 'FAIL', issues: ["Validation Service Unavailable"] };
-        }
+        const response = await ai.models.generateContent({
+            model: this.defaultModel,
+            contents: `Validate this legal document content: "${documentContent.substring(0, 10000)}..."`,
+            config: {
+                systemInstruction: "You are validating a legal document before export. Checklist: 1. All variables resolved (no {{brackets}}). 2. Clause numbering sequential. 3. No placeholder text (e.g. [INSERT DATE]). 4. Title present. 5. Footer metadata present. Output: JSON { status: 'PASS' | 'FAIL', issues: string[] }.",
+                responseMimeType: "application/json",
+                temperature: 0
+            }
+        });
+        const result = JSON.parse(response.text || '{ "status": "FAIL", "issues": ["AI Validation Failed"] }');
+        return result;
     }
 
     async generatePricingModel(features: string[]): Promise<any> {

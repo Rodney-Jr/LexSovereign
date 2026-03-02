@@ -88,46 +88,35 @@ export class OpenRouterProvider implements AIProvider {
         const systemPrompt = `You are a senior NomosDesk legal assistant. Task: Provide accurate legal information based ONLY on the provided Gazette excerpts. Rules: 1. If the information is not in the excerpts, state that you cannot find the specific statutory basis. 2. Always cite the Source URL for every claim. 3. Use a professional, sovereign tone. 4. Return a JSON object with 'text', 'confidence' (0-1), and 'references' (array of Source URLs).`;
         const userPrompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${sanitized}`;
 
+        const response = await client.chat.completions.create({
+            model: this.primaryModel,
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        const content = response.choices[0].message.content || "{}";
+        let result: any;
         try {
-            const response = await client.chat.completions.create({
-                model: this.primaryModel,
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt }
-                ],
-                response_format: { type: "json_object" }
-            });
-
-            const content = response.choices[0].message.content || "{}";
-            let result: any;
-            try {
-                result = JSON.parse(content);
-            } catch {
-                result = { text: content, confidence: 0.8, references: [] };
-            }
-
-            const audit = await AuditorService.scan(result.text || "");
-            let finalText = result.text;
-            if (audit.flagged) {
-                finalText = `[AUDIT BLOCK] Content Redacted by Sovereign Governance Layer.\nReason: ${audit.reason}`;
-            }
-
-            return {
-                text: finalText || "Analysis complete.",
-                confidence: audit.flagged ? 0.0 : (result.confidence || 0.8),
-                provider: `OpenRouter (${this.primaryModel})`,
-                references: result.references
-            };
-
-        } catch (error: any) {
-            console.error("OpenRouter Chat Error:", error);
-            return {
-                text: "OpenRouter Service Unavailable. Operating in offline mode.",
-                confidence: 1.0,
-                provider: "NomosDesk Local (Offline)",
-                references: []
-            };
+            result = JSON.parse(content);
+        } catch {
+            result = { text: content, confidence: 0.8, references: [] };
         }
+
+        const audit = await AuditorService.scan(result.text || "");
+        let finalText = result.text;
+        if (audit.flagged) {
+            finalText = `[AUDIT BLOCK] Content Redacted by Sovereign Governance Layer.\nReason: ${audit.reason}`;
+        }
+
+        return {
+            text: finalText || "Analysis complete.",
+            confidence: audit.flagged ? 0.0 : (result.confidence || 0.8),
+            provider: `OpenRouter (${this.primaryModel})`,
+            references: result.references
+        };
     }
 
     async explainClause(clauseText: string): Promise<string> {
@@ -174,20 +163,16 @@ export class OpenRouterProvider implements AIProvider {
 
     async validateDocumentExport(documentContent: string): Promise<{ status: 'PASS' | 'FAIL'; issues: string[] }> {
         const client = this.getClient();
-        try {
-            const response = await client.chat.completions.create({
-                model: this.primaryModel,
-                messages: [
-                    { role: "system", content: "Validate a legal document. Check: all template variables are resolved (no {{placeholders}}), clause numbering is sequential, no obvious formatting errors. Return JSON: { status: 'PASS' | 'FAIL', issues: string[] }." },
-                    { role: "user", content: documentContent.substring(0, 5000) }
-                ],
-                response_format: { type: "json_object" },
-                temperature: 0
-            });
-            return JSON.parse(response.choices[0].message.content || "{}");
-        } catch (e) {
-            return { status: 'FAIL', issues: ["OpenRouter Validation Error"] };
-        }
+        const response = await client.chat.completions.create({
+            model: this.primaryModel,
+            messages: [
+                { role: "system", content: "Validate a legal document. Check: all template variables are resolved (no {{placeholders}}), clause numbering is sequential, no obvious formatting errors. Return JSON: { status: 'PASS' | 'FAIL', issues: string[] }." },
+                { role: "user", content: documentContent.substring(0, 5000) }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0
+        });
+        return JSON.parse(response.choices[0].message.content || "{}");
     }
 
     async generatePricingModel(features: string[]): Promise<any> {
@@ -283,32 +268,28 @@ export class OpenRouterProvider implements AIProvider {
         history?: ChatMessage[]
     ): Promise<{ text: string; confidence: number; provider: string }> {
         const client = this.getClient();
-        try {
-            const knowledgeStr = knowledge.slice(0, 5).map(k => `Q: ${k.title}\nA: ${k.content}`).join('\n\n');
-            const historyMessages = (history || []).slice(-6).map(m => ({
-                role: m.role as "user" | "assistant",
-                content: m.content
-            }));
+        const knowledgeStr = knowledge.slice(0, 5).map(k => `Q: ${k.title}\nA: ${k.content}`).join('\n\n');
+        const historyMessages = (history || []).slice(-6).map(m => ({
+            role: m.role as "user" | "assistant",
+            content: m.content
+        }));
 
-            const response = await client.chat.completions.create({
-                model: this.fastModel,
-                messages: [
-                    {
-                        role: "system",
-                        content: `${config.systemInstruction || "You are a helpful legal assistant."}\n\nKnowledge Base:\n${knowledgeStr}`
-                    },
-                    ...historyMessages,
-                    { role: "user", content: input }
-                ],
-                max_tokens: 300,
-                temperature: 0.3
-            });
+        const response = await client.chat.completions.create({
+            model: this.fastModel,
+            messages: [
+                {
+                    role: "system",
+                    content: `${config.systemInstruction || "You are a helpful legal assistant."}\n\nKnowledge Base:\n${knowledgeStr}`
+                },
+                ...historyMessages,
+                { role: "user", content: input }
+            ],
+            max_tokens: 300,
+            temperature: 0.3
+        });
 
-            const text = response.choices[0].message.content || "I'm unable to assist right now.";
-            return { text, confidence: 0.85, provider: this.id };
-        } catch (e) {
-            return { text: "Service temporarily unavailable.", confidence: 0, provider: this.id };
-        }
+        const text = response.choices[0].message.content || "I'm unable to assist right now.";
+        return { text, confidence: 0.85, provider: this.id };
     }
 
     async generateBillingDescription(rawNotes: string): Promise<string> {

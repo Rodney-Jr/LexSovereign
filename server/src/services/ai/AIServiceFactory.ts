@@ -9,32 +9,41 @@ export class AIServiceFactory {
     private static instance: AIProvider;
 
     static getProvider(): AIProvider {
-        if (this.instance) return this.instance;
+        return this.getProvidersByPriority()[0];
+    }
 
-        const providerType = process.env.AI_PROVIDER || 'gemini';
+    static getProvidersByPriority(): AIProvider[] {
+        const primaryType = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
 
-        switch (providerType.toLowerCase()) {
-            case 'openai':
-                console.log("Initializing OpenAI Provider");
-                this.instance = new OpenAIProvider();
-                break;
-            case 'anthropic':
-            case 'claude':
-                console.log("Initializing Anthropic Provider");
-                this.instance = new AnthropicProvider();
-                break;
-            case 'openrouter':
-                console.log(`Initializing OpenRouter Provider (model: ${process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001'})`);
-                this.instance = new OpenRouterProvider();
-                break;
-            case 'gemini':
-            default:
-                console.log("Initializing Gemini Provider");
-                this.instance = new GeminiProvider();
-                break;
+        const providers: AIProvider[] = [];
+
+        // Add primary
+        providers.push(this.createProvider(primaryType));
+
+        // Add fallbacks (avoid duplicates)
+        const fallbacks = ['gemini', 'openai'];
+        for (const type of fallbacks) {
+            if (type !== primaryType) {
+                providers.push(this.createProvider(type));
+            }
         }
 
-        return this.instance;
+        return providers;
+    }
+
+    private static createProvider(type: string): AIProvider {
+        switch (type.toLowerCase()) {
+            case 'openai':
+                return new OpenAIProvider();
+            case 'anthropic':
+            case 'claude':
+                return new AnthropicProvider();
+            case 'openrouter':
+                return new OpenRouterProvider();
+            case 'gemini':
+            default:
+                return new GeminiProvider();
+        }
     }
 
     // Force reset for testing or runtime switching
