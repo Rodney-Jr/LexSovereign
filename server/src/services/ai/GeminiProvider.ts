@@ -262,7 +262,7 @@ export class GeminiProvider implements AIProvider {
     }
 
     async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }> {
-        if (!config.isEnabled) return { text: "Chatbot is currently disabled.", confidence: 1, provider: this.id };
+        if (!config.isEnabled) throw new Error("CHATBOT_DISABLED_GEMINI");
 
         const ai = this.getAI();
         const knowledgeContext = knowledge.map(k => `${k.title}: ${k.content}`).join('\n\n');

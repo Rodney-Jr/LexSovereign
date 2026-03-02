@@ -166,8 +166,7 @@ export class OpenAIProvider implements AIProvider {
     }
 
     async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }> {
-        // Implementation similar to chat
-        return { text: "OpenAI Chatbot Not Implemented Yet", confidence: 0, provider: this.id };
+        throw new Error("CHATBOT_NOT_IMPLEMENTED_OPENAI");
     }
 
     async generateBillingDescription(rawNotes: string): Promise<string> {

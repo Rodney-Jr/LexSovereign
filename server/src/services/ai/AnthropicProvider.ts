@@ -117,7 +117,7 @@ export class AnthropicProvider implements AIProvider {
     async generateExecutiveBriefing(matterId: string, documents: DocumentMetadata[]): Promise<string> { return "Executive Briefing Not Implemented"; }
     async getScrubbedContent(rawContent: string, role: UserRole, privilege: PrivilegeStatus): Promise<{ content: string; scrubbedEntities: number }> { return { content: rawContent, scrubbedEntities: 0 }; }
     async evaluateRRE(text: string, rules: RegulatoryRule[]): Promise<{ isBlocked: boolean; triggeredRule?: string }> { return { isBlocked: false }; }
-    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }> { return { text: "Chatbot Not Implemented", confidence: 0, provider: this.id }; }
+    async publicChat(input: string, config: ChatbotConfig, knowledge: KnowledgeArtifact[], history?: ChatMessage[]): Promise<{ text: string; confidence: number; provider: string }> { throw new Error("CHATBOT_NOT_IMPLEMENTED_ANTHROPIC"); }
     async generateBillingDescription(rawNotes: string): Promise<string> { return rawNotes; }
     async hydrateTemplate(template: any, matter: any): Promise<any> { return {}; }
 }
