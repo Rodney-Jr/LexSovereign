@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Button, Section, SectionHeader } from '../components/ui';
-import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3 } from 'lucide-react';
 import { Link, StaticRouter, HelmetProvider } from '../utils/ssr-compat';
 import RelatedInsights from '../components/RelatedInsights';
 import type { SsgOptions } from 'vite-plugin-ssg';
@@ -225,6 +225,37 @@ export default function HomePage() {
                             </li>
                         </ul>
                     </div>
+                </div>
+            </Section>
+
+            {/* NEW: PLATFORM PILLARS */}
+            <Section>
+                <SectionHeader
+                    title="Pillars of Modern Legal Operations"
+                    subtitle="NomosDesk has evolved into a comprehensive infrastructure for firms that demand precision and control."
+                />
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <FeatureCard
+                        icon={<FileCheck className="w-8 h-8 text-sky-400" />}
+                        title="Smart Contract Hub"
+                        description="Set your contracts on autopilot. Track renewals, approvals, and signatures in one simple dashboard."
+                    />
+                    <FeatureCard
+                        icon={<Gavel className="w-8 h-8 text-amber-400" />}
+                        title="Court & Case Tracking"
+                        description="Never miss a court date. Organize cases, evidence, and deadlines with complete surgical precision."
+                    />
+                    <FeatureCard
+                        icon={<Sparkles className="w-8 h-8 text-purple-400" />}
+                        title="AI Legal Assistant"
+                        description="Get an instant summary of complex cases and smart risk alerts. It's like having a legal researcher on call 24/7."
+                    />
+                    <FeatureCard
+                        icon={<BarChart3 className="w-8 h-8 text-emerald-400" />}
+                        title="Big-Picture Dashboards"
+                        description="Full organizational visibility. High-level reporting and security controls for your entire legal operation."
+                    />
                 </div>
             </Section>
 
