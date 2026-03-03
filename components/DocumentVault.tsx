@@ -545,7 +545,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
       {selectedTemplateId && (
         <DraftingStudio
           templateId={selectedTemplateId}
-          matterId={filterMatterId !== 'All' ? filterMatterId : null}
+          matterId={filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : null)}
           onClose={() => setSelectedTemplateId(null)}
           onSave={(name, content) => {
             onAddDocument({
@@ -556,10 +556,11 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
               uploadedBy: 'Sovereign AI',
               uploadedAt: new Date().toLocaleTimeString(),
               region: filterRegion !== 'All' ? (filterRegion as Region) : Region.PRIMARY,
-              matterId: filterMatterId !== 'All' ? filterMatterId : 'UNCATEGORIZED',
+              matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 ? uniqueMatterIds[0] : 'UNCATEGORIZED'),
               privilege: PrivilegeStatus.PRIVILEGED,
               classification: 'Confidential',
-              encryption: 'DAS'
+              encryption: 'DAS',
+              content: content
             });
             setSelectedTemplateId(null);
           }}

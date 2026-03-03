@@ -128,13 +128,13 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
                       id="matter-select"
                       title="Matter ID"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      value={suggestions.matterId}
+                      value={suggestions.matterId || ''}
                       onChange={e => setSuggestions({ ...suggestions, matterId: e.target.value })}
                     >
                       {isLoadingMatters ? (
-                        <option>Loading matters...</option>
+                        <option value="">Loading matters...</option>
                       ) : matters.length === 0 ? (
-                        <option>No matters available</option>
+                        <option value="">No matters available</option>
                       ) : (
                         matters.map(m => <option key={m.id} value={m.id}>{m.name} ({m.client})</option>)
                       )}
