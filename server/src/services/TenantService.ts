@@ -141,7 +141,7 @@ export class TenantService {
         }
 
         // Determine Login URL (Environment specific)
-        const baseUrl = process.env.PLATFORM_URL || 'http://localhost:3000';
+        const baseUrl = process.env.PLATFORM_URL || 'https://app.nomosdesk.com';
         const loginUrl = `${baseUrl}/login?email=${encodeURIComponent(adminEmail)}`;
 
         return {

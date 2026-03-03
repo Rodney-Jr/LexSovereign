@@ -56,7 +56,7 @@ export class PlatformService {
         });
 
         // 4. Construct Login URL
-        const baseUrl = process.env.PLATFORM_URL || 'http://localhost:3000';
+        const baseUrl = process.env.PLATFORM_URL || 'https://app.nomosdesk.com';
         const loginUrl = `${baseUrl}/login?email=${encodeURIComponent(email)}`;
 
         return {
