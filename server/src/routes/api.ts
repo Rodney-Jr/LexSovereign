@@ -1,12 +1,16 @@
 import express, { Request } from 'express';
+import multer from 'multer';
 import { LexAIService } from '../services/LexAIService';
 import { DocumentAssemblyService } from '../services/DocumentAssemblyService';
+import { DocumentParserService } from '../services/DocumentParserService';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { prisma } from '../db';
 import complianceRouter from './compliance';
 
 const router = express.Router();
 const geminiService = new LexAIService();
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/chat', authenticateToken, async (req: Request, res) => {
     try {
@@ -214,9 +218,15 @@ router.post('/explain-clause', authenticateToken, async (req: Request, res) => {
     }
 });
 
-router.post('/analysis/analyze', authenticateToken, async (req: Request, res) => {
+router.post('/analysis/analyze', authenticateToken, upload.single('file'), async (req: Request, res) => {
     try {
-        const { content, type } = req.body;
+        let content = req.body.content;
+        const type = req.body.type;
+
+        if (req.file) {
+            content = await DocumentParserService.parse(req.file.buffer, req.file.originalname, req.file.mimetype);
+        }
+
         if (!content || !type) {
             res.status(400).json({ error: 'Missing content or type' });
             return;

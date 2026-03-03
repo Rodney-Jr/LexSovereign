@@ -37,7 +37,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         headers.set('x-sov-pin', sovPin);
     }
 
-    if (!headers.has('Content-Type') && fetchOptions.body) {
+    if (!headers.has('Content-Type') && fetchOptions.body && !(fetchOptions.body instanceof FormData)) {
         headers.set('Content-Type', 'application/json');
     }
 

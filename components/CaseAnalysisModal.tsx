@@ -41,14 +41,12 @@ const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({ isOpen, onClose }
         setStep('ANALYSIS');
 
         try {
-            // Read file content
-            const content = await file.text();
-            // In a real environment, we'd handle PDF/DocX. For this prototype, we assume text-based or .md.
-            const result = await gemini.analyzeDocument(content, analysisType);
+            // Send the File object directly to support multi-format parsing in the Enclave
+            const result = await gemini.analyzeDocument(file, analysisType);
             setReport(result);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Analysis failed:', error);
-            setReport('Sovereign Analysis Enclave: Failed to process document. Please ensure the file is valid UTF-8 text.');
+            setReport(`Sovereign Analysis Enclave: Failed to process document. ${error.message || 'Please ensure the file is a valid PDF, Word, or Markdown document.'}`);
         } finally {
             setIsAnalyzing(false);
         }

@@ -178,12 +178,25 @@ export class LexGeminiService {
     });
   }
 
-  async analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string> {
+  async analyzeDocument(content: string | File, type: 'CASE' | 'CONTRACT'): Promise<string> {
     const session = getSavedSession();
+
+    let body: any;
+    let headers: any = {};
+
+    if (content instanceof File) {
+      body = new FormData();
+      body.append('file', content);
+      body.append('type', type);
+      // We don't set Content-Type here; fetch will set it with the boundary if we let it
+    } else {
+      body = JSON.stringify({ content, type });
+    }
+
     const data = await authorizedFetch(`${this.baseUrl}/analysis/analyze`, {
       method: 'POST',
       token: session?.token,
-      body: JSON.stringify({ content, type })
+      body
     });
     return data.report;
   }
