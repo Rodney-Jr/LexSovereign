@@ -21,7 +21,7 @@ export class AIServiceFactory {
         providers.push(this.createProvider(primaryType));
 
         // Add fallbacks (avoid duplicates)
-        const fallbacks = ['gemini', 'openrouter', 'openai'];
+        const fallbacks = ['openrouter', 'gemini', 'openai'];
         for (const type of fallbacks) {
             if (type !== primaryType) {
                 providers.push(this.createProvider(type));

@@ -19,7 +19,7 @@ export class LexAIService {
             try {
                 return await operation(provider);
             } catch (error: any) {
-                console.warn(`[AIService] Provider ${provider.id} failed: ${error.message}. Trying next fallback...`);
+                console.warn(`[AIService] Provider ${provider.id} failed: ${error.message}${error.stack ? '\n' + error.stack : ''}. Trying next fallback...`);
                 lastError = error;
             }
         }

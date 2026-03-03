@@ -11,7 +11,7 @@ export class OpenAIProvider implements AIProvider {
     id = "openai";
     name = "OpenAI GPT-4";
 
-    private defaultModel = "gpt-4-turbo";
+    private defaultModel = process.env.OPENAI_MODEL || "gpt-4o";
 
     private getClient() {
         if (!process.env.OPENAI_API_KEY) {
