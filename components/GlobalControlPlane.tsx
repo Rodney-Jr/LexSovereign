@@ -887,7 +887,7 @@ const LiveModelRegistryWidget = ({ stats }: { stats: any }) => {
             </div>
             <div className="flex-1 min-w-0">
                <p className="text-xs font-bold text-white">OpenRouter <span className="text-purple-400">· Active Default</span></p>
-               <p className="text-[10px] text-slate-500 font-mono truncate">{stats.activeAiModel || 'google/gemini-pro-1.5'}</p>
+               <p className="text-[10px] text-slate-500 font-mono truncate">{stats.activeAiModel || 'google/gemini-2.0-flash-001'}</p>
             </div>
             <span className="text-[8px] font-bold text-emerald-400 bg-emerald-400/5 px-2 py-0.5 rounded-full border border-emerald-400/10 uppercase">LIVE</span>
          </div>
@@ -916,7 +916,7 @@ const GlobalModelRegistry = () => {
    const [loading, setLoading] = useState(true);
    const [switching, setSwitching] = useState(false);
    const [selectedProvider, setSelectedProvider] = useState('openrouter');
-   const [primaryModel, setPrimaryModel] = useState('google/gemini-pro-1.5');
+   const [primaryModel, setPrimaryModel] = useState('google/gemini-2.0-flash-001');
    const [fastModel, setFastModel] = useState('mistralai/mistral-7b-instruct');
    const [successMsg, setSuccessMsg] = useState('');
 
@@ -932,7 +932,7 @@ const GlobalModelRegistry = () => {
             const data = await authorizedFetch('/api/platform/ai-registry', { token: getToken() });
             setRegistry(data);
             setSelectedProvider(data.activeProvider || 'openrouter');
-            setPrimaryModel(data.activeModel || 'google/gemini-pro-1.5');
+            setPrimaryModel(data.activeModel || 'google/gemini-2.0-flash-001');
             setFastModel(data.fastModel || 'mistralai/mistral-7b-instruct');
          } catch (e) { console.error(e); }
          finally { setLoading(false); }

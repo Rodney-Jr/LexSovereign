@@ -41,4 +41,4 @@ Depending on your jurisdiction, you may have the right to access, correct, or de
 
 **9. Contact Us**
 For privacy inquiries, please contact:
-**[INSERT PRIVACY EMAIL, e.g., privacy@nomosdesk.com]**
+**[privacy@nomosdesk.com]**

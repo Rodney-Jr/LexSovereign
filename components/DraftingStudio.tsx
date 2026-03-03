@@ -16,7 +16,8 @@ import {
     ToggleRight,
     Calendar,
     DollarSign,
-    Type
+    Type,
+    Eye
 } from 'lucide-react';
 import { BrandingProfile } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
@@ -88,6 +89,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [sidebarWidth, setSidebarWidth] = useState(400);
     const [isResizing, setIsResizing] = useState(false);
+    const [layout, setLayout] = useState<'split' | 'editor' | 'preview'>('split');
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -387,6 +389,28 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {/* Layout Controls */}
+                    <div className="flex items-center gap-1 p-1 bg-slate-800/50 rounded-2xl border border-slate-700 mr-2">
+                        <button
+                            onClick={() => setLayout('editor')}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'editor' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            <Terminal size={14} className="inline mr-1" /> Editor
+                        </button>
+                        <button
+                            onClick={() => setLayout('split')}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'split' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            Split
+                        </button>
+                        <button
+                            onClick={() => setLayout('preview')}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'preview' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            <Eye size={14} className="inline mr-1" /> Preview
+                        </button>
+                    </div>
+
                     <button
                         onClick={handleAIHydrate}
                         disabled={!matterId || isHydrating}
@@ -410,204 +434,210 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             {/* Main Workspace */}
             <div className="flex-1 flex overflow-hidden relative">
                 {/* Left: Input Sidebar */}
-                <aside
-                    className="border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-8 scrollbar-hide shrink-0"
-                    style={{ width: `${sidebarWidth}px` }}
-                >
-                    {/* Sections (Toggles) */}
-                    {((template.structure as any).sections?.length > 0 || (Array.isArray(template.structure) && template.structure.some(c => c.clause_type === 'optional'))) && (
-                        <div className="mb-8 space-y-4">
-                            <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
-                                <ToggleLeft size={14} /> Optional Clauses
-                            </h5>
-                            {Array.isArray(template.structure) ? (
-                                template.structure.filter(c => c.clause_type === 'optional').map(clause => (
-                                    <div
-                                        key={clause.clause_key}
-                                        onClick={() => handleSectionToggle(clause.clause_key)}
-                                        className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[clause.clause_key]
-                                            ? 'bg-brand-primary/10 border-brand-primary/30'
-                                            : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
-                                            }`}
-                                    >
-                                        <span className={`text-xs font-bold transition-colors ${sectionValues[clause.clause_key] ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                            {clause.clause_title}
-                                        </span>
-                                        {sectionValues[clause.clause_key] ? (
-                                            <ToggleRight size={24} className="text-emerald-500" />
-                                        ) : (
-                                            <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
-                                        )}
-                                    </div>
-                                ))
-                            ) : (
-                                (template.structure as any).sections.map((section: any) => (
-                                    <div
-                                        key={section.key}
-                                        onClick={() => handleSectionToggle(section.key)}
-                                        className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
-                                            ? 'bg-brand-primary/10 border-brand-primary/30'
-                                            : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
-                                            }`}
-                                    >
-                                        <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                            {section.label}
-                                        </span>
-                                        {sectionValues[section.key] ? (
-                                            <ToggleRight size={24} className="text-emerald-500" />
-                                        ) : (
-                                            <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    )}
+                {(layout === 'split' || layout === 'editor') && (
+                    <aside
+                        className={`border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-8 scrollbar-hide shrink-0 transition-all duration-500 ${layout === 'editor' ? 'flex-1' : ''}`}
+                        style={{ width: layout === 'editor' ? '100%' : `${sidebarWidth}px` }}
+                    >
+                        {/* Sections (Toggles) */}
+                        {((template.structure as any).sections?.length > 0 || (Array.isArray(template.structure) && template.structure.some(c => c.clause_type === 'optional'))) && (
+                            <div className="mb-8 space-y-4">
+                                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
+                                    <ToggleLeft size={14} /> Optional Clauses
+                                </h5>
+                                {Array.isArray(template.structure) ? (
+                                    template.structure.filter(c => c.clause_type === 'optional').map(clause => (
+                                        <div
+                                            key={clause.clause_key}
+                                            onClick={() => handleSectionToggle(clause.clause_key)}
+                                            className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[clause.clause_key]
+                                                ? 'bg-brand-primary/10 border-brand-primary/30'
+                                                : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
+                                                }`}
+                                        >
+                                            <span className={`text-xs font-bold transition-colors ${sectionValues[clause.clause_key] ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                                {clause.clause_title}
+                                            </span>
+                                            {sectionValues[clause.clause_key] ? (
+                                                <ToggleRight size={24} className="text-emerald-500" />
+                                            ) : (
+                                                <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    (template.structure as any).sections.map((section: any) => (
+                                        <div
+                                            key={section.key}
+                                            onClick={() => handleSectionToggle(section.key)}
+                                            className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
+                                                ? 'bg-brand-primary/10 border-brand-primary/30'
+                                                : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
+                                                }`}
+                                        >
+                                            <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                                {section.label}
+                                            </span>
+                                            {sectionValues[section.key] ? (
+                                                <ToggleRight size={24} className="text-emerald-500" />
+                                            ) : (
+                                                <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
 
-                    {/* Fields (Inputs) */}
-                    <div className="space-y-8">
-                        <div className="flex items-center justify-between">
-                            <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Terminal size={14} /> Variables
-                            </h5>
-                            <button
-                                onClick={() => {
-                                    const reset = { ...fieldValues };
-                                    Object.keys(reset).forEach(k => reset[k] = '');
-                                    setFieldValues(reset);
-                                    setPreviewContent(compileTemplate(template?.content || '', reset, sectionValues));
-                                }}
-                                className="text-[9px] text-brand-muted hover:text-red-400 uppercase font-bold transition-colors flex items-center gap-1"
-                            >
-                                <Eraser size={10} /> Clear
-                            </button>
-                        </div>
+                        {/* Fields (Inputs) */}
+                        <div className={`space-y-8 ${layout === 'editor' ? 'max-w-4xl mx-auto' : ''}`}>
+                            <div className="flex items-center justify-between">
+                                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <Terminal size={14} /> Variables
+                                </h5>
+                                <button
+                                    onClick={() => {
+                                        const reset = { ...fieldValues };
+                                        Object.keys(reset).forEach(k => reset[k] = '');
+                                        setFieldValues(reset);
+                                        setPreviewContent(compileTemplate(template?.content || '', reset, sectionValues));
+                                    }}
+                                    className="text-[9px] text-brand-muted hover:text-red-400 uppercase font-bold transition-colors flex items-center gap-1"
+                                >
+                                    <Eraser size={10} /> Clear
+                                </button>
+                            </div>
 
-                        <div className="space-y-5">
-                            {Array.isArray(template.structure) ? (
-                                Object.keys(fieldValues).map(key => (
-                                    <div key={key} className="space-y-2 group">
-                                        <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5 text-ellipsis overflow-hidden">
-                                            {getFieldIcon(key.includes('date') ? 'date' : key.includes('currency') || key.includes('amount') ? 'currency' : 'text')}
-                                            {key.replace(/_/g, ' ')}
-                                        </label>
-                                        <input
-                                            type={key.includes('date') ? 'date' : 'text'}
-                                            className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
-                                            placeholder={`Enter ${key.replace(/_/g, ' ')}...`}
-                                            value={fieldValues[key]}
-                                            onChange={e => handleFieldChange(key, e.target.value)}
-                                        />
-                                    </div>
-                                ))
-                            ) : template.structure?.fields ? (
-                                template.structure.fields.map(field => (
-                                    <div key={field.key} className="space-y-2 group">
-                                        <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5">
-                                            {getFieldIcon(field.type)}
-                                            {field.label}
-                                        </label>
-
-                                        {field.multiline ? (
-                                            <textarea
-                                                className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20 min-h-[80px]"
-                                                placeholder={field.placeholder || `Enter ${field.label}...`}
-                                                value={fieldValues[field.key]}
-                                                onChange={e => handleFieldChange(field.key, e.target.value)}
+                            <div className={`grid gap-5 ${layout === 'editor' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                {Array.isArray(template.structure) ? (
+                                    Object.keys(fieldValues).map(key => (
+                                        <div key={key} className="space-y-2 group">
+                                            <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5 text-ellipsis overflow-hidden">
+                                                {getFieldIcon(key.includes('date') ? 'date' : key.includes('currency') || key.includes('amount') ? 'currency' : 'text')}
+                                                {key.replace(/_/g, ' ')}
+                                            </label>
+                                            <input
+                                                type={key.includes('date') ? 'date' : 'text'}
+                                                className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
+                                                placeholder={`Enter ${key.replace(/_/g, ' ')}...`}
+                                                value={fieldValues[key]}
+                                                onChange={e => handleFieldChange(key, e.target.value)}
                                             />
-                                        ) : (
-                                            <div className="relative">
-                                                <input
-                                                    type={field.type === 'date' ? 'date' : 'text'}
-                                                    className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
+                                        </div>
+                                    ))
+                                ) : template.structure?.fields ? (
+                                    template.structure.fields.map(field => (
+                                        <div key={field.key} className={`space-y-2 group ${field.multiline && layout === 'editor' ? 'col-span-2' : ''}`}>
+                                            <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5">
+                                                {getFieldIcon(field.type)}
+                                                {field.label}
+                                            </label>
+
+                                            {field.multiline ? (
+                                                <textarea
+                                                    className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20 min-h-[80px]"
                                                     placeholder={field.placeholder || `Enter ${field.label}...`}
                                                     value={fieldValues[field.key]}
                                                     onChange={e => handleFieldChange(field.key, e.target.value)}
                                                 />
-                                            </div>
-                                        )}
-                                    </div>
-                                ))
-                            ) : (
-                                // Legacy Fallback
-                                template.placeholders?.map(key => (
-                                    <div key={key} className="space-y-2 group">
-                                        <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1">
-                                            {key.replace('_', ' ')}
-                                        </label>
-                                        <input
-                                            aria-label={key}
-                                            className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text"
-                                            value={fieldValues[key]}
-                                            onChange={e => handleFieldChange(key, e.target.value)}
-                                        />
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Validation Errors Overlay */}
-                    {validationErrors.length > 0 && (
-                        <div className="mt-8 p-6 bg-red-500/10 border border-red-500/30 rounded-[2rem] space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                            <div className="flex items-center gap-2 text-red-400">
-                                <AlertTriangle size={16} />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">Validation Blocked</span>
+                                            ) : (
+                                                <div className="relative">
+                                                    <input
+                                                        type={field.type === 'date' ? 'date' : 'text'}
+                                                        className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
+                                                        placeholder={field.placeholder || `Enter ${field.label}...`}
+                                                        value={fieldValues[field.key]}
+                                                        onChange={e => handleFieldChange(field.key, e.target.value)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    // Legacy Fallback
+                                    template.placeholders?.map(key => (
+                                        <div key={key} className="space-y-2 group">
+                                            <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1">
+                                                {key.replace('_', ' ')}
+                                            </label>
+                                            <input
+                                                aria-label={key}
+                                                className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text"
+                                                value={fieldValues[key]}
+                                                onChange={e => handleFieldChange(key, e.target.value)}
+                                            />
+                                        </div>
+                                    ))
+                                )}
                             </div>
-                            <ul className="space-y-1.5">
-                                {validationErrors.map((err, idx) => (
-                                    <li key={idx} className="text-[11px] text-red-300/80 flex items-start gap-2">
-                                        <span className="shrink-0 mt-1 w-1 h-1 bg-red-400 rounded-full" />
-                                        {err}
-                                    </li>
-                                ))}
-                            </ul>
                         </div>
-                    )}
 
-                    <div className="p-6 bg-brand-bg border border-brand-border rounded-[2rem] space-y-4 shadow-inner mt-8">
-                        <div className="flex items-center gap-2 text-amber-500">
-                            <AlertTriangle size={14} />
-                            <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
+                        {/* Validation Errors Overlay */}
+                        {validationErrors.length > 0 && (
+                            <div className={`mt-8 p-6 bg-red-500/10 border border-red-500/30 rounded-[2rem] space-y-3 animate-in fade-in slide-in-from-top-4 duration-300 ${layout === 'editor' ? 'max-w-4xl mx-auto bg-slate-900 shadow-2xl' : ''}`}>
+                                <div className="flex items-center gap-2 text-red-400">
+                                    <AlertTriangle size={16} />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Validation Blocked</span>
+                                </div>
+                                <ul className="space-y-1.5">
+                                    {validationErrors.map((err, idx) => (
+                                        <li key={idx} className="text-[11px] text-red-300/80 flex items-start gap-2">
+                                            <span className="shrink-0 mt-1 w-1 h-1 bg-red-400 rounded-full" />
+                                            {err}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        <div className={`p-6 bg-brand-bg border border-brand-border rounded-[2rem] space-y-4 shadow-inner mt-8 ${layout === 'editor' ? 'max-w-4xl mx-auto' : ''}`}>
+                            <div className="flex items-center gap-2 text-amber-500">
+                                <AlertTriangle size={14} />
+                                <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
+                            </div>
+                            <p className="text-[10px] text-brand-muted leading-relaxed italic">
+                                Core clauses in this template are locked. Only the variables and optional sections above can be modified to ensure compliance.
+                            </p>
                         </div>
-                        <p className="text-[10px] text-brand-muted leading-relaxed italic">
-                            Core clauses in this template are locked. Only the variables and optional sections above can be modified to ensure compliance.
-                        </p>
-                    </div>
-                </aside>
+                    </aside>
+                )}
 
                 {/* Resize Handle */}
-                <div
-                    className={`w-1.5 h-full cursor-col-resize hover:bg-brand-primary/40 transition-colors z-20 flex-shrink-0 -ml-[3px] ${isResizing ? 'bg-brand-primary/60' : ''}`}
-                    onMouseDown={() => setIsResizing(true)}
-                />
+                {layout === 'split' && (
+                    <div
+                        className={`w-1.5 h-full cursor-col-resize hover:bg-brand-primary/40 transition-colors z-20 flex-shrink-0 -ml-[3px] ${isResizing ? 'bg-brand-primary/60' : ''}`}
+                        onMouseDown={() => setIsResizing(true)}
+                    />
+                )}
 
                 {/* Right: Live Preview */}
-                <main className="flex-1 bg-brand-bg p-12 overflow-y-auto scrollbar-hide flex justify-center">
-                    <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1120px]">
-                        {/* Header Branding */}
-                        <div className="absolute top-8 right-8 text-slate-300 text-[10px] font-mono uppercase text-right leading-tight">
-                            {branding.headerText}
-                        </div>
+                {(layout === 'split' || layout === 'preview') && (
+                    <main className={`flex-1 bg-brand-bg p-12 overflow-y-auto scrollbar-hide flex justify-center transition-all duration-500 ${layout === 'preview' ? 'w-full' : ''}`}>
+                        <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1120px]">
+                            {/* Header Branding */}
+                            <div className="absolute top-8 right-8 text-slate-300 text-[10px] font-mono uppercase text-right leading-tight">
+                                {branding.headerText}
+                            </div>
 
-                        {/* Watermark */}
-                        <div className="absolute inset-0 pointer-events-none opacity-[0.04] flex items-center justify-center rotate-45 select-none text-6xl md:text-[10rem] font-black whitespace-nowrap overflow-hidden z-0 pointer-events-none">
-                            {branding.watermarkText}
-                        </div>
+                            {/* Watermark */}
+                            <div className="absolute inset-0 pointer-events-none opacity-[0.04] flex items-center justify-center rotate-45 select-none text-6xl md:text-[10rem] font-black whitespace-nowrap overflow-hidden z-0 pointer-events-none">
+                                {branding.watermarkText}
+                            </div>
 
-                        <div
-                            className="relative z-10 whitespace-pre-wrap flex-1 text-[15px] leading-relaxed"
-                            style={{ fontFamily: branding.primaryFont }}
-                        >
-                            {previewContent}
-                        </div>
+                            <div
+                                className="relative z-10 whitespace-pre-wrap flex-1 text-[15px] leading-relaxed"
+                                style={{ fontFamily: branding.primaryFont }}
+                            >
+                                {previewContent}
+                            </div>
 
-                        {/* Footer Branding */}
-                        <div className="mt-20 pt-8 border-t border-slate-100 text-center text-slate-300 text-[10px] font-mono uppercase tracking-[0.2em]">
-                            {branding.footerText}
+                            {/* Footer Branding */}
+                            <div className="mt-20 pt-8 border-t border-slate-100 text-center text-slate-300 text-[10px] font-mono uppercase tracking-[0.2em]">
+                                {branding.footerText}
+                            </div>
                         </div>
-                    </div>
-                </main>
+                    </main>
+                )}
             </div>
         </div>
     );

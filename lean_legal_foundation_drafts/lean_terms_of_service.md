@@ -44,7 +44,7 @@ You agree to defend and indemnify NomosDesk from any claims or damages arising f
 We reserve the right to modify or interrupt the Services for maintenance. We are not liable for any resulting downtime (Force Majeure events excepted). You may cancel your subscription at any time. We may suspend or terminate your access for violating these Terms.
 
 **11. Governing Law & Dispute Resolution**
-These Terms are governed by the laws of **[INSERT STATE, e.g., Delaware]**. Any disputes shall be resolved exclusively in the state or federal courts located in **[INSERT COUNTY/STATE]**.
+These Terms are governed by the laws of **[Ghana]**. Any disputes shall be resolved exclusively in the state or federal courts located in **[Accra, Ghana ]**.
 
 ---
-*For questions regarding these Terms, please contact: **[INSERT EMAIL]***
+*For questions regarding these Terms, please contact: **[legal@nomosdesk.com]***

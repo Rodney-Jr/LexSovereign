@@ -31,7 +31,7 @@ NomosDesk is a proprietary B2B Software-as-a-Service (SaaS) platform providing c
 
 **Explicit Exclusions:** Nexus Technologies Limited (trading as NomosDesk) operates exclusively as a technology provider. 
 *   We are **not** a law firm, a legal services provider, or an Alternative Business Structure (ABS).
-*   We are **not** a regulated financial institution or a payment processor. All payment processing is handled independently by secure third-party processors **[INSERT PAYMENT PROCESSOR]**.
+*   We are **not** a regulated financial institution or a payment processor. All payment processing is handled independently by secure third-party processors **[Stripe]**.
 *   We are **not** a data broker. We do not sell, rent, trade, or distribute user or end-client data to unauthorized third parties.
 
 ### C. Footer Legal Identity Integration
@@ -72,10 +72,10 @@ For privacy inquiries, please contact our Data Protection Officer at:
 ---
 
 ## 4. Founder Review Checklist
-- [ ] Confirm company registration number is accurate (`CS339712014`).
-- [ ] Confirm registered office address layout and postal code format.
-- [ ] Approve the "Trading As" (DBA) relationship articulation.
-- [ ] Approve the explicit non-classification statements (not a payment processor, not an ABS, etc.).
+- [ Confirmed] Confirm company registration number is accurate (`CS339712014`).
+- [ Confirmed] Confirm registered office address layout and postal code format.
+- [ Confirmed] Approve the "Trading As" (DBA) relationship articulation.
+- [ Confirmed] Approve the explicit non-classification statements (not a payment processor, not an ABS, etc.).
 
 ## 5. Outstanding Confirmations Required
-- **Payment Processor Name [REQUIRED]:** Need confirmation of the third-party payment processor used (e.g., Stripe, Paystack, Flutterwave) to finalize the regulatory classification statement before deploying it to the codebase.
+- **Payment Processor Name [Stripe]:** Need confirmation of the third-party payment processor used (e.g., Stripe, Paystack, Flutterwave) to finalize the regulatory classification statement before deploying it to the codebase.

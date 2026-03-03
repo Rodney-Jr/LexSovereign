@@ -28,6 +28,31 @@ const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({ isOpen, onClose }
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [report, setReport] = useState<string | null>(null);
     const [step, setStep] = useState<'UPLOAD' | 'ANALYSIS'>('UPLOAD');
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleDownload = () => {
+        if (!report) return;
+        const blob = new Blob([report], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Sovereign_Analysis_${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const handleShare = async () => {
+        if (!report) return;
+        try {
+            await navigator.clipboard.writeText(report);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -210,11 +235,23 @@ const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({ isOpen, onClose }
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
-                                        <button title="Download" className="p-3 bg-brand-sidebar border border-brand-border rounded-xl text-brand-muted hover:text-brand-secondary hover:border-brand-secondary/30 transition-all">
+                                        <button
+                                            onClick={handleDownload}
+                                            title="Download Report"
+                                            className="p-3 bg-brand-sidebar border border-brand-border rounded-xl text-brand-muted hover:text-brand-secondary hover:border-brand-secondary/30 transition-all active:scale-95"
+                                        >
                                             <Download size={18} />
                                         </button>
-                                        <button title="Share" className="p-3 bg-brand-sidebar border border-brand-border rounded-xl text-brand-muted hover:text-brand-secondary hover:border-brand-secondary/30 transition-all">
-                                            <Share2 size={18} />
+                                        <button
+                                            onClick={handleShare}
+                                            title="Copy to Clipboard"
+                                            className={`p-3 border rounded-xl transition-all active:scale-95 flex items-center gap-2 ${isCopied
+                                                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                                                    : 'bg-brand-sidebar border-brand-border text-brand-muted hover:text-brand-secondary hover:border-brand-secondary/30'
+                                                }`}
+                                        >
+                                            {isCopied ? <CheckCircle2 size={18} /> : <Share2 size={18} />}
+                                            {isCopied && <span className="text-[10px] font-bold uppercase tracking-wider">Copied</span>}
                                         </button>
                                     </div>
                                 </div>

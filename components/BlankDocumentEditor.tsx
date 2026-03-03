@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Save, FileText, Sparkles, Download, Copy, Loader2 } from 'lucide-react';
+import { X, Save, FileText, Sparkles, Download, Copy, Loader2, Edit3, Eye } from 'lucide-react';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
 interface BlankDocumentEditorProps {
@@ -11,6 +11,7 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
     const [documentName, setDocumentName] = useState('Untitled Document');
     const [content, setContent] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [layout, setLayout] = useState<'split' | 'editor' | 'preview'>('split');
 
     const handleSave = () => {
         if (!documentName.trim() || !content.trim()) {
@@ -58,6 +59,28 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {/* Layout Controls */}
+                    <div className="flex items-center gap-1 p-1 bg-slate-800/50 rounded-2xl border border-slate-700 mr-2">
+                        <button
+                            onClick={() => setLayout('editor')}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'editor' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            <Edit3 size={14} className="inline mr-1" /> Editor
+                        </button>
+                        <button
+                            onClick={() => setLayout('split')}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'split' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            Split
+                        </button>
+                        <button
+                            onClick={() => setLayout('preview')}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'preview' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            <Eye size={14} className="inline mr-1" /> Preview
+                        </button>
+                    </div>
+
                     <div className="flex items-center gap-4 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700">
                         <div className="text-[10px] text-slate-500 font-mono">
                             <span className="font-bold text-slate-400">{wordCount}</span> words
@@ -89,59 +112,51 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
             {/* Main Editor */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Editor Pane */}
-                <div className="flex-1 flex flex-col bg-slate-900/30">
-                    <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                            <Sparkles size={14} className="text-emerald-400" />
-                            Markdown Editor
-                        </h4>
-                        <p className="text-[9px] text-slate-600 italic">Supports plain text and basic markdown formatting</p>
+                {(layout === 'split' || layout === 'editor') && (
+                    <div className={`flex-1 flex flex-col bg-slate-900/30 transition-all duration-500 ${layout === 'editor' ? 'w-full' : ''}`}>
+                        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <Sparkles size={14} className="text-emerald-400" />
+                                Markdown Editor
+                            </h4>
+                            <p className="text-[9px] text-slate-600 italic">Supports plain text and basic markdown formatting</p>
+                        </div>
+                        <textarea
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            placeholder="Start drafting your legal document here..."
+                            className={`flex-1 bg-slate-950 text-slate-200 p-12 font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-slate-700 scrollbar-hide ${layout === 'editor' ? 'max-w-4xl mx-auto w-full border-x border-slate-800/50' : ''}`}
+                        />
                     </div>
-                    <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="Start drafting your legal document here...
-
-You can use markdown formatting:
-# Heading 1
-## Heading 2
-**Bold Text**
-*Italic Text*
-
-1. Numbered lists
-- Bullet points
-
----
-Horizontal rules"
-                        className="flex-1 bg-slate-950 text-slate-200 p-12 font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-slate-700 scrollbar-hide"
-                    />
-                </div>
+                )}
 
                 {/* Live Preview Pane */}
-                <div className="flex-1 bg-slate-950 border-l border-slate-800 flex flex-col">
-                    <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                            <FileText size={14} className="text-blue-400" />
-                            Live Preview
-                        </h4>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-12 scrollbar-hide flex justify-center">
-                        <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative">
-                            {/* Watermark */}
-                            <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black">
-                                LEX SOVEREIGN
-                            </div>
+                {(layout === 'split' || layout === 'preview') && (
+                    <div className={`flex-1 bg-slate-950 border-l border-slate-800 flex flex-col transition-all duration-500 ${layout === 'preview' ? 'w-full border-l-0' : ''}`}>
+                        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <FileText size={14} className="text-blue-400" />
+                                Live Preview
+                            </h4>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-12 scrollbar-hide flex justify-center">
+                            <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative">
+                                {/* Watermark */}
+                                <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black">
+                                    LEX SOVEREIGN
+                                </div>
 
-                            <div className="relative z-10 whitespace-pre-wrap font-serif text-[15px] leading-relaxed">
-                                {content || (
-                                    <p className="text-slate-400 italic text-center py-20">
-                                        Your document preview will appear here as you type...
-                                    </p>
-                                )}
+                                <div className="relative z-10 whitespace-pre-wrap font-serif text-[15px] leading-relaxed">
+                                    {content || (
+                                        <p className="text-slate-400 italic text-center py-20">
+                                            Your document preview will appear here as you type...
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

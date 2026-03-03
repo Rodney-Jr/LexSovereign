@@ -9,19 +9,19 @@
 
 ## 1. Corporate Identity & Registration
 
-**Entity Name:** [Insert Full Legal Name of Company]
+**Entity Name:** [Nexus Technologies Limited]
 **Doing Business As (DBA):** NomosDesk
-**Jurisdiction of Incorporation/Formation:** [Insert State/Country, e.g., Delaware, USA]
-**Company Registration Number:** [Insert Registration/File Number]
+**Jurisdiction of Incorporation/Formation:** [Accra, Ghana]
+**Company Registration Number:** [CS339712014]
 
 **Registered Office Address:**
-[Insert Street Address Line 1]
-[Insert Street Address Line 2]
-[Insert City, State/Province, Zip/Postal Code]
-[Insert Country]
+[50 Caloundra Street]
+[New Ashongman Estates]
+[GE-208-4173 Accra]
+[Ghana]
 
 **Principal Place of Business (if different):**
-[Insert Operational Address, or state "Same as above"]
+["Same as above"]
 
 ## 2. Regulatory Status & Classification
 
@@ -36,7 +36,7 @@ NomosDesk is a business-to-business (B2B) software-as-a-service (SaaS) provider.
 
 We are committed to the security and privacy of the data entrusted to us by our clients. 
 
-For inquiries regarding our data processing activities, privacy practices, or to exercise data subject rights under applicable frameworks (e.g., GDPR, CCPA/CPRA), please contact our privacy compliance team:
+For inquiries regarding our data processing activities, privacy practices, or to exercise data subject rights under applicable frameworks (e.g., GDPR, DPA), please contact our privacy compliance team:
 
 **Data Protection Officer / Privacy Contact:**
 [Insert Name or Title, e.g., DPO Core Team]
