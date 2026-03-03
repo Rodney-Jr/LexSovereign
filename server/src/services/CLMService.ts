@@ -1,5 +1,5 @@
 import { prisma } from '../db';
-import { EventBus } from './EventBus';
+import { EventBus } from './eventBus';
 
 export class CLMService {
     /**
