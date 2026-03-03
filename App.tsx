@@ -43,6 +43,10 @@ import LegalDrafting from './components/LegalDrafting';
 import SovereignMarketplace from './components/SovereignMarketplace';
 import ClientPortal from './components/ClientPortal';
 import CaseAnalysisModal from './components/CaseAnalysisModal';
+import CLMCenter from './components/CLMCenter';
+import CaseCenter from './components/CaseCenter';
+import EnterpriseDashboard from './components/EnterpriseDashboard';
+import AdminControlPlane from './components/AdminControlPlane';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -267,6 +271,10 @@ const AppContent: React.FC = () => {
         {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} matterId={selectedMatter} />}
         {activeTab === 'analysis' && <CaseAnalysisModal isOpen={true} onClose={() => setActiveTab('dashboard')} />}
         {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
+        {activeTab === 'clm-center' && <CLMCenter />}
+        {activeTab === 'case-center' && <CaseCenter />}
+        {activeTab === 'analytics' && <EnterpriseDashboard />}
+        {activeTab === 'governance' && <AdminControlPlane />}
 
         {activeTab === 'vault' && (
           selectedMatter ? (

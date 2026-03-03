@@ -10,6 +10,9 @@ import helmet from 'helmet';
 import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 import mattersRouter from './routes/matters';
+import workflowsRouter from './routes/workflows';
+import aiRouter from './routes/ai';
+import adminRouter from './routes/admin';
 import bridgesRouter from './routes/bridges';
 import rolesRouter from './routes/roles';
 import webhooksRouter from './routes/webhooks';
@@ -32,6 +35,7 @@ import stripeRouter from './routes/stripe';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
+import { SchedulerService } from './services/SchedulerService';
 import { startFxWebSocket } from './services/fxWebSocketService';
 
 const app = express();
@@ -76,6 +80,9 @@ app.get('/health', (req, res) => {
 app.use('/api/leads', leadsRouter);
 app.use('/api/pricing', pricingRouter);
 app.use('/api/stripe', stripeRouter);
+app.use('/api/workflows', workflowsRouter);
+app.use('/api/ai', aiRouter);
+app.use('/api/admin', adminRouter);
 
 // Chat Conversations (Public for widget, Protected for admin)
 app.use('/api/chat-conversations', chatConversationsRouter);
@@ -102,6 +109,7 @@ app.use('/api/bridges', authenticateToken, bridgesRouter);
 app.use('/api/roles', authenticateToken, rolesRouter);
 app.use('/api/webhooks', authenticateToken, webhooksRouter);
 app.use('/api/analytics', authenticateToken, analyticsRouter);
+app.use('/api/workflows', authenticateToken, workflowsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 
@@ -169,6 +177,9 @@ app.listen(Number(port), '0.0.0.0', () => {
 
     // Initialize Sovereign Cron System
     initCronJobs();
+
+    // Start Workflow Scheduler
+    SchedulerService.start();
 
     // Start FastForex real-time WebSocket feed
     startFxWebSocket();

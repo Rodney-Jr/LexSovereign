@@ -1,6 +1,8 @@
 
 import React from 'react';
 import {
+  Briefcase,
+  Gavel,
   ShieldCheck,
   LayoutDashboard,
   FileLock,
@@ -37,7 +39,9 @@ import {
   Sparkles,
   ShoppingBag,
   Menu,
-  X
+  X,
+  FileCheck,
+  Layout as LayoutIcon
 } from 'lucide-react';
 import { AppMode, UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
@@ -319,6 +323,42 @@ const Layout: React.FC<LayoutProps> = ({
                   label="Sovereign Vault"
                   isActive={activeTab === 'vault'}
                   onClick={() => setActiveTab('vault')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('clm-center') && (
+                <NavItem
+                  icon={<FileCheck size={18} className="text-emerald-400" />}
+                  label="CLM Operations"
+                  isActive={activeTab === 'clm-center'}
+                  onClick={() => setActiveTab('clm-center')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('case-center') && (
+                <NavItem
+                  icon={<Gavel size={18} className="text-sky-400" />}
+                  label="Case Management"
+                  isActive={activeTab === 'case-center'}
+                  onClick={() => setActiveTab('case-center')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('analytics') && (
+                <NavItem
+                  icon={<Activity size={18} className="text-brand-secondary" />}
+                  label="Analytics"
+                  isActive={activeTab === 'analytics'}
+                  onClick={() => setActiveTab('analytics')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('governance') && (
+                <NavItem
+                  icon={<ShieldCheck size={18} className="text-amber-500" />}
+                  label="Governance"
+                  isActive={activeTab === 'governance'}
+                  onClick={() => setActiveTab('governance')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}

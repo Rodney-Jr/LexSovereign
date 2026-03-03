@@ -33,11 +33,17 @@ model User {
   mfaEnabled        Boolean     @default(false)
   mfaSecret         String?
   mfaBackupCodes    Json?       @default("[]")
-  department        String?
+  departmentId      String?
+  department        Department? @relation(fields: [departmentId], references: [id])
   auditLogs         AuditLog[]
   assignedMatters   Matter[]
   timeEntries       TimeEntry[]
   collaborationMessages CollaborationMessage[]
+  tasks             Task[]
+  aiRiskAnalyses    AIRiskAnalysis[]
+  activityEntries   ActivityEntry[]
+  documentVersions  DocumentVersion[]
+  approvals         Approval[]
   role              Role?       @relation(fields: [roleId], references: [id])
   tenant            Tenant?     @relation(fields: [tenantId], references: [id])
 }
@@ -101,6 +107,9 @@ model Tenant {
   users            User[]
   bridges          Bridge[]
   documentTemplates DocumentTemplate[]
+  matterTypes      MatterType[]
+  workflows        Workflow[]
+  departments      Department[]
   stripeCustomerId   String?           @unique
   stripeSubscriptionId String?         @unique
   subscriptionStatus String?
@@ -124,7 +133,9 @@ model Matter {
   id                String           @id @default(uuid())
   name              String
   client            String
-  type              String
+  type              String           // Legacy type field, will be mapped to MatterType
+  matterTypeId      String?          // New link to MatterType
+  workflowStateId   String?          // Current state in the workflow
   status            String           @default("OPEN")
   riskLevel         String           @default("LOW")
   description       String?
@@ -134,13 +145,216 @@ model Matter {
   updatedAt         DateTime         @updatedAt
   attributes        Json?            @default("{}")
   complexityWeight  Float            @default(5.0)
-  department        String?
+  departmentId      String?
+  
+  matterType        MatterType?      @relation(fields: [matterTypeId], references: [id])
+  workflowState     WorkflowState?   @relation(fields: [workflowStateId], references: [id])
+  department        Department?      @relation(fields: [departmentId], references: [id])
+  
   documents         Document[]
   internalCounsel   User             @relation(fields: [internalCounselId], references: [id])
   tenant            Tenant           @relation(fields: [tenantId], references: [id])
   risks             PredictiveRisk[]
   timeEntries       TimeEntry[]
+  auditLogs         AuditLog[]
   collaborationMessages CollaborationMessage[]
+  tasks             Task[]
+  activityTimeline  ActivityEntry[]
+  contractMetadata  ContractMetadata?
+  caseMetadata      CaseMetadata?
+  aiRiskAnalyses    AIRiskAnalysis[]
+  approvals         Approval[]
+  deadlines         Deadline[]
+  hearings          Hearing[]
+  evidenceLinks     EvidenceLink[]
+}
+
+model MatterType {
+  id                String           @id @default(uuid())
+  name              String           // e.g., "CLM", "Litigation", "Advisory"
+  description       String?
+  category          String           // Enum-like: CONTRACT, CASE, ADVISORY
+  defaultWorkflowId String?
+  tenantId          String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  tenant            Tenant           @relation(fields: [tenantId], references: [id])
+  defaultWorkflow   Workflow?        @relation("DefaultWorkflow", fields: [defaultWorkflowId], references: [id])
+  matters           Matter[]
+  workflows         Workflow[]       @relation("MatterTypeWorkflows")
+}
+
+model Workflow {
+  id                String           @id @default(uuid())
+  name              String
+  description       String?
+  matterTypeId      String
+  tenantId          String
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  tenant            Tenant           @relation(fields: [tenantId], references: [id])
+  matterType        MatterType       @relation("MatterTypeWorkflows", fields: [matterTypeId], references: [id])
+  states            WorkflowState[]
+  defaultFor        MatterType[]     @relation("DefaultWorkflow")
+}
+
+model WorkflowState {
+  id                String           @id @default(uuid())
+  name              String
+  description       String?
+  order             Int
+  workflowId        String
+  canAssignTasks    Boolean          @default(true)
+  isApprovalRequired Boolean         @default(false)
+  isInitial         Boolean          @default(false)
+  isFinal           Boolean          @default(false)
+  color             String?          // For UI visual markers
+  
+  workflow          Workflow         @relation(fields: [workflowId], references: [id])
+  matters           Matter[]
+  outgoingTransitions WorkflowTransition[] @relation("FromState")
+  incomingTransitions WorkflowTransition[] @relation("ToState")
+  tasks             Task[]
+  approvals         Approval[]
+}
+
+model WorkflowTransition {
+  id                String           @id @default(uuid())
+  fromStateId       String
+  toStateId         String
+  requiredRole      String?          // RBAC requirement for this jump
+  condition         String?          // Optional logic/script
+  
+  fromState         WorkflowState    @relation("FromState", fields: [fromStateId], references: [id])
+  toState           WorkflowState    @relation("ToState", fields: [toStateId], references: [id])
+}
+
+model Task {
+  id                String           @id @default(uuid())
+  title             String
+  description       String?
+  status            String           @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, BLOCKED
+  priority          String           @default("MEDIUM")
+  dueDate           DateTime?
+  assigneeId        String?
+  matterId          String
+  workflowStateId   String?          // Task linked to a specific phase
+  isAutoGenerated   Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+  assignee          User?            @relation(fields: [assigneeId], references: [id])
+  workflowState     WorkflowState?   @relation(fields: [workflowStateId], references: [id])
+}
+
+model ContractMetadata {
+  id                String           @id @default(uuid())
+  matterId          String           @unique
+  contractValue     Float?
+  currency          String           @default("USD")
+  counterpartyName  String?
+  effectiveDate     DateTime?
+  renewalDate       DateTime?
+  expiryDate        DateTime?
+  alertTriggered    Boolean          @default(false)
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+}
+
+model CaseMetadata {
+  id                String           @id @default(uuid())
+  matterId          String           @unique
+  jurisdiction      String?
+  caseNumber        String?
+  courtName         String?
+  judgeName         String?
+  filedDate         DateTime?
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+}
+
+model Deadline {
+  id                String           @id @default(uuid())
+  matterId          String
+  title             String
+  dueDate           DateTime
+  description       String?
+  status            String           @default("PENDING") // PENDING, MET, MISSED
+  priority          String           @default("MEDIUM")
+  isReminderSent    Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+}
+
+model Hearing {
+  id                String           @id @default(uuid())
+  matterId          String
+  hearingDate       DateTime
+  location          String?
+  judgeName         String?          // Override or specific to hearing
+  purpose           String?          // e.g., "Pleadings", "Discovery", "Trial"
+  notes             String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+}
+
+model EvidenceLink {
+  id                String           @id @default(uuid())
+  matterId          String
+  documentId        String
+  exhibitNumber     String?
+  description       String?
+  profferedBy       String?          // PLAINTIFF, DEFENDANT
+  createdAt         DateTime         @default(now())
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+  document          Document         @relation(fields: [documentId], references: [id])
+}
+
+model AIRiskAnalysis {
+  id                String           @id @default(uuid())
+  matterId          String
+  riskScore         Float            @default(0.0)
+  summary           String?
+  identifiedClauses Json?            @default("[]")
+  confidenceScore   Float            @default(0.0)
+  isValidated       Boolean          @default(false)
+  validatorId       String?
+  createdAt         DateTime         @default(now())
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+  validator         User?            @relation(fields: [validatorId], references: [id])
+}
+
+model ActivityEntry {
+  id                String           @id @default(uuid())
+  matterId          String
+  type              String           // STATE_CHANGE, TASK, DOCUMENT, MESSAGE, DEADLINE, AI_INSIGHT
+  actorId           String?
+  details           String
+  metadata          Json?            @default("{}")
+  createdAt         DateTime         @default(now())
+  
+  matter            Matter           @relation(fields: [matterId], references: [id])
+  actor             User?            @relation(fields: [actorId], references: [id])
+}
+
+model Department {
+  id                String           @id @default(uuid())
+  name              String
+  tenantId          String
+  
+  tenant            Tenant           @relation(fields: [tenantId], references: [id])
+  matters           Matter[]
+  users             User[]
 }
 
 model Document {
@@ -157,9 +371,40 @@ model Document {
   encryptionKeyId String?
   isEncrypted     Boolean  @default(false)
   encryptionIV    String?
+  description     String?
   updatedAt       DateTime @default(now()) @updatedAt
   status          String   @default("AI_DRAFTED")
   matter          Matter   @relation(fields: [matterId], references: [id])
+  versions        DocumentVersion[]
+  evidenceLinks   EvidenceLink[]
+}
+
+model DocumentVersion {
+  id              String   @id @default(uuid())
+  documentId      String
+  versionNumber   Int
+  uri             String   // Storage location for this specific version
+  authorId        String?
+  changeSummary   String?
+  isCurrent       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  
+  document        Document @relation(fields: [documentId], references: [id])
+  author          User?    @relation(fields: [authorId], references: [id])
+}
+
+model Approval {
+  id                String   @id @default(uuid())
+  matterId          String
+  workflowStateId   String   // The state being approved
+  userId            String
+  status            String   @default("APPROVED") // APPROVED, REJECTED
+  comments          String?
+  createdAt         DateTime @default(now())
+  
+  matter            Matter   @relation(fields: [matterId], references: [id])
+  user              User     @relation(fields: [userId], references: [id])
+  workflowState     WorkflowState @relation(fields: [workflowStateId], references: [id])
 }
 
 model TimeEntry {
@@ -206,7 +451,9 @@ model AuditLog {
   details    String?
   ipAddress  String?
   resourceId String?
+  matterId   String?
   user       User?    @relation(fields: [userId], references: [id])
+  matter     Matter?  @relation(fields: [matterId], references: [id])
 }
 
 model KnowledgeArtifact {

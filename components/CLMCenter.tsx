@@ -1,0 +1,279 @@
+import React, { useState, useEffect } from 'react';
+import {
+    FileText,
+    Clock,
+    CheckCircle2,
+    AlertTriangle,
+    Plus,
+    Search,
+    Filter,
+    ArrowRight,
+    TrendingUp,
+    ShieldCheck,
+    Calendar,
+    Sparkles // Added Sparkles import
+} from 'lucide-react';
+import { authorizedFetch, getSavedSession } from '../utils/api';
+import CLMIntakeModal from './CLMIntakeModal';
+import AIIntelligenceSidebar from './AIIntelligenceSidebar';
+
+const CLMCenter: React.FC = () => {
+    const [showIntake, setShowIntake] = useState(false);
+    const [renewals, setRenewals] = useState<any[]>([]);
+    const [approvals, setApprovals] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedMatterAI, setSelectedMatterAI] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchCLMSignals();
+    }, []);
+
+    const fetchCLMSignals = async () => {
+        setLoading(true);
+        try {
+            const session = getSavedSession();
+            if (!session?.token) return;
+
+            const [renewalData, approvalData] = await Promise.all([
+                authorizedFetch('/api/workflows/clm/renewals', { token: session.token }),
+                authorizedFetch('/api/workflows/approvals/pending', { token: session.token })
+            ]);
+
+            if (Array.isArray(renewalData)) setRenewals(renewalData);
+            if (Array.isArray(approvalData)) setApprovals(approvalData);
+        } catch (e) {
+            console.error("Failed to fetch CLM signals", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-10 animate-in fade-in duration-700 pb-24">
+            {/* Header & Quick Action */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-800 pb-8">
+                <div className="space-y-1">
+                    <h3 className="text-3xl font-bold flex items-center gap-4 text-white tracking-tight">
+                        <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                            <FileText className="text-emerald-400" size={28} />
+                        </div>
+                        CLM Operations Center
+                    </h3>
+                    <p className="text-slate-500 text-sm">Contract Lifecycle Management | Authority Group: <span className="text-emerald-400 font-bold">LEG-OPS-1</span></p>
+                </div>
+                <button
+                    onClick={() => setShowIntake(true)}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-[2rem] font-bold text-xs uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-emerald-900/20 active:scale-95 group"
+                >
+                    <Plus size={20} className="group-hover:rotate-90 transition-transform" />
+                    New Contract Intake
+                </button>
+            </div>
+
+            {/* CLM Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard label="Active Contracts" value={renewals.length + 42} sub="Total Enclave Assets" icon={<FileText className="text-emerald-400" />} />
+                <MetricCard label="Pending Approvals" value={approvals.length} sub="Requiring Sign-off" icon={<CheckCircle2 className="text-blue-400" />} />
+                <MetricCard label="Renewal Pipeline" value={renewals.length} sub="Next 30 Days" icon={<Clock className="text-amber-400" />} />
+                <MetricCard label="Cycle Time (Avg)" value="4.2d" sub="-12% this month" icon={<TrendingUp className="text-purple-400" />} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {/* Left Column: Alerts & Queues */}
+                <div className="lg:col-span-8 space-y-10">
+
+                    {/* Renewal Pipeline */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <Calendar size={14} className="text-amber-400" /> Renewal Alert Pipeline
+                            </h4>
+                            <button title="View Master Calendar" className="text-[10px] text-slate-500 hover:text-white uppercase tracking-widest">View Master Calendar</button>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4">
+                            {renewals.length > 0 ? renewals.map(renewal => (
+                                <RenewalCard key={renewal.id} renewal={renewal} />
+                            )) : (
+                                <div className="bg-slate-900/50 border border-slate-800 border-dashed rounded-[2.5rem] p-12 text-center text-slate-500 italic text-sm">
+                                    No upcoming renewals detected. Monitoring...
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Approval Queue */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <ShieldCheck size={14} className="text-blue-400" /> Approval Routing Queue
+                            </h4>
+                            <span className="text-[10px] font-mono text-slate-600">ZK-QUORUM ACTIVE</span>
+                        </div>
+
+                        <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-800/30 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                                    <tr>
+                                        <th className="px-8 py-5">Matter / Contract</th>
+                                        <th className="px-8 py-5">Workflow State</th>
+                                        <th className="px-8 py-5">Received</th>
+                                        <th className="px-8 py-5 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-800/50">
+                                    {approvals.length > 0 ? approvals.map(approval => (
+                                        <tr key={approval.id} className="hover:bg-slate-800/20 transition-all group">
+                                            <td className="px-8 py-6">
+                                                <p className="text-sm font-bold text-white">{approval.matter.name}</p>
+                                                <p className="text-[10px] text-slate-500 font-mono tracking-tighter mb-4">{approval.matter.client}</p>
+                                                <div className="flex items-center gap-4">
+                                                    <button
+                                                        title="AI Analysis"
+                                                        onClick={() => setSelectedMatterAI(approval.matter.id)}
+                                                        className="p-3 bg-sky-500/10 text-sky-400 rounded-2xl hover:bg-sky-500 hover:text-white transition-all border border-sky-500/20"
+                                                    >
+                                                        <Sparkles size={18} />
+                                                    </button>
+                                                    <button
+                                                        title="View Contract"
+                                                        className="p-3 bg-slate-950 text-slate-500 rounded-2xl hover:text-white transition-all border border-slate-800"
+                                                    >
+                                                        <ArrowRight size={20} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <span className="px-2.5 py-1 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-bold uppercase">
+                                                    {approval.workflowState.name}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 text-xs text-slate-400">
+                                                {new Date(approval.createdAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <button className="bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all">
+                                                    Review & Sign
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan={4} className="px-8 py-10 text-center text-slate-600 italic text-sm">Clean Desk Protocol: No pending approvals.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Analytics & Stats */}
+                <div className="lg:col-span-4 space-y-8">
+                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 relative overflow-hidden group shadow-2xl">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-all scale-150">
+                            <TrendingUp size={120} />
+                        </div>
+
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Risk Exposure Heatmap</h4>
+
+                        <div className="space-y-6">
+                            <RiskMetric label="High Liability Cap" value="12" color="bg-rose-500" />
+                            <RiskMetric label="Non-Standard Indemnity" value="8" color="bg-amber-500" />
+                            <RiskMetric label="Auto-Renewal Clauses" value="24" color="bg-blue-500" />
+                            <RiskMetric label="Jurisdiction Mismatch" value="3" color="bg-purple-500" />
+                        </div>
+
+                        <div className="pt-6 border-t border-slate-800">
+                            <button className="w-full py-4 bg-slate-950 border border-slate-800 hover:border-emerald-500/30 text-emerald-400 font-bold text-[10px] uppercase tracking-widest rounded-2xl transition-all">
+                                Generate Full Risk Audit
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-emerald-500/5 border border-emerald-500/10 rounded-[2.5rem] flex items-start gap-4 shadow-inner">
+                        <AlertTriangle className="text-emerald-500 shrink-0" size={20} />
+                        <div className="space-y-1">
+                            <h5 className="font-bold text-[10px] text-emerald-400 uppercase tracking-widest">Sovereign Compliance Layer</h5>
+                            <p className="text-[10px] text-slate-500 leading-relaxed italic">
+                                "Contract ingestion is monitored for anti-collision against the central clause library. Version parity is enforced via ZK-Trace."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {showIntake && (
+                <CLMIntakeModal
+                    onClose={() => setShowIntake(false)}
+                    onCreated={(matter) => {
+                        setShowIntake(false);
+                        fetchCLMSignals();
+                    }}
+                />
+            )}
+
+            <AIIntelligenceSidebar
+                matterId={selectedMatterAI || ''}
+                isOpen={!!selectedMatterAI}
+                onClose={() => setSelectedMatterAI(null)}
+            />
+        </div>
+    );
+};
+
+interface MetricCardProps {
+    label: string;
+    value: string | number;
+    sub: string;
+    icon: React.ReactNode;
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({ label, value, sub, icon }) => (
+    <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] hover:border-emerald-500/30 transition-all group shadow-xl">
+        <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-slate-950 rounded-2xl group-hover:scale-110 transition-transform">
+                {icon}
+            </div>
+            <span className="text-[10px] font-mono text-slate-600">Pulse: Syncing</span>
+        </div>
+        <div className="space-y-1">
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{label}</p>
+            <h4 className="text-4xl font-black text-white tracking-tighter">{value}</h4>
+            <p className="text-[9px] text-slate-600 font-medium">{sub}</p>
+        </div>
+    </div>
+);
+
+const RenewalCard = ({ renewal }: { renewal: any }) => (
+    <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] flex items-center justify-between hover:border-amber-500/30 transition-all group">
+        <div className="flex items-center gap-6">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                <Clock size={24} />
+            </div>
+            <div className="space-y-1">
+                <h5 className="text-sm font-bold text-white">{renewal.matter.name}</h5>
+                <div className="flex items-center gap-4">
+                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Counterparty: {renewal.counterpartyName}</p>
+                    <div className="h-1 w-1 rounded-full bg-slate-700"></div>
+                    <p className="text-[10px] text-amber-500 font-black uppercase">Renews: {new Date(renewal.renewalDate).toLocaleDateString()}</p>
+                </div>
+            </div>
+        </div>
+        <button title="View Renewal Details" className="p-3 hover:bg-slate-800 rounded-xl text-slate-600 hover:text-white transition-all">
+            <ArrowRight size={20} />
+        </button>
+    </div>
+);
+
+const RiskMetric = ({ label, value, color }: { label: string, value: string, color: string }) => (
+    <div className="flex items-center justify-between group/risk">
+        <div className="flex items-center gap-4">
+            <div className={`w-1.5 h-6 rounded-full ${color} group-hover/risk:scale-y-125 transition-transform`}></div>
+            <p className="text-xs text-slate-400 font-bold group-hover/risk:text-white transition-colors">{label}</p>
+        </div>
+        <span className="text-xs font-mono text-slate-500">{value}</span>
+    </div>
+);
+
+export default CLMCenter;
