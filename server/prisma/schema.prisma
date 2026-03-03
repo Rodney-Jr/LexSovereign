@@ -350,7 +350,10 @@ model ActivityEntry {
 model Department {
   id                String           @id @default(uuid())
   name              String
+  description       String?
   tenantId          String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   
   tenant            Tenant           @relation(fields: [tenantId], references: [id])
   matters           Matter[]

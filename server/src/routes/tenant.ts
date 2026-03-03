@@ -285,12 +285,12 @@ router.post('/users/:userId/department', authenticateToken, requireRole(['TENANT
 
         const updated = await prisma.user.update({
             where: { id: userId, tenantId }, // Ensure user belongs to same tenant
-            data: { department }
+            data: { departmentId: department }
         });
 
         res.json({
             id: updated.id,
-            department: updated.department,
+            department: updated.departmentId,
             message: `User assigned to department: ${department}`
         });
     } catch (error: any) {

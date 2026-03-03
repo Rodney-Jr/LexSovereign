@@ -174,7 +174,7 @@ router.post('/', authenticateToken, async (req, res) => {
         // Fetch counsel to get their department
         const counsel = await prisma.user.findUnique({
             where: { id: internalCounselId },
-            select: { department: true }
+            select: { departmentId: true }
         });
 
         const matter = await prisma.matter.create({
@@ -188,7 +188,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 complexityWeight: complexityWeight || 5.0,
                 internalCounselId,
                 tenantId,
-                department: counsel?.department // Auto-inherit department from assignee
+                departmentId: counsel?.departmentId || undefined
             }
         });
 
@@ -339,7 +339,7 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
         const teamPeers = await prisma.user.findMany({
             where: {
                 tenantId,
-                department: matter.department
+                departmentId: matter.departmentId
             },
             select: {
                 id: true,

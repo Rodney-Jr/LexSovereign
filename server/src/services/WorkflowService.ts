@@ -1,13 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { EventEmitter } from 'events';
-
-const prisma = new PrismaClient();
-
-/**
- * Internal Event Bus for Workflow side-effects
- */
-class WorkflowEventBus extends EventEmitter { }
-export const workflowEventBus = new WorkflowEventBus();
+import { prisma } from '../db';
+import { EventBus } from './EventBus';
 
 export class WorkflowService {
     /**
@@ -64,7 +56,7 @@ export class WorkflowService {
             });
 
             // 5. Emit Event for side-effects (outside of transaction preferred, handles via EventBus)
-            workflowEventBus.emit('STATE_CHANGED', {
+            EventBus.emit('STATE_CHANGED', {
                 matterId,
                 fromStateId: matter.workflowStateId,
                 toStateId,
@@ -106,7 +98,7 @@ export class WorkflowService {
 }
 
 // Subscribe to state changes for automation
-workflowEventBus.on('STATE_CHANGED', async (data) => {
+EventBus.on('STATE_CHANGED', async (data) => {
     try {
         await WorkflowService.createAutomatedTasks(data.matterId, data.toStateId, data.tenantId);
     } catch (error) {
@@ -115,7 +107,7 @@ workflowEventBus.on('STATE_CHANGED', async (data) => {
 });
 
 // Subscribe to Quorum success for auto-transitions
-workflowEventBus.on('QUORUM_MET', async (data) => {
+EventBus.on('QUORUM_MET', async (data) => {
     try {
         // 1. Fetch current matter state
         const matter = await prisma.matter.findUnique({

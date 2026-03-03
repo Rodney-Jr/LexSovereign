@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { workflowEventBus } from './WorkflowService';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db';
+import { EventBus } from './EventBus';
 
 export class CLMService {
     /**
@@ -89,7 +87,7 @@ export class CLMService {
 
                 if (approvals.length >= requiredApprovals) {
                     // Emit event to notify that quorum is met, which could trigger a transition
-                    workflowEventBus.emit('QUORUM_MET', { matterId, stateId });
+                    EventBus.emit('QUORUM_MET', { matterId, stateId });
                 }
             }
 

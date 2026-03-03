@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
-import { Layers, Activity, Users, FileLock } from 'lucide-react';
+import { Layers, Activity, Users, FileLock, Sparkles } from 'lucide-react';
 import RelatedInsights from '../components/RelatedInsights';
 import type { SsgOptions } from 'vite-plugin-ssg';
 
@@ -85,6 +85,11 @@ export default function ForEnterprise() {
                         icon={<Users />}
                         title="Outside Counsel Collaboration"
                         text="Grant limited, secure access to external law firms without exposing your entire internal file system."
+                    />
+                    <BenefitBlock
+                        icon={<Sparkles className="text-purple-400" />}
+                        title="Intelligent Risk Scoring"
+                        text="Automated AI-driven risk assessment for every contract and matter, alerting the GC to potential anomalies before they become liabilities."
                     />
                 </div>
             </Section>

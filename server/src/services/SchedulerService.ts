@@ -1,8 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { workflowEventBus } from './WorkflowService';
+import { prisma } from '../db';
 import cron from 'node-cron';
-
-const prisma = new PrismaClient();
 
 export class SchedulerService {
     /**

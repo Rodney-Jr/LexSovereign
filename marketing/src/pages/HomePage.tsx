@@ -248,13 +248,13 @@ export default function HomePage() {
                     />
                     <FeatureCard
                         icon={<Sparkles className="w-8 h-8 text-purple-400" />}
-                        title="AI Legal Assistant"
-                        description="Get an instant summary of complex cases and smart risk alerts. It's like having a legal researcher on call 24/7."
+                        title="AI Drafting & Intelligence"
+                        description="Automatically score contract risks, extract key clauses, and summarize case briefs in seconds with our integrated Legal Intelligence layer."
                     />
                     <FeatureCard
                         icon={<BarChart3 className="w-8 h-8 text-emerald-400" />}
-                        title="Big-Picture Dashboards"
-                        description="Full organizational visibility. High-level reporting and security controls for your entire legal operation."
+                        title="Enterprise Compliance"
+                        description="Gain full organizational visibility with deep analytics on activity, departmental performance, and automated audit reporting."
                     />
                 </div>
             </Section>

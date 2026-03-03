@@ -33,7 +33,10 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             const dbUser = await requestContext.run({ tenantId: user.tenantId, userId: user.id }, () =>
                 prisma.user.findUnique({
                     where: { id: user.id },
-                    include: { tenant: { select: { status: true } } }
+                    include: {
+                        tenant: { select: { status: true } },
+                        department: true
+                    }
                 })
             );
 
