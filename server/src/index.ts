@@ -114,7 +114,7 @@ app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 
 // Resolve static directory paths using process.cwd() for reliability in root-run environments
-const DIST_PATH = path.join(process.cwd(), 'dist');
+const DIST_PATH = path.join(process.cwd(), 'client-dist');
 const PUBLIC_PATH = path.join(process.cwd(), 'server', 'public');
 
 console.log(`[Static] Serving assets from: ${DIST_PATH}`);
