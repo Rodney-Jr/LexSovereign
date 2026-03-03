@@ -113,20 +113,31 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
             <div className="flex-1 flex overflow-hidden">
                 {/* Editor Pane */}
                 {(layout === 'split' || layout === 'editor') && (
-                    <div className={`flex-1 flex flex-col bg-slate-900/30 transition-all duration-500 ${layout === 'editor' ? 'w-full' : ''}`}>
-                        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                    <div className={`flex-1 flex flex-col bg-slate-900/30 transition-all duration-500 ${layout === 'editor' ? 'w-full overflow-y-auto' : ''}`}>
+                        <div className="p-6 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
                             <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                                 <Sparkles size={14} className="text-emerald-400" />
                                 Markdown Editor
                             </h4>
                             <p className="text-[9px] text-slate-600 italic">Supports plain text and basic markdown formatting</p>
                         </div>
-                        <textarea
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder="Start drafting your legal document here..."
-                            className={`flex-1 bg-slate-950 text-slate-200 p-12 font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-slate-700 scrollbar-hide ${layout === 'editor' ? 'max-w-4xl mx-auto w-full border-x border-slate-800/50' : ''}`}
-                        />
+
+                        <div className={`flex-1 flex justify-center py-12 ${layout === 'editor' ? 'bg-slate-950 px-8' : ''}`}>
+                            <div className={`${layout === 'editor'
+                                ? 'w-full max-w-[950px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 min-h-[1120px] relative'
+                                : 'flex-1 flex flex-col w-full'
+                                }`}>
+                                <textarea
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    placeholder="Start drafting your legal document here..."
+                                    className={`${layout === 'editor'
+                                        ? 'w-full h-full bg-transparent text-slate-900 font-serif text-[15px] leading-relaxed resize-none focus:outline-none placeholder:text-slate-300'
+                                        : 'flex-1 bg-slate-950 text-slate-200 p-12 font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-slate-700 scrollbar-hide'
+                                        }`}
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
 

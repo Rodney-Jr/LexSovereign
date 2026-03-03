@@ -490,7 +490,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         )}
 
                         {/* Fields (Inputs) */}
-                        <div className={`space-y-8 ${layout === 'editor' ? 'max-w-4xl mx-auto' : ''}`}>
+                        <div className={`space-y-8 ${layout === 'editor' ? 'max-w-[1200px] mx-auto p-12' : ''}`}>
                             <div className="flex items-center justify-between">
                                 <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                                     <Terminal size={14} /> Variables
@@ -574,7 +574,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
 
                         {/* Validation Errors Overlay */}
                         {validationErrors.length > 0 && (
-                            <div className={`mt-8 p-6 bg-red-500/10 border border-red-500/30 rounded-[2rem] space-y-3 animate-in fade-in slide-in-from-top-4 duration-300 ${layout === 'editor' ? 'max-w-4xl mx-auto bg-slate-900 shadow-2xl' : ''}`}>
+                            <div className={`mt-8 p-6 bg-red-500/10 border border-red-500/30 rounded-[2rem] space-y-3 animate-in fade-in slide-in-from-top-4 duration-300 ${layout === 'editor' ? 'max-w-6xl mx-auto bg-slate-900 shadow-2xl' : ''}`}>
                                 <div className="flex items-center gap-2 text-red-400">
                                     <AlertTriangle size={16} />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Validation Blocked</span>
@@ -590,7 +590,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                             </div>
                         )}
 
-                        <div className={`p-6 bg-brand-bg border border-brand-border rounded-[2rem] space-y-4 shadow-inner mt-8 ${layout === 'editor' ? 'max-w-4xl mx-auto' : ''}`}>
+                        <div className={`p-6 bg-brand-bg border border-brand-border rounded-[2rem] space-y-4 shadow-inner mt-8 ${layout === 'editor' ? 'max-w-6xl mx-auto' : ''}`}>
                             <div className="flex items-center gap-2 text-amber-500">
                                 <AlertTriangle size={14} />
                                 <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
@@ -613,7 +613,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                 {/* Right: Live Preview */}
                 {(layout === 'split' || layout === 'preview') && (
                     <main className={`flex-1 bg-brand-bg p-12 overflow-y-auto scrollbar-hide flex justify-center transition-all duration-500 ${layout === 'preview' ? 'w-full' : ''}`}>
-                        <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1120px]">
+                        <div className="w-full max-w-[950px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1120px]">
                             {/* Header Branding */}
                             <div className="absolute top-8 right-8 text-slate-300 text-[10px] font-mono uppercase text-right leading-tight">
                                 {branding.headerText}
