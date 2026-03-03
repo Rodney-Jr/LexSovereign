@@ -92,4 +92,8 @@ export class LexAIService {
     async hydrateTemplate(template: any, matter: any): Promise<any> {
         return this.executeWithFailover(p => p.hydrateTemplate(template, matter));
     }
+
+    async analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string> {
+        return this.executeWithFailover(p => p.analyzeDocument(content, type));
+    }
 }

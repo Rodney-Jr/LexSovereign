@@ -44,4 +44,6 @@ export interface AIProvider {
     generateBillingDescription(rawNotes: string): Promise<string>;
 
     hydrateTemplate(template: any, matter: any): Promise<any>;
+
+    analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string>;
 }
