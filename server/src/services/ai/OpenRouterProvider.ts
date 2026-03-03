@@ -23,7 +23,7 @@ import { LegalQueryService } from "../legalQueryService";
  *
  * Required env vars:
  *   OPENROUTER_API_KEY   - Your OpenRouter API key (https://openrouter.ai/keys)
- *   OPENROUTER_MODEL     - Primary model (default: "google/gemini-pro-1.5")
+ *   OPENROUTER_MODEL     - Primary model (default: "google/gemini-2.0-flash-001")
  *   OPENROUTER_FAST_MODEL - Cheaper model for simple tasks (default: "mistralai/mistral-7b-instruct")
  *
  * Optional:

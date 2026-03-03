@@ -46,7 +46,7 @@ export class ContentGenerationEngine {
         internalLinks: InternalLink[]
     ): Promise<ArticleDraft> {
         const apiKey = process.env.OPENROUTER_API_KEY;
-        const model = process.env.OPENROUTER_MODEL || 'google/gemini-pro-1.5';
+        const model = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
 
         if (!apiKey) {
             throw new Error('OPENROUTER_API_KEY is not set. Cannot generate article.');

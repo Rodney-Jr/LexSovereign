@@ -270,7 +270,7 @@ const AVAILABLE_PROVIDERS = [
         status: 'ACTIVE',
         isDefault: true,
         models: [
-            { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5', tier: 'primary', envKey: 'OPENROUTER_MODEL' },
+            { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', tier: 'primary', envKey: 'OPENROUTER_MODEL' },
             { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B Instruct', tier: 'fast', envKey: 'OPENROUTER_FAST_MODEL' },
             { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', tier: 'premium', envKey: null },
             { id: 'openai/gpt-4o', name: 'GPT-4o', tier: 'premium', envKey: null },
@@ -289,7 +289,7 @@ const AVAILABLE_PROVIDERS = [
  */
 router.get('/ai-registry', authenticateToken, requireRole(['GLOBAL_ADMIN']), (req, res) => {
     const activeProvider = process.env.AI_PROVIDER || 'openrouter';
-    const activeModel = process.env.OPENROUTER_MODEL || 'google/gemini-pro-1.5';
+    const activeModel = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
     const fastModel = process.env.OPENROUTER_FAST_MODEL || 'mistralai/mistral-7b-instruct';
     res.json({
         activeProvider,
