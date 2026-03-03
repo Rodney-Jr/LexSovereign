@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UserRole, PrivilegeStatus, DocumentMetadata, RegulatoryRule, TimeEntry, ChatbotConfig, KnowledgeArtifact, ChatMessage } from "../../types";
 import { prisma } from "../../db";
 import { PiiService } from "../piiService";
@@ -18,7 +18,7 @@ export class GeminiProvider implements AIProvider {
         if (!process.env.GEMINI_API_KEY) {
             throw new Error("GEMINI_API_KEY is not set in environment");
         }
-        return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     }
 
     async chat(params: ChatParams): Promise<ChatResult> {
@@ -28,7 +28,6 @@ export class GeminiProvider implements AIProvider {
 
         const ai = this.getAI();
         const modelName = process.env.GEMINI_MODEL || this.defaultModel;
-        const model = params.usePrivateModel ? modelName : modelName;
 
         const contextDocs = params.matterId
             ? params.documents.filter(d => d.matterId === params.matterId)
@@ -53,31 +52,22 @@ export class GeminiProvider implements AIProvider {
             console.warn("Gazette RAG Search Failed:", e);
         }
 
-        const config: any = {
+        const genModel = ai.getGenerativeModel({
+            model: modelName,
             systemInstruction: "You are a senior NomosDesk legal assistant. Task: Provide accurate legal information based ONLY on the provided Gazette excerpts. Rules: 1. If the information is not in the excerpts, state that you cannot find the specific statutory basis. 2. Always cite the Source URL for every claim. 3. Use a professional, sovereign tone. 4. Return JSON object with 'text', 'confidence', and 'references' (Source URLs).",
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: Type.OBJECT,
-                properties: {
-                    text: { type: Type.STRING },
-                    confidence: { type: Type.NUMBER },
-                    references: { type: Type.ARRAY, items: { type: Type.STRING } }
-                },
-                required: ["text", "confidence"]
+            generationConfig: {
+                responseMimeType: "application/json"
             }
-        };
+        });
 
         const prompt = `CONTEXT_DOCUMENTS:\n${contextStr}\n\n${legalKnowledge}\n\nUSER_QUERY: ${sanitized}`;
 
-        const response = await ai.models.generateContent({
-            model: model,
-            contents: prompt,
-            config: config
-        });
+        const genResult = await genModel.generateContent(prompt);
+        const responseText = genResult.response.text();
 
         // Extract search grounding metadata if available
         const groundingSources: { title: string, uri: string }[] = [];
-        const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        const chunks = genResult.response.candidates?.[0]?.groundingMetadata?.groundingChunks;
         if (chunks) {
             chunks.forEach((chunk: any) => {
                 if (chunk.web) {
@@ -86,16 +76,16 @@ export class GeminiProvider implements AIProvider {
             });
         }
 
-        let result;
+        let data;
         try {
-            result = JSON.parse(response.text || '{}');
+            data = JSON.parse(responseText || '{}');
         } catch {
-            result = { text: response.text, confidence: 0.9, references: [] };
+            data = { text: responseText, confidence: 0.9, references: [] };
         }
 
         // 2. Auditor Check (Red Team)
-        const audit = await AuditorService.scan(result.text || "");
-        let finalText = result.text;
+        const audit = await AuditorService.scan(data.text || "");
+        let finalText = data.text;
 
         if (audit.flagged) {
             finalText = `[AUDIT BLOCK] Content Redacted by Sovereign Governance Layer.\nReason: ${audit.reason}\nRisk Score: ${audit.riskScore}`;
@@ -103,9 +93,9 @@ export class GeminiProvider implements AIProvider {
 
         return {
             text: finalText || "I am analyzing the sovereign research stream...",
-            confidence: audit.flagged ? 0.0 : (result.confidence || 0),
-            provider: `Gemini (${model})`,
-            references: result.references,
+            confidence: audit.flagged ? 0.0 : (data.confidence || 0),
+            provider: `Gemini (${modelName})`,
+            references: data.references,
             groundingSources: groundingSources.length > 0 ? groundingSources : undefined
         };
     }
@@ -113,16 +103,12 @@ export class GeminiProvider implements AIProvider {
     async explainClause(clauseText: string): Promise<string> {
         const ai = this.getAI();
         try {
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: `Explain this legal clause to a junior lawyer: "${clauseText}"`,
-                config: {
-                    systemInstruction: "You are a legal assistant explaining a contract clause. Rules: 1. Explain intent, not legal advice. 2. No jurisdiction-specific interpretation. 3. No recommendations to change the clause. 4. Keep explanation under 120 words. 5. Output plain English explanation only.",
-                    temperature: 0.1,
-                    maxOutputTokens: 150
-                }
+                systemInstruction: "You are a legal assistant explaining a contract clause. Rules: 1. Explain intent, not legal advice. 2. No jurisdiction-specific interpretation. 3. No recommendations to change the clause. 4. Keep explanation under 120 words. 5. Output plain English explanation only.",
             });
-            return response.text || "Unable to explain clause at this time.";
+            const result = await model.generateContent(`Explain this legal clause to a junior lawyer: "${clauseText}"`);
+            return result.response.text() || "Unable to explain clause at this time.";
         } catch (error: any) {
             console.error("Gemini API Error (ExplainClause):", error);
             throw new Error(`Clause explanation failed: ${error.message}`);
@@ -132,16 +118,12 @@ export class GeminiProvider implements AIProvider {
     async generateAuditLog(context: { userId: string, firmId: string, action: string, resourceType: string, resourceId: string }): Promise<string> {
         const ai = this.getAI();
         try {
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: `Generate an audit log for: ${JSON.stringify(context)}`,
-                config: {
-                    systemInstruction: "You are an audit logging system for a Legal Ops platform. Task: Generate a clear, immutable audit description suitable for regulators. Rules: 1. No opinions. 2. No assumptions. 3. Past tense. 4. Objective language. Output: Single sentence audit_log_message only.",
-                    temperature: 0,
-                    maxOutputTokens: 50
-                }
+                systemInstruction: "You are an audit logging system for a Legal Ops platform. Task: Generate a clear, immutable audit description suitable for regulators. Rules: 1. No opinions. 2. No assumptions. 3. Past tense. 4. Objective language. Output: Single sentence audit_log_message only.",
             });
-            return response.text?.trim() || "Audit log generation failed.";
+            const result = await model.generateContent(`Generate an audit log for: ${JSON.stringify(context)}`);
+            return result.response.text()?.trim() || "Audit log generation failed.";
         } catch (error: any) {
             console.error("Gemini API Error (AuditLog):", error.message);
             return `User ${context.userId} performed ${context.action} on ${context.resourceType} ${context.resourceId}.`;
@@ -150,32 +132,30 @@ export class GeminiProvider implements AIProvider {
 
     async validateDocumentExport(documentContent: string): Promise<{ status: 'PASS' | 'FAIL', issues: string[] }> {
         const ai = this.getAI();
-        const response = await ai.models.generateContent({
+        const model = ai.getGenerativeModel({
             model: this.defaultModel,
-            contents: `Validate this legal document content: "${documentContent.substring(0, 10000)}..."`,
-            config: {
-                systemInstruction: "You are validating a legal document before export. Checklist: 1. All variables resolved (no {{brackets}}). 2. Clause numbering sequential. 3. No placeholder text (e.g. [INSERT DATE]). 4. Title present. 5. Footer metadata present. Output: JSON { status: 'PASS' | 'FAIL', issues: string[] }.",
+            systemInstruction: "You are validating a legal document before export. Checklist: 1. All variables resolved (no {{brackets}}). 2. Clause numbering sequential. 3. No placeholder text (e.g. [INSERT DATE]). 4. Title present. 5. Footer metadata present. Output: JSON { status: 'PASS' | 'FAIL', issues: string[] }.",
+            generationConfig: {
                 responseMimeType: "application/json",
-                temperature: 0
             }
         });
-        const result = JSON.parse(response.text || '{ "status": "FAIL", "issues": ["AI Validation Failed"] }');
+        const resultFull = await model.generateContent(`Validate this legal document content: "${documentContent.substring(0, 10000)}..."`);
+        const result = JSON.parse(resultFull.response.text() || '{ "status": "FAIL", "issues": ["AI Validation Failed"] }');
         return result;
     }
 
     async generatePricingModel(features: string[]): Promise<any> {
         const ai = this.getAI();
         try {
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: `Create pricing tiers for these features: ${JSON.stringify(features)}`,
-                config: {
-                    systemInstruction: "You are designing pricing tiers for a Legal Ops SaaS. Target: small law firms, in-house teams. Task: 1. Propose Free, Pro, and Enterprise tiers. 2. Assign features logically. 3. Avoid feature cannibalization. 4. Ensure Free tier demonstrates value but enforces limits. Output: JSON structure with 'tiers' (array of {name, price, features, limits}) and 'justification' (string).",
+                systemInstruction: "You are designing pricing tiers for a Legal Ops SaaS. Target: small law firms, in-house teams. Task: 1. Propose Free, Pro, and Enterprise tiers. 2. Assign features logically. 3. Avoid feature cannibalization. 4. Ensure Free tier demonstrates value but enforces limits. Output: JSON structure with 'tiers' (array of {name, price, features, limits}) and 'justification' (string).",
+                generationConfig: {
                     responseMimeType: "application/json",
-                    temperature: 0.2
                 }
             });
-            const result = JSON.parse(response.text || '{ "tiers": [], "justification": "Generation Failed" }');
+            const resultFull = await model.generateContent(`Create pricing tiers for these features: ${JSON.stringify(features)}`);
+            const result = JSON.parse(resultFull.response.text() || '{ "tiers": [], "justification": "Generation Failed" }');
             return result;
         } catch (error: any) {
             console.error("Gemini API Error (PricingMapper):", error.message);
@@ -188,15 +168,14 @@ export class GeminiProvider implements AIProvider {
         const docs = documents.filter(d => d.matterId === matterId);
         const context = docs.map(d => `${d.name} (${d.jurisdiction})`).join(', ');
 
-        const response = await ai.models.generateContent({
-            model: "gemini-1.5-flash", // Executive briefing might benefit from larger context if available, but stick to flash for speed/cost
-            contents: `Generate a high-velocity executive briefing for Matter ${matterId} based on these artifacts: ${context}. Focus on: 1. Risk Heatmap 2. Key Deadlines 3. Critical Clause Anomalies.`,
-            config: {
-                systemInstruction: "You are the Chief Legal Ops AI. Summarize the status of a legal matter for a Managing Partner. Use bullet points and a professional, sovereign tone. Max 300 words.",
-            }
+        const model = ai.getGenerativeModel({
+            model: this.defaultModel,
+            systemInstruction: "You are the Chief Legal Ops AI. Summarize the status of a legal matter for a Managing Partner. Use bullet points and a professional, sovereign tone. Max 300 words.",
         });
 
-        return response.text || "Matter synthesis failed at the enclave layer.";
+        const result = await model.generateContent(`Generate a high-velocity executive briefing for Matter ${matterId} based on these artifacts: ${context}. Focus on: 1. Risk Heatmap 2. Key Deadlines 3. Critical Clause Anomalies.`);
+
+        return result.response.text() || "Matter synthesis failed at the enclave layer.";
     }
 
     async getScrubbedContent(
@@ -222,13 +201,12 @@ export class GeminiProvider implements AIProvider {
     `;
 
         try {
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: prompt,
-                config: { temperature: 0 }
+                generationConfig: { temperature: 0 }
             });
-
-            const scrubbed = response.text || "[CONTENT REDACTED BY SOVEREIGN PROXY]";
+            const result = await model.generateContent(prompt);
+            const scrubbed = result.response.text() || "[CONTENT REDACTED BY SOVEREIGN PROXY]";
             const entitiesRemoved = (scrubbed.match(/\[.*?\]/g) || []).length;
             return { content: scrubbed, scrubbedEntities: entitiesRemoved };
         } catch (error) {
@@ -244,16 +222,15 @@ export class GeminiProvider implements AIProvider {
         if (!activeRules) return { isBlocked: false };
 
         try {
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: `RULES:\n${activeRules}\n\nTEXT_TO_EVALUATE: ${text}\n\nAssess if the text violates any rules. Return JSON: { "isBlocked": boolean, "triggeredRule": string | null }. STRICT COMPLIANCE.`,
-                config: {
+                generationConfig: {
                     responseMimeType: "application/json",
-                    temperature: 0
                 }
             });
+            const resultFull = await model.generateContent(`RULES:\n${activeRules}\n\nTEXT_TO_EVALUATE: ${text}\n\nAssess if the text violates any rules. Return JSON: { "isBlocked": boolean, "triggeredRule": string | null }. STRICT COMPLIANCE.`);
 
-            const result = JSON.parse(response.text || '{ "isBlocked": false }');
+            const result = JSON.parse(resultFull.response.text() || '{ "isBlocked": false }');
             return { isBlocked: result.isBlocked, triggeredRule: result.triggeredRule };
         } catch (error) {
             console.error("Gemini API Error (EvaluateRRE):", error);
@@ -273,30 +250,32 @@ export class GeminiProvider implements AIProvider {
             parts: [{ text: msg.content }]
         }));
 
-        const response = await ai.models.generateContent({
+        const model = ai.getGenerativeModel({
             model: this.defaultModel,
+            systemInstruction: config.systemInstruction
+        });
+
+        const result = await model.generateContent({
             contents: [
                 ...historyContents,
                 {
                     role: 'user',
-                    parts: [{ text: `SYSTEM: ${config.systemInstruction}\n\nKNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}` }]
+                    parts: [{ text: `KNOWLEDGE_BASE:\n${knowledgeContext}\n\nUSER: ${input}` }]
                 }
-            ],
-            config: { temperature: 0.3 }
+            ]
         });
 
-        return { text: response.text || "I am unable to answer that at this time.", confidence: 0.9, provider: this.id };
+        return { text: result.response.text() || "I am unable to answer that at this time.", confidence: 0.9, provider: this.id };
     }
 
     async generateBillingDescription(rawNotes: string): Promise<string> {
         const ai = this.getAI();
         try {
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: `Convert these raw notes into a professional legal billing narrative (max 1 sentence): "${rawNotes}"`,
-                config: { temperature: 0.2 }
             });
-            return response.text || rawNotes;
+            const result = await model.generateContent(`Convert these raw notes into a professional legal billing narrative (max 1 sentence): "${rawNotes}"`);
+            return result.response.text() || rawNotes;
         } catch (error: any) {
             throw new Error(`Billing Generation Failed: ${error.message}`);
         }
@@ -326,16 +305,16 @@ export class GeminiProvider implements AIProvider {
             OUTPUT: JSON map of field keys to values.
             `;
 
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: prompt,
-                config: {
+                generationConfig: {
                     responseMimeType: "application/json",
-                    temperature: 0.1
                 }
             });
 
-            return JSON.parse(response.text || '{}');
+            const result = await model.generateContent(prompt);
+
+            return JSON.parse(result.response.text() || '{}');
         } catch (error: any) {
             console.error("Gemini API Error (HydrateTemplate):", error.message);
             return {};
@@ -349,15 +328,12 @@ export class GeminiProvider implements AIProvider {
             : "You are a senior Litigator. Task: Analyze the provided case document/pleading. Output a structured report with: 1. Case Summary 2. Core Legal Issues 3. Strength of Arguments 4. Procedural Gaps 5. Recommended Next Steps. Use professional, sovereign tone. Max 800 words.";
 
         try {
-            const response = await ai.models.generateContent({
+            const model = ai.getGenerativeModel({
                 model: this.defaultModel,
-                contents: `DOCUMENT_CONTENT:\n${content.substring(0, 30000)}`,
-                config: {
-                    systemInstruction,
-                    temperature: 0.2
-                }
+                systemInstruction,
             });
-            return response.text || "Analysis engine failed to generate a report.";
+            const result = await model.generateContent(`DOCUMENT_CONTENT:\n${content.substring(0, 30000)}`);
+            return result.response.text() || "Analysis engine failed to generate a report.";
         } catch (error: any) {
             console.error(`Gemini API Error (AnalyzeDocument - ${type}):`, error.message);
             throw new Error(`Document analysis failed: ${error.message}`);

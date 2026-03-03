@@ -11,15 +11,33 @@ export class LexAIService {
         return AIServiceFactory.getProvidersByPriority();
     }
 
-    private async executeWithFailover<T>(operation: (provider: any) => Promise<T>): Promise<T> {
+    private async executeWithFailover<T>(operation: (provider: any) => Promise<T>, options?: { enforceSovereign?: boolean }): Promise<T> {
         const providers = this.getProviders();
+        const enforced = options?.enforceSovereign || process.env.ENFORCE_SOVEREIGN_AI === 'true';
         let lastError: any;
 
         for (const provider of providers) {
             try {
                 return await operation(provider);
             } catch (error: any) {
-                console.warn(`[AIService] Provider ${provider.id} failed: ${error.message}${error.stack ? '\n' + error.stack : ''}. Trying next fallback...`);
+                const message = error.message.toLowerCase();
+                const isTerminal = message.includes("402") || message.includes("payment required") ||
+                    message.includes("429") || message.includes("quota exceeded") ||
+                    message.includes("insufficient_quota");
+
+                console.warn(`[AIService] Provider ${provider.id} failed: ${error.message}${error.stack ? '\n' + error.stack : ''}.`);
+
+                if (isTerminal) {
+                    console.error(`[AIService] Terminal error reached on ${provider.id}. Halting failover to preserve enclave integrity.`);
+                    throw error;
+                }
+
+                if (enforced && provider.id === providers[0].id) {
+                    console.error(`[AIService] SOVEREIGN_ENFORCEMENT ACTIVE. Fallback bypassed after primary (${provider.id}) failure.`);
+                    throw error;
+                }
+
+                console.warn(`[AIService] Trying next fallback...`);
                 lastError = error;
             }
         }
@@ -94,6 +112,6 @@ export class LexAIService {
     }
 
     async analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string> {
-        return this.executeWithFailover(p => p.analyzeDocument(content, type));
+        return this.executeWithFailover(p => p.analyzeDocument(content, type), { enforceSovereign: true });
     }
 }
