@@ -54,7 +54,7 @@ export class CapacityService {
         }
 
         // 2. Credential Check — validates required license types and expiry
-        interface Credential { type: string; expiresAt?: string; jurisdiction?: string; }
+        interface Credential { type: string; expiresAt?: string; jurisdiction?: string; region?: string; }
         const credentials = (user.credentials as unknown as Credential[]) || [];
 
         // Check for any expired credentials
@@ -71,7 +71,7 @@ export class CapacityService {
         if (matterData.region) {
             const hasLicense = credentials.some(c =>
                 c.type === 'JURISDICTION_BAR_LICENSE' &&
-                (!c.jurisdiction || c.jurisdiction === matterData.region)
+                (!c.jurisdiction && !c.region || c.jurisdiction === matterData.region || c.region === matterData.region)
             );
             if (!hasLicense) {
                 return {
