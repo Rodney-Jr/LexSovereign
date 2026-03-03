@@ -30,17 +30,15 @@ RUN apk add --no-cache openssl
 # Copy server dependencies
 COPY --from=server-builder /app-server/package*.json ./
 COPY --from=server-builder /app-server/node_modules ./node_modules
-# Copy server build artifacts to server/dist
-COPY --from=server-builder /app-server/dist ./server/dist
+# Copy server build artifacts to root
+COPY --from=server-builder /app-server/dist ./dist
 # Copy Prisma schema and migrations
 COPY --from=server-builder /app-server/prisma ./prisma
-# Copy client build artifacts to dist (expected by runtime injection in server/src/index.ts)
-COPY --from=client-builder /app-client/dist ./dist
+# Copy client build artifacts
+COPY --from=client-builder /app-client/dist ./client-dist
 
 # Environment variables
 ENV NODE_ENV=production
-
-
 
 # Start the server with migrations and seeding
 CMD ["npm", "start"]

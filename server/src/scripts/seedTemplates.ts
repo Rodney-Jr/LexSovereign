@@ -6,13 +6,31 @@ import fs from 'fs';
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const prisma = new PrismaClient();
-const TEMPLATES_DIR = path.join(__dirname, '../../prisma/templates');
+
+// Robust template directory discovery for local and Docker environments
+const findTemplatesDir = () => {
+    const candidates = [
+        path.join(__dirname, '../../prisma/templates'),          // dist/scripts/ -> prisma/templates (Local / Standard)
+        path.join(__dirname, '../../../prisma/templates'),       // server/dist/scripts/ -> prisma/templates (Current Docker)
+        path.join(process.cwd(), 'prisma/templates'),            // cwd -> prisma/templates
+        path.join(process.cwd(), 'server/prisma/templates'),     // cwd -> server/prisma/templates
+    ];
+
+    for (const cand of candidates) {
+        if (fs.existsSync(cand)) {
+            return cand;
+        }
+    }
+    return candidates[0]; // Fallback to first candidate
+};
+
+const TEMPLATES_DIR = findTemplatesDir();
 
 async function main() {
-    console.log('🌱 Discovering and Seeding Document Templates...');
+    console.log(`🌱 Discovering Document Templates in: ${TEMPLATES_DIR}`);
 
     if (!fs.existsSync(TEMPLATES_DIR)) {
-        console.error(`❌ Templates directory not found: ${TEMPLATES_DIR}`);
+        console.error(`❌ Templates directory not found at any candidate location.`);
         process.exit(1);
     }
 
