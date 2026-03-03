@@ -214,6 +214,20 @@ router.post('/explain-clause', authenticateToken, async (req: Request, res) => {
     }
 });
 
+router.post('/analysis/analyze', authenticateToken, async (req: Request, res) => {
+    try {
+        const { content, type } = req.body;
+        if (!content || !type) {
+            res.status(400).json({ error: 'Missing content or type' });
+            return;
+        }
+        const result = await geminiService.analyzeDocument(content, type);
+        res.json({ report: result });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.use('/compliance', complianceRouter);
 
 export default router;

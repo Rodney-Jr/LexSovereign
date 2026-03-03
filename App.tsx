@@ -42,6 +42,7 @@ import { PricingGovernance } from './components/PricingGovernance';
 import LegalDrafting from './components/LegalDrafting';
 import SovereignMarketplace from './components/SovereignMarketplace';
 import ClientPortal from './components/ClientPortal';
+import CaseAnalysisModal from './components/CaseAnalysisModal';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -264,6 +265,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
         {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} matterId={selectedMatter} />}
+        {activeTab === 'analysis' && <CaseAnalysisModal isOpen={true} onClose={() => setActiveTab('dashboard')} />}
         {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
 
         {activeTab === 'vault' && (

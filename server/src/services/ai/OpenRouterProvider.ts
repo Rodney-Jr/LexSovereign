@@ -332,4 +332,26 @@ export class OpenRouterProvider implements AIProvider {
             return template;
         }
     }
+
+    async analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string> {
+        const client = this.getClient();
+        const systemPrompt = type === 'CONTRACT'
+            ? "You are a senior Corporate Counsel. Task: Analyze the provided contract. Output a structured report with: 1. Executive Summary 2. Key Obligations 3. High-Risk Clauses 4. Missing Protections 5. Negotiation Recommendations. Use professional, sovereign tone. Max 800 words."
+            : "You are a senior Litigator. Task: Analyze the provided case document/pleading. Output a structured report with: 1. Case Summary 2. Core Legal Issues 3. Strength of Arguments 4. Procedural Gaps 5. Recommended Next Steps. Use professional, sovereign tone. Max 800 words.";
+
+        try {
+            const response = await client.chat.completions.create({
+                model: this.primaryModel,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: `DOCUMENT_CONTENT:\n${content.substring(0, 30000)}` }
+                ],
+                temperature: 0.2
+            });
+            return response.choices[0].message.content || "Analysis engine failed to generate a report.";
+        } catch (e: any) {
+            console.error(`OpenRouter API Error (AnalyzeDocument - ${type}):`, e.message);
+            throw new Error(`Document analysis failed: ${e.message}`);
+        }
+    }
 }

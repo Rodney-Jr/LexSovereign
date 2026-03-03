@@ -177,4 +177,14 @@ export class LexGeminiService {
       body: JSON.stringify(entry)
     });
   }
+
+  async analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string> {
+    const session = getSavedSession();
+    const data = await authorizedFetch(`${this.baseUrl}/analysis/analyze`, {
+      method: 'POST',
+      token: session?.token,
+      body: JSON.stringify({ content, type })
+    });
+    return data.report;
+  }
 }

@@ -45,6 +45,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'system-settings': ['manage_platform'],
   'tenant-settings': ['manage_tenant'],
   'status': ['manage_platform'],
+  'analysis': ['create_draft', 'review_work'],
   'client-portal': ['client_portal_access']
 };
 

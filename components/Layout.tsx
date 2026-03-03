@@ -304,6 +304,15 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
+              {isAllowed('analysis') && (
+                <NavItem
+                  icon={<BrainCircuit size={18} className="text-brand-secondary" />}
+                  label="Legal Analysis"
+                  isActive={activeTab === 'analysis'}
+                  onClick={() => setActiveTab('analysis')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
               {isAllowed('vault') && (
                 <NavItem
                   icon={<FileLock size={18} />}
