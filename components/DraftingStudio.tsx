@@ -377,7 +377,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
     return (
         <div className="fixed inset-0 z-[120] bg-brand-bg flex flex-col animate-in slide-in-from-bottom-6 duration-500">
             {/* Top Bar */}
-            <header className="h-20 border-b border-brand-border bg-brand-sidebar/50 flex items-center justify-between px-8">
+            <header className="h-16 border-b border-brand-border bg-brand-sidebar/50 flex items-center justify-between px-8">
                 <div className="flex items-center gap-6">
                     <button onClick={onClose} title="Back" className="p-2 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
                         <ArrowLeft size={20} />
@@ -436,7 +436,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                 {/* Left: Input Sidebar */}
                 {(layout === 'split' || layout === 'editor') && (
                     <aside
-                        className={`border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-8 scrollbar-hide shrink-0 transition-all duration-500 ${layout === 'editor' ? 'flex-1' : ''}`}
+                        className={`border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-6 scrollbar-hide shrink-0 transition-all duration-500 ${layout === 'editor' ? 'flex-1' : ''}`}
                         style={{ width: layout === 'editor' ? '100%' : `${sidebarWidth}px` }}
                     >
                         {/* Sections (Toggles) */}
@@ -490,7 +490,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
                         )}
 
                         {/* Fields (Inputs) */}
-                        <div className={`space-y-8 ${layout === 'editor' ? 'max-w-[1200px] mx-auto p-12' : ''}`}>
+                        <div className={`space-y-8 ${layout === 'editor' ? 'max-w-[1200px] mx-auto p-8' : ''}`}>
                             <div className="flex items-center justify-between">
                                 <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                                     <Terminal size={14} /> Variables
@@ -612,8 +612,8 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
 
                 {/* Right: Live Preview */}
                 {(layout === 'split' || layout === 'preview') && (
-                    <main className={`flex-1 bg-brand-bg p-12 overflow-y-auto scrollbar-hide flex justify-center transition-all duration-500 ${layout === 'preview' ? 'w-full' : ''}`}>
-                        <div className="w-full max-w-[950px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1120px]">
+                    <main className={`flex-1 bg-brand-bg p-8 overflow-y-auto scrollbar-hide flex justify-center transition-all duration-500 ${layout === 'preview' ? 'w-full' : ''}`}>
+                        <div className="w-full max-w-[950px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1200px]">
                             {/* Header Branding */}
                             <div className="absolute top-8 right-8 text-slate-300 text-[10px] font-mono uppercase text-right leading-tight">
                                 {branding.headerText}
