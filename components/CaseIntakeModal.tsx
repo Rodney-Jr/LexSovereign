@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     X,
     Scale,
@@ -15,7 +15,7 @@ import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface CaseIntakeModalProps {
     existingMatterId?: string;
-    initialData?: { name?: string; client?: string };
+    initialData?: { name?: string; client?: string; description?: string };
     onClose: () => void;
     onCreated: (matter: any) => void;
 }
@@ -23,6 +23,7 @@ interface CaseIntakeModalProps {
 const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, existingMatterId, initialData }) => {
     const [step, setStep] = useState(existingMatterId ? 2 : 1);
     const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Case Matter Identity
     const [name, setName] = useState(initialData?.name || '');
@@ -35,9 +36,30 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, e
     const [courtName, setCourtName] = useState('');
     const [judgeName, setJudgeName] = useState('');
     const [filedDate, setFiledDate] = useState('');
+    const [description, setDescription] = useState(initialData?.description || '');
+
+    const [practitioners, setPractitioners] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchPractitioners = async () => {
+            const session = getSavedSession();
+            if (!session?.token) return;
+            try {
+                const data = await authorizedFetch('/api/users', { token: session.token });
+                setPractitioners(data);
+                if (data.length > 0 && !internalCounselId) {
+                    setInternalCounselId(data[0].id);
+                }
+            } catch (e) {
+                console.error("Failed to fetch practitioners:", e);
+            }
+        };
+        fetchPractitioners();
+    }, [internalCounselId]);
 
     const handleCreateCase = async () => {
         setLoading(true);
+        setErrorMsg(null);
         try {
             const session = getSavedSession();
             if (!session?.token) throw new Error("No active session");
@@ -53,7 +75,7 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, e
                         name,
                         client,
                         type: 'Case', // MatterType category
-                        internalCounselId: session.userId, // Defaulting to creator for now
+                        internalCounselId: internalCounselId, // Using selected internalCounselId
                         attributes: { source: 'CaseIntake' }
                     }),
                     token: session.token
@@ -74,7 +96,8 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, e
                         caseNumber,
                         courtName,
                         judgeName,
-                        filedDate
+                        filedDate,
+                        description
                     }
                 }),
                 token: session.token
@@ -86,7 +109,7 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, e
             onCreated({ id: matterId, name, client });
         } catch (e: any) {
             console.error("Case Inception Failed", e);
-            alert(e.message);
+            setErrorMsg(e.message || "Failed to initialize case. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -138,11 +161,19 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, e
 
                             <div className="p-8 bg-sky-500/5 border border-sky-500/10 rounded-3xl flex items-start gap-4 shadow-inner">
                                 <AlertTriangle className="text-sky-500 shrink-0" size={20} />
-                                <div className="space-y-1">
-                                    <h5 className="font-bold text-[10px] text-sky-400 uppercase tracking-widest font-mono">SOVEREIGN COLLISION CHECK</h5>
-                                    <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                                        "Matter inception triggers a zero-knowledge conflict search against existing tenant nodes. Identity is preserved while collision is avoided."
-                                    </p>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Internal Counsel ID</label>
+                                    <select
+                                        className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-slate-300"
+                                        title="Assign Internal Counsel"
+                                        value={internalCounselId}
+                                        onChange={e => setInternalCounselId(e.target.value)}
+                                    >
+                                        <option value="">Select Counsel...</option>
+                                        {practitioners.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name} ({p.role})</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -166,6 +197,16 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, e
                                         "Jurisdiction-specific rules will be auto-calculated upon induction. Pleadings, Discovery, and Hearing windows will be initialized."
                                     </p>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {errorMsg && (
+                        <div className="mt-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-start gap-4 animate-in fade-in slide-in-from-bottom-2">
+                            <AlertTriangle className="text-rose-400 shrink-0 mt-0.5" size={18} />
+                            <div className="space-y-1">
+                                <h5 className="font-bold text-[10px] text-rose-400 uppercase tracking-widest font-mono">Inception Protocol Exception</h5>
+                                <p className="text-xs text-rose-300 leading-relaxed">{errorMsg}</p>
                             </div>
                         </div>
                     )}

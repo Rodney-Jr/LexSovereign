@@ -60,7 +60,12 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
       external: { viewPrivileged: false, exportSovereign: false, overrideAI: false }
     } as RbacMatrix,
     complexityWeight: 5.0,
-    overrideJustification: ''
+    overrideJustification: '',
+    billing: {
+      type: 'HOURLY' as 'HOURLY' | 'FLAT_FEE' | 'MILESTONE' | 'CONTINGENCY',
+      flatFeeAmount: 0,
+      depositRequired: false
+    }
   });
 
   const [practitioners, setPractitioners] = useState<any[]>([]);
@@ -115,14 +120,9 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
     }
   };
 
-  const handleFilesAdded = (files: FileList) => {
+  const handleFilesAdded = async (files: FileList) => {
     const newFiles = Array.from(files).map((f: File) => {
-      const id = `file-${Math.random().toString(36).substr(2, 9)}`;
-      setTimeout(() => {
-        setAttachedFiles(current =>
-          current.map(item => item.id === id ? { ...item, status: 'encrypted' } : item)
-        );
-      }, 1500 + Math.random() * 2000);
+      const id = `file-${crypto.randomUUID()}`;
       return {
         id,
         name: f.name,
@@ -130,7 +130,16 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         status: 'scanning' as const
       };
     });
+
     setAttachedFiles(prev => [...prev, ...newFiles]);
+
+    // Simulate API upload for now until backend endpoint is ready
+    for (const file of newFiles) {
+      await new Promise(resolve => setTimeout(resolve, 800)); // Minimal delay
+      setAttachedFiles(current =>
+        current.map(item => item.id === file.id ? { ...item, status: 'encrypted' } : item)
+      );
+    }
   };
 
   const removeFile = (id: string) => {
@@ -145,14 +154,15 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         throw new Error('Authentication required');
       }
 
+      const { rbac, ...flatFormData } = formData;
       const payload = {
-        ...formData,
+        ...flatFormData,
         tenantId: session.tenantId,
         internalCounselId: formData.internalCounsel,
         riskLevel: 'LOW',
         complexityWeight: 5.0,
         conflictStatus: conflictResult === 'CLEAN' ? 'CLEAN' : 'COLLISION',
-        conflictProof: conflictResult === 'CLEAN' ? `ZK-PROOF-${Math.random().toString(16).slice(2, 12).toUpperCase()}` : undefined
+        conflictProof: conflictResult === 'CLEAN' ? `ZK-PROOF-${(crypto.randomUUID().split('-')[0] || 'A1B2C').toUpperCase()}` : undefined
       };
 
       const newMatter = await authorizedFetch('/api/matters', {
@@ -162,6 +172,25 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
       });
 
       if (newMatter && !newMatter.id) throw new Error(newMatter.error || "Matter inception failed");
+
+      // Link Billing Component
+      try {
+        await authorizedFetch('/api/billing/components', {
+          method: 'POST',
+          token: session.token,
+          body: JSON.stringify({
+            matterId: newMatter.id,
+            type: formData.billing.type,
+            config: {
+              fixedAmount: formData.billing.flatFeeAmount || null,
+              depositRequired: formData.billing.depositRequired,
+              priority: formData.billing.type === 'FLAT_FEE' ? 10 : 0
+            }
+          })
+        });
+      } catch (billingErr) {
+        console.error("Failed to link Billing Component, proceeding with Matter creation:", billingErr);
+      }
 
       setCreatedMatter(newMatter);
       setStep(5); // Advance to Promotion
@@ -363,6 +392,60 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                     <span className="text-xs font-mono text-blue-400 w-10">{formData.complexityWeight}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Billing Foundation Configuration */}
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
+                <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+                  <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                    <Database className="text-emerald-400" size={16} />
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-bold text-white tracking-tight">Financial & Billing Foundation</h5>
+                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Immutable Ledger Configuration</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-2.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Billing Model</label>
+                    <select
+                      title="Select billing model"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all text-slate-300"
+                      value={formData.billing.type}
+                      onChange={e => setFormData({ ...formData, billing: { ...formData.billing, type: e.target.value as any } })}
+                    >
+                      <option value="HOURLY">Hourly (Time & Materials)</option>
+                      <option value="FLAT_FEE">Flat Fee (Fixed Pricing)</option>
+                      <option value="MILESTONE">Milestone Based</option>
+                      <option value="CONTINGENCY">Contingency (Outcome)</option>
+                    </select>
+                  </div>
+
+                  {formData.billing.type === 'FLAT_FEE' && (
+                    <div className="space-y-2.5 animate-in fade-in duration-300">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Total Fee Amount (USD)</label>
+                      <input
+                        type="number"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all text-slate-300"
+                        placeholder="e.g. 50000"
+                        value={formData.billing.flatFeeAmount || ''}
+                        onChange={e => setFormData({ ...formData, billing: { ...formData.billing, flatFeeAmount: parseFloat(e.target.value) || 0 } })}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {formData.billing.type === 'FLAT_FEE' && (
+                  <div className="pt-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <div className={`w-8 h-4 rounded-full transition-colors relative ${formData.billing.depositRequired ? 'bg-emerald-500' : 'bg-slate-800'}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${formData.billing.depositRequired ? 'left-[18px]' : 'left-1'}`} />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Require Instant Deposit Invoice (Trigger 100% upfront)</span>
+                    </label>
+                  </div>
+                )}
               </div>
 
               {capacityStatus && capacityStatus.severity !== 'GREEN' && (

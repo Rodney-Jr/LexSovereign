@@ -32,6 +32,7 @@ import chatConversationsRouter from './routes/chatConversations';
 import fxRatesRouter from './routes/fxRates';
 import contentEngineRouter from './routes/contentEngine';
 import stripeRouter from './routes/stripe';
+import billingRouter from './routes/billing';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
@@ -112,6 +113,7 @@ app.use('/api/analytics', authenticateToken, analyticsRouter);
 app.use('/api/workflows', authenticateToken, workflowsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
+app.use('/api/billing', authenticateToken, billingRouter);
 
 // Resolve static directory paths using process.cwd() for reliability in root-run environments
 const DIST_PATH = path.join(process.cwd(), 'client-dist');

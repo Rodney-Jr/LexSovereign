@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileText, Calendar, DollarSign, User, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, FileText, Calendar, DollarSign, User, ShieldCheck, ArrowRight, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 import { Region } from '../types';
 
@@ -13,6 +13,7 @@ interface CLMIntakeModalProps {
 const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated, existingMatterId, initialData }) => {
     const [step, setStep] = useState(existingMatterId ? 2 : 1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: initialData?.name || '',
         client: initialData?.client || '',
@@ -45,6 +46,7 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated, exi
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
+        setErrorMsg(null);
         try {
             const session = getSavedSession();
             if (!session?.token) throw new Error('Authentication required');
@@ -102,7 +104,7 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated, exi
             onCreated(matterData);
         } catch (e: any) {
             console.error("[CLM Intake] Failed:", e);
-            alert(`Inception Failed: ${e.message}`);
+            setErrorMsg(e.message || "Failed to initialize Contract Lifecycle Management process.");
         } finally {
             setIsSubmitting(false);
         }
@@ -257,6 +259,16 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated, exi
                             </div>
                         </div>
                     )}
+
+                    {errorMsg && (
+                        <div className="mt-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-start gap-4 animate-in fade-in slide-in-from-bottom-2">
+                            <AlertTriangle className="text-rose-400 shrink-0 mt-0.5" size={18} />
+                            <div className="space-y-1">
+                                <h5 className="font-bold text-[10px] text-rose-400 uppercase tracking-widest font-mono">Inception Protocol Exception</h5>
+                                <p className="text-xs text-rose-300 leading-relaxed">{errorMsg}</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer */}
@@ -289,7 +301,7 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated, exi
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

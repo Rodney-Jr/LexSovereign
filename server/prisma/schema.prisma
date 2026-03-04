@@ -8,6 +8,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// =======================
+// ENUMS
+// =======================
+
+enum BillingComponentType {
+  HOURLY
+  FLAT_FEE
+  MILESTONE
+  CONTINGENCY
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOIDED
+  OVERDUE
+}
+
 model User {
   id                String      @id @default(uuid())
   email             String      @unique
@@ -167,6 +186,8 @@ model Matter {
   deadlines         Deadline[]
   hearings          Hearing[]
   evidenceLinks     EvidenceLink[]
+  billingComponents BillingComponent[]
+  invoices          Invoice[]
 }
 
 model MatterType {
@@ -611,4 +632,53 @@ model Bridge {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   tenant          Tenant?  @relation(fields: [tenantId], references: [id])
+}
+
+// =======================
+// COMPOSABLE BILLING ENGINE
+// =======================
+
+model BillingComponent {
+  id              String               @id @default(uuid())
+  matterId        String
+  type            BillingComponentType
+  isActive        Boolean              @default(true)
+  priority        Int                  @default(0) // Higher number = higher precedence (e.g. FlatFee > Hourly Overflow)
+  fixedAmount     Float?               // Required for FlatFee/Milestone
+  paymentSchedule Json?                // Detailed installment configs or triggers
+  depositRequired Boolean              @default(false)
+  
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  matter          Matter               @relation(fields: [matterId], references: [id])
+  lineItems       InvoiceLineItem[]
+}
+
+model Invoice {
+  id              String         @id @default(uuid())
+  matterId        String
+  tenantId        String
+  status          InvoiceStatus  @default(DRAFT)
+  totalAmount     Float          @default(0.0)
+  issuedAt        DateTime?
+  dueDate         DateTime?
+  paidAt          DateTime?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  matter          Matter         @relation(fields: [matterId], references: [id])
+  lineItems       InvoiceLineItem[]
+}
+
+model InvoiceLineItem {
+  id                 String           @id @default(uuid())
+  invoiceId          String
+  billingComponentId String?
+  amount             Float
+  description        String
+  
+  invoice            Invoice          @relation(fields: [invoiceId], references: [id])
+  billingComponent   BillingComponent? @relation(fields: [billingComponentId], references: [id])
 }
