@@ -14,7 +14,8 @@ import {
     Sparkles // Added Sparkles import
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
-import CLMIntakeModal from './CLMIntakeModal';
+import { AppMode } from '../types';
+import MatterCreationModal from './MatterCreationModal';
 import AIIntelligenceSidebar from './AIIntelligenceSidebar';
 
 const CLMCenter: React.FC = () => {
@@ -204,9 +205,12 @@ const CLMCenter: React.FC = () => {
             </div>
 
             {showIntake && (
-                <CLMIntakeModal
+                <MatterCreationModal
+                    mode={AppMode.ENTERPRISE}
+                    userId={(getSavedSession() as any)?.userId}
+                    tenantId={(getSavedSession() as any)?.tenantId}
                     onClose={() => setShowIntake(false)}
-                    onCreated={(matter) => {
+                    onCreated={() => {
                         setShowIntake(false);
                         fetchCLMSignals();
                     }}

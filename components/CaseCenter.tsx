@@ -16,7 +16,8 @@ import {
     Activity
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
-import CaseIntakeModal from './CaseIntakeModal';
+import { AppMode } from '../types';
+import MatterCreationModal from './MatterCreationModal';
 import AIIntelligenceSidebar from './AIIntelligenceSidebar';
 
 const CaseCenter: React.FC = () => {
@@ -207,9 +208,12 @@ const CaseCenter: React.FC = () => {
             </div>
 
             {showIntake && (
-                <CaseIntakeModal
+                <MatterCreationModal
+                    mode={AppMode.LAW_FIRM}
+                    userId={(getSavedSession() as any)?.userId}
+                    tenantId={(getSavedSession() as any)?.tenantId}
                     onClose={() => setShowIntake(false)}
-                    onCreated={(matter) => {
+                    onCreated={() => {
                         setShowIntake(false);
                         fetchCaseSignals();
                     }}

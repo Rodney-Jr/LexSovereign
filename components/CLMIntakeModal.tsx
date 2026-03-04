@@ -4,25 +4,27 @@ import { authorizedFetch, getSavedSession } from '../utils/api';
 import { Region } from '../types';
 
 interface CLMIntakeModalProps {
+    existingMatterId?: string;
+    initialData?: { name?: string; client?: string; description?: string; internalCounsel?: string; region?: Region };
     onClose: () => void;
     onCreated: (matter: any) => void;
 }
 
-const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated }) => {
-    const [step, setStep] = useState(1);
+const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated, existingMatterId, initialData }) => {
+    const [step, setStep] = useState(existingMatterId ? 2 : 1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
-        name: '',
-        client: '',
-        description: '',
+        name: initialData?.name || '',
+        client: initialData?.client || '',
+        description: initialData?.description || '',
         counterparty: '',
         value: '',
         currency: 'USD',
         effectiveDate: '',
         renewalDate: '',
         expiryDate: '',
-        internalCounsel: '',
-        region: Region.PRIMARY
+        internalCounsel: initialData?.internalCounsel || '',
+        region: initialData?.region || Region.PRIMARY
     });
 
     const [practitioners, setPractitioners] = useState<any[]>([]);
@@ -47,29 +49,38 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated }) =
             const session = getSavedSession();
             if (!session?.token) throw new Error('Authentication required');
 
-            // 1. Create the base Matter
-            const matterPayload = {
-                name: formData.name,
-                client: formData.client,
-                type: 'Contract',
-                region: formData.region,
-                internalCounselId: formData.internalCounsel,
-                tenantId: session.tenantId,
-                description: formData.description,
-                complexityWeight: 5.0
-            };
+            let matterId = existingMatterId;
+            let matterData = null;
 
-            const newMatter = await authorizedFetch('/api/matters', {
-                method: 'POST',
-                token: session.token,
-                body: JSON.stringify(matterPayload)
-            });
+            // 1. Create the base Matter if not already existing
+            if (!matterId) {
+                const matterPayload = {
+                    name: formData.name,
+                    client: formData.client,
+                    type: 'Contract',
+                    region: formData.region,
+                    internalCounselId: formData.internalCounsel,
+                    tenantId: session.tenantId,
+                    description: formData.description,
+                    complexityWeight: 5.0
+                };
 
-            if (newMatter.error) throw new Error(newMatter.error);
+                const newMatter = await authorizedFetch('/api/matters', {
+                    method: 'POST',
+                    token: session.token,
+                    body: JSON.stringify(matterPayload)
+                });
+
+                if (newMatter.error) throw new Error(newMatter.error);
+                matterId = newMatter.id;
+                matterData = newMatter;
+            } else {
+                matterData = { id: matterId, name: formData.name, client: formData.client };
+            }
 
             // 2. Initialize CLM Metadata
             const clmPayload = {
-                matterId: newMatter.id,
+                matterId: matterId,
                 metadata: {
                     value: parseFloat(formData.value) || 0,
                     currency: formData.currency,
@@ -80,13 +91,15 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated }) =
                 }
             };
 
-            await authorizedFetch('/api/workflows/clm/initialize', {
+            const clmResponse = await authorizedFetch('/api/workflows/clm/initialize', {
                 method: 'POST',
                 token: session.token,
                 body: JSON.stringify(clmPayload)
             });
 
-            onCreated(newMatter);
+            if (clmResponse.error) throw new Error(clmResponse.error);
+
+            onCreated(matterData);
         } catch (e: any) {
             console.error("[CLM Intake] Failed:", e);
             alert(`Inception Failed: ${e.message}`);
@@ -249,11 +262,18 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated }) =
                 {/* Footer */}
                 <div className="p-8 bg-slate-950/50 border-t border-slate-800 flex items-center justify-between">
                     <button
-                        onClick={() => setStep(step - 1)}
-                        disabled={step === 1}
+                        onClick={() => {
+                            if (step === 2 && !existingMatterId) {
+                                setStep(1);
+                            } else if (step === 3) {
+                                setStep(2);
+                            } else {
+                                onClose();
+                            }
+                        }}
                         className="flex items-center gap-2 text-slate-500 hover:text-white transition-all disabled:opacity-0"
                     >
-                        <ArrowLeft size={18} /> Back
+                        <ArrowLeft size={18} /> {step === 1 ? 'Cancel' : existingMatterId && step === 2 ? 'Cancel Specialization' : 'Back'}
                     </button>
 
                     <div className="flex gap-4">

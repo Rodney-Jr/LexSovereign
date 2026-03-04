@@ -14,17 +14,19 @@ import {
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface CaseIntakeModalProps {
+    existingMatterId?: string;
+    initialData?: { name?: string; client?: string };
     onClose: () => void;
     onCreated: (matter: any) => void;
 }
 
-const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated }) => {
-    const [step, setStep] = useState(1);
+const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated, existingMatterId, initialData }) => {
+    const [step, setStep] = useState(existingMatterId ? 2 : 1);
     const [loading, setLoading] = useState(false);
 
     // Case Matter Identity
-    const [name, setName] = useState('');
-    const [client, setClient] = useState('');
+    const [name, setName] = useState(initialData?.name || '');
+    const [client, setClient] = useState(initialData?.client || '');
     const [internalCounselId, setInternalCounselId] = useState('');
 
     // Litigation Specifics
@@ -40,28 +42,33 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated })
             const session = getSavedSession();
             if (!session?.token) throw new Error("No active session");
 
-            // 1. Create the base Matter
-            const matterResponse = await authorizedFetch('/api/matters', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name,
-                    client,
-                    type: 'Case', // MatterType category
-                    internalCounselId: session.userId, // Defaulting to creator for now
-                    attributes: { source: 'CaseIntake' }
-                }),
-                token: session.token
-            });
+            let matterId = existingMatterId;
 
-            if (!matterResponse.id) throw new Error("Failed to create matter container");
+            // 1. Create the base Matter if not already existing
+            if (!matterId) {
+                const matterResponse = await authorizedFetch('/api/matters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        client,
+                        type: 'Case', // MatterType category
+                        internalCounselId: session.userId, // Defaulting to creator for now
+                        attributes: { source: 'CaseIntake' }
+                    }),
+                    token: session.token
+                });
+
+                if (!matterResponse.id) throw new Error("Failed to create matter container");
+                matterId = matterResponse.id;
+            }
 
             // 2. Initialize Case Metadata
-            await authorizedFetch('/api/workflows/litigation/initialize', {
+            const initResponse = await authorizedFetch('/api/workflows/litigation/initialize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    matterId: matterResponse.id,
+                    matterId: matterId,
                     metadata: {
                         jurisdiction,
                         caseNumber,
@@ -73,11 +80,10 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated })
                 token: session.token
             });
 
-            // 3. Start the Case Workflow
-            // Assuming a default "Case Management" workflow exists. In a real system, we'd fetch the ID.
-            // For this implementation, we'll assume the backend handles default workflow assignment via MatterType logic if we don't pass an ID.
+            if (initResponse.error) throw new Error(initResponse.error);
 
-            onCreated(matterResponse);
+            // 3. Finalize
+            onCreated({ id: matterId, name, client });
         } catch (e: any) {
             console.error("Case Inception Failed", e);
             alert(e.message);
@@ -169,10 +175,16 @@ const CaseIntakeModal: React.FC<CaseIntakeModalProps> = ({ onClose, onCreated })
                 <div className="p-10 border-t border-slate-800/50 bg-[#0c0e14] flex items-center justify-between">
                     <button
                         title="Go Back"
-                        onClick={() => step > 1 ? setStep(step - 1) : onClose()}
+                        onClick={() => {
+                            if (step === 2 && !existingMatterId) {
+                                setStep(1);
+                            } else {
+                                onClose();
+                            }
+                        }}
                         className="px-8 py-4 text-slate-500 hover:text-white font-bold text-xs uppercase tracking-widest transition-all"
                     >
-                        {step === 1 ? 'Cancel Operation' : 'Reverse Buffer'}
+                        {step === 1 ? 'Cancel Operation' : existingMatterId ? 'Cancel Specialization' : 'Reverse Buffer'}
                     </button>
 
                     <button

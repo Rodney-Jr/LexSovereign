@@ -4,12 +4,14 @@ import {
   X, Briefcase, Users, Globe, Shield, CheckCircle2, Zap,
   ArrowRight, ArrowLeft, Lock, EyeOff, UserCheck,
   ShieldAlert, Scale, Settings, LayoutGrid, Fingerprint,
-  Sliders, ShieldCheck, Database, Search, RefreshCw
+  Sliders, ShieldCheck, Database, Search, RefreshCw, FileText
 } from 'lucide-react';
 import { Region, Matter, AppMode } from '../types';
 import { GoogleGenAI, Type } from "@google/genai";
 import FileUploader, { UploadedFile } from './FileUploader';
 import { authorizedFetch, getSavedSession } from '../utils/api';
+import CLMIntakeModal from './CLMIntakeModal';
+import CaseIntakeModal from './CaseIntakeModal';
 
 interface MatterCreationModalProps {
   mode: AppMode;
@@ -40,6 +42,8 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   const [conflictScanProgress, setConflictScanProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<UploadedFile[]>([]);
+  const [createdMatter, setCreatedMatter] = useState<Matter | null>(null);
+  const [promotionIntent, setPromotionIntent] = useState<'CASE' | 'CLM' | null>(null);
   const isFirm = mode === AppMode.LAW_FIRM;
   const [formData, setFormData] = useState({
     name: '',
@@ -157,11 +161,10 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         body: JSON.stringify(payload)
       });
 
-      if (newMatter && !newMatter.error) {
-        onCreated(newMatter);
-      } else {
-        throw new Error(newMatter.error || "Matter inception failed");
-      }
+      if (newMatter && !newMatter.id) throw new Error(newMatter.error || "Matter inception failed");
+
+      setCreatedMatter(newMatter);
+      setStep(5); // Advance to Promotion
     } catch (e: any) {
       console.error("Failed to create matter:", e);
       throw e;
@@ -456,34 +459,102 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
               </div>
             </div>
           )}
+
+          {step === 5 && createdMatter && (
+            <div className="space-y-10 animate-in slide-in-from-right-8 duration-500 py-6">
+              <div className="text-center space-y-4">
+                <div className="inline-flex p-5 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-2">
+                  <CheckCircle2 size={40} className="text-emerald-400" />
+                </div>
+                <h4 className="text-3xl font-black text-white italic uppercase tracking-tight">Identity Born.</h4>
+                <p className="text-slate-500 text-sm max-w-md mx-auto">Matter identity has been successfully pinned to the <b>{formData.region}</b> silo. How shall we specialize this workflow?</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button
+                  onClick={() => setPromotionIntent('CASE')}
+                  className="p-8 bg-slate-950 border border-slate-800 hover:border-sky-500/40 rounded-[2.5rem] text-left group transition-all"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-4 bg-sky-500/10 rounded-2xl group-hover:bg-sky-500/20 transition-all">
+                      <Scale className="text-sky-400" size={28} />
+                    </div>
+                    <ArrowRight size={20} className="text-slate-700 group-hover:text-sky-400 group-hover:translate-x-1 transition-all" />
+                  </div>
+                  <h5 className="text-lg font-bold text-white mb-2">Litigation & Advisory</h5>
+                  <p className="text-xs text-slate-500 leading-relaxed">Initialize court-bound workflows, hearing calendars, and procedural deadline tracking.</p>
+                </button>
+
+                <button
+                  onClick={() => setPromotionIntent('CLM')}
+                  className="p-8 bg-slate-950 border border-slate-800 hover:border-emerald-500/40 rounded-[2.5rem] text-left group transition-all"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-4 bg-emerald-500/10 rounded-2xl group-hover:bg-emerald-500/20 transition-all">
+                      <FileText className="text-emerald-400" size={28} />
+                    </div>
+                    <ArrowRight size={20} className="text-slate-700 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                  </div>
+                  <h5 className="text-lg font-bold text-white mb-2">Contract Lifecycle</h5>
+                  <p className="text-xs text-slate-500 leading-relaxed">Activate signing workflows, renewal calendars, and liability cap risk monitoring.</p>
+                </button>
+              </div>
+
+              <div className="pt-6 text-center">
+                <button
+                  onClick={() => onCreated(createdMatter)}
+                  className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] hover:text-white transition-all underline underline-offset-8"
+                >
+                  Stay in General Workspace
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Promotion Overlays */}
+        {promotionIntent === 'CASE' && createdMatter && (
+          <CaseIntakeModal
+            onClose={() => setPromotionIntent(null)}
+            onCreated={(matter) => onCreated(matter)}
+          />
+        )}
+
+        {promotionIntent === 'CLM' && createdMatter && (
+          <CLMIntakeModal
+            onClose={() => setPromotionIntent(null)}
+            onCreated={(matter) => onCreated(matter)}
+          />
+        )}
 
         {/* Footer */}
-        <div className="p-8 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between backdrop-blur-md">
-          <button
-            onClick={() => step > 1 && setStep(step - 1)}
-            disabled={step === 1}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-slate-400 font-bold text-sm hover:text-white transition-all disabled:opacity-0 hover:bg-slate-900"
-          >
-            <ArrowLeft size={18} /> Back
-          </button>
-
-          <div className="flex gap-4">
-            <button onClick={onClose} className="px-8 py-3.5 text-slate-400 font-bold text-sm hover:text-white transition-all hover:bg-slate-900 rounded-2xl">Cancel</button>
+        {step < 5 && (
+          <div className="p-8 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between backdrop-blur-md">
             <button
-              onClick={() => step < 4 ? setStep(step + 1) : handleSubmit()}
-              disabled={(step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid) || isSubmitting}
-              className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white px-10 py-3.5 rounded-2xl font-bold text-sm shadow-2xl shadow-blue-900/40 transition-all flex items-center gap-3 active:scale-95 group"
+              onClick={() => step > 1 && setStep(step - 1)}
+              disabled={step === 1}
+              className="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-slate-400 font-bold text-sm hover:text-white transition-all disabled:opacity-0 hover:bg-slate-900"
             >
-              {isSubmitting ? 'Incepting...' : step === 4 ? 'Incept Global Matter' : 'Continue to ' + ['', 'Metadata', 'Pinning', 'RBAC'][step]}
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
-              )}
+              <ArrowLeft size={18} /> Back
             </button>
+
+            <div className="flex gap-4">
+              <button onClick={onClose} className="px-8 py-3.5 text-slate-400 font-bold text-sm hover:text-white transition-all hover:bg-slate-900 rounded-2xl">Cancel</button>
+              <button
+                onClick={() => step < 4 ? setStep(step + 1) : handleSubmit()}
+                disabled={(step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid) || isSubmitting}
+                className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white px-10 py-3.5 rounded-2xl font-bold text-sm shadow-2xl shadow-blue-900/40 transition-all flex items-center gap-3 active:scale-95 group"
+              >
+                {isSubmitting ? 'Incepting...' : step === 4 ? 'Finalize Inception' : 'Continue to ' + ['', 'Metadata', 'Pinning', 'RBAC'][step]}
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
