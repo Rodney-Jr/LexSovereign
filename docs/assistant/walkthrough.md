@@ -53,3 +53,19 @@ Improved the freeform drafting experience in the `BlankDocumentEditor` with dyna
 3. **Optimized Typing Experience:**
    - Set the `textarea` to use a serif font (`font-serif`) and standard line spacing to match the final legal output.
    - Removed fixed vertical constraints in favor of a natural, scrollable "stack of pages" feel.
+
+## 🛠️ MS Word-like Formatting Tools
+Transformed the basic Markdown editor into a professional legal drafting tool with standard formatting controls.
+
+### Key Enhancements:
+1. **Formatting Toolbar:**
+   - Integrated a professional toolbar with tools for **Bold**, *Italic*, <u>Underline</u>, and Strikethrough.
+   - Added support for Headings (H1, H2), Bulleted/Numbered Lists, and Quotes.
+   - Implemented text alignment controls (Left, Center, Right) for precise document positioning.
+2. **Smart Text Selection:**
+   - Formatting tools now automatically wrap selected text with the appropriate tags.
+   - Focus and cursor position are maintained after applying formatting for a seamless typing flow.
+3. **Keyboard Shortcuts:**
+   - Enabled standard desktop shortcuts: `Ctrl+B` (Bold), `Ctrl+I` (Italic), and `Ctrl+U` (Underline).
+4. **Rich Preview Rendering:**
+   - Upgraded the A4 preview pane to render Markdown and HTML tags live, showing bold text, headings, and lists in a realistic document format.

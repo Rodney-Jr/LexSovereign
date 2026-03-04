@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-import { X, Save, FileText, Sparkles, Download, Copy, Loader2, Edit3, Eye } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+    X, Save, FileText, Sparkles, Download, Copy, Loader2, Edit3, Eye,
+    Bold, Italic, Underline, Strikethrough, Heading1, Heading2,
+    List, ListOrdered, Quote, Link, Minus, AlignCenter, AlignLeft, AlignRight
+} from 'lucide-react';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
 interface BlankDocumentEditorProps {
@@ -14,8 +18,34 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
     const [layout, setLayout] = useState<'split' | 'editor' | 'preview'>('split');
     const [editorWidth, setEditorWidth] = useState(50); // Percentage
     const [isResizing, setIsResizing] = useState(false);
+    const editorRef = useRef<HTMLTextAreaElement>(null);
 
-    React.useEffect(() => {
+    const handleFormatting = (prefix: string, suffix: string = '') => {
+        const textarea = editorRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        const selection = text.substring(start, end);
+
+        const before = text.substring(0, start);
+        const after = text.substring(end);
+
+        const newContent = before + prefix + selection + suffix + after;
+        setContent(newContent);
+
+        // Reset focus and selection
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(
+                start + prefix.length,
+                end + prefix.length
+            );
+        }, 0);
+    };
+
+    useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isResizing) return;
             const newWidth = (e.clientX / window.innerWidth) * 100;
@@ -41,6 +71,30 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
         };
     }, [isResizing]);
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'b':
+                        e.preventDefault();
+                        handleFormatting('**', '**');
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        handleFormatting('*', '*');
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        handleFormatting('<u>', '</u>');
+                        break;
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [content]);
+
     const handleSave = () => {
         if (!documentName.trim() || !content.trim()) {
             alert('Please provide both a document name and content.');
@@ -58,8 +112,29 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
         alert('Content copied to clipboard!');
     };
 
-    const wordCount = content.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const wordCount = content.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
     const charCount = content.length;
+
+    const renderPreviewContent = (text: string) => {
+        if (!text) return null;
+
+        // Simple regex-based markdown/HTML for legal preview
+        let html = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mb-4">$1</h1>')
+            .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mb-3">$1</h2>')
+            .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mb-2">$1</h3>')
+            .replace(/^\* (.*$)/gm, '<li class="ml-4 list-disc">$1</li>')
+            .replace(/^- (.*$)/gm, '<li class="ml-4 list-disc">$1</li>')
+            .replace(/^\d+\. (.*$)/gm, '<li class="ml-4 list-decimal">$1</li>')
+            .replace(/>\s+(.*$)/gm, '<blockquote class="border-l-4 border-slate-200 pl-4 italic my-4">$1</blockquote>')
+            .replace(/---/g, '<hr class="my-6 border-slate-100" />')
+            .replace(/\n\n/g, '<br /><br />')
+            .replace(/\n/g, '<br />');
+
+        return <div className="prose-slate prose-lg max-w-none text-slate-800" dangerouslySetInnerHTML={{ __html: html }} />;
+    };
 
     return (
         <div className="fixed inset-0 z-[120] bg-slate-950 flex flex-col animate-in slide-in-from-bottom-6 duration-500">
@@ -150,7 +225,26 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                                 <Sparkles size={14} className="text-emerald-400" />
                                 Markdown Editor
                             </h4>
-                            <p className="text-[9px] text-slate-600 italic">Supports plain text and basic markdown formatting</p>
+                            <div className="flex items-center gap-1 bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+                                <ToolbarButton icon={<Bold size={14} />} onClick={() => handleFormatting('**', '**')} title="Bold (Ctrl+B)" />
+                                <ToolbarButton icon={<Italic size={14} />} onClick={() => handleFormatting('*', '*')} title="Italic (Ctrl+I)" />
+                                <ToolbarButton icon={<Underline size={14} />} onClick={() => handleFormatting('<u>', '</u>')} title="Underline" />
+                                <ToolbarButton icon={<Strikethrough size={14} />} onClick={() => handleFormatting('~~', '~~')} title="Strikethrough" />
+                                <div className="w-px h-4 bg-slate-700 mx-1" />
+                                <ToolbarButton icon={<Heading1 size={14} />} onClick={() => handleFormatting('# ', '')} title="Heading 1" />
+                                <ToolbarButton icon={<Heading2 size={14} />} onClick={() => handleFormatting('## ', '')} title="Heading 2" />
+                                <div className="w-px h-4 bg-slate-700 mx-1" />
+                                <ToolbarButton icon={<List size={14} />} onClick={() => handleFormatting('- ', '')} title="Bullet List" />
+                                <ToolbarButton icon={<ListOrdered size={14} />} onClick={() => handleFormatting('1. ', '')} title="Numbered List" />
+                                <div className="w-px h-4 bg-slate-700 mx-1" />
+                                <ToolbarButton icon={<AlignLeft size={14} />} onClick={() => handleFormatting('<div align="left">\n', '\n</div>')} title="Align Left" />
+                                <ToolbarButton icon={<AlignCenter size={14} />} onClick={() => handleFormatting('<div align="center">\n', '\n</div>')} title="Align Center" />
+                                <ToolbarButton icon={<AlignRight size={14} />} onClick={() => handleFormatting('<div align="right">\n', '\n</div>')} title="Align Right" />
+                                <div className="w-px h-4 bg-slate-700 mx-1" />
+                                <ToolbarButton icon={<Quote size={14} />} onClick={() => handleFormatting('> ', '')} title="Quote" />
+                                <ToolbarButton icon={<Link size={14} />} onClick={() => handleFormatting('[', '](url)')} title="Link" />
+                                <ToolbarButton icon={<Minus size={14} />} onClick={() => handleFormatting('\n---\n', '')} title="Horizontal Rule" />
+                            </div>
                         </div>
 
                         <div className={`flex-1 flex justify-center py-12 overflow-y-auto scrollbar-hide ${layout === 'editor' ? 'bg-slate-950 px-8' : 'bg-slate-900/50'}`}>
@@ -159,6 +253,7 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                                 : 'w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-xl rounded-sm p-[20mm] mb-12 relative mx-auto flex flex-col'
                                 }`}>
                                 <textarea
+                                    ref={editorRef}
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder="Start drafting your legal document here..."
@@ -199,8 +294,8 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                                     LEX SOVEREIGN
                                 </div>
 
-                                <div className="relative z-10 whitespace-pre-wrap font-serif text-[15px] leading-relaxed">
-                                    {content || (
+                                <div className="relative z-10 font-serif text-[15px] leading-relaxed">
+                                    {content ? renderPreviewContent(content) : (
                                         <div className="flex flex-col items-center justify-center py-40 gap-4 opacity-30">
                                             <FileText size={48} />
                                             <p className="italic text-center">
@@ -217,5 +312,15 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
         </div>
     );
 };
+
+const ToolbarButton = ({ icon, onClick, title }: { icon: React.ReactNode, onClick: () => void, title: string }) => (
+    <button
+        onClick={onClick}
+        title={title}
+        className="p-1.5 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-all"
+    >
+        {icon}
+    </button>
+);
 
 export default BlankDocumentEditor;

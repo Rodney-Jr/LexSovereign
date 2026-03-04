@@ -14,6 +14,12 @@
 - [x] Push final CLM cleanup documentation to GitHub
 - [x] Expand vertically the Markdown Editor window and add dynamic resizing
 - [x] Enforce A4 Page Dimensions and styling for BlankDocumentEditor
+- [x] Enhance Document Editor with MS Word-like features
+    - [x] Create implementation plan for formatting toolbar
+    - [x] Implement Formatting Toolbar component
+    - [x] Add text selection and wrapping logic
+    - [x] Enhance Preview with basic Markdown/HTML rendering
+    - [x] Verify formatting tools
     - [x] Create refined implementation plan for A4 layout
     - [x] Apply A4 dimensions (210mm x 297mm) to Editor & Preview
     - [x] Add "paper-on-desk" styling (margins, shadows, centering)
