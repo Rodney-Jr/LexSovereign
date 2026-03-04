@@ -159,6 +159,9 @@ export class BillingService {
             }
         });
 
+        return updated;
+    }
+
     /**
      * Aggregates financials for a given tenant and matter type (CASE or CLM)
      */
