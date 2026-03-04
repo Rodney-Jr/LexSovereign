@@ -30,6 +30,11 @@ const CLMCenter: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [selectedMatterAI, setSelectedMatterAI] = useState<string | null>(null);
     const [financials, setFinancials] = useState<{ revenue: any, installments: any[] }>({ revenue: { flatFee: 0, hourly: 0, hybrid: 0 }, installments: [] });
+    const [clmStats, setClmStats] = useState<{ activeContracts: number, avgCycleTime: string, riskHeatmap: any }>({
+        activeContracts: 0,
+        avgCycleTime: '0d',
+        riskHeatmap: { highLiability: 0, nonStandardIndemnity: 0, autoRenewal: 0, jurisdictionMismatch: 0 }
+    });
 
     useEffect(() => {
         fetchCLMSignals();
@@ -41,19 +46,39 @@ const CLMCenter: React.FC = () => {
             const session = getSavedSession();
             if (!session?.token) return;
 
-            const [renewalData, approvalData, financialData] = await Promise.all([
+            const [renewalData, approvalData, financialData, statsData] = await Promise.all([
                 authorizedFetch('/api/workflows/clm/renewals', { token: session.token }),
                 authorizedFetch('/api/workflows/approvals/pending', { token: session.token }),
-                authorizedFetch('/api/billing/financials?type=CONTRACT', { token: session.token })
+                authorizedFetch('/api/billing/financials?type=CONTRACT', { token: session.token }),
+                authorizedFetch('/api/analytics/clm/stats', { token: session.token })
             ]);
 
             if (Array.isArray(renewalData)) setRenewals(renewalData);
             if (Array.isArray(approvalData)) setApprovals(approvalData);
             if (financialData && financialData.revenue) setFinancials(financialData);
+            if (statsData && !statsData.error) setClmStats(statsData);
         } catch (e) {
             console.error("Failed to fetch CLM signals", e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleApprove = async (matterId: string, stateId: string) => {
+        try {
+            const session = getSavedSession();
+            if (!session?.token) return;
+
+            const res = await authorizedFetch('/api/workflows/approve', {
+                method: 'POST',
+                token: session.token,
+                body: JSON.stringify({ matterId, stateId, comments: 'Approved via CLM Operations Center' })
+            });
+
+            if (res.error) throw new Error(res.error);
+            fetchCLMSignals();
+        } catch (e) {
+            console.error("Failed to approve", e);
         }
     };
 
@@ -100,10 +125,10 @@ const CLMCenter: React.FC = () => {
             {activeTab === 'overview' && (
                 <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <MetricCard label="Active Contracts" value={renewals.length + 42} sub="Total Enclave Assets" icon={<FileText className="text-emerald-400" />} />
+                        <MetricCard label="Active Contracts" value={clmStats.activeContracts} sub="Total Enclave Assets" icon={<FileText className="text-emerald-400" />} />
                         <MetricCard label="Pending Approvals" value={approvals.length} sub="Requiring Sign-off" icon={<CheckCircle2 className="text-blue-400" />} />
                         <MetricCard label="Renewal Pipeline" value={renewals.length} sub="Next 30 Days" icon={<Clock className="text-amber-400" />} />
-                        <MetricCard label="Cycle Time (Avg)" value="4.2d" sub="-12% this month" icon={<TrendingUp className="text-purple-400" />} />
+                        <MetricCard label="Cycle Time (Avg)" value={clmStats.avgCycleTime} sub="Calculated from closed matters" icon={<TrendingUp className="text-purple-400" />} />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -180,7 +205,10 @@ const CLMCenter: React.FC = () => {
                                                         {new Date(approval.createdAt).toLocaleDateString()}
                                                     </td>
                                                     <td className="px-8 py-6 text-right">
-                                                        <button className="bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all">
+                                                        <button
+                                                            onClick={() => handleApprove(approval.matterId, approval.workflowStateId)}
+                                                            className="bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
+                                                        >
                                                             Review & Sign
                                                         </button>
                                                     </td>
@@ -206,10 +234,10 @@ const CLMCenter: React.FC = () => {
                                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Risk Exposure Heatmap</h4>
 
                                 <div className="space-y-6">
-                                    <RiskMetric label="High Liability Cap" value="12" color="bg-rose-500" />
-                                    <RiskMetric label="Non-Standard Indemnity" value="8" color="bg-amber-500" />
-                                    <RiskMetric label="Auto-Renewal Clauses" value="24" color="bg-blue-500" />
-                                    <RiskMetric label="Jurisdiction Mismatch" value="3" color="bg-purple-500" />
+                                    <RiskMetric label="High Liability Cap" value={clmStats.riskHeatmap.highLiability} color="bg-rose-500" />
+                                    <RiskMetric label="Non-Standard Indemnity" value={clmStats.riskHeatmap.nonStandardIndemnity} color="bg-amber-500" />
+                                    <RiskMetric label="Auto-Renewal Clauses" value={clmStats.riskHeatmap.autoRenewal} color="bg-blue-500" />
+                                    <RiskMetric label="Jurisdiction Mismatch" value={clmStats.riskHeatmap.jurisdictionMismatch} color="bg-purple-500" />
                                 </div>
 
                                 <div className="pt-6 border-t border-slate-800">

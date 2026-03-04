@@ -39,3 +39,16 @@ Successfully replaced all mocks and placeholders in the CLM Operations Center wi
 ### Verification Results:
 - All metrics sync correctly with the Prisma database.
 - Approval actions correctly trigger backend updates and UI refreshes.
+
+## ✍️ Markdown Editor Enhancements
+Improved the freeform drafting experience in the `BlankDocumentEditor` with dynamic layout controls.
+
+### Key Enhancements:
+1. **Dynamic Resizing:**
+   - Added a draggable divider between the Markdown Editor and the Live Preview.
+   - Users can now customize the width of each pane by dragging the handle.
+2. **Vertical Expansion:**
+   - Removed fixed height constraints on the editor.
+   - The drafting area now automatically expands to fill the maximum available vertical space in both `split` and `editor` modes.
+3. **Smooth Transitions:**
+   - Integrated logic to handle layout switches (`Split`, `Editor`, `Preview`) while maintaining the active drafting session.

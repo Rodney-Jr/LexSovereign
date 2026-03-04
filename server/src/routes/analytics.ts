@@ -129,4 +129,57 @@ router.get('/history', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/analytics/clm/stats
+// Returns CLM-specific metrics: active contracts, cycle time, and risk exposure
+router.get('/clm/stats', authenticateToken, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(401).json({ error: 'Unauthorized' });
+
+        const [activeContractsCount, closedMatters, riskAnalyses] = await Promise.all([
+            prisma.contractMetadata.count({
+                where: { matter: { tenantId } }
+            }),
+            prisma.matter.findMany({
+                where: {
+                    tenantId,
+                    status: 'CLOSED',
+                    updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
+                },
+                select: { createdAt: true, updatedAt: true }
+            }),
+            prisma.predictiveRisk.findMany({
+                where: { matter: { tenantId } },
+                select: { type: true }
+            })
+        ]);
+
+        // Calculate Average Cycle Time in Days
+        let avgCycleTime = "0";
+        if (closedMatters.length > 0) {
+            const totalTime = closedMatters.reduce((acc, m) => {
+                return acc + (m.updatedAt.getTime() - m.createdAt.getTime());
+            }, 0);
+            avgCycleTime = (totalTime / closedMatters.length / (1000 * 60 * 60 * 24)).toFixed(1);
+        }
+
+        // Aggregate Risk Exposure
+        const riskHeatmap = {
+            highLiability: riskAnalyses.filter(r => r.type === 'HIGH_LIABILITY').length,
+            nonStandardIndemnity: riskAnalyses.filter(r => r.type === 'NON_STANDARD_INDEMNITY').length,
+            autoRenewal: riskAnalyses.filter(r => r.type === 'AUTO_RENEWAL').length,
+            jurisdictionMismatch: riskAnalyses.filter(r => r.type === 'JURISDICTION_MISMATCH').length
+        };
+
+        res.json({
+            activeContracts: activeContractsCount,
+            avgCycleTime: `${avgCycleTime}d`,
+            riskHeatmap
+        });
+    } catch (error: any) {
+        console.error("[Analytics] CLM Stats failed:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

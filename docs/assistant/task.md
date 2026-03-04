@@ -11,3 +11,9 @@
     - [x] Add CLM stats endpoint to backend
     - [x] Update frontend metrics to use live data
     - [x] Wire up approval actions
+- [x] Push final CLM cleanup documentation to GitHub
+- [x] Expand vertically the Markdown Editor window and add dynamic resizing
+    - [x] Create implementation plan
+    - [x] Add resizable split-view to BlankDocumentEditor.tsx
+    - [x] Ensure vertical expansion and remove resize constraints
+    - [x] Verify functionality

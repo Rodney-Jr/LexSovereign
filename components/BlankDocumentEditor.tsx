@@ -12,6 +12,34 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
     const [content, setContent] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [layout, setLayout] = useState<'split' | 'editor' | 'preview'>('split');
+    const [editorWidth, setEditorWidth] = useState(50); // Percentage
+    const [isResizing, setIsResizing] = useState(false);
+
+    React.useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isResizing) return;
+            const newWidth = (e.clientX / window.innerWidth) * 100;
+            if (newWidth > 20 && newWidth < 80) {
+                setEditorWidth(newWidth);
+            }
+        };
+
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            document.body.style.cursor = 'default';
+        };
+
+        if (isResizing) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'col-resize';
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizing]);
 
     const handleSave = () => {
         if (!documentName.trim() || !content.trim()) {
@@ -113,7 +141,10 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
             <div className="flex-1 flex overflow-hidden">
                 {/* Editor Pane */}
                 {(layout === 'split' || layout === 'editor') && (
-                    <div className={`flex-1 flex flex-col bg-slate-900/30 transition-all duration-500 ${layout === 'editor' ? 'w-full overflow-y-auto' : ''}`}>
+                    <div
+                        className={`flex flex-col bg-slate-900/30 transition-all duration-500 ${layout === 'editor' ? 'w-full overflow-y-auto' : ''}`}
+                        style={{ width: layout === 'split' ? `${editorWidth}%` : '100%' }}
+                    >
                         <div className="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
                             <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                                 <Sparkles size={14} className="text-emerald-400" />
@@ -132,8 +163,8 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder="Start drafting your legal document here..."
                                     className={`${layout === 'editor'
-                                        ? 'w-full h-full bg-transparent text-slate-900 font-serif text-[15px] leading-relaxed resize-none focus:outline-none placeholder:text-slate-300'
-                                        : 'flex-1 bg-slate-950 text-slate-200 p-12 font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-slate-700 scrollbar-hide'
+                                        ? 'w-full h-full min-h-[calc(100vh-16rem)] bg-transparent text-slate-900 font-serif text-[15px] leading-relaxed focus:outline-none placeholder:text-slate-300'
+                                        : 'flex-1 bg-slate-950 text-slate-200 p-12 font-mono text-sm leading-relaxed focus:outline-none placeholder:text-slate-700 scrollbar-hide'
                                         }`}
                                 />
                             </div>
@@ -141,9 +172,20 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                     </div>
                 )}
 
+                {/* Resize Handle */}
+                {layout === 'split' && (
+                    <div
+                        onMouseDown={() => setIsResizing(true)}
+                        className={`w-1.5 h-full cursor-col-resize hover:bg-emerald-500/40 transition-colors z-20 flex-shrink-0 -ml-[3px] ${isResizing ? 'bg-emerald-500/60' : 'bg-slate-800'}`}
+                    />
+                )}
+
                 {/* Live Preview Pane */}
                 {(layout === 'split' || layout === 'preview') && (
-                    <div className={`flex-1 bg-slate-950 border-l border-slate-800 flex flex-col transition-all duration-500 ${layout === 'preview' ? 'w-full border-l-0' : ''}`}>
+                    <div
+                        className={`bg-slate-950 border-l border-slate-800 flex flex-col transition-all duration-500 ${layout === 'preview' ? 'w-full border-l-0' : ''}`}
+                        style={{ width: layout === 'split' ? `${100 - editorWidth}%` : '100%' }}
+                    >
                         <div className="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
                             <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                                 <FileText size={14} className="text-blue-400" />
