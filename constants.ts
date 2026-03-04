@@ -39,7 +39,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'vault': ['upload_document', 'read_assigned_matter'],
   'drafting': ['upload_document', 'create_draft'],
   'marketplace': ['read_assigned_matter'],
-  'chat': ['create_matter', 'read_assigned_matter'],
+  'chat': ['use_legal_chat'],
   'clm-center': ['design_workflow', 'review_work'],
   'case-center': ['create_matter', 'review_work'],
 
@@ -56,23 +56,23 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
 // Default Permissions for Roles (Fallback/Mock)
 // Default Permissions for Roles (Fallback/Mock)
 export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  'TENANT_ADMIN': ['manage_tenant', 'read_analytics', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review'],
-  'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft'],
-  'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts'],
-  'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits'],
-  'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing', 'design_workflow'],
-  'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter', 'create_draft'],
+  'TENANT_ADMIN': ['manage_tenant', 'read_analytics', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
+  'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'use_legal_chat'],
+  'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts', 'use_legal_chat'],
+  'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits', 'use_legal_chat'],
+  'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing', 'design_workflow', 'use_legal_chat'],
+  'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter', 'create_draft', 'use_legal_chat'],
   'CLIENT': ['read_assigned_matter', 'client_portal_access'],
-  'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing'],
-  'COMPLIANCE': ['read_all_audits', 'manage_tenant'],
+  'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing', 'use_legal_chat'],
+  'COMPLIANCE': ['read_all_audits', 'manage_tenant', 'use_legal_chat'],
   'FINANCE_BILLING': ['read_billing'],
-  'PARTNER': ['create_matter', 'read_assigned_matter', 'read_analytics', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow'],
-  'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'read_billing'],
-  'JUNIOR_ASSOCIATE': ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter'],
+  'PARTNER': ['create_matter', 'read_assigned_matter', 'read_analytics', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'use_legal_chat'],
+  'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'read_billing', 'use_legal_chat'],
+  'JUNIOR_ASSOCIATE': ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter', 'use_legal_chat'],
 
   // Approval Workflow Permissions
-  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform'],
-  'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review'],
+  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'use_legal_chat'],
+  'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
   'AUDITOR': ['read_all_audits', 'read_assigned_matter']
 };
 

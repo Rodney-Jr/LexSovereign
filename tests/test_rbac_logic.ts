@@ -122,6 +122,28 @@ const assertions = [
         name: "JUNIOR_ASSOCIATE cannot access Growth",
         check: () => !canAccess(UserRole.JUNIOR_ASSOCIATE, 'growth'),
         expected: true
+    },
+
+    // Legal Chat Access Control
+    {
+        name: "CLIENT cannot access Legal Chat",
+        check: () => !canAccess(UserRole.CLIENT, 'chat'),
+        expected: true
+    },
+    {
+        name: "INTERNAL_COUNSEL CAN access Legal Chat",
+        check: () => canAccess(UserRole.INTERNAL_COUNSEL, 'chat'),
+        expected: true
+    },
+    {
+        name: "EXTERNAL_COUNSEL CAN access Legal Chat",
+        check: () => canAccess(UserRole.EXTERNAL_COUNSEL, 'chat'),
+        expected: true
+    },
+    {
+        name: "PARALEGAL CAN access Legal Chat",
+        check: () => canAccess(UserRole.PARALEGAL, 'chat'),
+        expected: true
     }
 ];
 
