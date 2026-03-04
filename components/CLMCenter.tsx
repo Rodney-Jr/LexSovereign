@@ -14,12 +14,12 @@ import {
     Sparkles // Added Sparkles import
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
-import { AppMode } from '../types';
-import MatterCreationModal from './MatterCreationModal';
+import { AppMode, Matter } from '../types';
+import MatterSelectorModal from './MatterSelectorModal';
 import AIIntelligenceSidebar from './AIIntelligenceSidebar';
 
 const CLMCenter: React.FC = () => {
-    const [showIntake, setShowIntake] = useState(false);
+    const [showSelector, setShowSelector] = useState(false);
     const [renewals, setRenewals] = useState<any[]>([]);
     const [approvals, setApprovals] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,11 +63,11 @@ const CLMCenter: React.FC = () => {
                     <p className="text-slate-500 text-sm">Contract Lifecycle Management | Authority Group: <span className="text-emerald-400 font-bold">LEG-OPS-1</span></p>
                 </div>
                 <button
-                    onClick={() => setShowIntake(true)}
+                    onClick={() => setShowSelector(true)}
                     className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-[2rem] font-bold text-xs uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-emerald-900/20 active:scale-95 group"
                 >
                     <Plus size={20} className="group-hover:rotate-90 transition-transform" />
-                    New Contract Intake
+                    Manage Contract
                 </button>
             </div>
 
@@ -204,14 +204,12 @@ const CLMCenter: React.FC = () => {
                 </div>
             </div>
 
-            {showIntake && (
-                <MatterCreationModal
-                    mode={AppMode.ENTERPRISE}
-                    userId={(getSavedSession() as any)?.userId}
-                    tenantId={(getSavedSession() as any)?.tenantId}
-                    onClose={() => setShowIntake(false)}
-                    onCreated={() => {
-                        setShowIntake(false);
+            {showSelector && (
+                <MatterSelectorModal
+                    targetType="CLM"
+                    onClose={() => setShowSelector(false)}
+                    onSelected={(matter: Matter) => {
+                        setShowSelector(false);
                         fetchCLMSignals();
                     }}
                 />

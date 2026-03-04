@@ -16,12 +16,12 @@ import {
     Activity
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
-import { AppMode } from '../types';
-import MatterCreationModal from './MatterCreationModal';
+import { AppMode, Matter } from '../types';
+import MatterSelectorModal from './MatterSelectorModal';
 import AIIntelligenceSidebar from './AIIntelligenceSidebar';
 
 const CaseCenter: React.FC = () => {
-    const [showIntake, setShowIntake] = useState(false);
+    const [showSelector, setShowSelector] = useState(false);
     const [deadlines, setDeadlines] = useState<any[]>([]);
     const [hearings, setHearings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,11 +65,11 @@ const CaseCenter: React.FC = () => {
                     <p className="text-slate-500 text-sm">Case Management Cockpit | Authority Group: <span className="text-sky-400 font-bold">LIT-OPS-1</span></p>
                 </div>
                 <button
-                    onClick={() => setShowIntake(true)}
+                    onClick={() => setShowSelector(true)}
                     className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-[2rem] font-bold text-xs uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-sky-900/20 active:scale-95 group"
                 >
                     <Plus size={20} className="group-hover:rotate-90 transition-transform" />
-                    Incept New Case
+                    Manage Case
                 </button>
             </div>
 
@@ -207,15 +207,14 @@ const CaseCenter: React.FC = () => {
                 </div>
             </div>
 
-            {showIntake && (
-                <MatterCreationModal
-                    mode={AppMode.LAW_FIRM}
-                    userId={(getSavedSession() as any)?.userId}
-                    tenantId={(getSavedSession() as any)?.tenantId}
-                    onClose={() => setShowIntake(false)}
-                    onCreated={() => {
-                        setShowIntake(false);
+            {showSelector && (
+                <MatterSelectorModal
+                    targetType="CASE"
+                    onClose={() => setShowSelector(false)}
+                    onSelected={(matter: Matter) => {
+                        setShowSelector(false);
                         fetchCaseSignals();
+                        // Potentially navigate to specific case view here if implemented
                     }}
                 />
             )}
