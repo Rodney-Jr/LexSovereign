@@ -47,8 +47,9 @@ Improved the freeform drafting experience in the `BlankDocumentEditor` with dyna
 1. **Dynamic Resizing:**
    - Added a draggable divider between the Markdown Editor and the Live Preview.
    - Users can now customize the width of each pane by dragging the handle.
-2. **Vertical Expansion:**
-   - Removed fixed height constraints on the editor.
-   - The drafting area now automatically expands to fill the maximum available vertical space in both `split` and `editor` modes.
-3. **Smooth Transitions:**
-   - Integrated logic to handle layout switches (`Split`, `Editor`, `Preview`) while maintaining the active drafting session.
+2. **A4 Page Enforcement:**
+   - Applied precise `210mm x 297mm` dimensions to the page containers in both Editor and Preview panes.
+   - Implemented "paper-on-desk" styling with responsive centering, realistic shadows, and standard document padding (`25mm`).
+3. **Optimized Typing Experience:**
+   - Set the `textarea` to use a serif font (`font-serif`) and standard line spacing to match the final legal output.
+   - Removed fixed vertical constraints in favor of a natural, scrollable "stack of pages" feel.

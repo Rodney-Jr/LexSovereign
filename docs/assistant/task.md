@@ -13,7 +13,8 @@
     - [x] Wire up approval actions
 - [x] Push final CLM cleanup documentation to GitHub
 - [x] Expand vertically the Markdown Editor window and add dynamic resizing
-    - [x] Create implementation plan
-    - [x] Add resizable split-view to BlankDocumentEditor.tsx
-    - [x] Ensure vertical expansion and remove resize constraints
-    - [x] Verify functionality
+- [x] Enforce A4 Page Dimensions and styling for BlankDocumentEditor
+    - [x] Create refined implementation plan for A4 layout
+    - [x] Apply A4 dimensions (210mm x 297mm) to Editor & Preview
+    - [x] Add "paper-on-desk" styling (margins, shadows, centering)
+    - [x] Verify A4 layout across all modes

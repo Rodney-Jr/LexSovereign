@@ -153,18 +153,18 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                             <p className="text-[9px] text-slate-600 italic">Supports plain text and basic markdown formatting</p>
                         </div>
 
-                        <div className={`flex-1 flex justify-center py-6 ${layout === 'editor' ? 'bg-slate-950 px-8' : ''}`}>
+                        <div className={`flex-1 flex justify-center py-12 overflow-y-auto scrollbar-hide ${layout === 'editor' ? 'bg-slate-950 px-8' : 'bg-slate-900/50'}`}>
                             <div className={`${layout === 'editor'
-                                ? 'w-full max-w-[950px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 min-h-[1200px] relative'
-                                : 'flex-1 flex flex-col w-full'
+                                ? 'w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-2xl rounded-sm p-[25mm] mb-20 relative mx-auto'
+                                : 'w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-xl rounded-sm p-[20mm] mb-12 relative mx-auto flex flex-col'
                                 }`}>
                                 <textarea
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder="Start drafting your legal document here..."
                                     className={`${layout === 'editor'
-                                        ? 'w-full h-full min-h-[calc(100vh-16rem)] bg-transparent text-slate-900 font-serif text-[15px] leading-relaxed focus:outline-none placeholder:text-slate-300'
-                                        : 'flex-1 bg-slate-950 text-slate-200 p-12 font-mono text-sm leading-relaxed focus:outline-none placeholder:text-slate-700 scrollbar-hide'
+                                        ? 'w-full h-full min-h-[247mm] bg-transparent text-slate-900 font-serif text-[15px] leading-relaxed focus:outline-none placeholder:text-slate-300 resize-none'
+                                        : 'flex-1 bg-transparent text-slate-900 p-0 font-serif text-[14px] leading-relaxed focus:outline-none placeholder:text-slate-400 resize-none'
                                         }`}
                                 />
                             </div>
@@ -192,8 +192,8 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                                 Live Preview
                             </h4>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-6 scrollbar-hide flex justify-center">
-                            <div className="w-full max-w-[800px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative min-h-[1050px]">
+                        <div className="flex-1 overflow-y-auto p-12 scrollbar-hide flex justify-center bg-slate-950">
+                            <div className="w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-2xl rounded-sm p-[25mm] mb-20 relative mx-auto">
                                 {/* Watermark */}
                                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black">
                                     LEX SOVEREIGN
@@ -201,9 +201,12 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
 
                                 <div className="relative z-10 whitespace-pre-wrap font-serif text-[15px] leading-relaxed">
                                     {content || (
-                                        <p className="text-slate-400 italic text-center py-20">
-                                            Your document preview will appear here as you type...
-                                        </p>
+                                        <div className="flex flex-col items-center justify-center py-40 gap-4 opacity-30">
+                                            <FileText size={48} />
+                                            <p className="italic text-center">
+                                                Your document preview will appear here as you type...
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
