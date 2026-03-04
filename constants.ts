@@ -40,6 +40,8 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'drafting': ['upload_document', 'create_draft'],
   'marketplace': ['read_assigned_matter'],
   'chat': ['create_matter', 'read_assigned_matter'],
+  'clm-center': ['design_workflow', 'review_work'],
+  'case-center': ['create_matter', 'review_work'],
 
   // Finance/Growth
   'growth': ['read_billing'],
