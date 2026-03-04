@@ -19,6 +19,7 @@ import { DocumentMetadata, Region, PrivilegeStatus, UserRole } from '../types';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import RoleTemplateMarketplace from './RoleTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
+import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface SovereignMarketplaceProps {
     onAddDocument: (doc: DocumentMetadata) => Promise<any> | void;
@@ -30,8 +31,30 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
     const [showDocMarketplace, setShowDocMarketplace] = useState(false);
     const [showRoleMarketplace, setShowRoleMarketplace] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const isTenantAdmin = userRole === UserRole.TENANT_ADMIN;
+
+    useEffect(() => {
+        if (category === 'DOCUMENTS') {
+            fetchTemplates();
+        }
+    }, [category]);
+
+    const fetchTemplates = async () => {
+        setLoading(true);
+        try {
+            const session = getSavedSession();
+            if (!session?.token) return;
+            const data = await authorizedFetch('/api/tenant/templates', { token: session.token });
+            setTemplates(data);
+        } catch (e) {
+            console.error("Failed to fetch templates:", e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     return (
@@ -109,30 +132,22 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
 
                 {category === 'DOCUMENTS' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <BlueprintCard
-                            icon={<FileText className="text-blue-400" />}
-                            title="Master Service Agreement"
-                            desc="Standard MSA for cross-border service engagements."
-                            region="PRIMARY"
-                            price="Standard"
-                            onDeploy={() => setSelectedTemplateId('template-master-service-agreement--msa-')}
-                        />
-                        <BlueprintCard
-                            icon={<FileText className="text-emerald-400" />}
-                            title="Mutual NDA"
-                            desc="Standard non-disclosure agreement for mutual exchange of information."
-                            region="GLOBAL"
-                            price="Standard"
-                            onDeploy={() => setSelectedTemplateId('template-standard-mutual-non-disclosure-agreement')}
-                        />
-                        <BlueprintCard
-                            icon={<ShieldCheck className="text-purple-400" />}
-                            title="Employment Contract"
-                            desc="Comprehensive agreement for full-time staff members."
-                            region="SECURE"
-                            price="Standard"
-                            onDeploy={() => setSelectedTemplateId('template-standard-employment-contract')}
-                        />
+                        {templates.slice(0, 3).map(t => (
+                            <BlueprintCard
+                                key={t.id}
+                                icon={<FileText className="text-blue-400" />}
+                                title={t.name}
+                                desc={t.description}
+                                region={t.jurisdiction}
+                                price="Standard"
+                                onDeploy={() => setSelectedTemplateId(t.id)}
+                            />
+                        ))}
+                        {templates.length === 0 && !loading && (
+                            <div className="col-span-full py-12 text-center text-slate-500 italic">
+                                No premium blueprints found in this silo.
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

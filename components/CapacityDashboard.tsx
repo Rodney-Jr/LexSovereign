@@ -26,9 +26,21 @@ const CapacityDashboard: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
+        fetchStats();
         fetchPractitioners();
         fetchInsights();
     }, []);
+
+    const fetchStats = async () => {
+        try {
+            const session = getSavedSession();
+            if (!session?.token) return;
+            const data = await authorizedFetch('/api/tenant/capacity-stats', { token: session.token });
+            setStats(data);
+        } catch (e) {
+            console.error("Failed to fetch stats:", e);
+        }
+    };
 
     const fetchPractitioners = async () => {
         setLoading(true);
@@ -70,7 +82,7 @@ const CapacityDashboard: React.FC = () => {
                     title="Aggregated Firm Load"
                     value={`${stats.totalLoad}%`}
                     icon={<Activity className="text-purple-400" size={20} />}
-                    trend="+4% from last week"
+                    trend={stats.totalLoad > 80 ? "High utilization alert" : "Within nominal bounds"}
                     color="purple"
                 />
                 <StatCard
@@ -158,7 +170,7 @@ const CapacityDashboard: React.FC = () => {
                                                         </div>
                                                     </td>
                                                     <td className="py-4 text-right text-xs font-mono text-slate-400">
-                                                        {currentHours} / {p.maxWeeklyHours || 40}
+                                                        {loadState === 'RED' ? 'OVERLOAD' : 'NOMINAL'} / {p.maxWeeklyHours || 40}
                                                     </td>
                                                 </tr>
                                             );

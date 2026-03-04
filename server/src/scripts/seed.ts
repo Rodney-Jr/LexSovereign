@@ -200,6 +200,23 @@ async function main() {
                 ]
             }
         });
+
+        // Create more users for capacity dashboard
+        for (let i = 1; i <= 3; i++) {
+            await prisma.user.create({
+                data: {
+                    email: `associate${i}@nomosdesk.com`,
+                    passwordHash: await bcrypt.hash('password123', 10),
+                    name: `Associate ${i}`,
+                    roleId: counselRole?.id,
+                    roleString: 'JUNIOR_ASSOCIATE',
+                    region: 'GH_ACC_1',
+                    tenantId: result.tenantId,
+                    maxWeeklyHours: 35 + (i * 5),
+                    jurisdictionPins: ['GH_ACC_1']
+                }
+            });
+        }
         counselId = counsel.id;
     } else {
         console.log('ℹ️ Default tenant already exists. Enforcing Global Admin role and password...');
@@ -275,16 +292,25 @@ async function main() {
         // Matters ...
 
         // Matters
-        const matter1 = await prisma.matter.upsert({
-            where: { id: 'MT-772' },
-            update: {},
-            create: {
-                id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH',
-                tenantId: tenantId!, internalCounselId: counselId!
-            }
-        });
+        const matterData = [
+            { id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH' },
+            { id: 'MT-881', name: 'Zylos Tech IP Dispute', client: 'Zylos Tech', type: 'LITIGATION', status: 'OPEN', riskLevel: 'MEDIUM' },
+            { id: 'MT-990', name: 'Global Finance Compliance', client: 'Global Finance', type: 'COMPLIANCE', status: 'OPEN', riskLevel: 'LOW' },
+            { id: 'MT-101', name: 'Startup Series A', client: 'Alpha Ventures', type: 'CORPORATE', status: 'OPEN', riskLevel: 'MEDIUM' }
+        ];
 
-        console.log('✅ Seeded Matter 1');
+        for (const m of matterData) {
+            await prisma.matter.upsert({
+                where: { id: m.id },
+                update: { riskLevel: m.riskLevel },
+                create: {
+                    ...m,
+                    tenantId: tenantId!,
+                    internalCounselId: counselId!
+                }
+            });
+            console.log(`✅ Seeded Matter: ${m.id}`);
+        }
 
         // Create a mock encrypted document to verify BYOK logic
         await prisma.document.upsert({
@@ -295,10 +321,29 @@ async function main() {
                 name: 'Sovereign Acquisition Memo (Encrypted)',
                 uri: 'local://vault/acme/memo_encrypted.pdf',
                 jurisdiction: 'GH_ACC_1',
-                matterId: matter1.id
+                matterId: 'MT-772'
             }
         });
         console.log('✅ Seeded Encrypted Mock Document');
+
+        // Create AI usage audit logs
+        console.log('🌱 Seeding AI usage audit logs...');
+        await prisma.auditLog.createMany({
+            data: [
+                { action: 'AI_ACCESS_DRAFT', userId: counselId, details: 'Drafted NDA', matterId: 'MT-772' } as any,
+                { action: 'AI_ACCESS_RESEARCH', userId: counselId, details: 'Researched merger laws', matterId: 'MT-772' } as any,
+                { action: 'AI_OVERRIDE', userId: counselId, details: 'Overrode PII check for authorized partner', matterId: 'MT-772' } as any
+            ]
+        });
+
+        // Create deadlines
+        console.log('🌱 Seeding deadlines...');
+        await (prisma as any).deadline.createMany({
+            data: [
+                { title: 'Merger Filing', dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), status: 'PENDING', matterId: 'MT-772' },
+                { title: 'Discovery Response', dueDate: new Date(Date.now() + 48 * 60 * 60 * 1000), status: 'PENDING', matterId: 'MT-881' }
+            ]
+        });
 
         // Pricing configs already upserted above
 

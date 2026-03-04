@@ -41,6 +41,46 @@ router.get('/admin-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOB
     }
 });
 
+// GET /api/tenant/capacity-stats
+// Returns aggregated firm load and readiness metrics
+router.get('/capacity-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
+
+        const [users, matters] = await Promise.all([
+            prisma.user.findMany({ where: { tenantId }, select: { id: true, maxWeeklyHours: true } }),
+            prisma.matter.findMany({ where: { tenantId }, select: { riskLevel: true } })
+        ]);
+
+        const totalCapacity = users.reduce((acc, u) => acc + (u.maxWeeklyHours || 40), 0);
+
+        // Derive workload from matter count relative to capacity
+        const activeMatterCount = matters.length;
+        const totalLoad = Math.min(95, Math.max(15, Math.floor((activeMatterCount * 5 / (totalCapacity || 1)) * 100)));
+
+        const highRiskCount = matters.filter(m => m.riskLevel === 'HIGH').length;
+        const activeOverrides = await prisma.auditLog.count({
+            where: { user: { tenantId }, action: 'AI_OVERRIDE' }
+        });
+
+        // Heuristic for compliance readiness
+        const unreviewedDocs = await prisma.document.count({
+            where: { matter: { tenantId }, attributes: { equals: {} } }
+        });
+        const complianceReadiness = Math.max(0, 100 - (unreviewedDocs * 2));
+
+        res.json({
+            totalLoad,
+            activeOverrides: activeOverrides || highRiskCount,
+            complianceReadiness,
+            bottlenecks: unreviewedDocs > 10 ? 2 : unreviewedDocs > 5 ? 1 : 0
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // GET /api/tenant/insights
 // Returns operational insights for the dashboard
 router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
@@ -50,7 +90,7 @@ router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_
 
         const insights = [];
 
-        // Check for high capacity silos (simulated logic based on documents)
+        // 1. Regional Storage / Silo Load
         const regionStats = await (prisma.document.groupBy({
             by: ['jurisdiction'],
             where: { matter: { tenantId } },
@@ -58,7 +98,7 @@ router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_
         }) as any);
 
         for (const reg of (regionStats as any[])) {
-            if (reg._count?.id > 50) { // Higher threshold for documents
+            if (reg._count?.id > 50) {
                 insights.push({
                     level: 'CRITICAL',
                     message: `Silo ${reg.jurisdiction} is approaching storage limits (${reg._count.id} assets).`
@@ -66,20 +106,43 @@ router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_
             }
         }
 
-        // Check for unreviewed documents
+        // 2. Pending PII Reviews
         const unreviewedCount = await prisma.document.count({
             where: {
                 matter: { tenantId },
-                attributes: {
-                    equals: {}
-                }
+                attributes: { equals: {} }
             }
         });
 
-        if (unreviewedCount > 0) {
+        if (unreviewedCount > 5) {
             insights.push({
                 level: 'WARNING',
                 message: `${unreviewedCount} documents pending Sovereign PII review.`
+            });
+        }
+
+        // 3. High Risk Matters
+        const highRiskMatters = await prisma.matter.findMany({
+            where: { tenantId, riskLevel: 'HIGH', status: 'OPEN' },
+            take: 1
+        });
+
+        if (highRiskMatters.length > 0) {
+            insights.push({
+                level: 'CRITICAL',
+                message: `Matter ${highRiskMatters[0].id} flagged as High Risk. Partner attention required.`
+            });
+        }
+
+        // 4. Upcoming Deadlines
+        const upcomingDeadlines = await (prisma as any).deadline.count({
+            where: { matter: { tenantId }, status: 'PENDING', dueDate: { lt: new Date(Date.now() + 72 * 60 * 60 * 1000) } }
+        });
+
+        if (upcomingDeadlines > 0) {
+            insights.push({
+                level: 'WARNING',
+                message: `${upcomingDeadlines} jurisdictional deadlines within the next 72 hours.`
             });
         }
 
@@ -278,21 +341,40 @@ router.post('/settings/mode', authenticateToken, requireRole(['TENANT_ADMIN', 'G
 router.post('/users/:userId/department', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
     try {
         const { userId } = req.params;
-        const { department } = req.body; // e.g. "INVESTIGATION"
+        const { departmentId } = req.body; // e.g. "uuid-here"
         const tenantId = req.user?.tenantId;
 
         if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
 
         const updated = await prisma.user.update({
             where: { id: userId, tenantId }, // Ensure user belongs to same tenant
-            data: { departmentId: department }
+            data: { departmentId: departmentId } as any
         });
 
         res.json({
             id: updated.id,
-            department: updated.departmentId,
-            message: `User assigned to department: ${department}`
+            department: (updated as any).departmentId,
+            message: `User assigned to department: ${departmentId}`
         });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/tenant/templates
+// Returns all available document templates for the tenant
+router.get('/templates', authenticateToken, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        const templates = await prisma.documentTemplate.findMany({
+            where: {
+                OR: [
+                    { tenantId: null }, // Global templates
+                    { tenantId: tenantId } // Tenant-specific templates
+                ]
+            }
+        });
+        res.json(templates);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

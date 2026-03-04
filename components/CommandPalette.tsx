@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Command, LayoutDashboard, FileLock, MessageSquare, Settings, Zap, Globe, GitBranch, Search as SearchIcon, X } from 'lucide-react';
+import { Search, Command, LayoutDashboard, FileLock, MessageSquare, Settings, Zap, Globe, GitBranch, Search as SearchIcon, X, ShieldCheck } from 'lucide-react';
 
 interface CommandPaletteProps {
     onClose: () => void;
@@ -13,7 +13,8 @@ const COMMANDS = [
     { id: 'chat', label: 'Legal Chat', icon: <MessageSquare size={18} />, category: 'Navigation' },
     { id: 'conflict-check', label: 'Conflict Check', icon: <SearchIcon size={18} />, category: 'Actions' },
     { id: 'workflow', label: 'Workflow Engine', icon: <Zap size={18} />, category: 'Operations' },
-    { id: 'platform-ops', label: 'Global Plane', icon: <Globe size={18} />, category: 'Administration' },
+    { id: 'global-governance', label: 'Global Governance', icon: <Globe size={18} />, category: 'Administration' },
+    { id: 'tenant-governance', label: 'Firm Governance', icon: <ShieldCheck size={18} />, category: 'Administration' },
     { id: 'org-blueprint', label: 'Firm Blueprint', icon: <GitBranch size={18} />, category: 'Administration' },
 ];
 

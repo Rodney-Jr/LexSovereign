@@ -166,7 +166,7 @@ const Layout: React.FC<LayoutProps> = ({
               )}
 
               {/* Platform Owner Section */}
-              {(isAllowed('platform-ops') || isAllowed('governance')) && (
+              {(isAllowed('platform-ops') || isAllowed('global-governance')) && (
                 <div className="pt-4 pb-2 px-4 flex items-center justify-between">
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Platform Owner</span>
                 </div>
@@ -180,19 +180,19 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('governance') && (
+              {isAllowed('global-governance') && (
                 <NavItem
                   icon={<LayoutGrid size={18} />}
                   label="Global Governance"
-                  isActive={activeTab === 'governance'}
-                  onClick={() => setActiveTab('governance')}
+                  isActive={activeTab === 'global-governance'}
+                  onClick={() => setActiveTab('global-governance')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
 
 
               {/* Firm Management Section */}
-              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity')) && (
+              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity') || isAllowed('tenant-governance')) && (
                 <div className="pt-4 pb-2 px-4">
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Firm Management</span>
                 </div>
@@ -353,12 +353,12 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('governance') && (
+              {isAllowed('tenant-governance') && (
                 <NavItem
                   icon={<ShieldCheck size={18} className="text-amber-500" />}
-                  label="Governance"
-                  isActive={activeTab === 'governance'}
-                  onClick={() => setActiveTab('governance')}
+                  label="Firm Governance"
+                  isActive={activeTab === 'tenant-governance'}
+                  onClick={() => setActiveTab('tenant-governance')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}

@@ -17,6 +17,7 @@ export const INITIAL_DOCS: DocumentMetadata[] = [
 // Replaced Role-based map with Permission-based map
 export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'dashboard': [], // Public
+  'global-governance': ['manage_platform'],
   'platform-ops': ['manage_platform'],
   'pricing-calib': ['manage_platform'], // Global Admin Pricing
   'enclave': ['manage_platform'], // Restricted
@@ -24,7 +25,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
 
   // Tenant
   'analytics': ['read_analytics'],
-  'governance': ['manage_tenant'],
+  'tenant-governance': ['manage_tenant'],
   'tenant-admin': ['manage_users', 'manage_roles'],
   'org-blueprint': ['manage_users'],
   'integration-bridge': ['configure_bridge'],

@@ -252,7 +252,8 @@ const AppContent: React.FC = () => {
         )}
 
         {activeTab === 'platform-ops' && <GlobalControlPlane userName={userName || 'Administrator'} onNavigate={setActiveTab} />}
-        {activeTab === 'governance' && <TenantGovernance />}
+        {activeTab === 'global-governance' && <TenantGovernance />}
+        {activeTab === 'tenant-governance' && <AdminControlPlane />}
         {activeTab === 'org-blueprint' && <OrgChart />}
         {activeTab === 'integration-bridge' && <BridgeRegistry />}
         {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
@@ -271,10 +272,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} matterId={selectedMatter} />}
         {activeTab === 'analysis' && <CaseAnalysisModal isOpen={true} onClose={() => setActiveTab('dashboard')} />}
         {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
-        {activeTab === 'clm-center' && <CLMCenter />}
-        {activeTab === 'case-center' && <CaseCenter />}
         {activeTab === 'analytics' && <EnterpriseDashboard />}
-        {activeTab === 'governance' && <AdminControlPlane />}
 
         {activeTab === 'vault' && (
           selectedMatter ? (
