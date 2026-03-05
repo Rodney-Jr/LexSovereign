@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Button, Section, SectionHeader } from '../components/ui';
-import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3 } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3, Receipt } from 'lucide-react';
 import { Link, StaticRouter, HelmetProvider } from '../utils/ssr-compat';
 import RelatedInsights from '../components/RelatedInsights';
 import type { SsgOptions } from 'vite-plugin-ssg';
@@ -116,6 +116,79 @@ export default function HomePage() {
                         title="Judicial Intelligence"
                         description="Ground your research in a Sovereign Registry of constitutional law, statutes, and verified casefiles."
                     />
+                </div>
+            </Section>
+
+            {/* EMERGING MARKETS SECTION */}
+            <Section>
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium mb-6">
+                            BUILT FOR EMERGING MARKETS
+                        </div>
+                        <h2 className="text-3xl font-bold mb-6 text-white">From Solo Practitioners to Sovereign Institutions</h2>
+                        <p className="text-slate-300 text-lg mb-6 leading-relaxed">
+                            Enterprise-grade legal technology shouldn't be locked behind Silicon Valley pricing. NomosDesk is engineered specifically for emerging markets.
+                        </p>
+                        <ul className="space-y-4 mb-8">
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                                <span className="text-slate-300"><strong>Accessible Pricing:</strong> Starting at just $19/mo for solo practitioners, scaling seamlessly to multi-national banking institutions.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                                <span className="text-slate-300"><strong>Native Sovereign Intelligence:</strong> Pre-trained on a growing library of 19,000+ local statutes, constitutions, and gazettes for precedent that actually matters in your jurisdiction.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                                <span className="text-slate-300"><strong>Strict Client Isolation:</strong> Collaborate securely. Firewalled client portals ensure opposing counsel or clients only see finalized invoices and approved documents.</span>
+                            </li>
+                        </ul>
+                        {import.meta.env.VITE_SHOW_PRICING === 'true' && <Button asLink="/pricing">View Regional Pricing Tiers</Button>}
+                    </div>
+                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-5">
+                            <Globe size={150} />
+                        </div>
+                        <div className="relative z-10 space-y-6">
+                            {/* Visual representation of local data */}
+                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50">
+                                <div className="text-sm font-semibold text-white mb-3 flex justify-between items-center">
+                                    <span>Knowledge Base Sync</span>
+                                    <span className="text-emerald-400 text-xs px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">Active</span>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-slate-400 flex items-center gap-2"><FileText className="w-3 h-3" /> Ghana Constitution</span>
+                                        <span className="text-slate-300">Synced</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-slate-400 flex items-center gap-2"><Globe className="w-3 h-3" /> Regional statutory Gazettes</span>
+                                        <span className="text-emerald-400 font-mono">19,637 indexed</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-slate-400 flex items-center gap-2"><Lock className="w-3 h-3" /> Nigeria NDPR Directives</span>
+                                        <span className="text-slate-300">Evaluating</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50">
+                                <div className="text-sm font-semibold text-white mb-2">Platform Access Profile</div>
+                                <div className="flex justify-between items-center mt-4">
+                                    <div className="flex -space-x-2">
+                                        <div className="w-8 h-8 rounded-full bg-indigo-600 border-2 border-slate-800 flex items-center justify-center text-[9px] font-bold text-white shadow-lg z-30">SOLO</div>
+                                        <div className="w-8 h-8 rounded-full bg-emerald-600 border-2 border-slate-800 flex items-center justify-center text-[9px] font-bold text-white shadow-lg z-20">PRO</div>
+                                        <div className="w-8 h-8 rounded-full bg-slate-700 border-2 border-slate-800 flex items-center justify-center text-[9px] font-bold text-white shadow-lg z-10">INST</div>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Starting at</span>
+                                        <span className="text-indigo-400 font-mono text-xl">$19<span className="text-xs text-slate-500">/mo</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </Section>
 
@@ -238,8 +311,8 @@ export default function HomePage() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <FeatureCard
                         icon={<FileCheck className="w-8 h-8 text-sky-400" />}
-                        title="Smart Contract Hub"
-                        description="Set your contracts on autopilot. Track renewals, approvals, and signatures in one simple dashboard."
+                        title="Multi-Format Analysis"
+                        description="Drag and drop any contract format (PDF, DocX, JSON) natively. Our proprietary AI instantly extracts risk clauses and audits compliance."
                     />
                     <FeatureCard
                         icon={<Gavel className="w-8 h-8 text-amber-400" />}
@@ -249,12 +322,12 @@ export default function HomePage() {
                     <FeatureCard
                         icon={<Sparkles className="w-8 h-8 text-purple-400" />}
                         title="AI Drafting & Intelligence"
-                        description="Automatically score contract risks, extract key clauses, and summarize case briefs in seconds with our integrated Legal Intelligence layer."
+                        description="Automatically score contract risks, draft tailored documents, and summarize case briefs in seconds."
                     />
                     <FeatureCard
-                        icon={<BarChart3 className="w-8 h-8 text-emerald-400" />}
-                        title="Enterprise Compliance"
-                        description="Gain full organizational visibility with deep analytics on activity, departmental performance, and automated audit reporting."
+                        icon={<Receipt className="w-8 h-8 text-emerald-400" />}
+                        title="Digital Disbursements"
+                        description="Turn AI from a cost center into a billable asset. AI usage is automatically mapped to draft invoices for 100% cost recovery."
                     />
                 </div>
             </Section>
