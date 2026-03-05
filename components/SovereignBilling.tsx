@@ -48,9 +48,12 @@ const SovereignBilling: React.FC = () => {
    };
 
    const handleManageBilling = async () => {
+      const session = getSavedSession();
+      if (!session?.token) return;
       try {
          const response = await authorizedFetch('/api/stripe/portal', {
-            method: 'POST'
+            method: 'POST',
+            token: session.token
          });
          if (response.url) {
             window.location.href = response.url;
@@ -59,6 +62,7 @@ const SovereignBilling: React.FC = () => {
          }
       } catch (e) {
          console.error("[Stripe Portal] Error:", e);
+         alert("Cannot manage billing: This account does not have an active Stripe subscription.");
       }
    };
 
