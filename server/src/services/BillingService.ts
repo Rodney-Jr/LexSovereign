@@ -230,4 +230,70 @@ export class BillingService {
             installments
         };
     }
+
+    /**
+     * NEW: Fetches all matter-level invoices for a tenant.
+     */
+    static async getTenantInvoices(tenantId: string) {
+        return await prisma.invoice.findMany({
+            where: { tenantId },
+            include: {
+                matter: {
+                    select: { name: true, client: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    /**
+     * NEW: Fetches full details for a specific invoice, including line items.
+     */
+    static async getInvoiceDetails(invoiceId: string, tenantId: string) {
+        const invoice = await prisma.invoice.findFirst({
+            where: { id: invoiceId, tenantId },
+            include: {
+                matter: true,
+                lineItems: {
+                    include: {
+                        billingComponent: true
+                    }
+                }
+            }
+        });
+
+        if (!invoice) throw new Error("Invoice not found or access denied");
+        return invoice;
+    }
+
+    /**
+     * NEW: Updates invoice status.
+     */
+    static async updateInvoiceStatus(invoiceId: string, status: InvoiceStatus, tenantId: string) {
+        // Security check
+        const invoice = await prisma.invoice.findFirst({
+            where: { id: invoiceId, tenantId }
+        });
+
+        if (!invoice) throw new Error("Invoice not found or access denied");
+
+        const updated = await prisma.invoice.update({
+            where: { id: invoiceId },
+            data: {
+                status,
+                issuedAt: status === InvoiceStatus.ISSUED ? new Date() : undefined,
+                paidAt: status === InvoiceStatus.PAID ? new Date() : undefined
+            }
+        });
+
+        await prisma.auditLog.create({
+            data: {
+                action: 'INVOICE_STATUS_UPDATED',
+                matterId: invoice.matterId,
+                details: `Invoice ${invoiceId} status updated to ${status}`
+            }
+        });
+
+        return updated;
+    }
 }

@@ -3,34 +3,34 @@ export const INDUSTRY_TEMPLATES: Record<string, { name: string, description: str
         {
             name: 'MANAGING_PARTNER',
             description: 'Firm leadership with full operational control.',
-            permissions: ['manage_tenant', 'approve_spend', 'sign_document', 'manage_users', 'read_billing', 'ai_chat_execute', 'view_confidential']
+            permissions: ['manage_tenant', 'approve_spend', 'sign_document', 'manage_users', 'read_billing', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'EQUITY_PARTNER',
             description: 'Owner of client relationships and matters.',
-            permissions: ['sign_document', 'close_matter', 'approve_billing', 'override_ai', 'ai_chat_execute', 'view_confidential']
+            permissions: ['sign_document', 'close_matter', 'approve_billing', 'override_ai', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'SENIOR_ASSOCIATE',
             description: 'Experienced lawyer leading execution.',
-            permissions: ['create_matter', 'edit_document', 'draft_document', 'review_work', 'ai_chat_execute', 'view_confidential']
+            permissions: ['create_matter', 'edit_document', 'draft_document', 'review_work', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'JUNIOR_ASSOCIATE',
             description: 'Junior lawyer execution role.',
-            permissions: ['draft_document', 'execute_research', 'upload_document', 'ai_chat_execute', 'view_confidential']
+            permissions: ['draft_document', 'execute_research', 'upload_document', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'PARALEGAL',
             description: 'Legal support staff.',
-            permissions: ['upload_document', 'execute_research', 'organize_files', 'ai_chat_execute', 'view_confidential']
+            permissions: ['upload_document', 'execute_research', 'organize_files', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         }
     ],
     'BANKING': [
         {
             name: 'CHIEF_LEGAL_OFFICER',
             description: 'Top legal executive for the bank.',
-            permissions: ['manage_tenant', 'approve_matter_high_risk', 'read_all_audits', 'manage_roles', 'ai_chat_execute', 'view_confidential']
+            permissions: ['manage_tenant', 'approve_matter_high_risk', 'read_all_audits', 'manage_roles', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'COMPLIANCE_DIRECTOR',
@@ -40,7 +40,7 @@ export const INDUSTRY_TEMPLATES: Record<string, { name: string, description: str
         {
             name: 'REGULATORY_COUNSEL',
             description: 'Legal counsel for regulatory interpretation.',
-            permissions: ['edit_policy', 'override_ai', 'configure_rre', 'ai_chat_execute', 'view_confidential']
+            permissions: ['edit_policy', 'override_ai', 'configure_rre', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'LOAN_DOC_SPECIALIST',
@@ -57,7 +57,7 @@ export const INDUSTRY_TEMPLATES: Record<string, { name: string, description: str
         {
             name: 'CLAIMS_COUNSEL',
             description: 'Counsel determining claim validity and coverage.',
-            permissions: ['assess_coverage', 'approve_settlement', 'manage_outside_counsel', 'ai_chat_execute', 'view_confidential']
+            permissions: ['assess_coverage', 'approve_settlement', 'manage_outside_counsel', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'LITIGATION_MANAGER',
@@ -79,7 +79,7 @@ export const INDUSTRY_TEMPLATES: Record<string, { name: string, description: str
         {
             name: 'SOLO_GC',
             description: 'General Counsel handling all legal functions.',
-            permissions: ['manage_tenant', 'create_matter', 'sign_document', 'approve_spend', 'manage_users', 'ai_chat_execute', 'view_confidential']
+            permissions: ['manage_tenant', 'create_matter', 'sign_document', 'approve_spend', 'manage_users', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'LEGAL_OPS_LEAD',
@@ -142,7 +142,7 @@ export const INDUSTRY_TEMPLATES: Record<string, { name: string, description: str
         {
             name: 'ATTORNEY_GENERAL',
             description: 'Top legal authority for the jurisdiction.',
-            permissions: ['manage_platform', 'manage_tenant', 'approve_matter_high_risk', 'read_all_audits', 'sign_document', 'ai_chat_execute', 'view_confidential']
+            permissions: ['manage_platform', 'manage_tenant', 'approve_matter_high_risk', 'read_all_audits', 'sign_document', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         },
         {
             name: 'LEGISLATIVE_DRAFTIER',
@@ -152,7 +152,7 @@ export const INDUSTRY_TEMPLATES: Record<string, { name: string, description: str
         {
             name: 'PUBLIC_PROSECUTOR',
             description: 'Legal authority for criminal and state litigation.',
-            permissions: ['create_matter', 'draft_document', 'edit_document', 'review_work', 'ai_chat_execute', 'view_confidential']
+            permissions: ['create_matter', 'draft_document', 'edit_document', 'review_work', 'ai_chat_execute', 'use_legal_chat', 'view_confidential']
         }
     ]
 };

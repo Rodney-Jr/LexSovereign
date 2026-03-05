@@ -63,4 +63,58 @@ router.get('/financials', async (req, res) => {
     }
 });
 
+/**
+ * NEW: GET /api/billing/invoices
+ * Returns all matter-level invoices for the tenant.
+ */
+router.get('/invoices', async (req, res) => {
+    try {
+        const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
+        if (!tenantId) return res.status(401).json({ error: "Tenant context missing" });
+
+        const invoices = await BillingService.getTenantInvoices(tenantId);
+        res.json(invoices);
+    } catch (error: any) {
+        console.error("Failed to fetch invoices:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * NEW: GET /api/billing/invoices/:id
+ * Returns detailed data for a specific invoice.
+ */
+router.get('/invoices/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
+
+        const invoice = await BillingService.getInvoiceDetails(id, tenantId);
+        res.json(invoice);
+    } catch (error: any) {
+        console.error("Failed to fetch invoice details:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * NEW: PATCH /api/billing/invoices/:id/status
+ * Updates the status of an invoice.
+ */
+router.patch('/invoices/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
+
+        if (!status) return res.status(400).json({ error: "Status is required" });
+
+        const updated = await BillingService.updateInvoiceStatus(id, status, tenantId);
+        res.json(updated);
+    } catch (error: any) {
+        console.error("Failed to update invoice status:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

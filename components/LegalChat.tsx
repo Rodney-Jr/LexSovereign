@@ -65,7 +65,7 @@ const LegalChat: React.FC<LegalChatProps> = ({ killSwitchActive, rules, document
   // Enforce Access Control
   // 1. Must have basic chat access
   // 2. If 'public' user, restricted mode
-  const canChat = hasPermission('ai_chat_execute'); // Basic permission to use AI
+  const canChat = hasPermission('use_legal_chat'); // Practitioner-only access to Legal Chat
   const isPublic = !hasPermission('view_confidential');
 
   useEffect(() => {

@@ -9,6 +9,7 @@ export interface ChatParams {
     killSwitchActive: boolean;
     useGlobalSearch: boolean;
     jurisdiction: string;
+    allowedRegion?: string;
 }
 
 export interface ChatResult {

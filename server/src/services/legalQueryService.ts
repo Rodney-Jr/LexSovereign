@@ -36,9 +36,16 @@ export class LegalQueryService {
      * Performs Retrieval-Augmented Generation (RAG) by fetching candidates
      * and calculating similarity in-memory (Standard PG Fallback).
      */
-    static async getRelevantStatutes(query: string, region: string): Promise<GazetteExcerpt[]> {
+    static async getRelevantStatutes(query: string, region: string, allowedRegion?: string): Promise<GazetteExcerpt[]> {
         try {
-            // 1. Generate embedding for the user query
+            // 1. SILO ENFORCEMENT: If the query region is a sovereign silo (e.g. GH),
+            // verify the requesting tenant is pinned to that silo.
+            if (region === 'GH' && allowedRegion !== 'GH_ACC_1') {
+                console.warn(`[Silo Security] Access Denied: Tenant ${allowedRegion} attempted to query Ghana Silo (GH).`);
+                return [];
+            }
+
+            // 2. Generate embedding for the user query
             const response = await openai.embeddings.create({
                 model: "text-embedding-3-small",
                 input: query,

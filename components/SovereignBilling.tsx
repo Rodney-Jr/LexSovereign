@@ -20,10 +20,12 @@ import {
 } from 'lucide-react';
 import { SaaSPlan } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
+import ClientInvoicesRecord from './ClientInvoicesRecord';
 
 const SovereignBilling: React.FC = () => {
    const [isSyncing, setIsSyncing] = useState(false);
    const [billingData, setBillingData] = useState<any>(null);
+   const [activeTab, setActiveTab] = useState<'PLATFORM' | 'CLIENT'>('PLATFORM');
 
    const fetchBilling = async () => {
       const session = getSavedSession();
@@ -62,158 +64,180 @@ const SovereignBilling: React.FC = () => {
 
    return (
       <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
-         {/* Usage Meters */}
-         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-               <div className="absolute top-0 right-0 p-8 opacity-5">
-                  <Zap size={150} />
-               </div>
-
-               <div className="flex items-center justify-between mb-10">
-                  <div className="space-y-1">
-                     <h3 className="text-2xl font-bold text-white tracking-tight">Resource Utilization Ledger</h3>
-                     <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Real-time SaaS telemetry</p>
-                  </div>
-                  <button
-                     onClick={handleSync}
-                     title="Sync Resource Metrics"
-                     className="p-3 bg-slate-950 border border-slate-800 rounded-2xl text-slate-400 hover:text-emerald-400 transition-all"
-                  >
-                     <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
-                  </button>
-               </div>
-
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <UsageMeter
-                     label="AI Credits (Inference)"
-                     current={billingData?.usage?.aiCredits?.current || 0}
-                     max={billingData?.usage?.aiCredits?.max || 10000}
-                     color="emerald"
-                     sub="Sovereign Core Inference"
-                  />
-                  <UsageMeter
-                     label="Vault Storage (Pinned)"
-                     current={billingData?.usage?.storage?.current || 0}
-                     max={billingData?.usage?.storage?.max || 50}
-                     unit={billingData?.usage?.storage?.unit || 'GB'}
-                     color="blue"
-                     sub="Primary Silo Residency Limit"
-                  />
-                  <UsageMeter
-                     label="Active Team Slots"
-                     current={billingData?.usage?.users?.current || 0}
-                     max={billingData?.usage?.users?.max || 100}
-                     color="purple"
-                     sub="Institutional Tier"
-                  />
-               </div>
-
-               <div className="mt-12 p-6 bg-slate-950/80 border border-slate-800 rounded-[2rem] flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                     <div className="space-y-0.5">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Burn Rate</p>
-                        <p className="text-xl font-bold text-white tracking-tight">{billingData?.usage?.burnRate || '0.0'} Credits <span className="text-slate-600 text-xs">/ hr</span></p>
-                     </div>
-                     <div className="w-[1px] h-10 bg-slate-800"></div>
-                     <div className="space-y-0.5">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Projected Overage</p>
-                        <p className="text-xl font-bold text-emerald-500 tracking-tight">${billingData?.usage?.projectedOverage?.toFixed(2) || '0.00'}</p>
-                     </div>
-                  </div>
-                  <button
-                     onClick={handleManageBilling}
-                     className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase transition-all shadow-xl shadow-emerald-900/20 active:scale-95 flex items-center gap-2"
-                  >
-                     <Plus size={16} /> Allocate Credits
-                  </button>
-               </div>
-            </div>
-
-            <div className="lg:col-span-4 space-y-6">
-               {/* Active Subscription Status */}
-               <div className="bg-slate-900/50 border border-slate-800 p-8 rounded-[2.5rem] flex flex-col justify-between h-full relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
-                     <ShieldCheck size={100} />
-                  </div>
-                  <div className="space-y-6 relative z-10">
-                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-400">
-                           <Building2 size={24} />
-                        </div>
-                        <div>
-                           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enterprise Plan</p>
-                           <h4 className="text-lg font-bold text-white uppercase tracking-tighter">Institutional Tier</h4>
-                        </div>
-                     </div>
-                     <div className="space-y-4">
-                        <PlanFeature label="Logical Sovereign Silo (Pinned)" />
-                        <PlanFeature label="Sovereign Ethics Guardrails" />
-                        <PlanFeature label="BYOK Encryption (HSM)" />
-                        <PlanFeature label="FIPS-140 Decision Trace" />
-                     </div>
-                  </div>
-                  <div className="space-y-3 relative z-10 pt-8 mt-8 border-t border-slate-800">
-                     <button
-                        onClick={handleManageBilling}
-                        className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all border border-slate-700 active:scale-95"
-                     >
-                        {billingData?.hasStripeCustomer ? 'Manage Subscription' : 'Plan Settings'}
-                     </button>
-                     <p className="text-[9px] text-slate-500 text-center font-medium italic">
-                        {billingData?.subscriptionStatus === 'active' ? 'Deployment Status: Active' : `Status: ${billingData?.subscriptionStatus || 'PROVISIONED'}`}
-                     </p>
-                  </div>
-               </div>
-            </div>
+         {/* Sub-Navigation Tabs */}
+         <div className="flex items-center gap-2 p-1.5 bg-slate-900/50 border border-slate-800 rounded-3xl w-fit">
+            <button
+               onClick={() => setActiveTab('PLATFORM')}
+               className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'PLATFORM' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+               SaaS Platform Billing
+            </button>
+            <button
+               onClick={() => setActiveTab('CLIENT')}
+               className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'CLIENT' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+               Client Invoicing
+            </button>
          </div>
 
-         {/* Invoice Ledger */}
-         <div className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-               <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                  <Receipt size={14} className="text-blue-400" /> Cryptographic Billing Trace
-               </h4>
-               <span className="text-[10px] font-mono text-slate-600">FIPS 140-2 Ledger: SYNCED</span>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl">
-               <table className="w-full text-left">
-                  <thead className="bg-slate-800/50 border-b border-slate-800 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                     <tr>
-                        <th className="px-8 py-5">Statement Cycle</th>
-                        <th className="px-8 py-5">Resource Delta</th>
-                        <th className="px-8 py-5">Amount (Primary Currency)</th>
-                        <th className="px-8 py-5 text-right">Artifacts</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/50 text-xs">
-                     {billingData?.history ? (
-                        billingData.history.length > 0 ? (
-                           billingData.history.map((row: any) => (
-                              <InvoiceRow key={row.id} cycle={row.cycle} delta={row.delta} amount={row.amount} status={row.status} downloadUrl={row.downloadUrl} />
-                           ))
-                        ) : (
-                           <tr><td colSpan={4} className="px-8 py-6 text-center text-slate-500 italic font-medium">No cryptographic billing records found for this silo.</td></tr>
-                        )
-                     ) : (
-                        <tr><td colSpan={4} className="px-8 py-4 text-center text-slate-500">Retrieving ledger...</td></tr>
-                     )}
-                  </tbody>
-               </table>
-            </div>
-         </div>
+         {activeTab === 'CLIENT' ? (
+            <ClientInvoicesRecord />
+         ) : (
+            <>
+               {/* Usage Meters */}
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-8 bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 p-8 opacity-5">
+                        <Zap size={150} />
+                     </div>
 
-         {billingData?.usage?.predictiveAlertDate && (
-            <div className="bg-amber-500/5 border border-amber-500/10 p-8 rounded-[2.5rem] flex items-start gap-6">
-               <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 shrink-0">
-                  <AlertCircle className="text-amber-500" size={24} />
+                     <div className="flex items-center justify-between mb-10">
+                        <div className="space-y-1">
+                           <h3 className="text-2xl font-bold text-white tracking-tight">Resource Utilization Ledger</h3>
+                           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Real-time SaaS telemetry</p>
+                        </div>
+                        <button
+                           onClick={handleSync}
+                           title="Sync Resource Metrics"
+                           className="p-3 bg-slate-950 border border-slate-800 rounded-2xl text-slate-400 hover:text-emerald-400 transition-all"
+                        >
+                           <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
+                        </button>
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <UsageMeter
+                           label="AI Credits (Inference)"
+                           current={billingData?.usage?.aiCredits?.current || 0}
+                           max={billingData?.usage?.aiCredits?.max || 10000}
+                           color="emerald"
+                           sub="Sovereign Core Inference"
+                        />
+                        <UsageMeter
+                           label="Vault Storage (Pinned)"
+                           current={billingData?.usage?.storage?.current || 0}
+                           max={billingData?.usage?.storage?.max || 50}
+                           unit={billingData?.usage?.storage?.unit || 'GB'}
+                           color="blue"
+                           sub="Primary Silo Residency Limit"
+                        />
+                        <UsageMeter
+                           label="Active Team Slots"
+                           current={billingData?.usage?.users?.current || 0}
+                           max={billingData?.usage?.users?.max || 100}
+                           color="purple"
+                           sub="Institutional Tier"
+                        />
+                     </div>
+
+                     <div className="mt-12 p-6 bg-slate-950/80 border border-slate-800 rounded-[2rem] flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                           <div className="space-y-0.5">
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Burn Rate</p>
+                              <p className="text-xl font-bold text-white tracking-tight">{billingData?.usage?.burnRate || '0.0'} Credits <span className="text-slate-600 text-xs">/ hr</span></p>
+                           </div>
+                           <div className="w-[1px] h-10 bg-slate-800"></div>
+                           <div className="space-y-0.5">
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Projected Overage</p>
+                              <p className="text-xl font-bold text-emerald-500 tracking-tight">${billingData?.usage?.projectedOverage?.toFixed(2) || '0.00'}</p>
+                           </div>
+                        </div>
+                        <button
+                           onClick={handleManageBilling}
+                           className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase transition-all shadow-xl shadow-emerald-900/20 active:scale-95 flex items-center gap-2"
+                        >
+                           <Plus size={16} /> Allocate Credits
+                        </button>
+                     </div>
+                  </div>
+
+                  <div className="lg:col-span-4 space-y-6">
+                     {/* Active Subscription Status */}
+                     <div className="bg-slate-900/50 border border-slate-800 p-8 rounded-[2.5rem] flex flex-col justify-between h-full relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
+                           <ShieldCheck size={100} />
+                        </div>
+                        <div className="space-y-6 relative z-10">
+                           <div className="flex items-center gap-4">
+                              <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-400">
+                                 <Building2 size={24} />
+                              </div>
+                              <div>
+                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enterprise Plan</p>
+                                 <h4 className="text-lg font-bold text-white uppercase tracking-tighter">Institutional Tier</h4>
+                              </div>
+                           </div>
+                           <div className="space-y-4">
+                              <PlanFeature label="Logical Sovereign Silo (Pinned)" />
+                              <PlanFeature label="Sovereign Ethics Guardrails" />
+                              <PlanFeature label="BYOK Encryption (HSM)" />
+                              <PlanFeature label="FIPS-140 Decision Trace" />
+                           </div>
+                        </div>
+                        <div className="space-y-3 relative z-10 pt-8 mt-8 border-t border-slate-800">
+                           <button
+                              onClick={handleManageBilling}
+                              className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all border border-slate-700 active:scale-95"
+                           >
+                              {billingData?.hasStripeCustomer ? 'Manage Subscription' : 'Plan Settings'}
+                           </button>
+                           <p className="text-[9px] text-slate-500 text-center font-medium italic">
+                              {billingData?.subscriptionStatus === 'active' ? 'Deployment Status: Active' : `Status: ${billingData?.subscriptionStatus || 'PROVISIONED'}`}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
                </div>
-               <div className="space-y-1">
-                  <h5 className="font-bold text-xs text-amber-400 uppercase tracking-widest">Predictive Quota Alert</h5>
-                  <p className="text-[10px] text-slate-400 leading-relaxed">
-                     Based on current matter velocity, you will consume your allocated <strong>{billingData?.usage?.aiCredits?.max?.toLocaleString() || '10,000'} Credits</strong> by {new Date(billingData.usage.predictiveAlertDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. Autonomous credit top-up is currently <strong className="text-slate-200">DISABLED</strong> per organization policy.
-                  </p>
+
+               {/* Invoice Ledger */}
+               <div className="space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                     <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                        <Receipt size={14} className="text-blue-400" /> Cryptographic Billing Trace
+                     </h4>
+                     <span className="text-[10px] font-mono text-slate-600">FIPS 140-2 Ledger: SYNCED</span>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl">
+                     <table className="w-full text-left">
+                        <thead className="bg-slate-800/50 border-b border-slate-800 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                           <tr>
+                              <th className="px-8 py-5">Statement Cycle</th>
+                              <th className="px-8 py-5">Resource Delta</th>
+                              <th className="px-8 py-5">Amount (Primary Currency)</th>
+                              <th className="px-8 py-5 text-right">Artifacts</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/50 text-xs">
+                           {billingData?.history ? (
+                              billingData.history.length > 0 ? (
+                                 billingData.history.map((row: any) => (
+                                    <InvoiceRow key={row.id} cycle={row.cycle} delta={row.delta} amount={row.amount} status={row.status} downloadUrl={row.downloadUrl} />
+                                 ))
+                              ) : (
+                                 <tr><td colSpan={4} className="px-8 py-6 text-center text-slate-500 italic font-medium">No cryptographic billing records found for this silo.</td></tr>
+                              )
+                           ) : (
+                              <tr><td colSpan={4} className="px-8 py-4 text-center text-slate-500">Retrieving ledger...</td></tr>
+                           )}
+                        </tbody>
+                     </table>
+                  </div>
                </div>
-            </div>
+
+               {billingData?.usage?.predictiveAlertDate && (
+                  <div className="bg-amber-500/5 border border-amber-500/10 p-8 rounded-[2.5rem] flex items-start gap-6">
+                     <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 shrink-0">
+                        <AlertCircle className="text-amber-500" size={24} />
+                     </div>
+                     <div className="space-y-1">
+                        <h5 className="font-bold text-xs text-amber-400 uppercase tracking-widest">Predictive Quota Alert</h5>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                           Based on current matter velocity, you will consume your allocated <strong>{billingData?.usage?.aiCredits?.max?.toLocaleString() || '10,000'} Credits</strong> by {new Date(billingData.usage.predictiveAlertDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. Autonomous credit top-up is currently <strong className="text-slate-200">DISABLED</strong> per organization policy.
+                        </p>
+                     </div>
+                  </div>
+               )}
+            </>
          )}
       </div>
    );
@@ -231,7 +255,7 @@ const UsageMeter = ({ label, current, max, unit = "", color, sub }: any) => {
             </div>
          </div>
          <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-            <div className={`h-full bg-${color}-500 shadow-[0_0_10px_rgba(var(--color-rgb),0.4)] transition-all duration-1000 dynamic-width`} style={{ '--width': `${pct}%` } as any}></div>
+            <div className={`h-full bg-${color}-500 shadow-[0_0_10px_rgba(var(--color-rgb),0.4)] transition-all duration-1000`} style={{ width: `${pct}%` }}></div>
          </div>
          <p className="text-[9px] text-slate-600 italic font-medium">{sub}</p>
       </div>

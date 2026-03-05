@@ -15,7 +15,26 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/chat', authenticateToken, async (req: Request, res) => {
     try {
         const { input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch, jurisdiction } = req.body;
-        const result = await geminiService.chat(input, matterId, documents, usePrivateModel, killSwitchActive, useGlobalSearch, jurisdiction || 'GH');
+
+        let allowedRegion: string | undefined;
+        if (req.user?.tenantId) {
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: req.user.tenantId },
+                select: { primaryRegion: true }
+            });
+            allowedRegion = tenant?.primaryRegion;
+        }
+
+        const result = await geminiService.chat(
+            input,
+            matterId,
+            documents,
+            usePrivateModel,
+            killSwitchActive,
+            useGlobalSearch,
+            jurisdiction || 'GH',
+            allowedRegion
+        );
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

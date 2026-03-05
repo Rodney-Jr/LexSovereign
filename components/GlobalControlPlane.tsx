@@ -153,7 +153,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
                      onClick={() => setActiveTab('repository')}
                      className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'repository' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                   >
-                     Legal Repository
+                     Judicial Ingestion Hub
                   </button>
                   {import.meta.env.VITE_SHOW_PRICING === 'true' && (
                      <button

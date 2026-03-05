@@ -76,7 +76,7 @@ export class OpenRouterProvider implements AIProvider {
         let legalKnowledge = "";
         try {
             const region = params.jurisdiction || "GH";
-            const excerpts = await LegalQueryService.getRelevantStatutes(sanitized, region);
+            const excerpts = await LegalQueryService.getRelevantStatutes(sanitized, region, params.allowedRegion);
             if (excerpts.length > 0) {
                 legalKnowledge = "REGION-SPECIFIC STATUTORY CONTEXT (OFFICIAL GAZETTE):\n" +
                     excerpts.map((e: any) => `[Source: ${e.title} | URL: ${e.sourceUrl}]\n${e.contentChunk}`).join('\n\n');

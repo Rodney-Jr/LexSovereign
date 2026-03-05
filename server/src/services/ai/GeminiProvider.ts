@@ -42,7 +42,7 @@ export class GeminiProvider implements AIProvider {
         let legalKnowledge = "";
         try {
             const region = params.jurisdiction || "GH"; // Default to GH if not specified
-            const excerpts = await LegalQueryService.getRelevantStatutes(sanitized, region);
+            const excerpts = await LegalQueryService.getRelevantStatutes(sanitized, region, params.allowedRegion);
 
             if (excerpts.length > 0) {
                 legalKnowledge = "REGION-SPECIFIC STATUTORY CONTEXT (OFFICIAL GAZETTE):\n" +

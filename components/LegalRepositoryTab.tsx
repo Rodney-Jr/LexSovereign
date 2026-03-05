@@ -25,17 +25,18 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [category, setCategory] = useState('STATUTE');
+    const [region, setRegion] = useState('GH');
 
     useEffect(() => {
         fetchDocuments();
-    }, []);
+    }, [region]);
 
     const fetchDocuments = async () => {
         setLoading(true);
         try {
             const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
-            const data = await authorizedFetch('/api/platform/judicial/documents', { token });
+            const data = await authorizedFetch(`/api/platform/judicial/documents?region=${region}`, { token });
             if (Array.isArray(data)) setDocuments(data);
         } catch (e) {
             console.error("Failed to fetch documents", e);
@@ -59,6 +60,7 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('category', category);
+        formData.append('region', region);
 
         try {
             const sessionData = localStorage.getItem('nomosdesk_session');
@@ -120,6 +122,22 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
                         </div>
 
                         <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Silo Target</label>
+                                <select
+                                    value={region}
+                                    onChange={(e) => setRegion(e.target.value)}
+                                    title="Silo Target Region"
+                                    aria-label="Select Silo Target Region"
+                                    className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition-all font-bold uppercase tracking-wider"
+                                >
+                                    <option value="GH">Ghana (Sovereign Silo)</option>
+                                    <option value="NG">Nigeria (Standard)</option>
+                                    <option value="KE">Kenya (Standard)</option>
+                                    <option value="ZA">South Africa (Standard)</option>
+                                </select>
+                            </div>
+
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Source Category</label>
                                 <div className="grid grid-cols-2 gap-2">

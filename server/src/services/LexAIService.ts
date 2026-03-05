@@ -53,7 +53,8 @@ export class LexAIService {
         usePrivateModel: boolean,
         killSwitchActive: boolean,
         useGlobalSearch: boolean = false,
-        jurisdiction: string = 'GH'
+        jurisdiction: string = 'GH',
+        allowedRegion?: string
     ): Promise<ChatResult> {
         const params: ChatParams = {
             input,
@@ -62,7 +63,8 @@ export class LexAIService {
             usePrivateModel,
             killSwitchActive,
             useGlobalSearch,
-            jurisdiction
+            jurisdiction,
+            allowedRegion
         };
         return this.executeWithFailover(p => p.chat(params));
     }
