@@ -326,6 +326,12 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'Matter not found' });
         }
 
+        // Fix BigInt serialization: Prisma returns fileSize as BigInt, which res.json() cannot serialize natively.
+        matter.documents = matter.documents.map(d => ({
+            ...d,
+            fileSize: d.fileSize ? d.fileSize.toString() : null
+        })) as any;
+
         // Calculate Velocity Metrics
         let avgCycleTime = 0;
         if (matter.documents.length > 0) {
