@@ -389,7 +389,7 @@ export default function HomePage() {
                 <div className="grid md:grid-cols-4 gap-6 text-center">
                     <TrustItem label="Data Sovereignty" value="100%" sub="Local Residency Options" />
                     <TrustItem label="Uptime SLA" value="99.9%" sub="Enterprise Guarantee" />
-                    <TrustItem label="Compliance" value="GDPR" sub="& Local Data Laws" />
+                    <TrustItem label="Aligned" value="GDPR" sub="& Local Data Laws" />
                     <TrustItem label="Encryption" value="AES-256" sub="At Rest & In Transit" />
                 </div>
                 <div className="mt-12 text-center">
