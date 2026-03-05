@@ -205,16 +205,13 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
         const userCount = await prisma.user.count({ where: { tenantId } });
         const docCount = await prisma.document.count({ where: { matter: { tenantId } } });
 
-        // Calculate AI Credits from AuditLog
-        const aiUsageCount = await prisma.auditLog.count({
-            where: {
-                user: { tenantId },
-                action: { startsWith: 'AI_ACCESS_' }
-            }
+        // Precise AI Credit calculation: sum of costCredits in AIUsage
+        const aiAgg = await prisma.aIUsage.aggregate({
+            where: { tenantId },
+            _sum: { costCredits: true }
         });
 
-        // Each AI action is weighted as 10 credits by default for now
-        const currentAiCredits = aiUsageCount * 10;
+        const currentAiCredits = Number(aiAgg._sum.costCredits || 0);
         const maxAiCredits = pricing?.creditsIncluded || 10000;
 
         const overageCredits = Math.max(0, currentAiCredits - maxAiCredits);
@@ -222,14 +219,14 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 
         // Calculate Burn Rate (Credits spent in last 24 hours / 24)
         const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const dailyAiUsage = await prisma.auditLog.count({
+        const dailyAiUsageAgg = await prisma.aIUsage.aggregate({
             where: {
-                user: { tenantId },
-                action: { startsWith: 'AI_ACCESS_' },
-                timestamp: { gte: last24h }
-            }
+                tenantId,
+                createdAt: { gte: last24h }
+            },
+            _sum: { costCredits: true }
         });
-        const burnRate = (dailyAiUsage * 10 / 24).toFixed(1);
+        const burnRate = (Number(dailyAiUsageAgg._sum.costCredits || 0) / 24).toFixed(2);
 
         let predictiveAlertDate: string | null = null;
         if (parseFloat(burnRate) > 0 && currentAiCredits < maxAiCredits) {
@@ -243,8 +240,20 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             predictiveAlertDate = new Date().toISOString();
         }
 
-        // Storage calculation: ~10MB per document as a heuristic (0.01 GB)
-        const storageUsedGB = (docCount * 0.01).toFixed(2);
+        // Precise Storage calculation: sum of fileSize field
+        const storageAgg = await prisma.document.aggregate({
+            where: { matter: { tenantId } },
+            _sum: { fileSize: true }
+        });
+
+        // Convert BigInt total bytes to GB (1024^3)
+        // If some docs have 0 fileSize (legacy), we still count them as ~10MB to avoid under-billing
+        const docsWithNoSize = await prisma.document.count({
+            where: { matter: { tenantId }, fileSize: 0 }
+        });
+
+        const totalBytes = Number(storageAgg._sum.fileSize || 0);
+        const storageUsedGB = (totalBytes / (1024 ** 3) + (docsWithNoSize * 0.01)).toFixed(2);
 
         // Task: Fix 500 Errors & Debug Provisioning
 

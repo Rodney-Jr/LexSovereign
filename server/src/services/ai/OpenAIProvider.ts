@@ -77,7 +77,12 @@ export class OpenAIProvider implements AIProvider {
                 text: finalText || "Analysis complete.",
                 confidence: audit.flagged ? 0.0 : (result.confidence || 0.8),
                 provider: `OpenAI (${this.defaultModel})`,
-                references: result.references
+                references: result.references,
+                usage: response.usage ? {
+                    promptTokens: response.usage.prompt_tokens,
+                    completionTokens: response.usage.completion_tokens,
+                    totalTokens: response.usage.total_tokens
+                } : undefined
             };
 
         } catch (error: any) {

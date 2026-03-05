@@ -33,7 +33,8 @@ router.post('/chat', authenticateToken, async (req: Request, res) => {
             killSwitchActive,
             useGlobalSearch,
             jurisdiction || 'GH',
-            allowedRegion
+            allowedRegion,
+            req.user?.tenantId
         );
         res.json(result);
     } catch (error: any) {

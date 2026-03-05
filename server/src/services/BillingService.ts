@@ -98,6 +98,61 @@ export class BillingService {
             }
         }
 
+        // --- NEW: Automated Disbursement Inclusion ---
+        // Fetch un-invoiced AI Usage for this matter
+        const uninvoicedAi = await (prisma as any).aIUsage.findMany({
+            where: { matterId, invoiceId: null }
+        });
+
+        if (uninvoicedAi.length > 0) {
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: tenantId },
+                select: { attributes: true }
+            });
+            const attributes = (tenant?.attributes as any) || {};
+            const creditPrice = attributes.aiCreditPrice || 0.05;
+
+            const totalAiCredits = uninvoicedAi.reduce((sum: number, u: any) => sum + u.costCredits, 0);
+            const aiDisbursementAmount = totalAiCredits * creditPrice;
+
+            if (aiDisbursementAmount > 0) {
+                totalInvoiceAmount += aiDisbursementAmount;
+                lineItemsData.push({
+                    amount: aiDisbursementAmount,
+                    description: `AI Legal Analysis Disbursements (${totalAiCredits.toFixed(2)} Credits)`
+                });
+            }
+        }
+
+        // Fetch Storage snapshot if not yet invoiced in a reasonable window
+        // For simplicity, we'll check if any 'Storage' line item exists in the last 25 days
+        const recentStorageItem = await prisma.invoiceLineItem.findFirst({
+            where: {
+                description: { contains: 'Digital Enclave Preservation' },
+                invoice: { matterId, createdAt: { gte: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000) } }
+            }
+        });
+
+        if (!recentStorageItem) {
+            const usage = await this.getMatterUsage(matterId, tenantId);
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: tenantId },
+                select: { attributes: true }
+            });
+            const attributes = (tenant?.attributes as any) || {};
+            const storageRatePerGB = attributes.storageRatePerGB || 2.0;
+
+            const storageAmount = parseFloat(usage.storageUsage.usedGB) * storageRatePerGB;
+            if (storageAmount > 0) {
+                totalInvoiceAmount += storageAmount;
+                lineItemsData.push({
+                    amount: storageAmount,
+                    description: `Digital Enclave Preservation (${usage.storageUsage.usedGB} GB)`
+                });
+            }
+        }
+        // --- END Disbursements ---
+
         // Generate Invoice if there are actionable items
         if (lineItemsData.length > 0) {
             const invoice = await prisma.invoice.create({
@@ -113,6 +168,14 @@ export class BillingService {
                 },
                 include: { lineItems: true }
             });
+
+            // Mark AI records as invoiced
+            if (uninvoicedAi.length > 0) {
+                await (prisma as any).aIUsage.updateMany({
+                    where: { id: { in: uninvoicedAi.map((u: any) => u.id) } },
+                    data: { invoiceId: invoice.id }
+                });
+            }
 
             await prisma.auditLog.create({
                 data: {
@@ -232,6 +295,7 @@ export class BillingService {
 
                             installments.push({
                                 id: comp.id,
+                                matterId: matter.id,
                                 matterName: matter.name,
                                 componentType: matterComponentType,
                                 remainingBalance: remaining,
@@ -317,5 +381,96 @@ export class BillingService {
         });
 
         return updated;
+    }
+    /**
+     * Aggregates AI and Storage usage for a specific matter.
+     */
+    static async getMatterUsage(matterId: string, tenantId: string) {
+        // Verify matter belongs to tenant
+        const matter = await prisma.matter.findFirst({
+            where: { id: matterId, tenantId },
+            select: { id: true, name: true }
+        });
+
+        if (!matter) throw new Error("Matter not found or access denied");
+
+        // 1. Aggregate AI Usage
+        const aiAgg = await (prisma as any).aIUsage.aggregate({
+            where: { matterId },
+            _sum: {
+                promptTokens: true,
+                completionTokens: true,
+                totalTokens: true,
+                costCredits: true
+            }
+        });
+
+        // 2. Aggregate Storage Usage
+        const storageAgg = await (prisma.document as any).aggregate({
+            where: { matterId },
+            _sum: { fileSize: true }
+        });
+
+        const totalBytes = Number(storageAgg._sum.fileSize || 0);
+        const storageUsedGB = (totalBytes / (1024 ** 3)).toFixed(4);
+
+        return {
+            matterId,
+            matterName: matter.name,
+            aiUsage: {
+                promptTokens: aiAgg._sum.promptTokens || 0,
+                completionTokens: aiAgg._sum.completionTokens || 0,
+                totalTokens: aiAgg._sum.totalTokens || 0,
+                costCredits: Number(aiAgg._sum.costCredits || 0).toFixed(2)
+            },
+            storageUsage: {
+                totalBytes,
+                usedGB: storageUsedGB
+            }
+        };
+    }
+
+    /**
+     * Generates a CSV for Law Firms to attach to their clients' bills.
+     */
+    static async generateClientDisbursementCSV(matterId: string, tenantId: string) {
+        const usage = await this.getMatterUsage(matterId, tenantId);
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            select: { name: true, client: true }
+        });
+
+        if (!matter) throw new Error("Matter not found");
+
+        const aiRecords = await (prisma as any).aIUsage.findMany({
+            where: { matterId },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { attributes: true }
+        });
+        const attributes = (tenant?.attributes as any) || {};
+        const creditPrice = attributes.aiCreditPrice || 0.05;
+        const storageRatePerGB = attributes.storageRatePerGB || 2.0; // Default $2/GB/month
+
+        let csv = `"Date","Service","Description","Units","Credits","Rate","Amount"\n`;
+
+        // Add AI Usage rows
+        for (const record of aiRecords) {
+            const amount = (record.costCredits * creditPrice).toFixed(4);
+            const date = record.createdAt.toISOString().split('T')[0];
+            const escapedModel = record.modelId.replace(/"/g, '""');
+            csv += `"${date}","AI Legal Analysis","AI Assistance (${escapedModel})","${record.totalTokens} tokens","${record.costCredits}","${creditPrice}","${amount}"\n`;
+        }
+
+        // Add Storage row (Consolidated current snapshot)
+        if (parseFloat(usage.storageUsage.usedGB) > 0) {
+            const storageAmount = (parseFloat(usage.storageUsage.usedGB) * storageRatePerGB).toFixed(2);
+            csv += `"${new Date().toISOString().split('T')[0]}","Storage","Digital Enclave Preservation","${usage.storageUsage.usedGB} GB","N/A","${storageRatePerGB}","${storageAmount}"\n`;
+        }
+
+        return csv;
     }
 }

@@ -59,6 +59,32 @@ const CaseCenter: React.FC = () => {
         }
     };
 
+    const downloadDisbursementReport = async (matterId: string) => {
+        try {
+            const session = getSavedSession();
+            if (!session?.token) return;
+
+            const response = await fetch(`/api/billing/matters/${matterId}/disbursement-csv`, {
+                headers: {
+                    'Authorization': `Bearer ${session.token}`
+                }
+            });
+
+            if (!response.ok) throw new Error("Failed to download report");
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `disbursement_${matterId}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error("Download failed", e);
+        }
+    };
+
     return (
         <div className="space-y-10 animate-in fade-in duration-700 pb-24">
             {/* Header & Quick Action */}
@@ -272,10 +298,11 @@ const CaseCenter: React.FC = () => {
                             <table className="w-full text-left text-sm relative z-10">
                                 <thead className="text-[10px] uppercase text-slate-500 font-bold tracking-widest border-b border-slate-800">
                                     <tr>
-                                        <th className="pb-3">Matter Name</th>
-                                        <th className="pb-3">Component Type</th>
-                                        <th className="pb-3">Remaining Balance</th>
-                                        <th className="pb-3">Next Tranche</th>
+                                        <th className="pb-3 text-left">Matter Name</th>
+                                        <th className="pb-3 text-left">Component Type</th>
+                                        <th className="pb-3 text-left">Remaining Balance</th>
+                                        <th className="pb-3 text-left">Next Tranche</th>
+                                        <th className="pb-3 text-right">Disbursements</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-800/50">
@@ -285,6 +312,14 @@ const CaseCenter: React.FC = () => {
                                             <td className="py-4 text-sky-400 text-[10px] uppercase tracking-widest font-bold">{inst.componentType}</td>
                                             <td className="py-4 text-white font-mono">${inst.remainingBalance.toLocaleString()}</td>
                                             <td className="py-4 text-slate-400">{inst.nextTranche}</td>
+                                            <td className="py-4 text-right">
+                                                <button
+                                                    onClick={() => downloadDisbursementReport(inst.matterId)}
+                                                    className="text-[9px] bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-full font-bold uppercase tracking-widest transition-all"
+                                                >
+                                                    Export AI Report
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                     {financials.installments.length === 0 && (

@@ -54,7 +54,8 @@ export class LexAIService {
         killSwitchActive: boolean,
         useGlobalSearch: boolean = false,
         jurisdiction: string = 'GH',
-        allowedRegion?: string
+        allowedRegion?: string,
+        tenantId?: string
     ): Promise<ChatResult> {
         const params: ChatParams = {
             input,
@@ -66,7 +67,36 @@ export class LexAIService {
             jurisdiction,
             allowedRegion
         };
-        return this.executeWithFailover(p => p.chat(params));
+        const result = (await this.executeWithFailover(p => p.chat(params))) as ChatResult;
+
+        // Log AI Usage for Metered Billing
+        if (result.usage && tenantId) {
+            try {
+                const { prisma } = await import('../db');
+                // Calculate weighted credits: 1 credit per 10k input or 2k output tokens
+                const inputWeight = result.usage.promptTokens / 10000;
+                const outputWeight = result.usage.completionTokens / 2000;
+                const costCredits = Number((inputWeight + outputWeight).toFixed(4));
+
+                await (prisma as any).aIUsage.create({
+                    data: {
+                        tenantId: tenantId,
+                        matterId: matterId,
+                        modelId: result.provider || 'default',
+                        promptTokens: result.usage.promptTokens,
+                        completionTokens: result.usage.completionTokens,
+                        totalTokens: result.usage.totalTokens,
+                        costCredits: costCredits
+                    }
+                });
+
+                (result as any).calculatedCredits = costCredits;
+            } catch (e) {
+                console.error("[LexAIService] Usage logging failed:", e);
+            }
+        }
+
+        return result;
     }
 
     async explainClause(clauseText: string): Promise<string> {

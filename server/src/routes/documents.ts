@@ -112,10 +112,22 @@ router.post('/', authenticateToken, async (req, res) => {
             encryptionKeyId = `tenant-key-${tenantId}`; // In production, this would be a KMS Alias
         }
 
-        // 2. Create Document Record
+        // Create Document Record
         let uri = `silo://${tenantId}/${matterId}/${name.replace(/\s+/g, '_')}`;
+        let actualFileSize = 0n;
 
-        // If content is provided, save it to disk
+        // Parse human-readable size if provided (e.g. "1.2 MB")
+        if (size && typeof size === 'string') {
+            const match = size.match(/^([\d\.]+)\s*(KB|MB|GB|B)?$/i);
+            if (match) {
+                const val = parseFloat(match[1]);
+                const unit = (match[2] || 'B').toUpperCase();
+                const multiplier = unit === 'GB' ? 1024 ** 3 : unit === 'MB' ? 1024 ** 2 : unit === 'KB' ? 1024 : 1;
+                actualFileSize = BigInt(Math.round(val * multiplier));
+            }
+        }
+
+        // If content is provided, save it to disk and calculate size
         if (req.body.content) {
             const { saveDocumentContent } = await import('../utils/fileStorage');
             // Note: fileStorage needs to pass encryptionContext to LocalStorageAdapter
@@ -127,6 +139,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 isEncrypted ? { keyId: encryptionKeyId!, algorithm: 'AES-256-GCM', iv: encryptionIV! } : undefined
             );
             uri = `file://${relativePath}`;
+            actualFileSize = BigInt(Buffer.byteLength(req.body.content, 'utf8'));
         }
 
         const doc = await prisma.document.create({
@@ -140,7 +153,8 @@ router.post('/', authenticateToken, async (req, res) => {
                 isEncrypted,
                 encryptionIV,
                 encryptionKeyId,
-                attributes: { type, size }
+                fileSize: actualFileSize,
+                attributes: { type, size: size || '0 KB' }
             },
             include: {
                 matter: true
@@ -151,7 +165,7 @@ router.post('/', authenticateToken, async (req, res) => {
             id: doc.id,
             name: doc.name,
             type: doc.classification,
-            size: size || '0 KB',
+            size: size || (Number(actualFileSize) / 1024).toFixed(1) + ' KB',
             uploadedBy: req.user?.name || 'User',
             uploadedAt: doc.createdAt.toISOString(),
             region: doc.jurisdiction,

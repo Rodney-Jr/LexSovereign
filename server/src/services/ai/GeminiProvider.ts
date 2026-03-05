@@ -96,7 +96,12 @@ export class GeminiProvider implements AIProvider {
             confidence: audit.flagged ? 0.0 : (data.confidence || 0),
             provider: `Gemini (${modelName})`,
             references: data.references,
-            groundingSources: groundingSources.length > 0 ? groundingSources : undefined
+            groundingSources: groundingSources.length > 0 ? groundingSources : undefined,
+            usage: genResult.response.usageMetadata ? {
+                promptTokens: genResult.response.usageMetadata.promptTokenCount || 0,
+                completionTokens: genResult.response.usageMetadata.candidatesTokenCount || 0,
+                totalTokens: genResult.response.usageMetadata.totalTokenCount || 0
+            } : undefined
         };
     }
 

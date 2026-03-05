@@ -16,18 +16,34 @@ export class StripeService {
             throw new Error(`Plan ${planId} is not configured for Stripe payments (Base or User Price ID missing).`);
         }
 
+        const lineItems: any[] = [
+            {
+                price: (pricing as any).stripeBasePriceId!,
+                quantity: 1, // Platform Base Fee
+            },
+            {
+                price: (pricing as any).stripeUserPriceId!,
+                quantity: userCount, // User Seats
+            }
+        ];
+
+        // Add Metered Prices (AI and Storage) if configured
+        if ((pricing as any).stripeAiPriceId) {
+            lineItems.push({
+                price: (pricing as any).stripeAiPriceId!,
+                // Metered items in a subscription usually don't have quantities, but Stripe Checkout
+                // handles them as line items with usage_type=metered.
+            });
+        }
+        if ((pricing as any).stripeStoragePriceId) {
+            lineItems.push({
+                price: (pricing as any).stripeStoragePriceId!,
+            });
+        }
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            line_items: [
-                {
-                    price: (pricing as any).stripeBasePriceId!,
-                    quantity: 1, // Platform Base Fee
-                },
-                {
-                    price: (pricing as any).stripeUserPriceId!,
-                    quantity: userCount, // User Seats
-                }
-            ],
+            line_items: lineItems,
             mode: 'subscription',
             customer_email: adminEmail,
             success_url: `${PLATFORM_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}&status=success&plan=${planId}`,
@@ -119,5 +135,73 @@ export class StripeService {
             status: inv.status?.toUpperCase() || 'UNKNOWN',
             downloadUrl: inv.invoice_pdf
         }));
+    }
+    /**
+     * Sync AI credits and Storage consumption to Stripe Metered Prices
+     */
+    static async syncUsageToStripe(tenantId: string) {
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            include: { aiUsages: { where: { stripeSyncedAt: null } } } as any
+        });
+
+        if (!tenant || !(tenant as any).stripeSubscriptionId) return;
+
+        const pricing = await prisma.pricingConfig.findFirst({
+            where: { id: { equals: (tenant as any).plan as string, mode: 'insensitive' } }
+        });
+
+        if (!pricing) return;
+
+        // 1. Sync AI Credits
+        const unsyncedAi = (tenant as any).aiUsages || [];
+        if (unsyncedAi.length > 0) {
+            const totalCredits = Math.ceil(unsyncedAi.reduce((sum: number, u: any) => sum + (u.costCredits || 0), 0));
+
+            if (totalCredits > 0) {
+                // Using the NEW Stripe Meter Events API (Acacia/2025 onwards)
+                await stripe.billing.meterEvents.create({
+                    event_name: 'ai_credits',
+                    payload: {
+                        value: totalCredits.toString(),
+                        stripe_customer_id: (tenant as any).stripeCustomerId as string
+                    }
+                });
+
+                // Mark as synced
+                await (prisma as any).aIUsage.updateMany({
+                    where: { id: { in: unsyncedAi.map((u: any) => u.id) } },
+                    data: { stripeSyncedAt: new Date() }
+                });
+
+                console.log(`[Stripe Sync] Synced ${totalCredits} AI credits for tenant ${tenantId}`);
+            }
+        }
+
+        // 2. Sync Storage (GB)
+        const results: any = await prisma.$queryRaw`
+            SELECT SUM(COALESCE("fileSize", 0)) as total 
+            FROM "Document" 
+            WHERE "tenantId" = ${tenantId}
+        `;
+        const totalBytes = Number(results[0]?.total || 0);
+        const totalGB = Math.ceil(totalBytes / (1024 * 1024 * 1024));
+
+        if (totalGB > 0) {
+            await stripe.billing.meterEvents.create({
+                event_name: 'storage_usage',
+                payload: {
+                    value: totalGB.toString(),
+                    stripe_customer_id: (tenant as any).stripeCustomerId as string
+                }
+            });
+
+            await prisma.tenant.update({
+                where: { id: tenantId },
+                data: { lastStorageSyncedAt: new Date() } as any
+            });
+
+            console.log(`[Stripe Sync] Synced ${totalGB}GB storage for tenant ${tenantId}`);
+        }
     }
 }

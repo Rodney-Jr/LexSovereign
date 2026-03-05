@@ -117,4 +117,43 @@ router.patch('/invoices/:id/status', async (req, res) => {
     }
 });
 
+/**
+ * NEW: GET /api/billing/matters/:matterId/usage
+ * Returns AI and Storage usage for a specific matter.
+ */
+router.get('/matters/:matterId/usage', async (req, res) => {
+    try {
+        const { matterId } = req.params;
+        const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
+        if (!tenantId) return res.status(401).json({ error: "Tenant context missing" });
+
+        const usage = await BillingService.getMatterUsage(matterId, tenantId);
+        res.json(usage);
+    } catch (error: any) {
+        console.error("Failed to fetch matter usage:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * NEW: GET /api/billing/matters/:matterId/disbursement-csv
+ * Returns a CSV for law firms to bill clients for AI and Storage.
+ */
+router.get('/matters/:matterId/disbursement-csv', async (req, res) => {
+    try {
+        const { matterId } = req.params;
+        const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
+        if (!tenantId) return res.status(401).json({ error: "Tenant context missing" });
+
+        const csv = await BillingService.generateClientDisbursementCSV(matterId, tenantId);
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="disbursement_${matterId}.csv"`);
+        res.status(200).send(csv);
+    } catch (error: any) {
+        console.error("Failed to generate disbursement CSV:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

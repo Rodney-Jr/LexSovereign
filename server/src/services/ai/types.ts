@@ -18,6 +18,11 @@ export interface ChatResult {
     provider: string;
     references?: string[];
     groundingSources?: { title: string, uri: string }[];
+    usage?: {
+        promptTokens: number;
+        completionTokens: number;
+        totalTokens: number;
+    };
 }
 
 export interface AIProvider {
