@@ -37,7 +37,10 @@ export class JudicialIngestionService {
                 $('script, style, nav, footer').remove();
                 text = $('body').text().replace(/\s+/g, ' ').trim();
             } else if (filename.endsWith('.pdf')) {
-                const data = await (pdf as any)(buffer);
+                const { PDFParse } = require('pdf-parse');
+                const parser = new PDFParse({ data: buffer });
+                const data = await parser.getText();
+                await parser.destroy();
                 text = data.text.replace(/\s+/g, ' ').trim();
             } else {
                 // Default to plain text
@@ -83,12 +86,24 @@ export class JudicialIngestionService {
         return await EmbeddingService.generateEmbedding(text);
     }
 
-    private static chunkText(text: string, chunkSize: number = 1000): string[] {
+    private static chunkText(text: string, chunkSize: number = 2500): string[] {
         const paragraphs = text.split(/\n\s*\n/);
         const chunks: string[] = [];
         let currentChunk = "";
 
         for (const para of paragraphs) {
+            // Fallback for massive single paragraphs that lack newlines
+            if (para.length > chunkSize) {
+                if (currentChunk.trim().length > 0) {
+                    chunks.push(currentChunk.trim());
+                    currentChunk = "";
+                }
+                for (let i = 0; i < para.length; i += chunkSize) {
+                    chunks.push(para.substring(i, i + chunkSize).trim());
+                }
+                continue;
+            }
+
             if ((currentChunk + para).length > chunkSize && currentChunk.length > 0) {
                 chunks.push(currentChunk.trim());
                 currentChunk = "";

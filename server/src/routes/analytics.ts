@@ -62,7 +62,7 @@ router.get('/metrics', authenticateToken, async (req, res) => {
 
         const aiScore = totalValidations > 0
             ? parseFloat(((successfulValidations / totalValidations) * 100).toFixed(1))
-            : (docsCount > 0 ? 98.2 : 100);
+            : 0; // No validations recorded yet
 
         res.json({
             matters: mattersCount,
@@ -73,7 +73,8 @@ router.get('/metrics', authenticateToken, async (req, res) => {
                 hoursSaved,
                 feeRecovery,
                 tatReduction: parseFloat(tatReduction),
-                staffCount
+                staffCount,
+                partnerRate: attributes.partnerRate ?? 5625
             }
         });
     } catch (error: any) {

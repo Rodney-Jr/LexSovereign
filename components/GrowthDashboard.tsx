@@ -49,6 +49,7 @@ const GrowthDashboard: React.FC = () => {
                     setStaffCount(data.growth.staffCount || 0);
                     setFeeRecovery(data.growth.feeRecovery || 0);
                     setTatReduction(data.growth.tatReduction || 0);
+                    if (data.growth.partnerRate) setPartnerRate(data.growth.partnerRate);
                 }
             } catch (error) {
                 console.error("Failed to fetch growth metrics:", error);
@@ -130,6 +131,7 @@ const GrowthDashboard: React.FC = () => {
                                         type="number"
                                         value={partnerRate}
                                         onChange={(e) => setPartnerRate(Number(e.target.value))}
+                                        title="Adjust Partner Hourly Rate for ROI calculation"
                                         className="bg-transparent border-b border-brand-border focus:border-brand-primary outline-none w-24 text-lg font-bold text-brand-text"
                                     />
                                 </div>
@@ -157,7 +159,7 @@ const GrowthDashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    <p className="text-[10px] text-brand-muted italic uppercase tracking-widest">Nigeria NDPA 2023 / Kenya DPA 2019 Ready</p>
+                    <p className="text-[10px] text-brand-muted italic uppercase tracking-widest">Global Sovereign Standards (ISO 27001 / GDPR / NDPA)</p>
                 </div>
             </div>
 
@@ -220,7 +222,7 @@ const GrowthDashboard: React.FC = () => {
                     <div className="space-y-2 relative z-10">
                         <h5 className="font-bold text-brand-text text-lg">Professional Indemnity Protection</h5>
                         <p className="text-xs text-brand-muted leading-relaxed italic">
-                            All AI-assisted drafts are cross-referenced with jurisdictional gazettes, physically reducing regulatory liability by 88%.
+                            All AI-assisted drafts are cross-referenced with jurisdictional gazettes, statistically reducing regulatory liability through automated compliance verification.
                         </p>
                     </div>
                 </div>

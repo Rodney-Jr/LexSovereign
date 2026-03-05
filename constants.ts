@@ -45,6 +45,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
 
   // Finance/Growth
   'growth': ['read_billing'],
+  'billing': ['read_billing'],
   'capacity': ['manage_users'],
   'system-settings': ['manage_platform'],
   'tenant-settings': ['manage_tenant'],
@@ -67,7 +68,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   'COMPLIANCE': ['read_all_audits', 'manage_tenant', 'use_legal_chat'],
   'FINANCE_BILLING': ['read_billing'],
   'PARTNER': ['create_matter', 'read_assigned_matter', 'read_analytics', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'use_legal_chat'],
-  'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'read_billing', 'use_legal_chat'],
+  'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
   'JUNIOR_ASSOCIATE': ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter', 'use_legal_chat'],
 
   // Approval Workflow Permissions

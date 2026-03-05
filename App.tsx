@@ -273,6 +273,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'analysis' && <CaseAnalysisModal isOpen={true} onClose={() => setActiveTab('dashboard')} />}
         {activeTab === 'clm-center' && <CLMCenter />}
         {activeTab === 'case-center' && <CaseCenter />}
+        {activeTab === 'billing' && <SovereignBilling />}
         {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
         {activeTab === 'analytics' && <EnterpriseDashboard />}
 

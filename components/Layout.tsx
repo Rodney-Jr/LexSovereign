@@ -372,21 +372,38 @@ const Layout: React.FC<LayoutProps> = ({
                 />
               )}
 
-              {/* Enterprise Tier Section */}
-              {(isAllowed('enclave') || isAllowed('growth') || (isAllowed('audit') && showAdvanced)) && (
+              {/* Financial Management Section */}
+              {(isAllowed('billing') || isAllowed('growth')) && (
                 <div className="pt-4 pb-2 px-4 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Enterprise Tier</span>
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Financial Management</span>
                 </div>
+              )}
+              {isAllowed('billing') && (
+                <NavItem
+                  icon={<Coins size={18} className="text-emerald-400" />}
+                  label="Billing & Finance"
+                  isActive={activeTab === 'billing'}
+                  onClick={() => setActiveTab('billing')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
               )}
               {isAllowed('growth') && (
                 <NavItem
-                  icon={<Coins size={18} />}
+                  icon={<TrendingUp size={18} className="text-brand-secondary" />}
                   label="Business Growth"
                   isActive={activeTab === 'growth'}
                   onClick={() => setActiveTab('growth')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
+
+              {/* Enterprise Tier Section */}
+              {(isAllowed('enclave') || (isAllowed('audit') && showAdvanced)) && (
+                <div className="pt-4 pb-2 px-4 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Enterprise Tier</span>
+                </div>
+              )}
+
               {isAllowed('audit') && showAdvanced && (
                 <NavItem
                   icon={<Activity size={18} />}

@@ -169,6 +169,9 @@ export class BillingService {
         const matters = await prisma.matter.findMany({
             where: { tenantId, type: matterType },
             include: {
+                timeEntries: {
+                    where: { isBillable: true }
+                },
                 billingComponents: {
                     where: { isActive: true },
                     include: {
@@ -180,46 +183,65 @@ export class BillingService {
             }
         });
 
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { attributes: true }
+        });
+        const attributes = (tenant?.attributes as any) || {};
+        const hourlyRate = attributes.hourlyRate || 250; // Use tenant specific rate or default
+
         let flatFee = 0;
         let hourly = 0;
         let hybrid = 0;
         const installments: any[] = [];
 
-        matters.forEach(matter => {
+        for (const matter of matters) {
             const hasFlatFee = matter.billingComponents.some(c => c.type === BillingComponentType.FLAT_FEE);
             const hasHourly = matter.billingComponents.some(c => c.type === BillingComponentType.HOURLY);
 
+            // Calculate actual hourly revenue from time entries for this matter
+            const matterHourlyTotal = matter.timeEntries.reduce((sum, entry) => {
+                const hours = entry.durationMinutes / 60;
+                return sum + (hours * hourlyRate);
+            }, 0);
+
             let matterComponentType = 'Unknown';
-            if (hasFlatFee && hasHourly) matterComponentType = 'Hybrid (Flat + Hourly)';
-            else if (hasFlatFee) matterComponentType = 'Flat Fee';
-            else if (hasHourly) matterComponentType = 'Hourly';
-            else if (matter.billingComponents.length > 0) matterComponentType = matter.billingComponents[0].type;
+            if (hasFlatFee && hasHourly) {
+                matterComponentType = 'Hybrid (Flat + Hourly)';
+                hybrid += matterHourlyTotal; // For hybrid, we track hourly as part of the total
+            } else if (hasFlatFee) {
+                matterComponentType = 'Flat Fee';
+            } else if (hasHourly) {
+                matterComponentType = 'Hourly';
+                hourly += matterHourlyTotal;
+            }
 
-            matter.billingComponents.forEach(comp => {
-                if (hasFlatFee && hasHourly) {
-                    hybrid += comp.fixedAmount || 0;
-                } else if (comp.type === BillingComponentType.FLAT_FEE) {
-                    flatFee += comp.fixedAmount || 0;
-                } else if (comp.type === BillingComponentType.HOURLY) {
-                    hourly += 5000; // Mock base for pure hourly active pipelines
-                }
+            for (const comp of matter.billingComponents) {
+                if (comp.type === BillingComponentType.FLAT_FEE) {
+                    if (hasHourly) hybrid += comp.fixedAmount || 0;
+                    else flatFee += comp.fixedAmount || 0;
 
-                // If Flat Fee, calculate remaining balance
-                if (comp.type === BillingComponentType.FLAT_FEE && comp.fixedAmount) {
-                    const invoicedAmount = comp.lineItems.reduce((sum, item) => sum + item.amount, 0);
-                    const remaining = comp.fixedAmount - invoicedAmount;
-                    if (remaining > 0) {
-                        installments.push({
-                            id: comp.id,
-                            matterName: matter.name,
-                            componentType: matterComponentType,
-                            remainingBalance: remaining,
-                            nextTranche: "Next Milestone"
-                        });
+                    // If Flat Fee, calculate remaining balance
+                    if (comp.fixedAmount) {
+                        const invoicedAmount = comp.lineItems.reduce((sum, item) => sum + item.amount, 0);
+                        const remaining = comp.fixedAmount - invoicedAmount;
+
+                        if (remaining > 0) {
+                            const schedule: any = comp.paymentSchedule || {};
+                            const status = schedule.nextMilestone || (comp.depositRequired && invoicedAmount === 0 ? "Initial Deposit" : "Final Settlement");
+
+                            installments.push({
+                                id: comp.id,
+                                matterName: matter.name,
+                                componentType: matterComponentType,
+                                remainingBalance: remaining,
+                                nextTranche: status
+                            });
+                        }
                     }
                 }
-            });
-        });
+            }
+        }
 
         return {
             revenue: {
