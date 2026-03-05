@@ -29,25 +29,25 @@ interface PricingConfig {
 
 const DEFAULT_PRICING: PricingConfig[] = [
     {
-        id: 'Starter',
-        basePrice: 99,
-        pricePerUser: 10,
+        id: 'Solo',
+        basePrice: 19,
+        pricePerUser: 5,
         creditsIncluded: 0,
-        features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget']
+        features: ['3 User Seats', 'Core Case Management', 'Digital Intake Hub', 'Mobile-First Access', 'Metered AI Top-ups (Pay-per-use)']
     },
     {
         id: 'Professional',
-        basePrice: 149,
-        pricePerUser: 15,
-        creditsIncluded: 50,
-        features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Judicial Research & Case Memory', 'Priority Support']
+        basePrice: 79,
+        pricePerUser: 10,
+        creditsIncluded: 5000,
+        features: ['10 User Seats', '5,000 AI Credits Included', 'Professional Enclave Branding', 'Advanced Financial Reporting', 'Priority Disbursement Tracking']
     },
     {
         id: 'Institutional',
-        basePrice: 0,
-        pricePerUser: 25,
-        creditsIncluded: 0,
-        features: ['Unlimited Users', 'Deep Judicial Research Enclave', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
+        basePrice: 299,
+        pricePerUser: 0,
+        creditsIncluded: 20000,
+        features: ['Unlimited User Seats', '20,000 AI Credits Included', 'Dedicated Sovereign Region', 'SSO & 2FA Enclave Security', '99.9% Sovereign Uptime SLA']
     }
 ];
 
@@ -79,8 +79,8 @@ export default function PricingPage() {
     return (
         <Layout>
             <SEO
-                title="Transparent Pricing"
-                description="Simple, scalable pricing for legal institutions. Starter from $99/mo, Professional from $149/mo. Custom institutional and government plans."
+                title="Transparent Pricing for Every Firm"
+                description="Simple, usage-based pricing built for emerging markets. Solo from $19/mo, Professional from $79/mo. Enterprise-grade institutional plans from $299/mo."
                 schema={[
                     {
                         '@context': 'https://schema.org',
@@ -91,24 +91,24 @@ export default function PricingPage() {
                         offers: [
                             {
                                 '@type': 'Offer',
-                                name: 'Starter',
-                                price: '99',
+                                name: 'Solo',
+                                price: '19',
                                 priceCurrency: 'USD',
-                                description: 'For small firms establishing governance. Up to 5 users.',
+                                description: 'For solo practitioners and small chambers. Up to 3 users, pay-as-you-go AI.',
                             },
                             {
                                 '@type': 'Offer',
                                 name: 'Professional',
-                                price: '149',
+                                price: '79',
                                 priceCurrency: 'USD',
-                                description: 'For growing firms requiring oversight. Up to 50 users, AI chatbot included.',
+                                description: 'For growing firms. 10 users, 5,000 AI credits, branding and advanced reporting included.',
                             },
                             {
                                 '@type': 'Offer',
                                 name: 'Institutional',
-                                price: '0',
+                                price: '299',
                                 priceCurrency: 'USD',
-                                description: 'Custom pricing for enterprise and government institutions. Unlimited users.',
+                                description: 'Enterprise-grade for large firms and government bodies. Unlimited users, dedicated sovereign region.',
                             },
                         ],
                     },
@@ -126,10 +126,10 @@ export default function PricingPage() {
             <Section className="pt-32">
                 <div className="text-center max-w-3xl mx-auto mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                        Simple, Transparent Pricing
+                        Built for the World's Emerging Legal Markets
                     </h1>
                     <p className="text-xl text-slate-300">
-                        Choose the governance level that fits your organization. No hidden fees.
+                        From solo practitioners in Accra to institutional chambers in Nairobi — transparent, usage-based pricing with no surprises.
                     </p>
                 </div>
 
@@ -149,9 +149,9 @@ export default function PricingPage() {
                                 userMonth={config.pricePerUser > 0}
                                 featured={config.id === 'Institutional' || config.id === 'Professional'}
                                 description={
-                                    config.id === 'Standard' || config.id === 'Starter' ? "For small firms establishing governance." :
-                                        config.id === 'Institutional' || config.id === 'Professional' ? "For growing firms requiring oversight." :
-                                            "For enterprise and government institutional scale."
+                                    config.id === 'Solo' ? "For solo practitioners and small chambers." :
+                                        config.id === 'Professional' ? "For growing firms requiring AI-powered oversight." :
+                                            "For enterprise-grade institutions and government bodies."
                                 }
                                 features={config.features}
                             />
@@ -192,9 +192,10 @@ export default function PricingPage() {
                 <div className="max-w-3xl mx-auto">
                     <h2 className="text-2xl font-bold mb-8">Pricing FAQ</h2>
                     <div className="space-y-6">
-                        <FAQItem q="Is there a minimum contract?" a="Starter and Professional plans are monthly. Institutional plans typically require an annual agreement." />
-                        <FAQItem q=" Does the price include onboarding?" a="Institutional plans include dedicated onboarding and data migration services." />
-                        <FAQItem q="Can I add users anytime?" a="Yes, you can scale your license count up instantly." />
+                        <FAQItem q="Is there a minimum contract?" a="Solo and Professional plans are billed monthly with no long-term commitment. Institutional plans typically include an annual agreement with a dedicated SLA." />
+                        <FAQItem q="Does the price include onboarding?" a="Institutional plans include dedicated onboarding, data migration and staff training services at no extra cost." />
+                        <FAQItem q="Can I add users anytime?" a="Yes, you can scale your seat count up instantly. Additional seats are billed at the per-user rate for your plan." />
+                        <FAQItem q="Are AI Credits a recurring charge?" a="Included credits reset monthly with your plan. You can top-up on-demand at $10 per 1,000 credits — a cost that can be passed to clients as a transparent Digital Disbursement." />
                     </div>
                 </div>
             </Section>

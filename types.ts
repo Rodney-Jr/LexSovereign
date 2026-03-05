@@ -42,6 +42,7 @@ export enum AppMode {
 }
 
 export enum SaaSPlan {
+  SOLO = 'Solo',
   STARTER = 'Starter',
   STANDARD = 'Standard',
   SOVEREIGN = 'Sovereign',

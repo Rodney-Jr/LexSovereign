@@ -60,7 +60,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
 
   const [formData, setFormData] = useState({
     name: '',
-    plan: SaaSPlan.PROFESSIONAL,
+    plan: SaaSPlan.SOLO,
     region: Region.PRIMARY,
     encryption: 'SYSTEM',
     adminEmail: '',
@@ -402,10 +402,10 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
               ) : (
                 <div className="grid grid-cols-3 gap-6">
                   <PlanCard
-                    plan={SaaSPlan.STARTER}
-                    active={formData.plan === SaaSPlan.STARTER}
-                    onClick={() => setFormData({ ...formData, plan: SaaSPlan.STARTER })}
-                    pricing={getPricingForPlan(SaaSPlan.STARTER)}
+                    plan={SaaSPlan.SOLO}
+                    active={formData.plan === SaaSPlan.SOLO}
+                    onClick={() => setFormData({ ...formData, plan: SaaSPlan.SOLO })}
+                    pricing={getPricingForPlan(SaaSPlan.SOLO)}
                     loading={pricingLoading}
                   />
                   <PlanCard
