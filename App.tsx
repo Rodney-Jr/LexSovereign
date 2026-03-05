@@ -251,7 +251,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'platform-ops' && <GlobalControlPlane userName={userName || 'Administrator'} onNavigate={setActiveTab} />}
+        {activeTab === 'platform-ops' && <GlobalControlPlane userName={userName || 'Administrator'} userRole={contextRole as any} onNavigate={setActiveTab} />}
         {activeTab === 'global-governance' && <TenantGovernance />}
         {activeTab === 'tenant-governance' && <AdminControlPlane />}
         {activeTab === 'org-blueprint' && <OrgChart />}

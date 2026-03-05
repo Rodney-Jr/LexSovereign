@@ -18,7 +18,31 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
     const [layout, setLayout] = useState<'split' | 'editor' | 'preview'>('split');
     const [editorWidth, setEditorWidth] = useState(50); // Percentage
     const [isResizing, setIsResizing] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [fontSize, setFontSize] = useState(15);
+    const [lineSpacing, setLineSpacing] = useState(1.5);
+    const [fontSerif, setFontSerif] = useState(true);
+    const [showSymbols, setShowSymbols] = useState(false);
+
     const editorRef = useRef<HTMLTextAreaElement>(null);
+
+    const insertAtCursor = (text: string) => {
+        const textarea = editorRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const currentContent = textarea.value;
+        const newContent = currentContent.substring(0, start) + text + currentContent.substring(end);
+
+        setContent(newContent);
+
+        // Reset focus and position cursor after inserted text
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(start + text.length, start + text.length);
+        }, 0);
+    };
 
     const handleFormatting = (prefix: string, suffix: string = '') => {
         const textarea = editorRef.current;
@@ -130,10 +154,12 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
             .replace(/^\d+\. (.*$)/gm, '<li class="ml-4 list-decimal">$1</li>')
             .replace(/>\s+(.*$)/gm, '<blockquote class="border-l-4 border-slate-200 pl-4 italic my-4">$1</blockquote>')
             .replace(/---/g, '<hr class="my-6 border-slate-100" />')
+            .replace(/§(\d+)/g, '<strong>§$1</strong>') // Legal section highlighting
+            .replace(/Article (\d+)/g, '<span class="font-bold text-lg block mt-6 mb-2 underline">Article $1</span>')
             .replace(/\n\n/g, '<br /><br />')
             .replace(/\n/g, '<br />');
 
-        return <div className="prose-slate prose-lg max-w-none text-slate-800" dangerouslySetInnerHTML={{ __html: html }} />;
+        return <div className="prose-slate prose-lg max-w-none text-slate-800 selection:bg-cyan-100" dangerouslySetInnerHTML={{ __html: html }} />;
     };
 
     return (
@@ -202,6 +228,13 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                         Copy
                     </button>
                     <button
+                        onClick={() => window.print()}
+                        className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-2xl flex items-center gap-2 transition-all shadow-lg"
+                        title="Print / Export to PDF"
+                    >
+                        <Download size={16} />
+                    </button>
+                    <button
                         onClick={handleSave}
                         disabled={isSaving || !documentName.trim() || !content.trim()}
                         className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-emerald-900/20 active:scale-95 transition-all disabled:opacity-40"
@@ -237,6 +270,62 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                                 <ToolbarButton icon={<List size={14} />} onClick={() => handleFormatting('- ', '')} title="Bullet List" />
                                 <ToolbarButton icon={<ListOrdered size={14} />} onClick={() => handleFormatting('1. ', '')} title="Numbered List" />
                                 <div className="w-px h-4 bg-slate-700 mx-1" />
+
+                                {/* Advanced Legal Tools */}
+                                <div className="flex items-center gap-2 px-2 border-x border-slate-700 mx-1">
+                                    <select
+                                        value={fontSize}
+                                        onChange={(e) => setFontSize(Number(e.target.value))}
+                                        className="bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white px-1 py-0.5 focus:outline-none"
+                                        title="Font Size"
+                                    >
+                                        {[10, 11, 12, 13, 14, 15, 16, 18, 20, 24].map(size => (
+                                            <option key={size} value={size}>{size}px</option>
+                                        ))}
+                                    </select>
+
+                                    <button
+                                        onClick={() => setFontSerif(!fontSerif)}
+                                        className={`p-1.5 rounded-lg text-[10px] font-bold transition-all ${fontSerif ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-400 hover:text-white'}`}
+                                        title="Toggle Serif/Sans"
+                                    >
+                                        {fontSerif ? 'Serif' : 'Sans'}
+                                    </button>
+
+                                    <button
+                                        onClick={() => setShowSymbols(!showSymbols)}
+                                        className={`p-1.5 rounded-lg transition-all relative ${showSymbols ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                        title="Legal Symbols"
+                                    >
+                                        <span className="font-bold text-sm">§</span>
+                                        {showSymbols && (
+                                            <div className="absolute top-full mt-2 left-0 bg-slate-900 border border-slate-700 p-2 rounded-xl shadow-2xl flex gap-2 z-50">
+                                                {['§', '¶', '©', '®', '™', '†', '‡', '•'].map(sym => (
+                                                    <button
+                                                        key={sym}
+                                                        onClick={(e) => { e.stopPropagation(); insertAtCursor(sym); setShowSymbols(false); }}
+                                                        className="w-8 h-8 flex items-center justify-center hover:bg-slate-800 rounded-lg text-white font-bold text-sm border border-slate-800 transition-colors"
+                                                    >
+                                                        {sym}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </button>
+
+                                    <select
+                                        value={lineSpacing}
+                                        onChange={(e) => setLineSpacing(Number(e.target.value))}
+                                        className="bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white px-1 py-0.5 focus:outline-none ml-1"
+                                        title="Line Spacing"
+                                    >
+                                        <option value={1}>Single</option>
+                                        <option value={1.15}>1.15</option>
+                                        <option value={1.5}>1.5</option>
+                                        <option value={2}>Double</option>
+                                    </select>
+                                </div>
+
                                 <ToolbarButton icon={<AlignLeft size={14} />} onClick={() => handleFormatting('<div align="left">\n', '\n</div>')} title="Align Left" />
                                 <ToolbarButton icon={<AlignCenter size={14} />} onClick={() => handleFormatting('<div align="center">\n', '\n</div>')} title="Align Center" />
                                 <ToolbarButton icon={<AlignRight size={14} />} onClick={() => handleFormatting('<div align="right">\n', '\n</div>')} title="Align Right" />
@@ -248,20 +337,31 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                         </div>
 
                         <div className={`flex-1 flex justify-center py-12 overflow-y-auto scrollbar-hide ${layout === 'editor' ? 'bg-slate-950 px-8' : 'bg-slate-900/50'}`}>
-                            <div className={`${layout === 'editor'
-                                ? 'w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-2xl rounded-sm p-[25mm] mb-20 relative mx-auto'
-                                : 'w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-xl rounded-sm p-[20mm] mb-12 relative mx-auto flex flex-col'
-                                }`}>
+                            {/* Improved A4 Page Area */}
+                            <div
+                                className={`w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-sm p-[25mm] mb-20 relative mx-auto transition-all duration-300 transform origin-top`}
+                                style={{
+                                    fontFamily: fontSerif ? 'Georgia, "Times New Roman", serif' : 'Inter, system-ui, sans-serif',
+                                    lineHeight: lineSpacing
+                                }}
+                            >
                                 <textarea
                                     ref={editorRef}
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder="Start drafting your legal document here..."
-                                    className={`${layout === 'editor'
-                                        ? 'w-full h-full min-h-[247mm] bg-transparent text-slate-900 font-serif text-[15px] leading-relaxed focus:outline-none placeholder:text-slate-300 resize-none'
-                                        : 'flex-1 bg-transparent text-slate-900 p-0 font-serif text-[14px] leading-relaxed focus:outline-none placeholder:text-slate-400 resize-none'
-                                        }`}
+                                    className="w-full h-full min-h-[247mm] bg-transparent text-slate-900 focus:outline-none placeholder:text-slate-300 resize-none"
+                                    style={{
+                                        fontSize: `${fontSize}px`,
+                                        lineHeight: lineSpacing
+                                    }}
                                 />
+
+                                {/* A4 Footer Indicator */}
+                                <div className="absolute bottom-8 left-[25mm] right-[25mm] border-t border-slate-100 pt-4 flex justify-between items-center opacity-30 select-none">
+                                    <span className="text-[10px] uppercase tracking-widest font-bold">Lex Sovereign Sovereign Drafting</span>
+                                    <span className="text-[10px] font-mono">Page 1 of 1</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -288,13 +388,20 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
                             </h4>
                         </div>
                         <div className="flex-1 overflow-y-auto p-12 scrollbar-hide flex justify-center bg-slate-950">
-                            <div className="w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-2xl rounded-sm p-[25mm] mb-20 relative mx-auto">
+                            <div
+                                className="w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-sm p-[25mm] mb-20 relative mx-auto"
+                                style={{
+                                    fontFamily: fontSerif ? 'Georgia, "Times New Roman", serif' : 'Inter, system-ui, sans-serif',
+                                    fontSize: `${fontSize}px`,
+                                    lineHeight: lineSpacing
+                                }}
+                            >
                                 {/* Watermark */}
                                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black">
                                     LEX SOVEREIGN
                                 </div>
 
-                                <div className="relative z-10 font-serif text-[15px] leading-relaxed">
+                                <div className="relative z-10">
                                     {content ? renderPreviewContent(content) : (
                                         <div className="flex flex-col items-center justify-center py-40 gap-4 opacity-30">
                                             <FileText size={48} />
