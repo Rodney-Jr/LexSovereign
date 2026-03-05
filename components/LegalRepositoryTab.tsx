@@ -69,7 +69,8 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
             const response = await fetch('/api/platform/judicial/upload', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'x-sov-pin': (window as any)._SOVEREIGN_PIN_
                 },
                 body: formData
             });

@@ -1,14 +1,13 @@
 
 import * as cheerio from 'cheerio';
-import { OpenAI } from 'openai';
 import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
 import * as pdf from 'pdf-parse';
+import { EmbeddingService } from './EmbeddingService';
 
 dotenv.config();
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface IngestionResult {
     success: boolean;
@@ -81,12 +80,7 @@ export class JudicialIngestionService {
     }
 
     private static async generateEmbedding(text: string) {
-        const response = await openai.embeddings.create({
-            model: "text-embedding-3-small",
-            input: text,
-            encoding_format: "float",
-        });
-        return response.data[0].embedding;
+        return await EmbeddingService.generateEmbedding(text);
     }
 
     private static chunkText(text: string, chunkSize: number = 1000): string[] {
