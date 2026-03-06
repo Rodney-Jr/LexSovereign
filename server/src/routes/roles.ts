@@ -12,18 +12,35 @@ router.get('/', authenticateToken, async (req, res) => {
             return;
         }
 
-        const roles = await prisma.role.findMany({
+        const tenantId = req.user.tenantId;
+
+        // Fetch all potential roles
+        const allRoles = await prisma.role.findMany({
             where: {
                 OR: [
-                    { isSystem: true },
-                    { tenantId: req.user.tenantId }
+                    { tenantId: null, isSystem: true }, // Global System Roles
+                    { tenantId } // Tenant specific roles (system or custom)
                 ]
             },
             include: {
                 permissions: true
             }
         });
-        res.json(roles);
+
+        // Deduplicate by name, prioritizing tenant-specific roles
+        const roleMap = new Map<string, typeof allRoles[0]>();
+
+        // Process global roles first
+        allRoles.filter(r => r.tenantId === null).forEach(r => {
+            roleMap.set(r.name, r);
+        });
+
+        // Overwrite with tenant-specific roles
+        allRoles.filter(r => r.tenantId !== null).forEach(r => {
+            roleMap.set(r.name, r);
+        });
+
+        res.json(Array.from(roleMap.values()));
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

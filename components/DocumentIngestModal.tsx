@@ -57,6 +57,7 @@ const DocumentIngestModal: React.FC<DocumentIngestModalProps> = ({ onClose, onIn
         ...metadata,
         name: name,
         id: `doc_${Date.now()}`,
+        uploadedAt: new Date().toLocaleString(),
         lastReviewed: new Date().toISOString().split('T')[0]
       } as DocumentMetadata);
     } catch (e) {

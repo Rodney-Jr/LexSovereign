@@ -358,6 +358,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted">Sovereignty Info</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted">Classification</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted">Privilege</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted">Vaulted At</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted text-right">Actions</th>
               </tr>
             </thead>
@@ -408,6 +409,16 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                       }`}>
                       {doc.privilege}
                     </span>
+                  </td>
+                  <td className="px-8 py-5">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {doc.uploadedAt ? (doc.uploadedAt.includes('T') ? new Date(doc.uploadedAt).toLocaleDateString() : doc.uploadedAt.split(', ')[0]) : (doc.lastReviewed || 'N/A')}
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-600 mt-0.5">
+                        {doc.uploadedAt ? (doc.uploadedAt.includes('T') ? new Date(doc.uploadedAt).toLocaleTimeString() : (doc.uploadedAt.includes(', ') ? doc.uploadedAt.split(', ')[1] : '')) : ''}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
@@ -585,7 +596,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
               type: 'Draft',
               size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
               uploadedBy: 'Sovereign AI',
-              uploadedAt: new Date().toLocaleTimeString(),
+              uploadedAt: new Date().toLocaleString(),
               region: filterRegion !== 'All' ? (filterRegion as Region) : Region.PRIMARY,
               matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 ? uniqueMatterIds[0] : 'UNCATEGORIZED'),
               privilege: PrivilegeStatus.PRIVILEGED,
@@ -617,6 +628,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                 matterId: filterMatterId !== 'All' ? filterMatterId : 'UNCATEGORIZED',
                 privilege: PrivilegeStatus.PRIVILEGED,
                 classification: 'Confidential',
+                uploadedAt: new Date().toLocaleString(),
                 content: content
               });
             }

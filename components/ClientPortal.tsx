@@ -232,157 +232,55 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
          </div>
 
          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-               {/* Left Column: Matter Journey & Overview */}
-               <div className="lg:col-span-4">
-                  <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden group border-t-blue-500/20 border-t-2">
-                     <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
-                           <Activity size={16} className="text-blue-400" /> Matter Journey
+            <div className="space-y-10">
+               {/* Top Section: Matter Journey & Overview (Full Width) */}
+               <div className="bg-slate-900 border border-slate-800 p-8 rounded-[3rem] shadow-2xl relative overflow-hidden border-t-blue-500/20 border-t-2">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                     <div className="space-y-2">
+                        <h4 className="font-bold text-[10px] uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                           <Activity size={16} className="text-blue-400" /> Active Mandate Journey
                         </h4>
                         {latestMatter && (
-                           <span className="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[9px] font-black uppercase tracking-widest">
-                              {latestMatter.status}
-                           </span>
+                           <div>
+                              <p className="text-2xl font-bold text-white tracking-tight">{latestMatter.name}</p>
+                              <div className="flex items-center gap-4 mt-1">
+                                 <p className="text-[10px] text-slate-500 font-mono opacity-60">SRN-V3-{latestMatter.id}</p>
+                                 <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                 <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{latestMatter.type}</span>
+                              </div>
+                           </div>
                         )}
                      </div>
-
-                     {latestMatter ? (
-                        <div className="space-y-8">
-                           <div>
-                              <p className="text-xl font-bold text-white tracking-tight">{latestMatter.name}</p>
-                              <p className="text-[10px] text-slate-500 font-mono mt-1 opacity-60">SRN-V3-{latestMatter.id}</p>
+                     {latestMatter && (
+                        <div className="flex items-center gap-4">
+                           <div className="text-right hidden md:block">
+                              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Current Status</p>
+                              <p className="text-xs font-bold text-white uppercase tracking-tighter">{latestMatter.status}</p>
                            </div>
-                           <MatterJourney currentStatus={latestMatter.status} />
-                        </div>
-                     ) : (
-                        <div className="text-center py-12 opacity-40">
-                           <Clock className="mx-auto text-slate-600 mb-4" size={48} />
-                           <p className="text-slate-400 text-sm italic">Synchronizing Active Mandates...</p>
+                           <div className="px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/10">
+                              {latestMatter.status}
+                           </div>
                         </div>
                      )}
                   </div>
 
-                  {/* Collaboration Hub */}
-                  <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-6 shadow-2xl relative overflow-hidden group">
-                     <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
-                           <MessageSquare size={16} className="text-blue-400" /> Collaboration Hub
-                        </h4>
-                        <div className="flex items-center gap-3">
-                           {unreadCount > 0 && (
-                              <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full animate-bounce shadow-lg shadow-red-500/20">
-                                 {unreadCount} NEW
-                              </span>
-                           )}
-                           <span className="text-[9px] font-mono text-slate-600">{notes.length} Signals</span>
-                        </div>
+                  {latestMatter ? (
+                     <div className="py-2">
+                        <MatterJourney currentStatus={latestMatter.status} />
                      </div>
-
-                     <div className="space-y-4 max-h-[400px] overflow-y-auto scrollbar-hide pr-2 flex flex-col-reverse">
-                        {notes.length === 0 ? (
-                           <div className="py-10 text-center opacity-30">
-                              <p className="text-[10px] uppercase tracking-widest font-bold">No active signals in this enclave.</p>
-                           </div>
-                        ) : (
-                           notes.map(note => {
-                              const isClient = note.author?.role === 'CLIENT';
-                              return (
-                                 <div key={note.id} className={`flex flex-col ${isClient ? 'items-end' : 'items-start'} gap-1 mb-2`}>
-                                    <div className={`max-w-[85%] p-4 rounded-3xl shadow-sm ${isClient ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-100 rounded-tl-none'}`}>
-                                       <div className="flex items-center justify-between gap-4 mb-2">
-                                          <span className={`text-[9px] font-black uppercase tracking-widest ${isClient ? 'text-blue-100' : 'text-blue-400'}`}>
-                                             {note.author?.name || 'Practitioner'}
-                                          </span>
-                                       </div>
-                                       {note.text && <p className="text-[12px] leading-relaxed mb-3">{note.text}</p>}
-
-                                       {note.attachmentUrl && (
-                                          <a
-                                             href={note.attachmentUrl}
-                                             target="_blank"
-                                             rel="noopener noreferrer"
-                                             className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${isClient ? 'bg-blue-700/50 border-blue-500/30 hover:bg-blue-700' : 'bg-slate-900/50 border-slate-700/50 hover:bg-slate-900'}`}
-                                          >
-                                             <div className={`p-2 rounded-xl ${isClient ? 'bg-blue-500' : 'bg-blue-600/20'}`}>
-                                                <File size={16} className={isClient ? 'text-white' : 'text-blue-400'} />
-                                             </div>
-                                             <div className="overflow-hidden">
-                                                <p className="text-[10px] font-bold truncate">{note.attachmentName || 'Attachment'}</p>
-                                                <p className="text-[8px] opacity-60 uppercase tracking-widest">Secure Artifact</p>
-                                             </div>
-                                          </a>
-                                       )}
-
-                                       <div className={`text-[8px] font-mono mt-2 uppercase opacity-40 ${isClient ? 'text-right' : 'text-left'}`}>
-                                          {relativeTime(note.createdAt)}
-                                       </div>
-                                    </div>
-                                 </div>
-                              );
-                           })
-                        )}
+                  ) : (
+                     <div className="text-center py-12 opacity-40">
+                        <Clock className="mx-auto text-slate-600 mb-4" size={48} />
+                        <p className="text-slate-400 text-sm italic">Synchronizing Active Mandates...</p>
                      </div>
-
-                     <div className="relative pt-4 border-t border-slate-800 space-y-3">
-                        {selectedFile && (
-                           <div className="flex items-center justify-between p-3 bg-slate-950/50 border border-blue-500/30 rounded-2xl animate-in zoom-in-95 duration-200">
-                              <div className="flex items-center gap-3">
-                                 <div className="p-2 bg-blue-500/20 rounded-xl">
-                                    <File size={14} className="text-blue-400" />
-                                 </div>
-                                 <span className="text-[10px] font-bold text-slate-300 truncate max-w-[150px]">{selectedFile.name}</span>
-                              </div>
-                              <button onClick={() => setSelectedFile(null)} className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
-                                 <X size={14} />
-                              </button>
-                           </div>
-                        )}
-                        <div className="relative">
-                           <textarea
-                              value={noteInput}
-                              onChange={(e) => setNoteInput(e.target.value)}
-                              onKeyDown={(e) => {
-                                 if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSendNote();
-                                 }
-                              }}
-                              placeholder="Add message or feedback..."
-                              className="w-full bg-slate-950 border border-slate-800 rounded-[2rem] p-4 pr-24 text-[12px] text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 h-24 resize-none transition-all shadow-inner"
-                           />
-                           <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                              <input
-                                 type="file"
-                                 ref={fileInputRef}
-                                 className="hidden"
-                                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                              />
-                              <button
-                                 onClick={() => fileInputRef.current?.click()}
-                                 title="Attach Artifact"
-                                 className="p-3 text-slate-500 hover:text-blue-400 hover:bg-slate-900 rounded-full transition-all"
-                              >
-                                 <Paperclip size={18} />
-                              </button>
-                              <button
-                                 onClick={handleSendNote}
-                                 disabled={isSendingNote || (!noteInput.trim() && !selectedFile)}
-                                 title="Send Signal"
-                                 className="p-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-full shadow-lg shadow-blue-500/20 transition-all active:scale-90"
-                              >
-                                 <Send size={18} />
-                              </button>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
+                  )}
                </div>
 
-               {/* Right Column: Document Repo */}
-               <div className="lg:col-span-8">
-                  {/* Document Repository */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+               {/* Bottom Section: Repository and Collaboration Side-by-Side */}
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+
+                  {/* Left Plane: Shared Access Repository */}
+                  <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-[3rem] overflow-hidden shadow-2xl h-full min-h-[600px]">
                      <div className="p-8 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-slate-900/50 backdrop-blur-xl">
                         <div className="space-y-1">
                            <h4 className="text-lg font-bold text-white flex items-center gap-3">
@@ -399,6 +297,7 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
                                     : 'text-slate-500 hover:text-white'
                                     }`}
+                                 title={`Show ${filter}`}
                               >
                                  {filter}
                               </button>
@@ -406,7 +305,7 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                         </div>
                      </div>
 
-                     <div className="p-4 sm:p-8 space-y-4">
+                     <div className="p-6 space-y-4 max-h-[700px] overflow-y-auto scrollbar-hide">
                         {filteredDocs.length > 0 ? (
                            filteredDocs.map(doc => (
                               <div key={doc.id} onClick={() => setPreviewDocId(doc.id)} className="p-5 bg-slate-800/20 border border-slate-800 rounded-3xl flex items-center justify-between group hover:border-blue-500/30 hover:bg-slate-800/30 transition-all cursor-pointer">
@@ -465,6 +364,125 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                               <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">No matching records found in vault.</p>
                            </div>
                         )}
+                     </div>
+                  </div>
+
+                  {/* Right Plane: Collaboration Hub */}
+                  <div className="lg:col-span-5 bg-slate-900 border border-slate-800 p-8 rounded-[3rem] space-y-6 shadow-2xl relative overflow-hidden group h-full">
+                     <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                           <h4 className="text-lg font-bold text-white flex items-center gap-3">
+                              <MessageSquare className="text-blue-400" /> Collaboration Hub
+                           </h4>
+                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Encrypted Signal Channel</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           {unreadCount > 0 && (
+                              <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full animate-bounce shadow-lg shadow-red-500/20">
+                                 {unreadCount} NEW
+                              </span>
+                           )}
+                           <span className="px-2.5 py-1 bg-slate-950 border border-slate-800 text-[9px] font-mono text-slate-400 rounded-lg">{notes.length} Signals</span>
+                        </div>
+                     </div>
+
+                     <div className="space-y-4 h-[400px] overflow-y-auto scrollbar-hide pr-2 flex flex-col-reverse">
+                        {notes.length === 0 ? (
+                           <div className="py-20 text-center opacity-30">
+                              <p className="text-[10px] uppercase tracking-widest font-bold">No active signals in this enclave.</p>
+                           </div>
+                        ) : (
+                           notes.map(note => {
+                              const isClient = note.author?.role === 'CLIENT';
+                              return (
+                                 <div key={note.id} className={`flex flex-col ${isClient ? 'items-end' : 'items-start'} gap-1 mb-2`}>
+                                    <div className={`max-w-[85%] p-4 rounded-3xl shadow-sm ${isClient ? 'bg-blue-600 text-white rounded-tr-none shadow-blue-900/20' : 'bg-slate-800 text-slate-100 rounded-tl-none border border-slate-700/50'}`}>
+                                       <div className="flex items-center justify-between gap-4 mb-2">
+                                          <span className={`text-[9px] font-black uppercase tracking-widest ${isClient ? 'text-blue-100' : 'text-blue-400'}`}>
+                                             {note.author?.name || 'Practitioner'}
+                                          </span>
+                                       </div>
+                                       {note.text && <p className="text-[12px] leading-relaxed mb-3">{note.text}</p>}
+
+                                       {note.attachmentUrl && (
+                                          <a
+                                             href={note.attachmentUrl}
+                                             target="_blank"
+                                             rel="noopener noreferrer"
+                                             className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${isClient ? 'bg-blue-700/50 border-blue-500/30 hover:bg-blue-700' : 'bg-slate-900/50 border-slate-700/50 hover:bg-slate-900'}`}
+                                          >
+                                             <div className={`p-2 rounded-xl ${isClient ? 'bg-blue-500' : 'bg-blue-600/20'}`}>
+                                                <File size={16} className={isClient ? 'text-white' : 'text-blue-400'} />
+                                             </div>
+                                             <div className="overflow-hidden">
+                                                <p className="text-[10px] font-bold truncate">{note.attachmentName || 'Attachment'}</p>
+                                                <p className="text-[8px] opacity-60 uppercase tracking-widest">Secure Artifact</p>
+                                             </div>
+                                          </a>
+                                       )}
+
+                                       <div className={`text-[8px] font-mono mt-2 uppercase opacity-40 ${isClient ? 'text-right' : 'text-left'}`}>
+                                          {relativeTime(note.createdAt)}
+                                       </div>
+                                    </div>
+                                 </div>
+                              );
+                           })
+                        )}
+                     </div>
+
+                     <div className="relative pt-4 border-t border-slate-800 space-y-3">
+                        {selectedFile && (
+                           <div className="flex items-center justify-between p-3 bg-slate-950/50 border border-blue-500/30 rounded-2xl animate-in zoom-in-95 duration-200">
+                              <div className="flex items-center gap-3">
+                                 <div className="p-2 bg-blue-500/20 rounded-xl">
+                                    <File size={14} className="text-blue-400" />
+                                 </div>
+                                 <span className="text-[10px] font-bold text-slate-300 truncate max-w-[150px]">{selectedFile.name}</span>
+                              </div>
+                              <button onClick={() => setSelectedFile(null)} className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-500 transition-colors" title="Remove attachment">
+                                 <X size={14} />
+                              </button>
+                           </div>
+                        )}
+                        <div className="relative">
+                           <textarea
+                              value={noteInput}
+                              onChange={(e) => setNoteInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                 if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendNote();
+                                 }
+                              }}
+                              placeholder="Add message or feedback..."
+                              className="w-full bg-slate-950 border border-slate-800 rounded-[2rem] p-4 pr-24 text-[12px] text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 h-28 resize-none transition-all shadow-inner"
+                              title="Chat message"
+                           />
+                           <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                              <input
+                                 type="file"
+                                 ref={fileInputRef}
+                                 className="hidden"
+                                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                              />
+                              <button
+                                 onClick={() => fileInputRef.current?.click()}
+                                 title="Attach Artifact"
+                                 className="p-3 text-slate-500 hover:text-blue-400 hover:bg-slate-900 rounded-full transition-all"
+                              >
+                                 <Paperclip size={18} />
+                              </button>
+                              <button
+                                 onClick={handleSendNote}
+                                 disabled={isSendingNote || (!noteInput.trim() && !selectedFile)}
+                                 title="Send Signal"
+                                 className="p-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-full shadow-lg shadow-blue-500/20 transition-all active:scale-90"
+                              >
+                                 <Send size={18} />
+                              </button>
+                           </div>
+                        </div>
                      </div>
                   </div>
                </div>

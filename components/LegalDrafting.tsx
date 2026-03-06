@@ -117,7 +117,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
                             type: 'Draft',
                             size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
                             uploadedBy: 'Sovereign AI',
-                            uploadedAt: new Date().toLocaleTimeString(),
+                            uploadedAt: new Date().toLocaleString(),
                             region: Region.PRIMARY,
                             matterId: 'UNCATEGORIZED',
                             privilege: PrivilegeStatus.PRIVILEGED,
@@ -150,6 +150,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
                                 matterId: matterId || 'UNCATEGORIZED',
                                 privilege: PrivilegeStatus.PRIVILEGED,
                                 classification: 'Confidential',
+                                uploadedAt: new Date().toLocaleString(),
                                 content: content
                             });
                         }
