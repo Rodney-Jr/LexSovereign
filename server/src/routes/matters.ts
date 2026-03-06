@@ -372,12 +372,51 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
 router.get('/:id/notes', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.user?.id;
+
         const notes = await prisma.collaborationMessage.findMany({
             where: { matterId: id },
             include: { author: true },
             orderBy: { createdAt: 'desc' }
         });
+
+        // Mark incoming messages as read for this user
+        // (Messages authored by others that are currently marked as unread)
+        if (userId) {
+            await prisma.collaborationMessage.updateMany({
+                where: {
+                    matterId: id,
+                    authorId: { not: userId },
+                    isRead: false
+                },
+                data: { isRead: true }
+            });
+        }
+
         res.json(notes);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// PATCH mark specific message as read
+router.patch('/:id/notes/read', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params; // matterId
+        const userId = req.user?.id;
+
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+        await prisma.collaborationMessage.updateMany({
+            where: {
+                matterId: id,
+                authorId: { not: userId },
+                isRead: false
+            },
+            data: { isRead: true }
+        });
+
+        res.json({ success: true });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

@@ -47,6 +47,7 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
    const [noteInput, setNoteInput] = useState('');
    const [selectedFile, setSelectedFile] = useState<File | null>(null);
    const [isSendingNote, setIsSendingNote] = useState(false);
+   const [unreadCount, setUnreadCount] = useState(0);
    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
    React.useEffect(() => {
@@ -58,9 +59,25 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
    const latestMatter = clientMatters[0];
 
    React.useEffect(() => {
-      if (latestMatter?.id) {
-         gemini.getMatterNotes(latestMatter.id).then(setNotes).catch(console.error);
-      }
+      const fetchNotes = async () => {
+         if (latestMatter?.id) {
+            try {
+               const newNotes = await gemini.getMatterNotes(latestMatter.id);
+               setNotes(newNotes);
+
+               // Count unread messages from practitioner
+               const session = getSavedSession();
+               const unread = newNotes.filter(n => !n.isRead && n.authorId !== session?.user?.id).length;
+               setUnreadCount(unread);
+            } catch (err) {
+               console.error(err);
+            }
+         }
+      };
+
+      fetchNotes();
+      const interval = setInterval(fetchNotes, 10000); // Poll every 10s
+      return () => clearInterval(interval);
    }, [latestMatter?.id]);
 
    // Filter documents for the latest matter
@@ -133,6 +150,7 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
          setNotes(prev => [note, ...prev]);
          setNoteInput('');
          setSelectedFile(null);
+         setUnreadCount(0); // Sending a message implies you've seen the others
       } catch (e) {
          console.error('Note send failed', e);
          alert("Failed to send message.");
@@ -251,7 +269,14 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                         <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
                            <MessageSquare size={16} className="text-blue-400" /> Collaboration Hub
                         </h4>
-                        <span className="text-[9px] font-mono text-slate-600">{notes.length} Signals</span>
+                        <div className="flex items-center gap-3">
+                           {unreadCount > 0 && (
+                              <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full animate-bounce shadow-lg shadow-red-500/20">
+                                 {unreadCount} NEW
+                              </span>
+                           )}
+                           <span className="text-[9px] font-mono text-slate-600">{notes.length} Signals</span>
+                        </div>
                      </div>
 
                      <div className="space-y-4 max-h-[400px] overflow-y-auto scrollbar-hide pr-2 flex flex-col-reverse">

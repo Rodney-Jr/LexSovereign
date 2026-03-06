@@ -432,6 +432,7 @@ model CollaborationMessage {
   matterId       String
   attachmentUrl  String?
   attachmentName String?
+  isRead         Boolean  @default(false)
   createdAt      DateTime @default(now())
   author         User     @relation(fields: [authorId], references: [id])
   matter         Matter   @relation(fields: [matterId], references: [id])
