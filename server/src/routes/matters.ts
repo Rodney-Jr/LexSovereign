@@ -4,6 +4,10 @@ import { authenticateToken } from '../middleware/auth';
 import { PolicyEngine } from '../services/policyEngine';
 import { CapacityService } from '../services/capacityService';
 import { AuditService } from '../services/auditService';
+import multer from 'multer';
+import { saveDocumentContent } from '../utils/fileStorage';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -380,27 +384,45 @@ router.get('/:id/notes', authenticateToken, async (req, res) => {
 });
 
 // POST collaboration note
-router.post('/:id/notes', authenticateToken, async (req, res) => {
+router.post('/:id/notes', authenticateToken, upload.single('file'), async (req, res) => {
     try {
         const { id } = req.params;
         const { text } = req.body;
         const userId = req.user?.id;
+        const tenantId = req.user?.tenantId;
 
-        if (!text || !userId) {
-            return res.status(400).json({ error: 'Missing text or user context' });
+        if (!userId || !tenantId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        let attachmentUrl = null;
+        let attachmentName = null;
+
+        if (req.file) {
+            attachmentName = req.file.originalname;
+            const relativePath = await saveDocumentContent(
+                tenantId,
+                id, // Use matterId for folder structure
+                `chat_${Date.now()}_${attachmentName}`,
+                req.file.buffer
+            );
+            attachmentUrl = `/api/attachments/${relativePath}`;
         }
 
         const note = await prisma.collaborationMessage.create({
             data: {
-                text,
+                text: text || '', // Allow empty text if file is present
                 matterId: id,
-                authorId: userId
+                authorId: userId,
+                attachmentUrl,
+                attachmentName
             },
             include: { author: true }
         });
 
         res.json(note);
     } catch (error: any) {
+        console.error('Note creation error:', error);
         res.status(500).json({ error: error.message });
     }
 });

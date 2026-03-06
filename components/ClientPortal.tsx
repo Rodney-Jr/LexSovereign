@@ -21,7 +21,9 @@ import {
    Send,
    History,
    Plus,
-   X
+   X,
+   Paperclip,
+   File
 } from 'lucide-react';
 
 import { useSovereignData } from '../hooks/useSovereignData';
@@ -43,7 +45,9 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
    const [previewDocId, setPreviewDocId] = useState<string | null>(null);
    const [notes, setNotes] = useState<any[]>([]);
    const [noteInput, setNoteInput] = useState('');
+   const [selectedFile, setSelectedFile] = useState<File | null>(null);
    const [isSendingNote, setIsSendingNote] = useState(false);
+   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
    React.useEffect(() => {
       setLocalDocs(documents);
@@ -121,14 +125,17 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
 
    const handleSendNote = async () => {
       const text = noteInput.trim();
-      if (!text || !latestMatter) return;
+      if (!text && !selectedFile) return;
+      if (!latestMatter) return;
       setIsSendingNote(true);
       try {
-         const note = await gemini.addMatterNote(latestMatter.id, text);
+         const note = await gemini.addMatterNote(latestMatter.id, text, selectedFile || undefined);
          setNotes(prev => [note, ...prev]);
          setNoteInput('');
+         setSelectedFile(null);
       } catch (e) {
          console.error('Note send failed', e);
+         alert("Failed to send message.");
       } finally {
          setIsSendingNote(false);
       }
@@ -247,40 +254,102 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                         <span className="text-[9px] font-mono text-slate-600">{notes.length} Signals</span>
                      </div>
 
-                     <div className="space-y-4 max-h-[300px] overflow-y-auto scrollbar-hide pr-2">
+                     <div className="space-y-4 max-h-[400px] overflow-y-auto scrollbar-hide pr-2 flex flex-col-reverse">
                         {notes.length === 0 ? (
                            <div className="py-10 text-center opacity-30">
                               <p className="text-[10px] uppercase tracking-widest font-bold">No active signals in this enclave.</p>
                            </div>
                         ) : (
-                           notes.map(note => (
-                              <div key={note.id} className="p-4 bg-slate-950/50 border border-slate-800 rounded-2xl space-y-2">
-                                 <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-blue-400">{note.author?.name || 'Practitioner'}</span>
-                                    <span className="text-[8px] text-slate-600 uppercase font-mono">{relativeTime(note.createdAt)}</span>
+                           notes.map(note => {
+                              const isClient = note.author?.role === 'CLIENT';
+                              return (
+                                 <div key={note.id} className={`flex flex-col ${isClient ? 'items-end' : 'items-start'} gap-1 mb-2`}>
+                                    <div className={`max-w-[85%] p-4 rounded-3xl shadow-sm ${isClient ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-100 rounded-tl-none'}`}>
+                                       <div className="flex items-center justify-between gap-4 mb-2">
+                                          <span className={`text-[9px] font-black uppercase tracking-widest ${isClient ? 'text-blue-100' : 'text-blue-400'}`}>
+                                             {note.author?.name || 'Practitioner'}
+                                          </span>
+                                       </div>
+                                       {note.text && <p className="text-[12px] leading-relaxed mb-3">{note.text}</p>}
+
+                                       {note.attachmentUrl && (
+                                          <a
+                                             href={note.attachmentUrl}
+                                             target="_blank"
+                                             rel="noopener noreferrer"
+                                             className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${isClient ? 'bg-blue-700/50 border-blue-500/30 hover:bg-blue-700' : 'bg-slate-900/50 border-slate-700/50 hover:bg-slate-900'}`}
+                                          >
+                                             <div className={`p-2 rounded-xl ${isClient ? 'bg-blue-500' : 'bg-blue-600/20'}`}>
+                                                <File size={16} className={isClient ? 'text-white' : 'text-blue-400'} />
+                                             </div>
+                                             <div className="overflow-hidden">
+                                                <p className="text-[10px] font-bold truncate">{note.attachmentName || 'Attachment'}</p>
+                                                <p className="text-[8px] opacity-60 uppercase tracking-widest">Secure Artifact</p>
+                                             </div>
+                                          </a>
+                                       )}
+
+                                       <div className={`text-[8px] font-mono mt-2 uppercase opacity-40 ${isClient ? 'text-right' : 'text-left'}`}>
+                                          {relativeTime(note.createdAt)}
+                                       </div>
+                                    </div>
                                  </div>
-                                 <p className="text-[11px] text-slate-300 leading-relaxed italic">"{note.text}"</p>
-                              </div>
-                           ))
+                              );
+                           })
                         )}
                      </div>
 
-                     <div className="relative pt-4 border-t border-slate-800">
-                        <textarea
-                           value={noteInput}
-                           onChange={(e) => setNoteInput(e.target.value)}
-                           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendNote(); } }}
-                           placeholder="Add comment or feedback..."
-                           className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 h-24 resize-none transition-all"
-                        />
-                        <button
-                           onClick={handleSendNote}
-                           disabled={isSendingNote || !noteInput.trim()}
-                           title="Send Signal"
-                           className="absolute bottom-4 right-4 p-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-xl shadow-lg transition-all active:scale-95"
-                        >
-                           <Send size={16} />
-                        </button>
+                     <div className="relative pt-4 border-t border-slate-800 space-y-3">
+                        {selectedFile && (
+                           <div className="flex items-center justify-between p-3 bg-slate-950/50 border border-blue-500/30 rounded-2xl animate-in zoom-in-95 duration-200">
+                              <div className="flex items-center gap-3">
+                                 <div className="p-2 bg-blue-500/20 rounded-xl">
+                                    <File size={14} className="text-blue-400" />
+                                 </div>
+                                 <span className="text-[10px] font-bold text-slate-300 truncate max-w-[150px]">{selectedFile.name}</span>
+                              </div>
+                              <button onClick={() => setSelectedFile(null)} className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
+                                 <X size={14} />
+                              </button>
+                           </div>
+                        )}
+                        <div className="relative">
+                           <textarea
+                              value={noteInput}
+                              onChange={(e) => setNoteInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                 if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendNote();
+                                 }
+                              }}
+                              placeholder="Add message or feedback..."
+                              className="w-full bg-slate-950 border border-slate-800 rounded-[2rem] p-4 pr-24 text-[12px] text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 h-24 resize-none transition-all shadow-inner"
+                           />
+                           <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                              <input
+                                 type="file"
+                                 ref={fileInputRef}
+                                 className="hidden"
+                                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                              />
+                              <button
+                                 onClick={() => fileInputRef.current?.click()}
+                                 title="Attach Artifact"
+                                 className="p-3 text-slate-500 hover:text-blue-400 hover:bg-slate-900 rounded-full transition-all"
+                              >
+                                 <Paperclip size={18} />
+                              </button>
+                              <button
+                                 onClick={handleSendNote}
+                                 disabled={isSendingNote || (!noteInput.trim() && !selectedFile)}
+                                 title="Send Signal"
+                                 className="p-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-full shadow-lg shadow-blue-500/20 transition-all active:scale-90"
+                              >
+                                 <Send size={18} />
+                              </button>
+                           </div>
+                        </div>
                      </div>
                   </div>
                </div>

@@ -18,7 +18,7 @@ export const saveDocumentContent = async (
     tenantId: string,
     matterId: string,
     fileName: string,
-    content: string,
+    content: string | Buffer,
     encryptionContext?: EncryptionContext
 ): Promise<string> => {
     // Sanitize inputs to prevent directory traversal
@@ -41,8 +41,9 @@ export const saveDocumentContent = async (
         const iv = Buffer.from(encryptionContext.iv, 'base64');
         const cipher = createCipheriv('aes-256-gcm', key, iv);
 
+        const input = typeof content === 'string' ? Buffer.from(content, 'utf8') : content;
         finalData = Buffer.concat([
-            cipher.update(content, 'utf8'),
+            cipher.update(input),
             cipher.final()
         ]);
     }

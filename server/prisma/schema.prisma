@@ -426,13 +426,15 @@ model PredictiveRisk {
 }
 
 model CollaborationMessage {
-  id        String   @id @default(uuid())
-  text      String
-  authorId  String
-  matterId  String
-  createdAt DateTime @default(now())
-  author    User     @relation(fields: [authorId], references: [id])
-  matter    Matter   @relation(fields: [matterId], references: [id])
+  id             String   @id @default(uuid())
+  text           String
+  authorId       String
+  matterId       String
+  attachmentUrl  String?
+  attachmentName String?
+  createdAt      DateTime @default(now())
+  author         User     @relation(fields: [authorId], references: [id])
+  matter         Matter   @relation(fields: [matterId], references: [id])
 }
 
 model AuditLog {

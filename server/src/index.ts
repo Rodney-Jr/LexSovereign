@@ -97,6 +97,9 @@ app.use('/api/chat-conversations', chatConversationsRouter);
 // FX Rates (Daily Sync)
 app.use('/api/fx-rates', fxRatesRouter);
 
+// Chat Attachments
+app.use('/api/attachments', authenticateToken, express.static(path.join(__dirname, '../uploads')));
+
 // Authentication (Handshake/Login)
 app.use('/api/auth', authRouter);
 

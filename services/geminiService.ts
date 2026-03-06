@@ -160,12 +160,23 @@ export class LexGeminiService {
     });
   }
 
-  async addMatterNote(id: string, text: string): Promise<any> {
+  async addMatterNote(id: string, text: string, file?: File): Promise<any> {
     const session = getSavedSession();
+
+    let body: any;
+    if (file) {
+      const formData = new FormData();
+      formData.append('text', text);
+      formData.append('file', file);
+      body = formData;
+    } else {
+      body = JSON.stringify({ text });
+    }
+
     return authorizedFetch(`${this.baseUrl}/matters/${id}/notes`, {
       method: 'POST',
       token: session?.token,
-      body: JSON.stringify({ text })
+      body
     });
   }
 
