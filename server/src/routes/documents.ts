@@ -419,7 +419,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
             where: { id },
             data: {
                 name,
-                content,
+                uri: content, // Map content to uri field
                 status,
                 classification,
                 privilege,
