@@ -990,12 +990,63 @@ const GlobalModelRegistry = () => {
                      </select>
                   </div>
 
+                  {/* Dynamic datalists for auto-complete */}
+                  <datalist id="primary-models">
+                     {selectedProvider === 'openrouter' && (
+                        <>
+                           <option value="google/gemini-2.0-flash-001" />
+                           <option value="anthropic/claude-3.5-sonnet" />
+                           <option value="openai/gpt-4o" />
+                           <option value="meta-llama/llama-3.3-70b-instruct" />
+                           <option value="deepseek/deepseek-r1" />
+                        </>
+                     )}
+                     {selectedProvider === 'openai' && (
+                        <>
+                           <option value="gpt-4o" />
+                           <option value="gpt-4-turbo" />
+                           <option value="o1" />
+                           <option value="o3-mini" />
+                           <option value="gpt-4o-mini" />
+                        </>
+                     )}
+                     {selectedProvider === 'anthropic' && (
+                        <>
+                           <option value="claude-3-5-sonnet-latest" />
+                           <option value="claude-3-opus-latest" />
+                           <option value="claude-3-5-haiku-latest" />
+                        </>
+                     )}
+                  </datalist>
+
+                  <datalist id="fast-models">
+                     {selectedProvider === 'openrouter' && (
+                        <>
+                           <option value="mistralai/mistral-7b-instruct" />
+                           <option value="google/gemini-2.0-flash-lite-preview-02-05" />
+                           <option value="openai/gpt-4o-mini" />
+                        </>
+                     )}
+                     {selectedProvider === 'openai' && (
+                        <>
+                           <option value="gpt-4o-mini" />
+                           <option value="gpt-3.5-turbo" />
+                        </>
+                     )}
+                     {selectedProvider === 'anthropic' && (
+                        <>
+                           <option value="claude-3-5-haiku-latest" />
+                        </>
+                     )}
+                  </datalist>
+
                   <div className="space-y-4">
                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Primary Analytical Model</label>
                      <input
                         type="text"
                         title="Primary Analytical Model"
-                        placeholder="Primary Analytical Model"
+                        placeholder="e.g. gpt-4o"
+                        list="primary-models"
                         value={primaryModel}
                         onChange={(e) => setPrimaryModel(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-mono text-cyan-400 focus:outline-none focus:border-cyan-500 transition-all font-bold"
@@ -1007,7 +1058,8 @@ const GlobalModelRegistry = () => {
                      <input
                         type="text"
                         title="Fast/Chat Model"
-                        placeholder="Fast/Chat Model"
+                        placeholder="e.g. gpt-4o-mini"
+                        list="fast-models"
                         value={fastModel}
                         onChange={(e) => setFastModel(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-mono text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all font-bold"
