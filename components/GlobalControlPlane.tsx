@@ -897,6 +897,7 @@ const LiveModelRegistryWidget = ({ stats }: { stats: any }) => {
                { name: 'Gemini Pro 1.5', tier: 'Primary', color: 'blue' },
                { name: 'Mistral 7B Instruct', tier: 'Fast', color: 'green' },
                { name: 'Claude 3.5 Sonnet', tier: 'Premium', color: 'orange' },
+               { name: 'OpenAI GPT-4o Mini', tier: 'Standard', color: 'slate' },
                { name: 'GPT-4o', tier: 'Premium', color: 'cyan' },
                { name: 'Llama 3.1 70B', tier: 'Open', color: 'yellow' },
                { name: 'DeepSeek R1', tier: 'Open', color: 'pink' },
@@ -984,7 +985,7 @@ const GlobalModelRegistry = () => {
                         className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-purple-500 transition-all appearance-none"
                      >
                         <option value="openrouter">OpenRouter (Multimodal Failover)</option>
-                        <option value="openai">Direct OpenAI</option>
+                        <option value="openai">OpenAI (Direct integration)</option>
                         <option value="anthropic">Direct Anthropic</option>
                      </select>
                   </div>
