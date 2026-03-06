@@ -37,10 +37,8 @@ export class JudicialIngestionService {
                 $('script, style, nav, footer').remove();
                 text = $('body').text().replace(/\s+/g, ' ').trim();
             } else if (filename.endsWith('.pdf')) {
-                const { PDFParse } = require('pdf-parse');
-                const parser = new PDFParse({ data: buffer });
-                const data = await parser.getText();
-                await parser.destroy();
+                const pdf = require('pdf-parse');
+                const data = await pdf(buffer);
                 text = data.text.replace(/\s+/g, ' ').trim();
             } else {
                 // Default to plain text

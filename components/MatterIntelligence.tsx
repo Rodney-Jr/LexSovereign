@@ -33,6 +33,7 @@ interface TeamMember {
   id: string;
   name: string;
   roleString: string;
+  isOnLeave?: boolean;
 }
 
 interface CollabNote {
@@ -285,8 +286,8 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
             onClick={handleSubmitToSilo}
             disabled={isSubmittingSilo || isSubmitted}
             className={`px-6 py-2.5 rounded-2xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 ${isSubmitted
-                ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/20'
-                : 'bg-brand-primary hover:opacity-90 text-brand-bg shadow-brand-primary/20'
+              ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/20'
+              : 'bg-brand-primary hover:opacity-90 text-brand-bg shadow-brand-primary/20'
               }`}
           >
             {isSubmittingSilo ? <RefreshCw size={16} className="animate-spin" /> : isSubmitted ? <ShieldCheck size={16} /> : <FileSignature size={16} />}
@@ -344,10 +345,17 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                       {member.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-brand-text truncate">{member.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-brand-text truncate">{member.name}</p>
+                        {member.isOnLeave && (
+                          <span className="px-1.5 py-0.5 bg-red-500/10 text-red-500 text-[8px] font-bold uppercase rounded border border-red-500/20">
+                            OOO
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] text-brand-secondary uppercase tracking-tighter">{member.roleString.replace(/_/g, ' ')}</p>
                     </div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" title="Active" />
+                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${member.isOnLeave ? 'bg-slate-600' : 'bg-emerald-400'}`} title={member.isOnLeave ? 'Out of Office' : 'Active'} />
                   </div>
                 ))}
               </div>
@@ -400,8 +408,8 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                 <button
                   onClick={() => setTimerActive(!timerActive)}
                   className={`p-4 rounded-2xl transition-all shadow-lg ${timerActive
-                      ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                      : 'bg-brand-primary text-brand-bg shadow-brand-primary/20'
+                    ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                    : 'bg-brand-primary text-brand-bg shadow-brand-primary/20'
                     }`}
                 >
                   {timerActive ? <Pause size={24} /> : <Play size={24} />}

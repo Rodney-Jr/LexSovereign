@@ -69,7 +69,9 @@ export enum UserRole {
   // New Roles for Approval Workflow
   OWNER = 'OWNER',
   PARALEGAL = 'PARALEGAL',
-  AUDITOR = 'AUDITOR'
+  AUDITOR = 'AUDITOR',
+  CLERK = 'CLERK',
+  ADMIN_MANAGER = 'ADMIN_MANAGER'
 }
 
 export interface SessionData {
@@ -77,7 +79,7 @@ export interface SessionData {
   userId: string;
   userName?: string;
   tenantId: string;
-  department?: Department;
+  department?: TenantDepartment;
   permissions: string[];
   mode?: AppMode;
   token?: string;
@@ -103,6 +105,64 @@ export interface KnowledgeArtifact {
   content: string;
   lastIndexed: string;
   category: 'Faq' | 'PracticeArea' | 'JurisdictionGuide' | 'OnboardingProcess';
+}
+
+export interface FieldIntakeDocument {
+  id: string;
+  title: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  status: 'PENDING' | 'ATTACHED' | 'REJECTED';
+  matterId?: string;
+  category: 'Registrar' | 'Court' | 'Corporate' | 'Other';
+  previewUrl: string;
+  notes?: string;
+}
+
+export interface ExpenseEntry {
+  id: string;
+  category: 'Filing Fees' | 'Transportation' | 'Office Supplies' | 'Utilities' | 'Other';
+  amount: number;
+  currency: string;
+  date: string;
+  description: string;
+  recipient: string;
+  submittedBy: string;
+  approvedBy?: string;
+  receiptUrl?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
+
+export interface ImprestAccount {
+  id: string;
+  staffId: string;
+  staffName: string;
+  balance: number;
+  currency: string;
+  lastTopUp: string;
+  limit: number;
+}
+
+export interface LeaveRecord {
+  id: string;
+  userId: string;
+  userName: string;
+  startDate: string;
+  endDate: string;
+  type: 'Vacation' | 'Sick' | 'CLE' | 'Maternity/Paternity' | 'Other';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  notes?: string;
+}
+
+export interface HRArtifact {
+  id: string;
+  userId: string;
+  type: 'Contract' | 'Performance' | 'Salary' | 'Disciplinary' | 'Other';
+  title: string;
+  contentHash: string;
+  uploadedAt: string;
+  encryptionKeyId: string;
+  classification: 'Highly Sensitive';
 }
 
 export interface SystemPermission {
@@ -332,7 +392,7 @@ export interface ActivityEntry {
   createdAt: string;
 }
 
-export interface Department {
+export interface TenantDepartment {
   id: string;
   name: string;
   tenantId: string;
@@ -491,7 +551,7 @@ export interface TenantUser {
   name: string;
   email: string;
   role: UserRole;
-  department?: Department; // New field
+  department?: Department; // Keeping enum here
   lastActive: string;
   mfaEnabled: boolean;
   maxWeeklyHours?: number;

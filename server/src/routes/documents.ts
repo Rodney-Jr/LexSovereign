@@ -1,6 +1,8 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken } from '../middleware/auth';
+import multer from 'multer';
+import { saveDocumentContent } from '../utils/fileStorage';
 
 const router = express.Router();
 
@@ -77,6 +79,95 @@ router.get('/matter/:matterId', authenticateToken, async (req, res) => {
 });
 
 // Create a new document
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+/**
+ * POST /api/documents/upload
+ * Binary upload for matter artifacts.
+ */
+router.post('/upload', authenticateToken, upload.single('file'), async (req: any, res) => {
+    try {
+        const { matterId, region, classification, privilege } = req.body;
+        const tenantId = req.user?.tenantId;
+        const file = req.file;
+
+        if (!file || !matterId || !tenantId) {
+            return res.status(400).json({ error: 'Missing file or matterId' });
+        }
+
+        // Verify Matter Access
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            include: { tenant: true }
+        });
+
+        if (!matter || matter.tenantId !== tenantId) {
+            return res.status(403).json({ error: 'Matter access denied' });
+        }
+
+        const encryptionMode = matter.tenant.encryptionMode;
+        let isEncrypted = false;
+        let encryptionIV: string | undefined;
+        let encryptionKeyId: string | undefined;
+
+        if (encryptionMode === 'BYOK') {
+            const { randomBytes } = await import('crypto');
+            isEncrypted = true;
+            encryptionIV = randomBytes(12).toString('base64');
+            encryptionKeyId = `tenant-key-${tenantId}`;
+        }
+
+        // Save Binary Content
+        const relativePath = await saveDocumentContent(
+            tenantId,
+            matterId,
+            file.originalname,
+            file.buffer,
+            isEncrypted ? { keyId: encryptionKeyId!, algorithm: 'AES-256-GCM', iv: encryptionIV! } : undefined
+        );
+
+        const uri = `file://${relativePath}`;
+
+        const doc = await prisma.document.create({
+            data: {
+                name: file.originalname,
+                uri,
+                jurisdiction: region || matter.tenant.primaryRegion || 'GH_ACC_1',
+                classification: classification || 'Confidential',
+                privilege: privilege || 'INTERNAL',
+                matterId,
+                isEncrypted,
+                encryptionIV,
+                encryptionKeyId,
+                fileSize: BigInt(file.size),
+                attributes: {
+                    type: file.mimetype,
+                    size: (file.size / 1024).toFixed(1) + ' KB',
+                    originalName: file.originalname
+                }
+            },
+            include: { matter: true }
+        });
+
+        res.status(201).json({
+            id: doc.id,
+            name: doc.name,
+            type: doc.classification,
+            size: (Number(doc.fileSize) / 1024).toFixed(1) + ' KB',
+            uploadedBy: req.user?.name || 'User',
+            uploadedAt: doc.createdAt.toISOString(),
+            region: doc.jurisdiction,
+            matterId: doc.matterId,
+            matterName: doc.matter.name
+        });
+
+    } catch (error: any) {
+        console.error("Document upload failed:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const { name, type, size, matterId, region, classification, privilege } = req.body;

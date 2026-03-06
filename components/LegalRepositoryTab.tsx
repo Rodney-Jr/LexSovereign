@@ -276,9 +276,14 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className="text-[10px] font-mono text-slate-500">
-                                                {new Date(doc.createdAt).toLocaleDateString()}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-mono text-slate-400">
+                                                    {new Date(doc.createdAt).toLocaleDateString()}
+                                                </span>
+                                                <span className="text-[9px] font-mono text-slate-600 mt-0.5">
+                                                    {new Date(doc.createdAt).toLocaleTimeString()}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             {userRole === 'GLOBAL_ADMIN' && (

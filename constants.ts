@@ -51,7 +51,9 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'tenant-settings': ['manage_tenant'],
   'status': ['manage_platform'],
   'analysis': ['create_draft', 'review_work'],
-  'client-portal': ['client_portal_access']
+  'client-portal': ['client_portal_access'],
+  'field-intake': ['upload_field_intake', 'read_assigned_matter'],
+  'finance-ops': ['manage_expenses', 'read_billing']
 };
 
 // Default Permissions for Roles (Fallback/Mock)
@@ -67,14 +69,16 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing', 'use_legal_chat'],
   'COMPLIANCE': ['read_all_audits', 'manage_tenant', 'use_legal_chat'],
   'FINANCE_BILLING': ['read_billing'],
-  'PARTNER': ['create_matter', 'read_assigned_matter', 'read_analytics', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'use_legal_chat'],
+  'PARTNER': ['create_matter', 'read_assigned_matter', 'read_analytics', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'use_legal_chat', 'can_freeze_budget'],
   'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
   'JUNIOR_ASSOCIATE': ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter', 'use_legal_chat'],
 
   // Approval Workflow Permissions
-  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'use_legal_chat'],
+  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'use_legal_chat', 'can_freeze_budget'],
   'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
-  'AUDITOR': ['read_all_audits', 'read_assigned_matter']
+  'AUDITOR': ['read_all_audits', 'read_assigned_matter'],
+  'CLERK': ['upload_field_intake', 'use_legal_chat', 'read_assigned_matter'],
+  'ADMIN_MANAGER': ['read_billing', 'manage_tenant', 'read_analytics', 'manage_users', 'manage_roles', 'check_conflicts', 'manage_expenses']
 };
 
 
