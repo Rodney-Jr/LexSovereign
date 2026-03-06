@@ -4,17 +4,29 @@ import { Sparkles, FileText, ChevronRight, Search, Edit3, Shield, Scale } from '
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
 import BlankDocumentEditor from './BlankDocumentEditor';
+import DocumentSelectorModal from './DocumentSelectorModal';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
 interface LegalDraftingProps {
-    onAddDocument: (doc: DocumentMetadata) => Promise<any> | void;
+    onAddDocument: (docData: Partial<DocumentMetadata>) => Promise<any> | void;
+    onUpdateDocument: (id: string, docData: Partial<DocumentMetadata>) => Promise<any> | void;
+    getDocumentContent: (id: string) => Promise<string>;
+    documents: DocumentMetadata[];
     matterId?: string | null;
 }
 
-const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument, matterId }) => {
+const LegalDrafting: React.FC<LegalDraftingProps> = ({
+    onAddDocument,
+    onUpdateDocument,
+    getDocumentContent,
+    documents,
+    matterId
+}) => {
     const [showMarketplace, setShowMarketplace] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
     const [showBlankEditor, setShowBlankEditor] = useState(false);
+    const [showVaultSelector, setShowVaultSelector] = useState(false);
+    const [editingDoc, setEditingDoc] = useState<{ id: string, name: string, content: string } | null>(null);
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
@@ -41,7 +53,16 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument, matterId }
                     icon={<Edit3 className="text-emerald-400" />}
                     title="Blank Document"
                     description="Start from scratch with a freeform editor for custom drafting."
-                    onClick={() => setShowBlankEditor(true)}
+                    onClick={() => {
+                        setEditingDoc(null);
+                        setShowBlankEditor(true);
+                    }}
+                />
+                <ActionCard
+                    icon={<Shield className="text-blue-400" />}
+                    title="Edit from Vault"
+                    description="Select an existing artifact from the Sovereign Vault to modify."
+                    onClick={() => setShowVaultSelector(true)}
                 />
                 <ActionCard
                     icon={<FileText className="text-brand-primary" />}
@@ -62,6 +83,18 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument, matterId }
                     onClick={() => setShowMarketplace(true)}
                 />
             </div>
+
+            <DocumentSelectorModal
+                isOpen={showVaultSelector}
+                onClose={() => setShowVaultSelector(false)}
+                documents={documents}
+                onSelect={async (doc) => {
+                    const content = await getDocumentContent(doc.id);
+                    setEditingDoc({ id: doc.id, name: doc.name, content });
+                    setShowVaultSelector(false);
+                    setShowBlankEditor(true);
+                }}
+            />
 
             <DocumentTemplateMarketplace
                 isOpen={showMarketplace}
@@ -99,23 +132,29 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({ onAddDocument, matterId }
 
             {showBlankEditor && (
                 <BlankDocumentEditor
-                    onClose={() => setShowBlankEditor(false)}
-                    onSave={(name, content) => {
-                        onAddDocument({
-                            id: `DOC-BLANK-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-                            name,
-                            type: 'Draft',
-                            size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
-                            uploadedBy: 'User',
-                            uploadedAt: new Date().toLocaleTimeString(),
-                            region: Region.PRIMARY,
-                            matterId: 'UNCATEGORIZED',
-                            privilege: PrivilegeStatus.PRIVILEGED,
-                            classification: 'Confidential',
-                            encryption: 'DAS',
-                            content: content
-                        });
+                    onClose={() => {
                         setShowBlankEditor(false);
+                        setEditingDoc(null);
+                    }}
+                    initialId={editingDoc?.id}
+                    initialName={editingDoc?.name}
+                    initialContent={editingDoc?.content}
+                    onSave={async (name, content, id) => {
+                        if (id) {
+                            await onUpdateDocument(id, { name, content });
+                        } else {
+                            await onAddDocument({
+                                name,
+                                type: 'Draft',
+                                region: Region.PRIMARY,
+                                matterId: matterId || 'UNCATEGORIZED',
+                                privilege: PrivilegeStatus.PRIVILEGED,
+                                classification: 'Confidential',
+                                content: content
+                            });
+                        }
+                        setShowBlankEditor(false);
+                        setEditingDoc(null);
                     }}
                 />
             )}

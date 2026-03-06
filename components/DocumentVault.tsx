@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Shield,
   Lock,
   MapPin,
-  Eye,
   FileText,
   ChevronRight,
   Search,
@@ -18,8 +16,11 @@ import {
   Briefcase,
   Sparkles,
   Download,
-  AlertTriangle
+  AlertTriangle,
+  Edit3,
+  Eye
 } from 'lucide-react';
+import BlankDocumentEditor from './BlankDocumentEditor';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
@@ -28,12 +29,23 @@ import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface DocumentVaultProps {
   documents: DocumentMetadata[];
-  onAddDocument: (doc: DocumentMetadata) => Promise<any> | void;
+  onAddDocument: (doc: Partial<DocumentMetadata>) => Promise<any> | void;
+  onUpdateDocument: (id: string, doc: Partial<DocumentMetadata>) => Promise<any> | void;
+  getDocumentContent: (id: string) => Promise<string>;
   onRemoveDocument: (id: string) => void;
 }
 
-const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument, onRemoveDocument }) => {
+const DocumentVault: React.FC<DocumentVaultProps> = ({
+  documents,
+  onAddDocument,
+  onUpdateDocument,
+  getDocumentContent,
+  onRemoveDocument
+}) => {
   const [showIngest, setShowIngest] = useState(false);
+  const [showBlankEditor, setShowBlankEditor] = useState(false);
+  const [editingDoc, setEditingDoc] = useState<{ id: string, name: string, content: string } | null>(null);
+  const [isEditingLoading, setIsEditingLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [filterRegion, setFilterRegion] = useState<string>('All');
   const [filterMatterId, setFilterMatterId] = useState<string>('All');
@@ -136,11 +148,23 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
       });
       if (!response.ok) throw new Error('Delete failed');
       onRemoveDocument(doc.id);
-    } catch (err) {
-      console.error('Delete error:', err);
-      alert('Failed to delete document. Please try again.');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleEdit = async (doc: DocumentMetadata) => {
+    setIsEditingLoading(true);
+    try {
+      const content = await getDocumentContent(doc.id);
+      setEditingDoc({ id: doc.id, name: doc.name, content });
+      setShowBlankEditor(true);
+      setViewingDoc(null); // Close preview if open
+    } catch (err) {
+      console.error('Failed to fetch doc content for editing:', err);
+      alert('Failed to load document for editing.');
+    } finally {
+      setIsEditingLoading(false);
     }
   };
 
@@ -503,7 +527,14 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
             </div>
             {/* Modal Footer */}
             <div className="flex items-center justify-between p-4 border-t border-slate-800 bg-slate-950/30">
-              <span className="text-[10px] text-slate-600 uppercase tracking-widest">Sovereign Vault · Read-Only Preview</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(viewingDoc)}
+                  className="px-4 py-2 text-[11px] font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center gap-2 transition-colors border border-emerald-500/20"
+                >
+                  <Edit3 size={13} /> Edit Artifact
+                </button>
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleExport(viewingDoc.id, 'DOCX', viewingDoc.name)}
@@ -563,6 +594,34 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({ documents, onAddDocument,
               content: content
             });
             setSelectedTemplateId(null);
+          }}
+        />
+      )}
+      {showBlankEditor && (
+        <BlankDocumentEditor
+          onClose={() => {
+            setShowBlankEditor(false);
+            setEditingDoc(null);
+          }}
+          initialId={editingDoc?.id}
+          initialName={editingDoc?.name}
+          initialContent={editingDoc?.content}
+          onSave={async (name, content, id) => {
+            if (id) {
+              await onUpdateDocument(id, { name, content });
+            } else {
+              await onAddDocument({
+                name,
+                type: 'Draft',
+                region: Region.PRIMARY,
+                matterId: filterMatterId !== 'All' ? filterMatterId : 'UNCATEGORIZED',
+                privilege: PrivilegeStatus.PRIVILEGED,
+                classification: 'Confidential',
+                content: content
+              });
+            }
+            setShowBlankEditor(false);
+            setEditingDoc(null);
           }}
         />
       )}

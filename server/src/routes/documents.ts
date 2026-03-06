@@ -395,4 +395,42 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Update document (General purpose)
+router.patch('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, content, status, classification, privilege } = req.body;
+
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
+        if (!isGlobalAdmin && doc.matter.tenantId !== req.user.tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const updatedDoc = await prisma.document.update({
+            where: { id },
+            data: {
+                name,
+                content,
+                status,
+                classification,
+                privilege,
+                updatedAt: new Date()
+            }
+        });
+
+        res.json(updatedDoc);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

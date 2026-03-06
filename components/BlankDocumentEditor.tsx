@@ -8,12 +8,21 @@ import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
 interface BlankDocumentEditorProps {
     onClose: () => void;
-    onSave: (name: string, content: string) => void;
+    onSave: (name: string, content: string, id?: string) => void;
+    initialId?: string;
+    initialName?: string;
+    initialContent?: string;
 }
 
-const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSave }) => {
-    const [documentName, setDocumentName] = useState('Untitled Document');
-    const [content, setContent] = useState('');
+const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({
+    onClose,
+    onSave,
+    initialId,
+    initialName = 'Untitled Document',
+    initialContent = ''
+}) => {
+    const [documentName, setDocumentName] = useState(initialName);
+    const [content, setContent] = useState(initialContent);
     const [isSaving, setIsSaving] = useState(false);
     const [layout, setLayout] = useState<'split' | 'editor' | 'preview'>('split');
     const [editorWidth, setEditorWidth] = useState(50); // Percentage
@@ -126,7 +135,7 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({ onClose, onSa
         }
         setIsSaving(true);
         setTimeout(() => {
-            onSave(documentName, content);
+            onSave(documentName, content, initialId);
             setIsSaving(false);
         }, 500);
     };

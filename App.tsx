@@ -115,7 +115,9 @@ const AppContent: React.FC = () => {
     addDocument,
     removeDocument,
     addMatter,
-    createDocument
+    createDocument,
+    updateDocument,
+    getDocumentContent
   } = useSovereignData(isAuthenticated);
 
   const { hasAnyPermission, checkVisibility } = usePermissions();
@@ -269,7 +271,15 @@ const AppContent: React.FC = () => {
         {activeTab === 'pricing-calib' && import.meta.env.VITE_SHOW_PRICING === 'true' && <PricingGovernance />}
         {activeTab === 'audit' && <DecisionTraceLedger />}
         {activeTab === 'backlog' && <EngineeringBacklog />}
-        {activeTab === 'drafting' && <LegalDrafting onAddDocument={createDocument} matterId={selectedMatter} />}
+        {activeTab === 'drafting' && (
+          <LegalDrafting
+            onAddDocument={createDocument}
+            onUpdateDocument={updateDocument}
+            getDocumentContent={getDocumentContent}
+            documents={documents}
+            matterId={selectedMatter}
+          />
+        )}
         {activeTab === 'analysis' && <CaseAnalysisModal isOpen={true} onClose={() => setActiveTab('dashboard')} />}
         {activeTab === 'clm-center' && <CLMCenter />}
         {activeTab === 'case-center' && <CaseCenter />}
@@ -282,7 +292,13 @@ const AppContent: React.FC = () => {
             <MatterIntelligence matterId={selectedMatter} mode={mode} onBack={() => setSelectedMatter(null)} documents={documents.filter(d => checkVisibility(d))} />
           ) : (
             <div className="space-y-8">
-              <DocumentVault documents={documents.filter(d => checkVisibility(d))} onAddDocument={createDocument} onRemoveDocument={removeDocument} />
+              <DocumentVault
+                documents={documents.filter(d => checkVisibility(d))}
+                onAddDocument={createDocument}
+                onUpdateDocument={updateDocument}
+                getDocumentContent={getDocumentContent}
+                onRemoveDocument={removeDocument}
+              />
               <div className="h-[1px] bg-brand-border w-full my-4"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {matters.filter(m => checkVisibility(m)).map(matter => (

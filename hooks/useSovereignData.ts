@@ -55,6 +55,31 @@ export const useSovereignData = (isAuthenticated: boolean) => {
         }
     };
 
+    const updateDocument = async (id: string, docData: Partial<DocumentMetadata>) => {
+        const session = getSavedSession();
+        if (!session?.token) throw new Error("No active session");
+
+        try {
+            const updatedDoc = await authorizedFetch(`/api/documents/${id}`, {
+                token: session.token,
+                method: 'PATCH',
+                body: JSON.stringify(docData)
+            });
+            setDocuments(prev => prev.map(d => d.id === id ? updatedDoc : d));
+            return updatedDoc;
+        } catch (e) {
+            console.error("[Data] Failed to update document", e);
+            throw e;
+        }
+    };
+
+    const getDocumentContent = async (id: string) => {
+        const session = getSavedSession();
+        if (!session?.token) throw new Error("No active session");
+        const data = await authorizedFetch(`/api/documents/${id}/content`, { token: session.token });
+        return data?.content || '';
+    };
+
     return {
         documents,
         matters,
@@ -62,6 +87,8 @@ export const useSovereignData = (isAuthenticated: boolean) => {
         addDocument,
         removeDocument,
         addMatter,
-        createDocument
+        createDocument,
+        updateDocument,
+        getDocumentContent
     };
 };

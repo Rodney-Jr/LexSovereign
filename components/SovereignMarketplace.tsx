@@ -22,7 +22,7 @@ import DraftingStudio from './DraftingStudio';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface SovereignMarketplaceProps {
-    onAddDocument: (doc: DocumentMetadata) => Promise<any> | void;
+    onAddDocument: (docData: Partial<DocumentMetadata>) => Promise<any> | void;
     userRole: UserRole;
 }
 

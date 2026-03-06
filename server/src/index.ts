@@ -4,6 +4,12 @@ import path from 'path';
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
 import express from 'express';
+
+// Global BigInt Serialization Fix
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 console.log("[VERSION CHECK] v5 - AUTH DIAGNOSTICS ENHANCED...");
 import cors from 'cors';
 import helmet from 'helmet';
