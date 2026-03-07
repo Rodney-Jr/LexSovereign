@@ -16,8 +16,19 @@ import {
 } from 'lucide-react';
 import { UserRole, SessionData } from '../types';
 
-// Declare the global constant injected by Vite
+// Declare global variables/constants
 declare const __SOVEREIGN_PIN__: string;
+declare global {
+   interface Window {
+      _SOVEREIGN_PIN_?: string;
+   }
+}
+
+const getSovereignPin = (): string => {
+   if (typeof __SOVEREIGN_PIN__ !== 'undefined' && __SOVEREIGN_PIN__) return __SOVEREIGN_PIN__;
+   if (typeof window !== 'undefined' && window._SOVEREIGN_PIN_) return window._SOVEREIGN_PIN_;
+   return '';
+};
 
 interface AuthFlowProps {
    onAuthenticated: (session: SessionData) => Promise<void> | void;
@@ -56,7 +67,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       setError(null);
 
       try {
-         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+         const sovPin = getSovereignPin();
          const response = await fetch('/api/auth/forgot-password', {
             method: 'POST',
             headers: {
@@ -87,7 +98,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
          : { email, password, name, roleName: UserRole.TENANT_ADMIN };
 
       try {
-         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+         const sovPin = getSovereignPin();
          const response = await fetch(`${endpoint}`, {
             method: 'POST',
             headers: {
@@ -133,7 +144,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       setError(null);
 
       try {
-         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+         const sovPin = getSovereignPin();
          const response = await fetch('/api/auth/google-login', {
             method: 'POST',
             headers: {
@@ -177,7 +188,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       setError(null);
 
       try {
-         const sovPin = typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '';
+         const sovPin = getSovereignPin();
          const response = await fetch('/api/auth/mfa/verify', {
             method: 'POST',
             headers: {
