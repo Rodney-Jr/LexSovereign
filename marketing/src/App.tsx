@@ -136,7 +136,7 @@ export default function App() {
                     <Route
                         path="/pricing"
                         element={
-                            import.meta.env.VITE_SHOW_PRICING === 'true'
+                            String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true'
                                 ? <PricingPage />
                                 : <Navigate to="/" replace />
                         }

@@ -290,7 +290,7 @@ const Layout: React.FC<LayoutProps> = ({
               )}
 
               {/* Accounting Hub - Re-introduced as billable module */}
-              {isAllowed('accounting-hub') && (
+              {isAllowed('accounting-hub') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
                 <NavItem
                   icon={<Banknote size={18} className="text-amber-400" />}
                   label="Sovereign Accounting"
@@ -470,7 +470,7 @@ const Layout: React.FC<LayoutProps> = ({
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Financial Management</span>
                 </div>
               )}
-              {isAllowed('billing') && (
+              {isAllowed('billing') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
                 <NavItem
                   icon={<Coins size={18} className="text-emerald-400" />}
                   label="Billing & Finance"
@@ -479,7 +479,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('accounting-hub') && (
+              {isAllowed('accounting-hub') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
                 <NavItem
                   icon={<Banknote size={18} className="text-blue-400" />}
                   label="Sovereign Accounting"
@@ -488,7 +488,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('growth') && (
+              {isAllowed('growth') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
                 <NavItem
                   icon={<TrendingUp size={18} className="text-brand-secondary" />}
                   label="Business Growth"
