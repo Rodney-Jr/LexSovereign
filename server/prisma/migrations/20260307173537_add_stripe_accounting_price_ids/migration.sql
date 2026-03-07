@@ -20,45 +20,47 @@ EXCEPTION
 END $$;
 
 -- AlterTable
-ALTER TABLE "AuditLog" ADD COLUMN     "matterId" TEXT;
+ALTER TABLE "AuditLog" ADD COLUMN IF NOT EXISTS "matterId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Bridge" ALTER COLUMN "updatedAt" DROP DEFAULT;
+DO $$ BEGIN
+    ALTER TABLE "Bridge" ALTER COLUMN "updatedAt" DROP DEFAULT;
+EXCEPTION WHEN others THEN null; END $$;
 
 -- AlterTable
-ALTER TABLE "CollaborationMessage" ADD COLUMN     "attachmentName" TEXT,
-ADD COLUMN     "attachmentUrl" TEXT,
-ADD COLUMN     "isRead" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "CollaborationMessage" ADD COLUMN IF NOT EXISTS "attachmentName" TEXT,
+ADD COLUMN IF NOT EXISTS "attachmentUrl" TEXT,
+ADD COLUMN IF NOT EXISTS "isRead" BOOLEAN NOT NULL DEFAULT false;
 
 -- AlterTable
-ALTER TABLE "Document" ADD COLUMN     "description" TEXT,
-ADD COLUMN     "fileSize" BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "description" TEXT,
+ADD COLUMN IF NOT EXISTS "fileSize" BIGINT NOT NULL DEFAULT 0;
 
 -- AlterTable
-ALTER TABLE "Matter" DROP COLUMN "department",
-ADD COLUMN     "matterTypeId" TEXT,
-ADD COLUMN     "workflowStateId" TEXT;
+ALTER TABLE "Matter" DROP COLUMN IF EXISTS "department",
+ADD COLUMN IF NOT EXISTS "matterTypeId" TEXT,
+ADD COLUMN IF NOT EXISTS "workflowStateId" TEXT;
 
 -- AlterTable
-ALTER TABLE "PredictiveRisk" ADD COLUMN     "mitigationPlan" TEXT,
-ADD COLUMN     "riskCategory" TEXT NOT NULL DEFAULT 'OPERATIONAL',
-ADD COLUMN     "status" TEXT NOT NULL DEFAULT 'IDENTIFIED';
+ALTER TABLE "PredictiveRisk" ADD COLUMN IF NOT EXISTS "mitigationPlan" TEXT,
+ADD COLUMN IF NOT EXISTS "riskCategory" TEXT NOT NULL DEFAULT 'OPERATIONAL',
+ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'IDENTIFIED';
 
 -- AlterTable
-ALTER TABLE "PricingConfig" ADD COLUMN     "stripeAccountingPriceId" TEXT,
-ADD COLUMN     "stripeAiPriceId" TEXT,
-ADD COLUMN     "stripeHrEnterprisePriceId" TEXT,
-ADD COLUMN     "stripeStoragePriceId" TEXT;
+ALTER TABLE "PricingConfig" ADD COLUMN IF NOT EXISTS "stripeAccountingPriceId" TEXT,
+ADD COLUMN IF NOT EXISTS "stripeAiPriceId" TEXT,
+ADD COLUMN IF NOT EXISTS "stripeHrEnterprisePriceId" TEXT,
+ADD COLUMN IF NOT EXISTS "stripeStoragePriceId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Tenant" ADD COLUMN     "enabledModules" TEXT[] DEFAULT ARRAY['CORE']::TEXT[],
-ADD COLUMN     "lastStorageSyncedAt" TIMESTAMP(3);
+ALTER TABLE "Tenant" ADD COLUMN IF NOT EXISTS "enabledModules" TEXT[] DEFAULT ARRAY['CORE']::TEXT[],
+ADD COLUMN IF NOT EXISTS "lastStorageSyncedAt" TIMESTAMP(3);
 
 -- AlterTable
-ALTER TABLE "User" DROP COLUMN "department";
+ALTER TABLE "User" DROP COLUMN IF EXISTS "department";
 
 -- CreateTable
-CREATE TABLE "MatterType" (
+CREATE TABLE IF NOT EXISTS "MatterType" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -72,7 +74,7 @@ CREATE TABLE "MatterType" (
 );
 
 -- CreateTable
-CREATE TABLE "Workflow" (
+CREATE TABLE IF NOT EXISTS "Workflow" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -86,7 +88,7 @@ CREATE TABLE "Workflow" (
 );
 
 -- CreateTable
-CREATE TABLE "WorkflowState" (
+CREATE TABLE IF NOT EXISTS "WorkflowState" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -102,7 +104,7 @@ CREATE TABLE "WorkflowState" (
 );
 
 -- CreateTable
-CREATE TABLE "WorkflowTransition" (
+CREATE TABLE IF NOT EXISTS "WorkflowTransition" (
     "id" TEXT NOT NULL,
     "fromStateId" TEXT NOT NULL,
     "toStateId" TEXT NOT NULL,
@@ -113,7 +115,7 @@ CREATE TABLE "WorkflowTransition" (
 );
 
 -- CreateTable
-CREATE TABLE "Task" (
+CREATE TABLE IF NOT EXISTS "Task" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
@@ -131,7 +133,7 @@ CREATE TABLE "Task" (
 );
 
 -- CreateTable
-CREATE TABLE "ContractMetadata" (
+CREATE TABLE IF NOT EXISTS "ContractMetadata" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "contractValue" DOUBLE PRECISION,
@@ -146,7 +148,7 @@ CREATE TABLE "ContractMetadata" (
 );
 
 -- CreateTable
-CREATE TABLE "CaseMetadata" (
+CREATE TABLE IF NOT EXISTS "CaseMetadata" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "jurisdiction" TEXT,
@@ -159,7 +161,7 @@ CREATE TABLE "CaseMetadata" (
 );
 
 -- CreateTable
-CREATE TABLE "Deadline" (
+CREATE TABLE IF NOT EXISTS "Deadline" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -175,7 +177,7 @@ CREATE TABLE "Deadline" (
 );
 
 -- CreateTable
-CREATE TABLE "Hearing" (
+CREATE TABLE IF NOT EXISTS "Hearing" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "hearingDate" TIMESTAMP(3) NOT NULL,
@@ -190,7 +192,7 @@ CREATE TABLE "Hearing" (
 );
 
 -- CreateTable
-CREATE TABLE "EvidenceLink" (
+CREATE TABLE IF NOT EXISTS "EvidenceLink" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "documentId" TEXT NOT NULL,
@@ -203,7 +205,7 @@ CREATE TABLE "EvidenceLink" (
 );
 
 -- CreateTable
-CREATE TABLE "AIRiskAnalysis" (
+CREATE TABLE IF NOT EXISTS "AIRiskAnalysis" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "riskScore" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
@@ -218,7 +220,7 @@ CREATE TABLE "AIRiskAnalysis" (
 );
 
 -- CreateTable
-CREATE TABLE "ActivityEntry" (
+CREATE TABLE IF NOT EXISTS "ActivityEntry" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -231,7 +233,7 @@ CREATE TABLE "ActivityEntry" (
 );
 
 -- CreateTable
-CREATE TABLE "DocumentVersion" (
+CREATE TABLE IF NOT EXISTS "DocumentVersion" (
     "id" TEXT NOT NULL,
     "documentId" TEXT NOT NULL,
     "versionNumber" INTEGER NOT NULL,
@@ -245,7 +247,7 @@ CREATE TABLE "DocumentVersion" (
 );
 
 -- CreateTable
-CREATE TABLE "Approval" (
+CREATE TABLE IF NOT EXISTS "Approval" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "workflowStateId" TEXT NOT NULL,
@@ -258,7 +260,7 @@ CREATE TABLE "Approval" (
 );
 
 -- CreateTable
-CREATE TABLE "BillingComponent" (
+CREATE TABLE IF NOT EXISTS "BillingComponent" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "type" "BillingComponentType" NOT NULL,
@@ -274,7 +276,7 @@ CREATE TABLE "BillingComponent" (
 );
 
 -- CreateTable
-CREATE TABLE "Invoice" (
+CREATE TABLE IF NOT EXISTS "Invoice" (
     "id" TEXT NOT NULL,
     "matterId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -290,7 +292,7 @@ CREATE TABLE "Invoice" (
 );
 
 -- CreateTable
-CREATE TABLE "InvoiceLineItem" (
+CREATE TABLE IF NOT EXISTS "InvoiceLineItem" (
     "id" TEXT NOT NULL,
     "invoiceId" TEXT NOT NULL,
     "billingComponentId" TEXT,
@@ -301,7 +303,7 @@ CREATE TABLE "InvoiceLineItem" (
 );
 
 -- CreateTable
-CREATE TABLE "AIUsage" (
+CREATE TABLE IF NOT EXISTS "AIUsage" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "matterId" TEXT,
@@ -318,7 +320,7 @@ CREATE TABLE "AIUsage" (
 );
 
 -- CreateTable
-CREATE TABLE "FirmAsset" (
+CREATE TABLE IF NOT EXISTS "FirmAsset" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -335,7 +337,7 @@ CREATE TABLE "FirmAsset" (
 );
 
 -- CreateTable
-CREATE TABLE "Expense" (
+CREATE TABLE IF NOT EXISTS "Expense" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -352,7 +354,7 @@ CREATE TABLE "Expense" (
 );
 
 -- CreateTable
-CREATE TABLE "LeaveRecord" (
+CREATE TABLE IF NOT EXISTS "LeaveRecord" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -368,7 +370,7 @@ CREATE TABLE "LeaveRecord" (
 );
 
 -- CreateTable
-CREATE TABLE "Candidate" (
+CREATE TABLE IF NOT EXISTS "Candidate" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -381,7 +383,7 @@ CREATE TABLE "Candidate" (
 );
 
 -- CreateTable
-CREATE TABLE "CLERecord" (
+CREATE TABLE IF NOT EXISTS "CLERecord" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -394,7 +396,7 @@ CREATE TABLE "CLERecord" (
 );
 
 -- CreateTable
-CREATE TABLE "OnboardingItem" (
+CREATE TABLE IF NOT EXISTS "OnboardingItem" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "task" TEXT NOT NULL,
@@ -405,7 +407,7 @@ CREATE TABLE "OnboardingItem" (
 );
 
 -- CreateTable
-CREATE TABLE "SalaryRecord" (
+CREATE TABLE IF NOT EXISTS "SalaryRecord" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -420,7 +422,7 @@ CREATE TABLE "SalaryRecord" (
 );
 
 -- CreateTable
-CREATE TABLE "PerformanceAppraisal" (
+CREATE TABLE IF NOT EXISTS "PerformanceAppraisal" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -435,7 +437,7 @@ CREATE TABLE "PerformanceAppraisal" (
 );
 
 -- CreateTable
-CREATE TABLE "FirmAccount" (
+CREATE TABLE IF NOT EXISTS "FirmAccount" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -450,7 +452,7 @@ CREATE TABLE "FirmAccount" (
 );
 
 -- CreateTable
-CREATE TABLE "LedgerTransaction" (
+CREATE TABLE IF NOT EXISTS "LedgerTransaction" (
     "id" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "description" TEXT NOT NULL,
@@ -464,7 +466,7 @@ CREATE TABLE "LedgerTransaction" (
 );
 
 -- CreateTable
-CREATE TABLE "LedgerEntry" (
+CREATE TABLE IF NOT EXISTS "LedgerEntry" (
     "id" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
@@ -478,7 +480,7 @@ CREATE TABLE "LedgerEntry" (
 );
 
 -- CreateTable
-CREATE TABLE "BankTransaction" (
+CREATE TABLE IF NOT EXISTS "BankTransaction" (
     "id" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "description" TEXT NOT NULL,
@@ -494,7 +496,7 @@ CREATE TABLE "BankTransaction" (
 );
 
 -- CreateTable
-CREATE TABLE "ExternalMapping" (
+CREATE TABLE IF NOT EXISTS "ExternalMapping" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "system" TEXT NOT NULL,
@@ -508,7 +510,7 @@ CREATE TABLE "ExternalMapping" (
 );
 
 -- CreateTable
-CREATE TABLE "SyncLog" (
+CREATE TABLE IF NOT EXISTS "SyncLog" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "system" TEXT NOT NULL,
@@ -520,184 +522,296 @@ CREATE TABLE "SyncLog" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ContractMetadata_matterId_key" ON "ContractMetadata"("matterId");
+CREATE UNIQUE INDEX IF NOT EXISTS "ContractMetadata_matterId_key" ON "ContractMetadata"("matterId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "CaseMetadata_matterId_key" ON "CaseMetadata"("matterId");
+CREATE UNIQUE INDEX IF NOT EXISTS "CaseMetadata_matterId_key" ON "CaseMetadata"("matterId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "FirmAsset_serialNumber_key" ON "FirmAsset"("serialNumber");
+CREATE UNIQUE INDEX IF NOT EXISTS "FirmAsset_serialNumber_key" ON "FirmAsset"("serialNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BankTransaction_externalId_key" ON "BankTransaction"("externalId");
+CREATE UNIQUE INDEX IF NOT EXISTS "BankTransaction_externalId_key" ON "BankTransaction"("externalId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ExternalMapping_tenantId_system_localType_localId_key" ON "ExternalMapping"("tenantId", "system", "localType", "localId");
+CREATE UNIQUE INDEX IF NOT EXISTS "ExternalMapping_tenantId_system_localType_localId_key" ON "ExternalMapping"("tenantId", "system", "localType", "localId");
 
 -- AddForeignKey
-ALTER TABLE "Matter" ADD CONSTRAINT "Matter_matterTypeId_fkey" FOREIGN KEY ("matterTypeId") REFERENCES "MatterType"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Matter" ADD CONSTRAINT "Matter_matterTypeId_fkey" FOREIGN KEY ("matterTypeId") REFERENCES "MatterType"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Matter" ADD CONSTRAINT "Matter_workflowStateId_fkey" FOREIGN KEY ("workflowStateId") REFERENCES "WorkflowState"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Matter" ADD CONSTRAINT "Matter_workflowStateId_fkey" FOREIGN KEY ("workflowStateId") REFERENCES "WorkflowState"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "MatterType" ADD CONSTRAINT "MatterType_defaultWorkflowId_fkey" FOREIGN KEY ("defaultWorkflowId") REFERENCES "Workflow"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "MatterType" ADD CONSTRAINT "MatterType_defaultWorkflowId_fkey" FOREIGN KEY ("defaultWorkflowId") REFERENCES "Workflow"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "MatterType" ADD CONSTRAINT "MatterType_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "MatterType" ADD CONSTRAINT "MatterType_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Workflow" ADD CONSTRAINT "Workflow_matterTypeId_fkey" FOREIGN KEY ("matterTypeId") REFERENCES "MatterType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Workflow" ADD CONSTRAINT "Workflow_matterTypeId_fkey" FOREIGN KEY ("matterTypeId") REFERENCES "MatterType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Workflow" ADD CONSTRAINT "Workflow_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Workflow" ADD CONSTRAINT "Workflow_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "WorkflowState" ADD CONSTRAINT "WorkflowState_workflowId_fkey" FOREIGN KEY ("workflowId") REFERENCES "Workflow"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "WorkflowState" ADD CONSTRAINT "WorkflowState_workflowId_fkey" FOREIGN KEY ("workflowId") REFERENCES "Workflow"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "WorkflowTransition" ADD CONSTRAINT "WorkflowTransition_fromStateId_fkey" FOREIGN KEY ("fromStateId") REFERENCES "WorkflowState"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "WorkflowTransition" ADD CONSTRAINT "WorkflowTransition_fromStateId_fkey" FOREIGN KEY ("fromStateId") REFERENCES "WorkflowState"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "WorkflowTransition" ADD CONSTRAINT "WorkflowTransition_toStateId_fkey" FOREIGN KEY ("toStateId") REFERENCES "WorkflowState"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "WorkflowTransition" ADD CONSTRAINT "WorkflowTransition_toStateId_fkey" FOREIGN KEY ("toStateId") REFERENCES "WorkflowState"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Task" ADD CONSTRAINT "Task_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Task" ADD CONSTRAINT "Task_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_workflowStateId_fkey" FOREIGN KEY ("workflowStateId") REFERENCES "WorkflowState"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Task" ADD CONSTRAINT "Task_workflowStateId_fkey" FOREIGN KEY ("workflowStateId") REFERENCES "WorkflowState"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "ContractMetadata" ADD CONSTRAINT "ContractMetadata_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "ContractMetadata" ADD CONSTRAINT "ContractMetadata_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "CaseMetadata" ADD CONSTRAINT "CaseMetadata_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "CaseMetadata" ADD CONSTRAINT "CaseMetadata_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Deadline" ADD CONSTRAINT "Deadline_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Deadline" ADD CONSTRAINT "Deadline_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Hearing" ADD CONSTRAINT "Hearing_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Hearing" ADD CONSTRAINT "Hearing_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "EvidenceLink" ADD CONSTRAINT "EvidenceLink_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "EvidenceLink" ADD CONSTRAINT "EvidenceLink_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "EvidenceLink" ADD CONSTRAINT "EvidenceLink_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "EvidenceLink" ADD CONSTRAINT "EvidenceLink_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "AIRiskAnalysis" ADD CONSTRAINT "AIRiskAnalysis_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "AIRiskAnalysis" ADD CONSTRAINT "AIRiskAnalysis_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "AIRiskAnalysis" ADD CONSTRAINT "AIRiskAnalysis_validatorId_fkey" FOREIGN KEY ("validatorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "AIRiskAnalysis" ADD CONSTRAINT "AIRiskAnalysis_validatorId_fkey" FOREIGN KEY ("validatorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "ActivityEntry" ADD CONSTRAINT "ActivityEntry_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "ActivityEntry" ADD CONSTRAINT "ActivityEntry_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "ActivityEntry" ADD CONSTRAINT "ActivityEntry_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "ActivityEntry" ADD CONSTRAINT "ActivityEntry_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "DocumentVersion" ADD CONSTRAINT "DocumentVersion_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "DocumentVersion" ADD CONSTRAINT "DocumentVersion_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "DocumentVersion" ADD CONSTRAINT "DocumentVersion_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "DocumentVersion" ADD CONSTRAINT "DocumentVersion_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Approval" ADD CONSTRAINT "Approval_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Approval" ADD CONSTRAINT "Approval_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Approval" ADD CONSTRAINT "Approval_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Approval" ADD CONSTRAINT "Approval_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Approval" ADD CONSTRAINT "Approval_workflowStateId_fkey" FOREIGN KEY ("workflowStateId") REFERENCES "WorkflowState"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Approval" ADD CONSTRAINT "Approval_workflowStateId_fkey" FOREIGN KEY ("workflowStateId") REFERENCES "WorkflowState"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "BillingComponent" ADD CONSTRAINT "BillingComponent_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "BillingComponent" ADD CONSTRAINT "BillingComponent_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "InvoiceLineItem" ADD CONSTRAINT "InvoiceLineItem_billingComponentId_fkey" FOREIGN KEY ("billingComponentId") REFERENCES "BillingComponent"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "InvoiceLineItem" ADD CONSTRAINT "InvoiceLineItem_billingComponentId_fkey" FOREIGN KEY ("billingComponentId") REFERENCES "BillingComponent"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "InvoiceLineItem" ADD CONSTRAINT "InvoiceLineItem_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "InvoiceLineItem" ADD CONSTRAINT "InvoiceLineItem_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "AIUsage" ADD CONSTRAINT "AIUsage_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "AIUsage" ADD CONSTRAINT "AIUsage_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "AIUsage" ADD CONSTRAINT "AIUsage_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "AIUsage" ADD CONSTRAINT "AIUsage_matterId_fkey" FOREIGN KEY ("matterId") REFERENCES "Matter"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "AIUsage" ADD CONSTRAINT "AIUsage_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "AIUsage" ADD CONSTRAINT "AIUsage_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "FirmAsset" ADD CONSTRAINT "FirmAsset_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "FirmAsset" ADD CONSTRAINT "FirmAsset_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "FirmAsset" ADD CONSTRAINT "FirmAsset_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "FirmAsset" ADD CONSTRAINT "FirmAsset_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Expense" ADD CONSTRAINT "Expense_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Expense" ADD CONSTRAINT "Expense_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "LeaveRecord" ADD CONSTRAINT "LeaveRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "LeaveRecord" ADD CONSTRAINT "LeaveRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "LeaveRecord" ADD CONSTRAINT "LeaveRecord_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "LeaveRecord" ADD CONSTRAINT "LeaveRecord_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "Candidate" ADD CONSTRAINT "Candidate_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Candidate" ADD CONSTRAINT "Candidate_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "CLERecord" ADD CONSTRAINT "CLERecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "CLERecord" ADD CONSTRAINT "CLERecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "CLERecord" ADD CONSTRAINT "CLERecord_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "CLERecord" ADD CONSTRAINT "CLERecord_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "OnboardingItem" ADD CONSTRAINT "OnboardingItem_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "OnboardingItem" ADD CONSTRAINT "OnboardingItem_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "SalaryRecord" ADD CONSTRAINT "SalaryRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "SalaryRecord" ADD CONSTRAINT "SalaryRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "SalaryRecord" ADD CONSTRAINT "SalaryRecord_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "SalaryRecord" ADD CONSTRAINT "SalaryRecord_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "PerformanceAppraisal" ADD CONSTRAINT "PerformanceAppraisal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "PerformanceAppraisal" ADD CONSTRAINT "PerformanceAppraisal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "PerformanceAppraisal" ADD CONSTRAINT "PerformanceAppraisal_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "PerformanceAppraisal" ADD CONSTRAINT "PerformanceAppraisal_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "PerformanceAppraisal" ADD CONSTRAINT "PerformanceAppraisal_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "PerformanceAppraisal" ADD CONSTRAINT "PerformanceAppraisal_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "FirmAccount" ADD CONSTRAINT "FirmAccount_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "FirmAccount" ADD CONSTRAINT "FirmAccount_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "LedgerTransaction" ADD CONSTRAINT "LedgerTransaction_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "LedgerTransaction" ADD CONSTRAINT "LedgerTransaction_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "LedgerEntry" ADD CONSTRAINT "LedgerEntry_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "LedgerTransaction"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "LedgerEntry" ADD CONSTRAINT "LedgerEntry_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "LedgerTransaction"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "LedgerEntry" ADD CONSTRAINT "LedgerEntry_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "FirmAccount"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "LedgerEntry" ADD CONSTRAINT "LedgerEntry_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "FirmAccount"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "BankTransaction" ADD CONSTRAINT "BankTransaction_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "BankTransaction" ADD CONSTRAINT "BankTransaction_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "ExternalMapping" ADD CONSTRAINT "ExternalMapping_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "ExternalMapping" ADD CONSTRAINT "ExternalMapping_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- AddForeignKey
-ALTER TABLE "SyncLog" ADD CONSTRAINT "SyncLog_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "SyncLog" ADD CONSTRAINT "SyncLog_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
