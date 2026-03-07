@@ -128,8 +128,28 @@ app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 app.use('/api/billing', authenticateToken, billingRouter);
 app.use('/api/accounting', accountingRouter);
 
+// 3. Static Asset Resolution
+import fs from 'fs';
+
 // Resolve static directory paths using process.cwd() for reliability in root-run environments
-const DIST_PATH = path.join(process.cwd(), '../dist');
+const potentialDistPaths = [
+    path.join(process.cwd(), 'client-dist'), // Docker production mapping
+    path.join(process.cwd(), '../dist'),      // Local split-root mapping (running from server/)
+    path.join(process.cwd(), 'dist'),         // Local monorepo mapping (running from root)
+    path.join(__dirname, '../../client-dist'),// Container fallback
+    path.join(__dirname, '../../../dist')     // Deeply nested fallback
+];
+
+let DIST_PATH = potentialDistPaths[1]; // Default to local split-root
+
+for (const p of potentialDistPaths) {
+    if (fs.existsSync(path.join(p, 'index.html'))) {
+        DIST_PATH = p;
+        console.log(`[Static] Validated DIST_PATH at: ${DIST_PATH}`);
+        break;
+    }
+}
+
 const PUBLIC_PATH = path.join(process.cwd(), 'public');
 
 console.log(`[Static] Serving assets from: ${DIST_PATH}`);
@@ -139,8 +159,6 @@ app.use(express.static(DIST_PATH, { index: false }));
 
 // Priority 2: Check server/public (Legacy/Fallback)
 app.use(express.static(PUBLIC_PATH, { index: false }));
-
-import fs from 'fs';
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file with runtime injections.
