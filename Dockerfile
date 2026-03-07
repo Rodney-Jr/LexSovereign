@@ -5,7 +5,9 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_SHOW_PRICING
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ENV VITE_SHOW_PRICING=$VITE_SHOW_PRICING
 # Build the client to /app-client/dist
 RUN npm run build
 
