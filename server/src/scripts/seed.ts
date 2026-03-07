@@ -83,6 +83,7 @@ const PERMISSIONS = [
     { id: 'use_legal_chat', description: 'Access Legal Chat (practitioners only)', resource: 'AI', action: 'LEGAL_CHAT' },
     { id: 'view_confidential', description: 'View confidential and matter-specific data', resource: 'DATA', action: 'VIEW_CONFIDENTIAL' },
     { id: 'freeze_budget', description: 'Freeze firm-wide budgets', resource: 'FINANCE', action: 'FREEZE' },
+    { id: 'manage_expenses', description: 'Manage firm expenses', resource: 'FINANCE', action: 'MANAGE' },
 ];
 
 const ROLES = [
