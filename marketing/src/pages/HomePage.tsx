@@ -77,7 +77,7 @@ export default function HomePage() {
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center">
                             <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request Private Demo</Button>
-                            {import.meta.env.VITE_SHOW_PRICING === 'true' && <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>}
+                            {String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>}
                         </div>
 
                         <p className="text-sm text-slate-500 flex items-center gap-6 justify-center">
@@ -144,7 +144,7 @@ export default function HomePage() {
                                 <span className="text-slate-300"><strong>Strict Client Isolation:</strong> Collaborate securely. Firewalled client portals ensure opposing counsel or clients only see finalized invoices and approved documents.</span>
                             </li>
                         </ul>
-                        {import.meta.env.VITE_SHOW_PRICING === 'true' && <Button asLink="/pricing">View Regional Pricing Tiers</Button>}
+                        {String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <Button asLink="/pricing">View Regional Pricing Tiers</Button>}
                     </div>
                     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-5">
@@ -436,7 +436,7 @@ export default function HomePage() {
                     </p>
                     <div className="flex justify-center gap-4">
                         <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Request Access</Button>
-                        {import.meta.env.VITE_SHOW_PRICING === 'true' && <Button asLink="/pricing" variant="outline" size="lg">View Pricing</Button>}
+                        {String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <Button asLink="/pricing" variant="outline" size="lg">View Pricing</Button>}
                     </div>
                 </div>
             </section>
@@ -445,7 +445,7 @@ export default function HomePage() {
                 articles={[
                     { slug: '/insights/legal-software-africa-guide', title: 'Legal Software for Africa: 2026 Guide', excerpt: 'A complete guide to choosing data-sovereign legal software for African law firms and institutions.', readTime: '12 min read' },
                     { slug: '/insights/conflict-checking-software-law-firms', title: 'Conflict Checking Software for Law Firms', excerpt: 'Why manual conflict checks fail and how automated conflict software protects your firm.', readTime: '9 min read' },
-                    ...(import.meta.env.VITE_SHOW_PRICING === 'true' ? [{ slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'An honest comparison of features, pricing, African market support, and data governance.', readTime: '14 min read' }] : []),
+                    ...(String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' ? [{ slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'An honest comparison of features, pricing, African market support, and data governance.', readTime: '14 min read' }] : []),
                 ]}
             />
         </Layout >
