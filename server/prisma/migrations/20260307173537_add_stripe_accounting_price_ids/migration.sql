@@ -6,10 +6,18 @@
 
 */
 -- CreateEnum
-CREATE TYPE "BillingComponentType" AS ENUM ('HOURLY', 'FLAT_FEE', 'MILESTONE', 'CONTINGENCY');
+DO $$ BEGIN
+    CREATE TYPE "BillingComponentType" AS ENUM ('HOURLY', 'FLAT_FEE', 'MILESTONE', 'CONTINGENCY');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "InvoiceStatus" AS ENUM ('DRAFT', 'ISSUED', 'PAID', 'VOIDED', 'OVERDUE');
+DO $$ BEGIN
+    CREATE TYPE "InvoiceStatus" AS ENUM ('DRAFT', 'ISSUED', 'PAID', 'VOIDED', 'OVERDUE');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- AlterTable
 ALTER TABLE "AuditLog" ADD COLUMN     "matterId" TEXT;
