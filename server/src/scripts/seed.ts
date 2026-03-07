@@ -299,32 +299,34 @@ async function main() {
     console.log('🌱 Upserting Pricing Configurations with live Stripe IDs...');
     const pricingConfigs = [
         {
-            id: 'Starter',
-            basePrice: 99,
-            pricePerUser: 10,
+            id: 'Solo',
+            basePrice: 19,
+            pricePerUser: 5,
             creditsIncluded: 0,
             maxUsers: 5,
-            features: ['5 Users Max', 'Basic Conflict Checking', 'Standard Document Management', 'No Chatbot Widget'],
-            stripeBasePriceId: 'price_1T4QyqE9NGotUyVqu2oTicMx',
-            stripeUserPriceId: 'price_1T4QyqE9NGotUyVq4GQNKdb6'
+            features: ['3 User Seats', 'Core Case Management', 'Digital Intake Hub', 'Mobile-First Access', 'Metered AI Top-ups (Pay-per-use)'],
+            stripeBasePriceId: 'price_1T8RidE9NGotUyVqrCuwNIcv',
+            stripeUserPriceId: 'price_1T8RidE9NGotUyVqfi0aB0aL'
         },
         {
             id: 'Professional',
-            basePrice: 149,
-            pricePerUser: 15,
-            creditsIncluded: 50,
+            basePrice: 79,
+            pricePerUser: 10,
+            creditsIncluded: 5000,
             maxUsers: 50,
-            features: ['50 Users Max', 'Advanced Conflict Workflows', 'AI Chatbot Widget (Included)', 'Audit Logs (30 Days)', 'Priority Support'],
-            stripeBasePriceId: 'price_1T4QyrE9NGotUyVqjYt2IifS',
-            stripeUserPriceId: 'price_1T4QysE9NGotUyVqoTcL3Wjo'
+            features: ['10 User Seats', '5,000 AI Credits Included', 'Professional Enclave Branding', 'Advanced Financial Reporting', 'Priority Disbursement Tracking'],
+            stripeBasePriceId: 'price_1T8RieE9NGotUyVqMACuoRfl',
+            stripeUserPriceId: 'price_1T8RieE9NGotUyVqitNvjs0g'
         },
         {
             id: 'Institutional',
-            basePrice: 0,
-            pricePerUser: 25,
-            creditsIncluded: 0,
+            basePrice: 0, // Contact Sales in UI, but 299 for base config
+            pricePerUser: 0,
+            creditsIncluded: 20000,
             maxUsers: 10000,
-            features: ['Unlimited Users', 'Multi-Entity Support', 'Full Audit Trail', 'White-Label Chatbot', 'SSO & Custom Security']
+            features: ['Unlimited User Seats', '20,000 AI Credits Included', 'Dedicated Sovereign Region', 'SSO & 2FA Enclave Security', '99.9% Sovereign Uptime SLA'],
+            stripeBasePriceId: 'price_1T8RifE9NGotUyVqC040EUIR',
+            stripeUserPriceId: 'price_1T8RigE9NGotUyVqjAsh74OT'
         }
     ];
     for (const config of pricingConfigs) {
