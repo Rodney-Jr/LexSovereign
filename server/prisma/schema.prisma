@@ -46,6 +46,12 @@ model User {
   department            Department?            @relation(fields: [departmentId], references: [id])
   role                  Role?                  @relation(fields: [roleId], references: [id])
   tenant                Tenant?                @relation(fields: [tenantId], references: [id])
+  firmAssets            FirmAsset[]
+  leaveRecords          LeaveRecord[]
+  cleRecords            CLERecord[]
+  salaryRecords         SalaryRecord[]
+  appraisals            PerformanceAppraisal[] @relation("AppraisalSubject")
+  authoredAppraisals    PerformanceAppraisal[] @relation("Reviewer")
 }
 
 model Role {
@@ -100,6 +106,7 @@ model Tenant {
   stripeCustomerId     String?            @unique
   stripeSubscriptionId String?            @unique
   subscriptionStatus   String?
+  enabledModules       String[]           @default(["CORE"])
   attributes           Json?              @default("{}")
   lastStorageSyncedAt  DateTime?
   aiUsages             AIUsage[]
@@ -115,6 +122,19 @@ model Tenant {
   roles                Role[]
   users                User[]
   workflows            Workflow[]
+  firmAssets           FirmAsset[]
+  expenses             Expense[]
+  leaveRecords         LeaveRecord[]
+  candidates           Candidate[]
+  cleRecords           CLERecord[]
+  onboardingItems      OnboardingItem[]
+  salaryRecords        SalaryRecord[]
+  appraisals           PerformanceAppraisal[]
+  accounts             FirmAccount[]
+  ledgerTransactions   LedgerTransaction[]
+  bankTransactions     BankTransaction[]
+  externalMappings     ExternalMapping[]
+  syncLogs             SyncLog[]
 }
 
 model ChatbotConfig {
@@ -512,10 +532,12 @@ model PricingConfig {
   features             Json
   updatedAt            DateTime @updatedAt
   maxUsers             Int      @default(5)
-  stripeBasePriceId    String?
-  stripeUserPriceId    String?
-  stripeAiPriceId      String?
-  stripeStoragePriceId String?
+  stripeBasePriceId         String?
+  stripeUserPriceId         String?
+  stripeAiPriceId           String?
+  stripeStoragePriceId      String?
+  stripeAccountingPriceId   String?
+  stripeHrEnterprisePriceId String?
 }
 
 model BrandingProfile {
@@ -678,4 +700,203 @@ enum InvoiceStatus {
   PAID
   VOIDED
   OVERDUE
+}
+
+model FirmAsset {
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  serialNumber String    @unique
+  category     String
+  status       String
+  assignedToId String?
+  purchaseDate DateTime
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id])
+  assignedTo   User?     @relation(fields: [assignedToId], references: [id])
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  tenantId    String
+  description String
+  amount      Float
+  category    String
+  status      String
+  expenseDate DateTime
+  notes       String?
+  type        String   @default("UTILITY") // UTILITY or PETTY_CASH
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model LeaveRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  tenantId  String
+  type      String
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("Pending")
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model Candidate {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  email     String
+  role      String
+  status    String   @default("Applied")
+  appliedOn DateTime @default(now())
+  
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model CLERecord {
+  id        String   @id @default(uuid())
+  userId    String
+  tenantId  String
+  course    String
+  credits   Int
+  date      DateTime
+  deadline  DateTime?
+  
+  user      User     @relation(fields: [userId], references: [id])
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model OnboardingItem {
+  id          String   @id @default(uuid())
+  tenantId    String
+  task        String
+  isCompleted Boolean  @default(false)
+  role        String?
+  
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model SalaryRecord {
+  id              String   @id @default(uuid())
+  userId          String
+  tenantId        String
+  baseSalary      Float
+  currency        String   @default("GHS")
+  bankAccount     String?
+  effectiveFrom   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model PerformanceAppraisal {
+  id          String   @id @default(uuid())
+  userId      String
+  tenantId    String
+  date        DateTime @default(now())
+  rating      String
+  reviewerId  String
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation("AppraisalSubject", fields: [userId], references: [id])
+  reviewer    User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model FirmAccount {
+  id          String        @id @default(uuid())
+  name        String
+  type        String        // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  category    String?       // BANK, ACCOUNTS_RECEIVABLE, TRUST, etc.
+  balance     Float         @default(0)
+  currency    String        @default("GHS")
+  tenantId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  entries     LedgerEntry[]
+
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+}
+
+model LedgerTransaction {
+  id          String        @id @default(uuid())
+  date        DateTime      @default(now())
+  description String
+  reference   String?       // Invoice ID, Cheque Number, etc.
+  status      String        @default("POSTED") // POSTED, VOID, PENDING
+  tenantId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  entries     LedgerEntry[]
+
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+}
+
+model LedgerEntry {
+  id            String            @id @default(uuid())
+  transactionId String
+  accountId     String
+  debit         Float             @default(0)
+  credit        Float             @default(0)
+  description   String?
+  reconciled    Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+
+  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id])
+  account       FirmAccount       @relation(fields: [accountId], references: [id])
+}
+
+model BankTransaction {
+  id          String   @id @default(uuid())
+  date        DateTime
+  description String
+  amount      Float
+  type        String   // DEBIT, CREDIT
+  externalId  String?  @unique
+  bankAccount String?
+  tenantId    String
+  status      String   @default("PENDING") // PENDING, MATCHED, IGNORED
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model ExternalMapping {
+  id          String   @id @default(uuid())
+  tenantId    String
+  system      String   // QUICKBOOKS, LAWPAY
+  localType   String   // ACCOUNT, MATTER, USER
+  localId     String
+  externalId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, system, localType, localId])
+}
+
+model SyncLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  system      String
+  status      String   // SUCCESS, FAILED
+  message     String?
+  timestamp   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
 }

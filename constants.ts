@@ -46,6 +46,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   // Finance/Growth
   'growth': ['read_billing'],
   'billing': ['read_billing'],
+  'accounting-hub': ['read_billing'],
   'capacity': ['manage_users'],
   'system-settings': ['manage_platform'],
   'tenant-settings': ['manage_tenant'],
@@ -53,13 +54,17 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'analysis': ['create_draft', 'review_work'],
   'client-portal': ['client_portal_access'],
   'field-intake': ['upload_field_intake', 'read_assigned_matter'],
-  'finance-ops': ['manage_expenses', 'read_billing']
+  'hr-workbench': ['manage_users'],
+  'expense-tracker': ['manage_expenses'],
+  'asset-tracker': ['manage_expenses'],
+  'finance-ops': ['manage_expenses', 'read_billing'],
 };
 
 // Default Permissions for Roles (Fallback/Mock)
 // Default Permissions for Roles (Fallback/Mock)
 export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  'TENANT_ADMIN': ['manage_tenant', 'read_analytics', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
+  'TENANT_ADMIN': ['manage_tenant', 'read_all_audits', 'manage_users', 'manage_roles', 'configure_bridge', 'design_workflow'],
+  'MANAGING_PARTNER': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review', 'ai_chat_execute', 'use_legal_chat', 'view_confidential', 'freeze_budget', 'approve_spend', 'manage_expenses'],
   'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'use_legal_chat'],
   'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts', 'use_legal_chat'],
   'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits', 'use_legal_chat'],

@@ -6,7 +6,7 @@ import { usePermissions } from './usePermissions';
 import { useWorkPersistence } from './useWorkPersistence';
 
 export const useAuth = (activeTab: string, selectedMatter: string | null) => {
-    const { setPermissions, setRole, role: contextRole } = usePermissions();
+    const { setPermissions, setRole, setEnabledModules, role: contextRole } = usePermissions();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
@@ -47,6 +47,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
 
         setRole(normalizedRole);
         setPermissions(activePermissions);
+        setEnabledModules(session.enabledModules || ["CORE"]);
         setUserId(session.userId);
         setUserName(session.userName || null);
         setTenantId(session.tenantId);
@@ -56,7 +57,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         setIsAuthenticated(true);
 
         return normalizedRole;
-    }, [setRole, setPermissions]);
+    }, [setRole, setPermissions, setEnabledModules]);
 
     const handleLogout = useCallback(() => {
         setIsAuthenticated(false);
@@ -67,10 +68,11 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         setMfaEnabled(false);
         setRole('');
         setPermissions([]);
+        setEnabledModules(["CORE"]);
         localStorage.removeItem('nomosdesk_session');
         localStorage.removeItem('nomosdesk_pin');
         sessionStorage.removeItem('nomosdesk_session');
-    }, [setRole, setPermissions]);
+    }, [setRole, setPermissions, setEnabledModules]);
 
     useEffect(() => {
         const saved = localStorage.getItem('nomosdesk_session');

@@ -462,9 +462,12 @@ router.post('/register', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
-    console.log(`[AuthFlow] Attempting login for: ${req.body?.email}`);
     try {
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        if (email) email = email.toLowerCase().trim();
+
+        console.log(`[AuthFlow] Attempting login for normalized email: ${email}`);
+
         const user = await prisma.user.findUnique({
             where: { email },
             include: {

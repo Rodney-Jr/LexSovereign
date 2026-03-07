@@ -71,7 +71,8 @@ export enum UserRole {
   PARALEGAL = 'PARALEGAL',
   AUDITOR = 'AUDITOR',
   CLERK = 'CLERK',
-  ADMIN_MANAGER = 'ADMIN_MANAGER'
+  ADMIN_MANAGER = 'ADMIN_MANAGER',
+  MANAGING_PARTNER = 'MANAGING_PARTNER'
 }
 
 export interface SessionData {
@@ -84,6 +85,7 @@ export interface SessionData {
   mode?: AppMode;
   token?: string;
   mfaEnabled?: boolean;
+  enabledModules?: string[];
 }
 
 export interface ChatbotConfig {

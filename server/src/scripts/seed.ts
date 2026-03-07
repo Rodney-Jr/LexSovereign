@@ -82,12 +82,14 @@ const PERMISSIONS = [
     { id: 'ai_chat_execute', description: 'Execute AI chat and research', resource: 'AI', action: 'CHAT' },
     { id: 'use_legal_chat', description: 'Access Legal Chat (practitioners only)', resource: 'AI', action: 'LEGAL_CHAT' },
     { id: 'view_confidential', description: 'View confidential and matter-specific data', resource: 'DATA', action: 'VIEW_CONFIDENTIAL' },
+    { id: 'freeze_budget', description: 'Freeze firm-wide budgets', resource: 'FINANCE', action: 'FREEZE' },
 ];
 
 const ROLES = [
     { name: 'GLOBAL_ADMIN', permissions: ['manage_platform', 'manage_tenant', 'read_all_audits', 'use_legal_chat'] },
-    { name: 'TENANT_ADMIN', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
-    { name: 'PARTNER', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
+    { name: 'TENANT_ADMIN', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'design_workflow'] },
+    { name: 'MANAGING_PARTNER', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review', 'ai_chat_execute', 'use_legal_chat', 'view_confidential', 'freeze_budget', 'approve_spend', 'manage_expenses'] },
+    { name: 'PARTNER', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'ai_chat_execute', 'use_legal_chat', 'view_confidential', 'freeze_budget'] },
     { name: 'SENIOR_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'read_billing', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
     { name: 'INTERNAL_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
     { name: 'JUNIOR_ASSOCIATE', permissions: ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
@@ -98,9 +100,11 @@ const ROLES = [
     { name: 'DEPUTY_GC', permissions: ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing', 'design_workflow', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
     { name: 'CLIENT', permissions: ['read_assigned_matter', 'client_portal_access'] },
     { name: 'EXECUTIVE_BOARD', permissions: ['read_all_audits', 'read_billing', 'use_legal_chat'] },
-    { name: 'OWNER', permissions: ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'use_legal_chat'] },
+    { name: 'OWNER', permissions: ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'use_legal_chat', 'freeze_budget'] },
     { name: 'PARALEGAL', permissions: ['create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'] },
-    { name: 'AUDITOR', permissions: ['read_all_audits', 'read_assigned_matter'] }
+    { name: 'AUDITOR', permissions: ['read_all_audits', 'read_assigned_matter'] },
+    { name: 'CLERK', permissions: ['upload_document', 'read_assigned_matter', 'use_legal_chat', 'view_confidential'] },
+    { name: 'ADMIN_MANAGER', permissions: ['read_billing', 'approve_spend', 'manage_users', 'use_legal_chat', 'view_confidential', 'manage_expenses'] }
 ];
 
 async function main() {
@@ -218,6 +222,7 @@ async function main() {
                 }
             });
         }
+
         counselId = counsel.id;
     } else {
         console.log('ℹ️ Default tenant already exists. Enforcing Global Admin role and password...');
@@ -238,6 +243,56 @@ async function main() {
         const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@nomosdesk.com' } });
         counselId = counselUser?.id;
     }
+
+    // Role IDs (Refetched for use outside the if/else)
+    const clerkRole = await prisma.role.findFirst({ where: { name: 'CLERK', tenantId: tenantId } });
+    const adminManagerRole = await prisma.role.findFirst({ where: { name: 'ADMIN_MANAGER', tenantId: tenantId } });
+
+    // Idempotent Clerk Seeding
+    console.log('🌱 Ensuring Clerk Demo Account exists...');
+    await prisma.user.upsert({
+        where: { email: 'clerk@nomosdesk.com' },
+        update: {
+            roleId: clerkRole?.id,
+            roleString: 'CLERK',
+            name: 'Firm Clerk',
+            passwordHash: await bcrypt.hash('password123', 10)
+        },
+        create: {
+            email: 'clerk@nomosdesk.com',
+            passwordHash: await bcrypt.hash('password123', 10),
+            name: 'Firm Clerk',
+            roleId: clerkRole?.id,
+            roleString: 'CLERK',
+            region: 'GH_ACC_1',
+            tenantId: tenantId!,
+            jurisdictionPins: ['GH_ACC_1'],
+            credentials: [{ type: 'FIELD_OPERATIONS_POCKET', id: 'CLERK-001' }]
+        }
+    });
+
+    // Idempotent Admin Manager Seeding
+    console.log('🌱 Ensuring Admin Manager Demo Account exists...');
+    await prisma.user.upsert({
+        where: { email: 'admin_manager@nomosdesk.com' },
+        update: {
+            roleId: adminManagerRole?.id,
+            roleString: 'ADMIN_MANAGER',
+            name: 'Firm Admin Manager',
+            passwordHash: await bcrypt.hash('password123', 10)
+        },
+        create: {
+            email: 'admin_manager@nomosdesk.com',
+            passwordHash: await bcrypt.hash('password123', 10),
+            name: 'Firm Admin Manager',
+            roleId: adminManagerRole?.id,
+            roleString: 'ADMIN_MANAGER',
+            region: 'GH_ACC_1',
+            tenantId: tenantId!,
+            jurisdictionPins: ['GH_ACC_1'],
+            credentials: [{ type: 'EXECUTIVE_OPS_BADGE', id: 'ADMIN-001' }]
+        }
+    });
 
     // === Pricing Configs: Always upsert so Stripe IDs are guaranteed fresh ===
     console.log('🌱 Upserting Pricing Configurations with live Stripe IDs...');

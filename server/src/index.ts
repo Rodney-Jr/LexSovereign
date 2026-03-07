@@ -39,6 +39,8 @@ import fxRatesRouter from './routes/fxRates';
 import contentEngineRouter from './routes/contentEngine';
 import stripeRouter from './routes/stripe';
 import billingRouter from './routes/billing';
+import firmRouter from './routes/firm';
+import accountingRouter from './routes/accounting';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
@@ -105,6 +107,7 @@ app.use('/api/auth', authRouter);
 
 // Tenant Actions (Must be above /api catchall)
 app.use('/api/tenant', authenticateToken, tenantRouter);
+app.use('/api/firm', authenticateToken, firmRouter);
 app.use('/api/platform', sovereignGuard, platformRouter);
 app.use('/api/document-templates', authenticateToken, documentTemplatesRouter);
 app.use('/api/branding-profiles', sovereignGuard, brandingRouter);
@@ -123,10 +126,11 @@ app.use('/api/workflows', authenticateToken, workflowsRouter);
 app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 app.use('/api/billing', authenticateToken, billingRouter);
+app.use('/api/accounting', accountingRouter);
 
 // Resolve static directory paths using process.cwd() for reliability in root-run environments
-const DIST_PATH = path.join(process.cwd(), 'client-dist');
-const PUBLIC_PATH = path.join(process.cwd(), 'server', 'public');
+const DIST_PATH = path.join(process.cwd(), '../dist');
+const PUBLIC_PATH = path.join(process.cwd(), 'public');
 
 console.log(`[Static] Serving assets from: ${DIST_PATH}`);
 

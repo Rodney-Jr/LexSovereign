@@ -9,7 +9,8 @@ import {
   Briefcase,
   LogOut,
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 
 import Dashboard from './components/Dashboard';
@@ -37,6 +38,7 @@ import PredictiveOps from './components/PredictiveOps';
 import EngineeringBacklog from './components/EngineeringBacklog';
 import GrowthDashboard from './components/GrowthDashboard';
 import SovereignReviewScreen from './components/SovereignReviewScreen';
+import AccountingDashboard from './components/AccountingDashboard';
 import DecisionTraceLedger from './components/DecisionTraceLedger';
 import { PricingGovernance } from './components/PricingGovernance';
 import LegalDrafting from './components/LegalDrafting';
@@ -47,6 +49,10 @@ import CLMCenter from './components/CLMCenter';
 import CaseCenter from './components/CaseCenter';
 import EnterpriseDashboard from './components/EnterpriseDashboard';
 import AdminControlPlane from './components/AdminControlPlane';
+import SovereignExpenseTracker from './components/SovereignExpenseTracker';
+import SovereignHRWorkbench from './components/HRWorkbench';
+import SovereignAssetManager from './components/SovereignAssetManager';
+import LeaveApplicationModal from './components/LeaveApplicationModal';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -70,6 +76,7 @@ const AppContent: React.FC = () => {
   const [isUserInvitation, setIsUserInvitation] = useState(false);
   const [initialToken, setInitialToken] = useState('');
   const [showMatterModal, setShowMatterModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetToken, setResetToken] = useState('');
 
@@ -142,6 +149,16 @@ const AppContent: React.FC = () => {
     if (isAuthenticated) {
       const isAllowed = (tab: string) => {
         if (contextRole === 'GLOBAL_ADMIN') return true;
+
+        // Platform owner items are STRICTLY for GLOBAL_ADMIN
+        const platformTabs = ['platform-ops', 'global-governance'];
+        if (platformTabs.includes(tab)) return false;
+
+        // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)
+        const adminTabs = ['identity', 'tenant-admin'];
+        if (contextRole === 'MANAGING_PARTNER' && adminTabs.includes(tab)) return false;
+
+        if (contextRole === 'MANAGING_PARTNER') return true;
         const required = TAB_REQUIRED_PERMISSIONS[tab];
         return !required || required.length === 0 || hasAnyPermission(required);
       };
@@ -169,6 +186,7 @@ const AppContent: React.FC = () => {
         userName: pending.user.name,
         tenantId: pending.user.tenantId,
         permissions: pending.user.permissions || [],
+        enabledModules: pending.user.tenant?.enabledModules || ["CORE"],
         mode: selectedMode
       });
       delete (window as any)._pendingSession;
@@ -223,7 +241,8 @@ const AppContent: React.FC = () => {
                   </button>
                 </div>
               </div>
-              {contextRole !== 'GLOBAL_ADMIN' && (
+              {/* Quick Actions - Hidden for technical/admin-only roles */}
+              {contextRole !== 'GLOBAL_ADMIN' && contextRole !== 'ADMIN_MANAGER' && contextRole !== 'TENANT_ADMIN' && (
                 <>
                   <div onClick={() => setActiveTab('drafting')} className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-primary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-primary/5">
                     <div className="p-3 bg-brand-primary/20 rounded-2xl animate-pulse"><Sparkles className="text-brand-primary" size={24} /></div>
@@ -238,6 +257,14 @@ const AppContent: React.FC = () => {
                     <div>
                       <h4 className="font-bold text-brand-text">Incept Matter</h4>
                       <p className="text-xs text-brand-muted">New Global Instance</p>
+                    </div>
+                  </div>
+
+                  <div onClick={() => setShowLeaveModal(true)} className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-amber-500/20 transition-all flex items-center gap-4 shadow-lg shadow-amber-500/5">
+                    <div className="p-3 bg-amber-500/20 rounded-2xl"><Calendar className="text-amber-500" /></div>
+                    <div>
+                      <h4 className="font-bold text-brand-text">Request Leave</h4>
+                      <p className="text-xs text-brand-muted">Submit Application</p>
                     </div>
                   </div>
                 </>
@@ -286,6 +313,10 @@ const AppContent: React.FC = () => {
         {activeTab === 'billing' && <SovereignBilling />}
         {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
         {activeTab === 'analytics' && <EnterpriseDashboard />}
+        {activeTab === 'hr-workbench' && <SovereignHRWorkbench userRole={contextRole as any} />}
+        {activeTab === 'expense-tracker' && <SovereignExpenseTracker />}
+        {activeTab === 'asset-tracker' && <SovereignAssetManager />}
+        {activeTab === 'accounting-hub' && <AccountingDashboard />}
 
         {activeTab === 'vault' && (
           selectedMatter ? (
@@ -337,6 +368,11 @@ const AppContent: React.FC = () => {
           }}
         />
       )}
+
+      <LeaveApplicationModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+      />
     </AppRouter>
   );
 };

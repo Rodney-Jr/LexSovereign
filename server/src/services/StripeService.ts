@@ -118,6 +118,87 @@ export class StripeService {
     }
 
     /**
+     * Add a billable module to a tenant's active subscription
+     */
+    static async addModuleToSubscription(tenantId: string, moduleKey: 'ACCOUNTING_HUB' | 'HR_ENTERPRISE') {
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { id: true, stripeSubscriptionId: true, plan: true, enabledModules: true } as any
+        });
+
+        if (!tenant || !(tenant as any).stripeSubscriptionId) {
+            throw new Error("Tenant does not have an active Stripe subscription.");
+        }
+
+        const pricing = await prisma.pricingConfig.findFirst({
+            where: { id: { equals: (tenant as any).plan as string, mode: 'insensitive' } }
+        });
+
+        if (!pricing) throw new Error("Pricing configuration not found.");
+
+        let priceId = '';
+        if (moduleKey === 'ACCOUNTING_HUB') priceId = (pricing as any).stripeAccountingPriceId;
+        if (moduleKey === 'HR_ENTERPRISE') priceId = (pricing as any).stripeHrEnterprisePriceId;
+
+        if (!priceId) {
+            throw new Error(`Module ${moduleKey} is not configured for billing in plan ${(tenant as any).plan}`);
+        }
+
+        // Check if already in enabledModules to prevent double-billing (though Stripe update handles this)
+        if ((tenant as any).enabledModules?.includes(moduleKey)) {
+            return { message: "Module already active." };
+        }
+
+        // Add the module as a new subscription item
+        await stripe.subscriptionItems.create({
+            subscription: (tenant as any).stripeSubscriptionId as string,
+            price: priceId,
+            quantity: 1,
+        });
+
+        // Update tenant's enabledModules
+        const updatedModules = [...((tenant as any).enabledModules || []), moduleKey];
+        await prisma.tenant.update({
+            where: { id: tenantId },
+            data: { enabledModules: updatedModules } as any
+        });
+
+        return { success: true, module: moduleKey };
+    }
+
+    /**
+     * Sync enabled modules from Stripe subscription (useful for webhooks or manual recovery)
+     */
+    static async syncModulesFromStripe(tenantId: string) {
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { id: true, stripeSubscriptionId: true, plan: true } as any
+        });
+
+        if (!tenant || !(tenant as any).stripeSubscriptionId) return;
+
+        const pricing = await prisma.pricingConfig.findFirst({
+            where: { id: { equals: (tenant as any).plan as string, mode: 'insensitive' } }
+        });
+
+        if (!pricing) return;
+
+        const subscription = await stripe.subscriptions.retrieve((tenant as any).stripeSubscriptionId as string);
+        const activePriceIds = subscription.items.data.map(item => item.price.id);
+
+        const modules: string[] = ['CORE']; // CORE is always active
+        if (activePriceIds.includes((pricing as any).stripeAccountingPriceId)) modules.push('ACCOUNTING_HUB');
+        if (activePriceIds.includes((pricing as any).stripeHrEnterprisePriceId)) modules.push('HR_ENTERPRISE');
+
+        await prisma.tenant.update({
+            where: { id: tenantId },
+            data: { enabledModules: modules } as any
+        });
+
+        console.log(`[Stripe] Synced modules for tenant ${tenantId}: ${modules.join(', ')}`);
+    }
+
+    /**
      * Fetch recent invoices for a tenant
      */
     static async getInvoices(stripeCustomerId: string, limit = 5) {

@@ -32,7 +32,22 @@ router.post('/portal', authenticateToken, async (req, res) => {
     }
 });
 
-// 3. Webhook Handler (Raw Body Required)
+// 3. Procure Module
+router.post('/modules/procure', authenticateToken, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        const { moduleKey } = req.body;
+        if (!tenantId) return res.status(403).json({ error: "Missing tenant context" });
+        if (!moduleKey) return res.status(400).json({ error: "Missing moduleKey" });
+
+        const result = await StripeService.addModuleToSubscription(tenantId, moduleKey);
+        res.json(result);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 4. Webhook Handler (Raw Body Required)
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -62,6 +77,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                     where: { stripeCustomerId: customerId } as any,
                     data: { status: 'active', subscriptionStatus: 'active' } as any
                 });
+
+                // Get tenantId to sync modules
+                const tenant = await prisma.tenant.findFirst({ where: { stripeCustomerId: customerId } });
+                if (tenant) await StripeService.syncModulesFromStripe(tenant.id);
                 break;
             }
             case 'invoice.payment_succeeded': {
@@ -95,13 +114,24 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     const stripeCustomerId = subscription.customer as string;
-    await prisma.tenant.updateMany({
-        where: { stripeCustomerId } as any,
-        data: {
-            subscriptionStatus: subscription.status,
-            stripeSubscriptionId: subscription.id
-        } as any
+
+    // Find tenant by customer ID
+    const tenant = await prisma.tenant.findFirst({
+        where: { stripeCustomerId }
     });
+
+    if (tenant) {
+        await prisma.tenant.update({
+            where: { id: tenant.id },
+            data: {
+                subscriptionStatus: subscription.status,
+                stripeSubscriptionId: subscription.id
+            } as any
+        });
+
+        // Sync modules (e.g. if items were added/removed)
+        await StripeService.syncModulesFromStripe(tenant.id);
+    }
 }
 
 async function handleSubscriptionDeletion(subscription: Stripe.Subscription) {

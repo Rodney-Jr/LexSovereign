@@ -34,14 +34,23 @@ import {
   GitBranch,
   Plug,
   Search,
-  // Added missing Cloud icon
   Cloud,
   Sparkles,
   ShoppingBag,
   Menu,
   X,
   FileCheck,
-  Layout as LayoutIcon
+  Layout as LayoutIcon,
+  FileText,
+  ArrowDownToLine,
+  Plus,
+  CheckCircle2,
+  Command,
+  FileSignature,
+  MonitorSmartphone,
+  Banknote,
+  Award,
+  TrendingDown
 } from 'lucide-react';
 import { AppMode, UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
@@ -103,6 +112,49 @@ const Layout: React.FC<LayoutProps> = ({
   const isAllowed = (tab: string) => {
     // If global admin, allow everything (fail-safe)
     if (role === 'GLOBAL_ADMIN') return true;
+
+    // Platform owner items are STRICTLY for GLOBAL_ADMIN
+    const platformTabs = ['platform-ops', 'global-governance'];
+    if (platformTabs.includes(tab)) return false;
+
+    // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)
+    const adminTabs = ['identity', 'tenant-admin'];
+    if (role === 'MANAGING_PARTNER' && adminTabs.includes(tab)) return false;
+
+    // Managing Partner gets full clearance for practice/firm items
+    if (role === 'MANAGING_PARTNER') return true;
+
+    if (role === 'ADMIN_MANAGER') {
+      const adminManagerAllowedTabs = [
+        'dashboard',
+        'hr-workbench',
+        'expense-tracker',
+        'asset-tracker',
+        'billing',
+        'capacity'
+      ];
+      if (!adminManagerAllowedTabs.includes(tab)) {
+        return false;
+      }
+    }
+
+    // Tenant Admin restricted to Technical/Governance context
+    if (role === 'TENANT_ADMIN') {
+      const technicalAdminAllowedTabs = [
+        'dashboard',
+        'tenant-governance',
+        'tenant-admin',
+        'org-blueprint',
+        'integration-bridge',
+        'identity',
+        'tenant-settings',
+        'accounting-hub',
+        'audit'
+      ];
+      if (!technicalAdminAllowedTabs.includes(tab)) {
+        return false;
+      }
+    }
 
     const required = TAB_REQUIRED_PERMISSIONS[tab];
     // If no specific permissions required (and not explicitly restricted), allow or deny?
@@ -192,7 +244,7 @@ const Layout: React.FC<LayoutProps> = ({
 
 
               {/* Firm Management Section */}
-              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity') || isAllowed('tenant-governance')) && (
+              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity') || isAllowed('tenant-governance') || isAllowed('hr-workbench') || isAllowed('expense-tracker') || isAllowed('asset-tracker')) && (
                 <div className="pt-4 pb-2 px-4">
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Firm Management</span>
                 </div>
@@ -224,6 +276,46 @@ const Layout: React.FC<LayoutProps> = ({
                   label="Firm Directory"
                   isActive={activeTab === 'tenant-admin'}
                   onClick={() => setActiveTab('tenant-admin')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('hr-workbench') && (
+                <NavItem
+                  icon={<Users size={18} className="text-blue-400" />}
+                  label="HR Workbench"
+                  isActive={activeTab === 'hr-workbench'}
+                  onClick={() => setActiveTab('hr-workbench')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+
+              {/* Accounting Hub - Re-introduced as billable module */}
+              {isAllowed('accounting-hub') && (
+                <NavItem
+                  icon={<Banknote size={18} className="text-amber-400" />}
+                  label="Sovereign Accounting"
+                  isActive={activeTab === 'accounting-hub'}
+                  onClick={() => setActiveTab('accounting-hub')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                  isPremium
+                />
+              )}
+
+              {isAllowed('expense-tracker') && (
+                <NavItem
+                  icon={<Coins size={18} className="text-orange-400" />}
+                  label="Expense Tracker"
+                  isActive={activeTab === 'expense-tracker'}
+                  onClick={() => setActiveTab('expense-tracker')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('asset-tracker') && (
+                <NavItem
+                  icon={<MonitorSmartphone size={18} className="text-blue-400" />}
+                  label="Asset Manager"
+                  isActive={activeTab === 'asset-tracker'}
+                  onClick={() => setActiveTab('asset-tracker')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
@@ -373,7 +465,7 @@ const Layout: React.FC<LayoutProps> = ({
               )}
 
               {/* Financial Management Section */}
-              {(isAllowed('billing') || isAllowed('growth')) && (
+              {(isAllowed('billing') || isAllowed('growth') || isAllowed('accounting-hub')) && (
                 <div className="pt-4 pb-2 px-4 flex items-center justify-between">
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Financial Management</span>
                 </div>
@@ -384,6 +476,15 @@ const Layout: React.FC<LayoutProps> = ({
                   label="Billing & Finance"
                   isActive={activeTab === 'billing'}
                   onClick={() => setActiveTab('billing')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('accounting-hub') && (
+                <NavItem
+                  icon={<Banknote size={18} className="text-blue-400" />}
+                  label="Sovereign Accounting"
+                  isActive={activeTab === 'accounting-hub'}
+                  onClick={() => setActiveTab('accounting-hub')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
@@ -549,17 +650,22 @@ const Layout: React.FC<LayoutProps> = ({
   );
 };
 
-const NavItem = ({ icon, label, isActive, onClick, disabled, setIsSidebarOpen }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void, disabled?: boolean, setIsSidebarOpen?: (open: boolean) => void }) => (
+const NavItem = ({ icon, label, isActive, onClick, disabled, isPremium, setIsSidebarOpen }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void, disabled?: boolean, isPremium?: boolean, setIsSidebarOpen?: (open: boolean) => void }) => (
   <button
     onClick={() => { onClick(); if (setIsSidebarOpen) setIsSidebarOpen(false); }}
     disabled={disabled}
-    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${isActive
+    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 relative ${isActive
       ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-[0_0_12px_-4px_rgba(16,185,129,0.4)]'
       : 'text-brand-muted hover:bg-brand-sidebar hover:text-brand-text'
       } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
   >
     {icon}
     <span className="text-sm font-medium">{label}</span>
+    {isPremium && (
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-amber-500/10 p-1 rounded-md border border-amber-500/20">
+        <Zap size={10} className="text-amber-500" fill="currentColor" />
+      </div>
+    )}
   </button>
 );
 

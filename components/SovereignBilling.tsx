@@ -168,7 +168,7 @@ const SovereignBilling: React.FC = () => {
                               </div>
                               <div>
                                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enterprise Plan</p>
-                                 <h4 className="text-lg font-bold text-white uppercase tracking-tighter">Institutional Tier</h4>
+                                 <h4 className="text-lg font-bold text-white uppercase tracking-tighter">{billingData?.planId || 'Institutional'} Tier</h4>
                               </div>
                            </div>
                            <div className="space-y-4">
@@ -190,6 +190,59 @@ const SovereignBilling: React.FC = () => {
                            </p>
                         </div>
                      </div>
+                  </div>
+               </div>
+
+               {/* Modular Add-ons */}
+               <div className="space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                     <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                        <Plus size={14} className="text-blue-400" /> Modular Capability Add-ons
+                     </h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <ModuleProcurementCard
+                        title="Sovereign Accounting"
+                        description="GAAP-compliant ledger, automated Trust accounting, and QuickBooks/LawPay sync."
+                        moduleKey="ACCOUNTING_HUB"
+                        isEnabled={billingData?.enabledModules?.includes('ACCOUNTING_HUB')}
+                        onProcure={async () => {
+                           const session = getSavedSession();
+                           if (!session?.token) return;
+                           try {
+                              await authorizedFetch('/api/stripe/modules/procure', {
+                                 method: 'POST',
+                                 body: JSON.stringify({ moduleKey: 'ACCOUNTING_HUB' }),
+                                 token: session.token
+                              });
+                              fetchBilling();
+                           } catch (e) {
+                              console.error("[Billing] Procure failed:", e);
+                              alert("Procurement failed. Ensure you have an active Stripe subscription.");
+                           }
+                        }}
+                     />
+                     <ModuleProcurementCard
+                        title="HR Enterprise"
+                        description="Recruitment pipelines, Payroll management, and automated Compliance tracking."
+                        moduleKey="HR_ENTERPRISE"
+                        isEnabled={billingData?.enabledModules?.includes('HR_ENTERPRISE')}
+                        onProcure={async () => {
+                           const session = getSavedSession();
+                           if (!session?.token) return;
+                           try {
+                              await authorizedFetch('/api/stripe/modules/procure', {
+                                 method: 'POST',
+                                 body: JSON.stringify({ moduleKey: 'HR_ENTERPRISE' }),
+                                 token: session.token
+                              });
+                              fetchBilling();
+                           } catch (e) {
+                              console.error("[Billing] Procure failed:", e);
+                              alert("Procurement failed. Ensure you have an active Stripe subscription.");
+                           }
+                        }}
+                     />
                   </div>
                </div>
 
@@ -301,6 +354,34 @@ const InvoiceRow = ({ cycle, delta, amount, status, downloadUrl }: any) => (
          </div>
       </td>
    </tr>
+);
+
+const ModuleProcurementCard = ({ title, description, moduleKey, isEnabled, onProcure }: { title: string, description: string, moduleKey: string, isEnabled: boolean, onProcure: () => void }) => (
+   <div className={`p-8 rounded-[2rem] border transition-all flex flex-col justify-between ${isEnabled ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900 border-slate-800 hover:border-blue-500/30'}`}>
+      <div className="space-y-4">
+         <div className="flex items-center justify-between">
+            <h5 className={`font-bold text-sm uppercase tracking-widest ${isEnabled ? 'text-emerald-400' : 'text-white'}`}>{title}</h5>
+            {isEnabled ? (
+               <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                  <CheckCircle2 size={10} className="text-emerald-500" />
+                  <span className="text-[10px] font-black uppercase text-emerald-500">Active</span>
+               </div>
+            ) : (
+               <Zap size={16} className="text-blue-500" />
+            )}
+         </div>
+         <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+            {description}
+         </p>
+      </div>
+      <button
+         disabled={isEnabled}
+         onClick={onProcure}
+         className={`mt-6 w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${isEnabled ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 active:scale-95'}`}
+      >
+         {isEnabled ? 'Capability Enabled' : `Activate ${title}`}
+      </button>
+   </div>
 );
 
 export default SovereignBilling;

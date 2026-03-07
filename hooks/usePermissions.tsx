@@ -8,14 +8,16 @@ interface PermissionContextType {
     userId: string | null;
     department?: Department;
     separationMode: 'OPEN' | 'DEPARTMENTAL' | 'STRICT';
+    enabledModules: string[];
     setPermissions: (perms: string[]) => void;
     setRole: (role: string) => void;
     setDepartment: (dept: Department) => void;
     setSeparationMode: (mode: 'OPEN' | 'DEPARTMENTAL' | 'STRICT') => void;
+    setEnabledModules: (modules: string[]) => void;
     hasPermission: (permissionId: string) => boolean;
     hasAnyPermission: (permissionIds: string[]) => boolean;
+    hasModule: (moduleId: string) => boolean;
     checkVisibility: (resource: any) => boolean;
-    // hasAllPermissions: (permissionIds: string[]) => boolean; // YAGNI for now
 }
 
 // Create context with default values
@@ -28,6 +30,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     const [userId, setUserId] = useState<string | null>(null);
     const [department, setDepartment] = useState<Department | undefined>(undefined);
     const [separationMode, setSeparationMode] = useState<'OPEN' | 'DEPARTMENTAL' | 'STRICT'>('OPEN');
+    const [enabledModules, setEnabledModules] = useState<string[]>(["CORE"]);
 
     // Load from local storage on mount if available (for persistence across refreshes)
     useEffect(() => {
@@ -39,6 +42,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
                 if (parsed.role) setRole(parsed.role);
                 if (parsed.userId) setUserId(parsed.userId);
                 if (parsed.department) setDepartment(parsed.department);
+                if (parsed.enabledModules) setEnabledModules(parsed.enabledModules);
                 // separationMode might not be in session, but we can try
                 if (parsed.separationMode) setSeparationMode(parsed.separationMode);
             } catch (e) {
@@ -56,6 +60,12 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         if (role === 'GLOBAL_ADMIN') return true;
         return permissionIds.some(id => permissions.includes(id));
     }, [role, permissions]);
+
+    const hasModule = React.useCallback((moduleId: string): boolean => {
+        if (role === 'GLOBAL_ADMIN') return true;
+        if (enabledModules.includes('ALL')) return true;
+        return enabledModules.includes(moduleId);
+    }, [role, enabledModules]);
 
     const checkVisibility = React.useCallback((resource: any): boolean => {
         if (role === 'GLOBAL_ADMIN' || role === 'TENANT_ADMIN') return true; // Admins see all
@@ -102,14 +112,17 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         userId,
         department,
         separationMode,
+        enabledModules,
         setPermissions: updatePermissions,
         setRole: updateRole,
         setDepartment,
         setSeparationMode,
+        setEnabledModules,
         hasPermission,
         hasAnyPermission,
+        hasModule,
         checkVisibility
-    }), [permissions, role, userId, department, separationMode, updatePermissions, updateRole, hasPermission, hasAnyPermission, checkVisibility]);
+    }), [permissions, role, userId, department, separationMode, enabledModules, updatePermissions, updateRole, hasPermission, hasAnyPermission, hasModule, checkVisibility]);
 
     return (
         <PermissionContext.Provider value={contextValue}>

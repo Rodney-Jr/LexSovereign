@@ -30,11 +30,11 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
         try {
             // Check User & Tenant Status
-            const dbUser = await requestContext.run({ tenantId: user.tenantId, userId: user.id }, () =>
-                prisma.user.findUnique({
+            const dbUser: any = await requestContext.run({ tenantId: user.tenantId, userId: user.id }, () =>
+                (prisma as any).user.findUnique({
                     where: { id: user.id },
                     include: {
-                        tenant: { select: { status: true } },
+                        tenant: { select: { status: true, enabledModules: true } },
                         department: true
                     }
                 })
@@ -55,11 +55,12 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
                 user.tenantId = CONFIG.SINGLE_TENANT_ID;
             }
 
-            // Hydrate sensitive context from DB (Department, Attributes)
+            // Hydrate sensitive context from DB (Department, Attributes, Modules)
             req.user = {
                 ...user,
-                department: dbUser.department || undefined,
-                name: dbUser.name
+                department: (dbUser as any).department || undefined,
+                name: dbUser.name,
+                tenant: (dbUser as any).tenant
             };
 
             requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {
