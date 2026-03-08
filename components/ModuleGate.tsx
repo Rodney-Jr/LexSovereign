@@ -37,7 +37,7 @@ const ModuleGate: React.FC<ModuleGateProps> = ({
                 <button className="flex items-center gap-3 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-900/40 active:scale-95 group">
                     Start 14-Day Free Trial <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </button>
-                <p className="mt-4 text-[10px] text-slate-600 font-bold uppercase tracking-widest">Pricing starts at $49/mo per firm</p>
+                <p className="mt-4 text-[10px] text-slate-600 font-bold uppercase tracking-widest">Pricing starts at $19/mo per firm</p>
             </div>
         );
     }
