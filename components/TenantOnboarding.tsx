@@ -473,12 +473,12 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                 {entityType === AppMode.LAW_FIRM ? (
                   <>
                     <InterceptorToggle active={true} icon={<Scale size={16} />} label="Ethics & UPL Intercept" desc="Blocks advice triggers for non-verified practitioners." />
-                    <InterceptorToggle active={formData.plan !== SaaSPlan.STARTER} icon={<Activity size={16} />} label="Scale of Fees Auditor" desc="Real-time compliance checks for jurisdictional legal billing." />
+                    <InterceptorToggle active={formData.plan !== SaaSPlan.SOLO} icon={<Activity size={16} />} label="Scale of Fees Auditor" desc="Real-time compliance checks for jurisdictional legal billing." />
                   </>
                 ) : (
                   <>
                     <InterceptorToggle active={true} icon={<Layers size={16} />} label="Regulatory Compliance Auditor" desc="Scans for regional AML/KYC trigger events." />
-                    <InterceptorToggle active={formData.plan !== SaaSPlan.STARTER} icon={<ShieldAlert size={16} />} label="OCG Expenditure Policy" desc="Ensures external spend matches corporate guidelines." />
+                    <InterceptorToggle active={formData.plan !== SaaSPlan.SOLO} icon={<ShieldAlert size={16} />} label="OCG Expenditure Policy" desc="Ensures external spend matches corporate guidelines." />
                   </>
                 )}
                 <InterceptorToggle active={true} icon={<Fingerprint size={16} />} label="Logical DAS Scrubbing" desc="PII Redaction filter active for all software-defined inference." />
@@ -518,11 +518,11 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
           </button>
           <button
             onClick={step === 6 ? () => onComplete(entityType!) : next}
-            disabled={(step === 1 && !isStep1Valid) || (step === 4 && isProvisioning) || (step === 6 && !affidavitSigned) || (step === 3 && formData.plan === SaaSPlan.INSTITUTIONAL && getPricingForPlan(SaaSPlan.INSTITUTIONAL)?.basePrice === 0)}
+            disabled={(step === 1 && !isStep1Valid) || (step === 4 && isProvisioning) || (step === 6 && !affidavitSigned)}
             className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white px-12 py-3.5 rounded-2xl font-bold flex items-center gap-3 transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
           >
-            {step === 3 && formData.plan === SaaSPlan.INSTITUTIONAL && getPricingForPlan(SaaSPlan.INSTITUTIONAL)?.basePrice === 0 ? 'Contact Sales' : (step === 3 ? 'Proceed to Deployment' : (step === 6 ? 'Launch Legal Silo' : 'Initialize Phase'))}
-            {step < 6 && !(step === 3 && formData.plan === SaaSPlan.INSTITUTIONAL && getPricingForPlan(SaaSPlan.INSTITUTIONAL)?.basePrice === 0) && <ChevronRight size={20} />}
+            {step === 3 ? 'Proceed to Payment' : (step === 6 ? 'Launch Legal Silo' : 'Initialize Phase')}
+            {step < 6 && <ChevronRight size={20} />}
           </button>
         </div>
       </div>
