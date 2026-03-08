@@ -295,7 +295,18 @@ async function main() {
         }
     });
 
-    // === Pricing Configs: Always upsert so Stripe IDs are guaranteed fresh ===
+    // === Pricing Configs: Purge stale tiers, then upsert canonical 3-tier model ===
+    const CANONICAL_TIERS = ['Solo', 'Professional', 'Institutional'];
+    console.log('🧹 Purging stale pricing tiers not in canonical set...');
+    const purged = await prisma.pricingConfig.deleteMany({
+        where: { id: { notIn: CANONICAL_TIERS } }
+    });
+    if (purged.count > 0) {
+        console.log(`  🗑️  Removed ${purged.count} stale pricing tier(s) (e.g. Starter, Standard, etc.)`);
+    } else {
+        console.log('  ✅ No stale tiers found.');
+    }
+
     console.log('🌱 Upserting Pricing Configurations with live Stripe IDs...');
     const pricingConfigs = [
         {
@@ -320,7 +331,7 @@ async function main() {
         },
         {
             id: 'Institutional',
-            basePrice: 0, // Contact Sales in UI, but 299 for base config
+            basePrice: 299,
             pricePerUser: 0,
             creditsIncluded: 20000,
             maxUsers: 10000,
