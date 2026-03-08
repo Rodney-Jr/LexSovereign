@@ -22,6 +22,7 @@ const CapacityDashboard: React.FC = () => {
 
     const [practitioners, setPractitioners] = useState<TenantUser[]>([]);
     const [insights, setInsights] = useState<any[]>([]);
+    const [utilizationData, setUtilizationData] = useState<Record<string, any>>({});
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -49,6 +50,21 @@ const CapacityDashboard: React.FC = () => {
             if (!session?.token) return;
             const data = await authorizedFetch('/api/users', { token: session.token });
             setPractitioners(data);
+
+            // Try to fetch utilization data for each
+            const uData: Record<string, any> = {};
+            for (const user of data) {
+                try {
+                    const uRes = await authorizedFetch(`/api/productivity/utilization/${user.id}`, { token: session.token });
+                    if (uRes && uRes.metrics) {
+                        uData[user.id] = uRes.metrics;
+                    }
+                } catch (e) {
+                    // ignore if endpoint fails
+                }
+            }
+            setUtilizationData(uData);
+
         } catch (e) {
             console.error("Failed to fetch capacity data:", e);
         } finally {
@@ -138,14 +154,19 @@ const CapacityDashboard: React.FC = () => {
                                         <tr>
                                             <th className="pb-4">Practitioner</th>
                                             <th className="pb-4">Region</th>
-                                            <th className="pb-4 text-center">Load Status</th>
-                                            <th className="pb-4 text-right">Weighted Hours</th>
+                                            <th className="pb-4 text-center">Utilization</th>
+                                            <th className="pb-4 text-right">Billable Hours</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-800/50">
                                         {practitioners.filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(p => {
-                                            const currentHours = 15; // In a real app, sum(timeEntries.duration)
-                                            const loadState = getLoadState(currentHours, p.maxWeeklyHours);
+                                            const metrics = utilizationData[p.id] || { utilizationRatePercentage: 0, billableHours: 0, targetHours: (p.maxWeeklyHours || 40) * 4 };
+
+                                            let loadState = 'NOMINAL';
+                                            if (metrics.utilizationRatePercentage > 95) loadState = 'BURNOUT_RISK';
+                                            if (metrics.utilizationRatePercentage < 40) loadState = 'UNDER_UTILIZED';
+                                            if (metrics.utilizationRatePercentage === 0) loadState = 'IDLE';
+
                                             return (
                                                 <tr key={p.id} className="group hover:bg-slate-800/20 transition-all">
                                                     <td className="py-4 font-medium text-slate-300 text-sm">
@@ -161,16 +182,17 @@ const CapacityDashboard: React.FC = () => {
                                                     </td>
                                                     <td className="py-4">
                                                         <div className="flex justify-center">
-                                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${loadState === 'RED' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                                                                loadState === 'AMBER' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                                                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${loadState === 'BURNOUT_RISK' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                                                                    loadState === 'UNDER_UTILIZED' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                                                        loadState === 'IDLE' ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' :
+                                                                            'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                                                 }`}>
-                                                                {loadState}
+                                                                {metrics.utilizationRatePercentage}% ({loadState})
                                                             </span>
                                                         </div>
                                                     </td>
                                                     <td className="py-4 text-right text-xs font-mono text-slate-400">
-                                                        {loadState === 'RED' ? 'OVERLOAD' : 'NOMINAL'} / {p.maxWeeklyHours || 40}
+                                                        {metrics.billableHours.toFixed(1)} / {metrics.targetHours}
                                                     </td>
                                                 </tr>
                                             );

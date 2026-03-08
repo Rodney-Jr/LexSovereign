@@ -41,6 +41,7 @@ import stripeRouter from './routes/stripe';
 import billingRouter from './routes/billing';
 import firmRouter from './routes/firm';
 import accountingRouter from './routes/accounting';
+import productivityRouter from './routes/productivity';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
@@ -127,6 +128,7 @@ app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 app.use('/api/billing', authenticateToken, billingRouter);
 app.use('/api/accounting', accountingRouter);
+app.use('/api/productivity', productivityRouter);
 
 // 3. Static Asset Resolution
 import fs from 'fs';

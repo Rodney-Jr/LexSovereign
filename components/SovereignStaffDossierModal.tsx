@@ -39,6 +39,7 @@ const TAB_OPTIONS = [
     { id: 'leave', label: 'Leave & Absences', icon: <Calendar size={16} /> },
     { id: 'compliance', label: 'CLE & Compliance', icon: <Award size={16} /> },
     { id: 'performance', label: 'Performance', icon: <Activity size={16} /> },
+    { id: 'activity', label: 'Activity Heatmap', icon: <Activity size={16} /> },
     { id: 'payroll', label: 'Payroll & Comp', icon: <Banknote size={16} /> },
     { id: 'assets', label: 'Hardware Assets', icon: <MonitorSmartphone size={16} /> },
 ] as const;
@@ -48,17 +49,23 @@ type TabId = typeof TAB_OPTIONS[number]['id'];
 const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({ staff: basicStaff, onClose, onUpdateStatus }) => {
     const [activeTab, setActiveTab] = useState<TabId>('profile');
     const [staff, setStaff] = useState<StaffMember | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [heatmapData, setHeatmapData] = useState<any>(null);
 
     // Fetch full dossier on mount
     React.useEffect(() => {
         const fetchDossier = async () => {
             try {
                 const session = getSavedSession();
-                const data = await authorizedFetch(`/api/firm/staff/${basicStaff.id}/dossier`, {
-                    token: session?.token
-                });
+                const [data, heatmap] = await Promise.all([
+                    authorizedFetch(`/api/firm/staff/${basicStaff.id}/dossier`, {
+                        token: session?.token
+                    }),
+                    authorizedFetch(`/api/productivity/heatmap/${basicStaff.id}`, {
+                        token: session?.token
+                    }).catch(() => null) // fail gracefully
+                ]);
                 setStaff(data);
+                if (heatmap) setHeatmapData(heatmap);
             } catch (error) {
                 console.error('Failed to fetch staff dossier', error);
                 // Fallback to basic info if dossier fetch fails
@@ -355,6 +362,70 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
         </div>
     );
 
+    const renderActivity = () => {
+        if (!heatmapData) {
+            return (
+                <div className="text-center py-10 bg-slate-900 border border-slate-800 rounded-[2rem] animate-in fade-in duration-300">
+                    <Activity size={32} className="mx-auto text-slate-600 mb-3" />
+                    <p className="text-sm text-slate-400 font-medium">Activity Heatmap generation pending.</p>
+                </div>
+            )
+        }
+
+        const maxCount = Math.max(...(heatmapData.heatmap || []).map((d: any) => d.count), 1);
+
+        return (
+            <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem]">
+                    <h3 className="text-sm font-bold text-white mb-6">Sovereign Proof of Work (Last 90 Days)</h3>
+
+                    <div className="flex flex-wrap gap-1.5 justify-start max-w-full overflow-hidden">
+                        {(heatmapData.heatmap || []).map((day: any, i: number) => {
+                            // Calculate opacity based on max count
+                            const intensity = Math.max(0.2, day.count / maxCount);
+
+                            return (
+                                <div
+                                    key={day.date}
+                                    className="w-4 h-4 rounded-sm hover:ring-2 hover:ring-slate-400 transition-all cursor-pointer relative group"
+                                    style={{ backgroundColor: day.count === 0 ? '#1e293b' : `rgba(52, 211, 153, ${intensity})` }}
+                                >
+                                    <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] py-1 flex items-center justify-center p-2 rounded whitespace-nowrap z-50 pointer-events-none shadow-xl border border-slate-700">
+                                        <div>
+                                            <p className="font-bold text-emerald-400">{day.count} activities</p>
+                                            <p className="text-slate-400">{day.date}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="mt-6 flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        <span>Less</span>
+                        <div className="flex gap-1">
+                            <div className="w-3 h-3 rounded-sm bg-slate-800"></div>
+                            <div className="w-3 h-3 rounded-sm bg-emerald-500/30"></div>
+                            <div className="w-3 h-3 rounded-sm bg-emerald-500/60"></div>
+                            <div className="w-3 h-3 rounded-sm bg-emerald-500/90"></div>
+                            <div className="w-3 h-3 rounded-sm bg-emerald-500"></div>
+                        </div>
+                        <span>More</span>
+                    </div>
+                </div>
+
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] flex items-center justify-between">
+                    <div>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Total 90D Interactions</p>
+                        <p className="text-3xl font-black text-white mt-1">{heatmapData.totalActivities90d}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400">
+                        <Activity size={24} />
+                    </div>
+                </div>
+            </div>
+        )
+    };
+
     const renderPayroll = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -519,6 +590,7 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                         {activeTab === 'leave' && renderLeave()}
                         {activeTab === 'compliance' && renderCompliance()}
                         {activeTab === 'performance' && renderPerformance()}
+                        {activeTab === 'activity' && renderActivity()}
                         {activeTab === 'payroll' && renderPayroll()}
                         {activeTab === 'assets' && renderAssets()}
                     </div>

@@ -14,7 +14,11 @@ import {
     Download,
     Mail,
     ArrowUpDown,
-    Receipt as ReceiptIcon
+    Receipt as ReceiptIcon,
+    Zap,
+    Plus,
+    X,
+    Cpu
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 import InvoicePreviewModal from './InvoicePreviewModal';
@@ -44,6 +48,11 @@ const ClientInvoicesRecord: React.FC = () => {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isFetchingDetail, setIsFetchingDetail] = useState(false);
 
+    // AI Timesheet State
+    const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
+    const [isAILoading, setIsAILoading] = useState(false);
+    const [aiSyncing, setAiSyncing] = useState(false);
+
     const fetchInvoices = async () => {
         const session = getSavedSession();
         if (!session?.token) return;
@@ -51,6 +60,14 @@ const ClientInvoicesRecord: React.FC = () => {
             setLoading(true);
             const data = await authorizedFetch('/api/billing/invoices', { token: session.token });
             setInvoices(data);
+
+            // Fetch AI Suggestions (in background)
+            authorizedFetch(`/api/productivity/ai-timesheet-suggestions/${session.user.id}`, { token: session.token })
+                .then(res => {
+                    if (res.suggestions) setAiSuggestions(res.suggestions);
+                })
+                .catch(err => console.error("AI Suggestions error:", err));
+
         } catch (e) {
             console.error("[Invoicing] Failed to fetch invoices:", e);
         } finally {
@@ -90,6 +107,42 @@ const ClientInvoicesRecord: React.FC = () => {
         } catch (e) {
             console.error("[Invoicing] Status update failed:", e);
         }
+    };
+
+    const handleApproveSuggestion = async (idx: number) => {
+        const suggestion = aiSuggestions[idx];
+        if (!suggestion) return;
+
+        try {
+            setAiSyncing(true);
+            const session = getSavedSession();
+            if (!session?.token) return;
+
+            // Post it as a real time entry
+            await authorizedFetch('/api/firm/time', {
+                method: 'POST',
+                token: session.token,
+                body: JSON.stringify({
+                    matterId: suggestion.matterId || null,
+                    date: new Date().toISOString(),
+                    durationMinutes: suggestion.durationMinutes,
+                    description: suggestion.description,
+                    isBillable: true,
+                    activityType: suggestion.activityType
+                })
+            });
+
+            // Remove from inbox UI
+            setAiSuggestions(prev => prev.filter((_, i) => i !== idx));
+        } catch (e) {
+            console.error("Failed to approve suggestion", e);
+        } finally {
+            setAiSyncing(false);
+        }
+    };
+
+    const handleDismissSuggestion = (idx: number) => {
+        setAiSuggestions(prev => prev.filter((_, i) => i !== idx));
     };
 
     const filteredInvoices = invoices.filter(inv => {
@@ -144,6 +197,66 @@ const ClientInvoicesRecord: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            {/* AI Suggested Timesheets Inbox */}
+            {aiSuggestions.length > 0 && (
+                <div className="bg-slate-900 border border-emerald-500/20 rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-top-4 duration-500 mb-8">
+                    <div className="bg-emerald-500/5 px-8 py-5 flex items-center justify-between border-b border-emerald-500/10">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                <Cpu size={20} />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                    AI Unbilled Time Inbox
+                                    <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest font-black">
+                                        {aiSuggestions.length} Phantom Logs Found
+                                    </span>
+                                </h3>
+                                <p className="text-xs text-slate-400 font-medium">Sovereign AI has inferred billable activity from your system access logs today.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="divide-y divide-slate-800/50">
+                        {aiSuggestions.map((s, idx) => (
+                            <div key={idx} className="p-6 md:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-800/20 transition-all">
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <Zap size={16} className={s.confidence === 'High' ? 'text-emerald-400' : 'text-amber-400'} />
+                                            <span className="text-sm font-bold text-slate-200">{s.activityType}</span>
+                                            <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700 uppercase">{s.durationMinutes} mins</span>
+                                        </div>
+                                        {s.matterId && (
+                                            <span className="text-[10px] font-mono text-slate-500 border border-slate-700 px-2 py-1 rounded bg-slate-900">
+                                                Matter: {s.matterId}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-slate-400 italic">"{s.description}"</p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <button
+                                        disabled={aiSyncing}
+                                        onClick={() => handleDismissSuggestion(idx)}
+                                        className="p-3 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
+                                        title="Discard"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                    <button
+                                        disabled={aiSyncing}
+                                        onClick={() => handleApproveSuggestion(idx)}
+                                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        <Plus size={14} /> Add to Timesheet
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Main Ledger */}
             <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
