@@ -1,3 +1,4 @@
+// v1.0.2 - Fixed lawyerId and analyzeLocalPolicy build errors
 import { Router, Request, Response } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
