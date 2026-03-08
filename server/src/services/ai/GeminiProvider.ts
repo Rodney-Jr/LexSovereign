@@ -349,4 +349,14 @@ export class GeminiProvider implements AIProvider {
         // Fallback to Anthropic implementation behavior if called, or implement full Gemini parsing
         return [];
     }
+
+    async analyzeLocalPolicy(prompt: string): Promise<string> {
+        const ai = this.getAI();
+        const model = ai.getGenerativeModel({
+            model: this.defaultModel,
+            systemInstruction: "You are an AI assistant analyzing system activity to suggest timesheet entries."
+        });
+        const result = await model.generateContent(prompt);
+        return result.response.text() || "[]";
+    }
 }

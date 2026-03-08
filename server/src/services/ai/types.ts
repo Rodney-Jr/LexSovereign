@@ -54,4 +54,6 @@ export interface AIProvider {
     analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string>;
 
     parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]>;
+
+    analyzeLocalPolicy(prompt: string): Promise<string>;
 }

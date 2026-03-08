@@ -98,7 +98,7 @@ router.get('/utilization/:userId', authenticateToken, async (req: Request, res: 
 
         const timeEntries = await prisma.timeEntry.findMany({
             where: {
-                lawyerId: userId,
+                userId: userId,
                 startTime: {
                     gte: start,
                     lte: end

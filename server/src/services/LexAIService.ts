@@ -150,4 +150,8 @@ export class LexAIService {
     async parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]> {
         return this.executeWithFailover(p => p.parseBankStatement(text), { enforceSovereign: true });
     }
+
+    async analyzeLocalPolicy(prompt: string): Promise<string> {
+        return this.executeWithFailover(p => p.analyzeLocalPolicy(prompt));
+    }
 }

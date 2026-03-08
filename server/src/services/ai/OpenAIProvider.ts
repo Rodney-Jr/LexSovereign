@@ -220,4 +220,22 @@ export class OpenAIProvider implements AIProvider {
     async parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]> {
         return [];
     }
+
+    async analyzeLocalPolicy(prompt: string): Promise<string> {
+        const openai = this.getClient();
+        try {
+            const response = await openai.chat.completions.create({
+                model: this.defaultModel,
+                messages: [
+                    { role: "system", content: "You are an AI assistant analyzing system activity to suggest timesheet entries." },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0
+            });
+            return response.choices[0].message.content || "[]";
+        } catch (e: any) {
+            console.error("OpenAI API Error (AnalyzeLocalPolicy):", e.message);
+            return "[]";
+        }
+    }
 }

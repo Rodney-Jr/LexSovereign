@@ -184,4 +184,24 @@ Example output:
             throw new Error(`Bank statement parsing failed: ${error.message}`);
         }
     }
+
+    async analyzeLocalPolicy(prompt: string): Promise<string> {
+        const anthropic = this.getClient();
+        try {
+            const response = await anthropic.messages.create({
+                model: this.defaultModel,
+                max_tokens: 1024,
+                system: "You are an AI assistant analyzing system activity to suggest timesheet entries.",
+                messages: [
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0
+            });
+            const textBlock = response.content.find(c => c.type === 'text');
+            return textBlock?.type === 'text' ? textBlock.text : "[]";
+        } catch (e: any) {
+            console.error("Anthropic API Error (AnalyzeLocalPolicy):", e.message);
+            return "[]";
+        }
+    }
 }
