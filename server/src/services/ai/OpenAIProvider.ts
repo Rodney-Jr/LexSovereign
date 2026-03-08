@@ -216,4 +216,8 @@ export class OpenAIProvider implements AIProvider {
             throw new Error(`Document analysis failed: ${e.message}`);
         }
     }
+
+    async parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]> {
+        return [];
+    }
 }

@@ -146,4 +146,8 @@ export class LexAIService {
     async analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string> {
         return this.executeWithFailover(p => p.analyzeDocument(content, type), { enforceSovereign: true });
     }
+
+    async parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]> {
+        return this.executeWithFailover(p => p.parseBankStatement(text), { enforceSovereign: true });
+    }
 }

@@ -52,4 +52,6 @@ export interface AIProvider {
     hydrateTemplate(template: any, matter: any): Promise<any>;
 
     analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string>;
+
+    parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]>;
 }

@@ -3,6 +3,13 @@ import { authenticateToken } from '../middleware/auth';
 import { moduleGuard } from '../middleware/moduleGuard';
 import { AccountingService } from '../services/AccountingService';
 import { ReconciliationService } from '../services/ReconciliationService';
+import multer from 'multer';
+import { DocumentParserService } from '../services/DocumentParserService';
+import { LexAIService } from '../services/LexAIService';
+import crypto from 'crypto';
+
+const upload = multer({ storage: multer.memoryStorage() });
+const lexAI = new LexAIService();
 
 const router = Router();
 // CRITICAL: authenticateToken MUST run BEFORE moduleGuard so req.user is populated
@@ -114,6 +121,51 @@ router.post('/reconciliation/match', authenticateToken, async (req, res) => {
         res.json(result);
     } catch (e: any) {
         res.status(400).json({ error: e.message });
+    }
+});
+
+router.post('/reconciliation/upload', authenticateToken, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        const tenantId = (req as any).user.tenantId;
+
+        // 1. Extract Raw Text
+        const rawText = await DocumentParserService.parse(
+            req.file.buffer,
+            req.file.originalname,
+            req.file.mimetype
+        );
+
+        // 2. Extract JSON using AI
+        const parsedTransactions = await lexAI.parseBankStatement(rawText);
+
+        if (!Array.isArray(parsedTransactions) || parsedTransactions.length === 0) {
+            return res.status(400).json({ error: "No transactions found or parsed in the document." });
+        }
+
+        // 3. Map to BankTransaction Format
+        const transactionsToImport = parsedTransactions.map(tx => {
+            // Generate deterministic hash to prevent duplicates
+            const hashString = `${tx.date}-${tx.description}-${Math.abs(tx.amount)}-${tx.type}`;
+            const externalId = crypto.createHash('md5').update(hashString).digest('hex');
+
+            return {
+                ...tx,
+                date: new Date(tx.date),
+                externalId
+            };
+        });
+
+        // 4. Import into Database
+        const results = await ReconciliationService.importBankTransactions(tenantId, transactionsToImport);
+
+        res.json({ success: true, count: results.length });
+    } catch (e: any) {
+        console.error("Statement Upload Error:", e);
+        res.status(500).json({ error: e.message });
     }
 });
 

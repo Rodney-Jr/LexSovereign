@@ -41,6 +41,8 @@ const AccountingDashboard: React.FC = () => {
     });
     const [journalStatus, setJournalStatus] = useState<'idle' | 'posting' | 'success' | 'error'>('idle');
     const [journalError, setJournalError] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchAccountingData = async () => {
         const session = getSavedSession();
@@ -141,6 +143,42 @@ const AccountingDashboard: React.FC = () => {
         } catch (e: any) {
             setJournalStatus('error');
             setJournalError(e.message);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const session = getSavedSession();
+        if (!session?.token) return;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const result = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/accounting/reconciliation/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.token}`
+                },
+                body: formData
+            });
+
+            const data = await result.json();
+            if (!result.ok) throw new Error(data.error || 'Upload failed');
+
+            // Reset input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+
+            // Refresh feed
+            await fetchAccountingData();
+        } catch (error: any) {
+            console.error("Statement upload error:", error);
+            alert(`Failed to process statement: ${error.message}`);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -331,9 +369,9 @@ const AccountingDashboard: React.FC = () => {
                                                         <td className="px-5 py-3.5 text-xs font-bold text-white">{acc.name}</td>
                                                         <td className="px-5 py-3.5">
                                                             <span className={`text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest ${acc.type === 'ASSET' ? 'bg-emerald-500/10 text-emerald-400' :
-                                                                    acc.type === 'LIABILITY' ? 'bg-red-500/10 text-red-400' :
-                                                                        acc.type === 'REVENUE' ? 'bg-blue-500/10 text-blue-400' :
-                                                                            'bg-amber-500/10 text-amber-400'
+                                                                acc.type === 'LIABILITY' ? 'bg-red-500/10 text-red-400' :
+                                                                    acc.type === 'REVENUE' ? 'bg-blue-500/10 text-blue-400' :
+                                                                        'bg-amber-500/10 text-amber-400'
                                                                 }`}>{acc.type}</span>
                                                         </td>
                                                         <td className="px-5 py-3.5 text-[10px] text-slate-500 font-mono">{acc.category}</td>
@@ -474,12 +512,29 @@ const AccountingDashboard: React.FC = () => {
                                 <div className="p-8 space-y-6">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-sm font-black text-white uppercase tracking-widest">Bank Statement Reconciliation</h3>
-                                        <button
-                                            onClick={fetchAccountingData}
-                                            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
-                                        >
-                                            <RefreshCw size={14} /> Refresh Feed
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                accept=".csv,.pdf,.docx"
+                                                className="hidden"
+                                                onChange={handleFileUpload}
+                                            />
+                                            <button
+                                                onClick={() => fileInputRef.current?.click()}
+                                                disabled={isUploading}
+                                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-blue-900/20"
+                                            >
+                                                {isUploading ? <RefreshCw size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                {isUploading ? 'Parsing...' : 'Upload Bank Statement'}
+                                            </button>
+                                            <button
+                                                onClick={fetchAccountingData}
+                                                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
+                                            >
+                                                <RefreshCw size={14} /> Refresh Feed
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {reconciliationData.length === 0 ? (

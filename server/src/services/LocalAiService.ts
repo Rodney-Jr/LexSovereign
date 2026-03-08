@@ -44,4 +44,8 @@ export class LocalAiService {
             throw new Error(`Local AI Service Unavailable: ${error.message}`);
         }
     }
+
+    async parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]> {
+        return [];
+    }
 }

@@ -144,4 +144,44 @@ export class AnthropicProvider implements AIProvider {
             throw new Error(`Document analysis failed: ${error.message}`);
         }
     }
+
+    async parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]> {
+        const anthropic = this.getClient();
+        const systemPrompt = `You are a financial data extraction AI. Extract bank transactions from the provided raw text.
+Return ONLY a valid JSON array of objects. Do not include any markdown formatting, thoughts, or explanations.
+Each object must have exactly these keys:
+- "date": string (ISO format YYYY-MM-DD)
+- "description": string (Cleaned merchant or transaction description)
+- "amount": number (Absolute value, positive decimal)
+- "type": string (Exactly "DEBIT" or "CREDIT")
+
+Example output:
+[
+  {"date": "2023-10-01", "description": "ACH Electronic Credit from Stripe", "amount": 1500.00, "type": "CREDIT"},
+  {"date": "2023-10-02", "description": "AWS Cloud Services", "amount": 120.50, "type": "DEBIT"}
+]
+`;
+
+        try {
+            const response = await anthropic.messages.create({
+                model: this.defaultModel,
+                max_tokens: 4096,
+                system: systemPrompt,
+                messages: [
+                    { role: "user", content: `RAW_BANK_STATEMENT:\n${text.substring(0, 50000)}` }
+                ],
+                temperature: 0.1
+            });
+            const textBlock = response.content.find(c => c.type === 'text');
+            const content = textBlock?.type === 'text' ? textBlock.text : "[]";
+
+            // Clean up potential markdown formatting from AI output
+            const cleanedContent = content.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+            return JSON.parse(cleanedContent);
+        } catch (error: any) {
+            console.error(`Anthropic API Error (parseBankStatement):`, error.message);
+            throw new Error(`Bank statement parsing failed: ${error.message}`);
+        }
+    }
 }
