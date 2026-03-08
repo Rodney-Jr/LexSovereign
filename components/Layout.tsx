@@ -59,6 +59,7 @@ import { TAB_REQUIRED_PERMISSIONS } from '../constants';
 
 
 import CommandPalette from './CommandPalette';
+import SovereignStaffDossierModal from './SovereignStaffDossierModal';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -71,6 +72,7 @@ interface LayoutProps {
   userName?: string | null;
   theme: 'midnight' | 'gold' | 'cyber' | 'light';
   setTheme: (theme: 'midnight' | 'gold' | 'cyber' | 'light') => void;
+  userId?: string | null;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -83,11 +85,13 @@ const Layout: React.FC<LayoutProps> = ({
   userRole,
   userName,
   theme,
-  setTheme
+  setTheme,
+  userId
 }) => {
   const { hasAnyPermission, role } = usePermissions();
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [showMyDossierModal, setShowMyDossierModal] = React.useState(false);
   const [showAdvanced, setShowAdvanced] = React.useState(() => {
     return localStorage.getItem('nomosdesk_advancedMode') === 'true';
   });
@@ -617,9 +621,17 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
           <div className="flex items-center gap-3 lg:gap-4">
             {userName && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-sidebar border border-brand-border rounded-xl">
-                <User size={14} className="text-brand-muted" />
-                <span className="text-[11px] font-bold text-brand-text truncate max-w-[120px]">{userName}</span>
+              <div
+                onClick={() => setShowMyDossierModal(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-brand-sidebar border border-brand-border rounded-xl cursor-pointer hover:border-brand-primary/40 group transition-all"
+              >
+                <div className="p-1 bg-brand-primary/10 rounded-lg group-hover:bg-brand-primary/20 transition-colors">
+                  <User size={14} className="text-brand-primary" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-bold text-brand-text truncate max-w-[120px]">{userName}</span>
+                  <span className="text-[8px] text-brand-muted uppercase font-bold tracking-tighter group-hover:text-brand-primary transition-colors">Open My Dossier</span>
+                </div>
               </div>
             )}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
@@ -644,6 +656,33 @@ const Layout: React.FC<LayoutProps> = ({
               setIsSidebarOpen(false);
             }
           }}
+        />
+      )}
+
+      {showMyDossierModal && userId && (
+        <SovereignStaffDossierModal
+          isSelfService
+          staff={{
+            id: userId,
+            name: userName || 'User',
+            role: role || 'Practitioner',
+            department: 'Operations',
+            email: '',
+            phone: '',
+            startDate: '',
+            status: 'Active',
+            annualLeaveTotal: 25,
+            annualLeaveUsed: 0,
+            sickDaysUsed: 0,
+            cleRequired: 12,
+            cleEarned: 0,
+            salary: 0,
+            bankAccount: '',
+            hardware: [],
+            appraisals: []
+          }}
+          onClose={() => setShowMyDossierModal(false)}
+          onUpdateStatus={() => { }} // Not used in self-service
         />
       )}
     </div>

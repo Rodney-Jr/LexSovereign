@@ -183,4 +183,58 @@ router.get('/clm/stats', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/analytics/case-center
+// Returns counts for Case Center Dashboard
+router.get('/case-center', authenticateToken, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+
+        const [matters, deadlines] = await Promise.all([
+            prisma.matter.findMany({
+                where: isGlobalAdmin ? {} : { tenantId },
+                select: { status: true, id: true }
+            }),
+            prisma.deadline.findMany({
+                where: { matter: isGlobalAdmin ? {} : { tenantId } }
+            })
+        ]);
+
+        const activeCases = matters.length;
+
+        // Compliance Rate (deadlines)
+        const totalDeadlines = deadlines.length;
+        const missedDeadlines = deadlines.filter(d =>
+            new Date(d.dueDate) < new Date() && d.status === 'PENDING'
+        ).length;
+        const complianceRate = totalDeadlines > 0
+            ? Math.round(((totalDeadlines - missedDeadlines) / totalDeadlines) * 100) + '%'
+            : '100%';
+
+        // Procedural Distribution
+        let pDistribution = { pleadings: 0, discovery: 0, trialPrep: 0, advisory: 0 };
+        matters.forEach(m => {
+            if (m.status === 'OPEN') pDistribution.discovery++;
+            else if (m.status === 'PENDING') pDistribution.pleadings++;
+            else if (m.status === 'CLOSED') pDistribution.trialPrep++;
+            else pDistribution.advisory++;
+        });
+
+        res.json({
+            activeCases,
+            complianceRate,
+            proceduralDistribution: [
+                { label: 'Pleadings / Service', count: pDistribution.pleadings, color: 'bg-sky-500' },
+                { label: 'Discovery Phase', count: pDistribution.discovery, color: 'bg-purple-500' },
+                { label: 'Trial Prep', count: pDistribution.trialPrep, color: 'bg-rose-500' },
+                { label: 'Advisory / Research', count: pDistribution.advisory, color: 'bg-emerald-500' }
+            ]
+        });
+
+    } catch (error: any) {
+        console.error("[Analytics] Case Center Stats failed:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

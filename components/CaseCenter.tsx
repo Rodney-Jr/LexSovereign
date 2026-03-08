@@ -30,6 +30,7 @@ const CaseCenter: React.FC = () => {
     const [hearings, setHearings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedMatterAI, setSelectedMatterAI] = useState<string | null>(null);
+    const [dashboardMetrics, setDashboardMetrics] = useState<any>(null);
 
     useEffect(() => {
         fetchCaseSignals();
@@ -41,13 +42,15 @@ const CaseCenter: React.FC = () => {
             const session = getSavedSession();
             if (!session?.token) return;
 
-            const [deadlineData, hearingData] = await Promise.all([
+            const [deadlineData, hearingData, metricsData] = await Promise.all([
                 authorizedFetch('/api/workflows/litigation/deadlines', { token: session.token }),
-                authorizedFetch('/api/workflows/litigation/hearings', { token: session.token })
+                authorizedFetch('/api/workflows/litigation/hearings', { token: session.token }),
+                authorizedFetch('/api/analytics/case-center', { token: session.token })
             ]);
 
             if (Array.isArray(deadlineData)) setDeadlines(deadlineData);
             if (Array.isArray(hearingData)) setHearings(hearingData);
+            if (metricsData) setDashboardMetrics(metricsData);
         } catch (e) {
             console.error("Failed to fetch Case signals", e);
         } finally {
@@ -79,10 +82,10 @@ const CaseCenter: React.FC = () => {
 
             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <MetricCard label="Active Cases" value={deadlines.length + 14} sub="Sovereign Enclave Matters" icon={<Gavel className="text-sky-400" />} />
+                    <MetricCard label="Active Cases" value={dashboardMetrics ? dashboardMetrics.activeCases : 0} sub="Sovereign Enclave Matters" icon={<Gavel className="text-sky-400" />} />
                     <MetricCard label="Pending Deadlines" value={deadlines.length} sub="Requiring Priority Action" icon={<Clock className="text-rose-400" />} />
                     <MetricCard label="Upcoming Hearings" value={hearings.length} sub="Next 14 Days" icon={<Calendar className="text-amber-400" />} />
-                    <MetricCard label="Compliance Rate" value="98%" sub="+2% this quarter" icon={<Activity className="text-emerald-400" />} />
+                    <MetricCard label="Compliance Rate" value={dashboardMetrics ? dashboardMetrics.complianceRate : "N/A"} sub="Tenant Average" icon={<Activity className="text-emerald-400" />} />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -186,10 +189,11 @@ const CaseCenter: React.FC = () => {
                             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Procedural Distribution</h4>
 
                             <div className="space-y-6">
-                                <ProcMetric label="Pleadings / Service" count={8} color="bg-sky-500" />
-                                <ProcMetric label="Discovery Phase" count={12} color="bg-purple-500" />
-                                <ProcMetric label="Trial Prep" count={3} color="bg-rose-500" />
-                                <ProcMetric label="Advisory / Research" count={22} color="bg-emerald-500" />
+                                {dashboardMetrics?.proceduralDistribution ? dashboardMetrics.proceduralDistribution.map((proc: any, idx: number) => (
+                                    <ProcMetric key={idx} label={proc.label} count={proc.count} color={proc.color} />
+                                )) : (
+                                    <div className="text-slate-500 italic text-sm text-center">Loading distribution...</div>
+                                )}
                             </div>
 
                             <div className="pt-6 border-t border-slate-800">

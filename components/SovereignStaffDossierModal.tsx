@@ -32,6 +32,7 @@ interface SovereignStaffDossierModalProps {
     staff: StaffMember;
     onClose: () => void;
     onUpdateStatus: (id: string, newStatus: 'Active' | 'Suspended') => void;
+    isSelfService?: boolean;
 }
 
 const TAB_OPTIONS = [
@@ -46,18 +47,22 @@ const TAB_OPTIONS = [
 
 type TabId = typeof TAB_OPTIONS[number]['id'];
 
-const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({ staff: basicStaff, onClose, onUpdateStatus }) => {
+const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({ staff: basicStaff, onClose, onUpdateStatus, isSelfService }) => {
     const [activeTab, setActiveTab] = useState<TabId>('profile');
     const [staff, setStaff] = useState<StaffMember | null>(null);
     const [heatmapData, setHeatmapData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [editingProfile, setEditingProfile] = useState(false);
+    const [profileForm, setProfileForm] = useState({ name: '', email: '', phone: '', bankAccount: '' });
 
     // Fetch full dossier on mount
     React.useEffect(() => {
         const fetchDossier = async () => {
             try {
                 const session = getSavedSession();
+                const dossierUrl = isSelfService ? '/api/firm/my-dossier' : `/api/firm/staff/${basicStaff.id}/dossier`;
                 const [data, heatmap] = await Promise.all([
-                    authorizedFetch(`/api/firm/staff/${basicStaff.id}/dossier`, {
+                    authorizedFetch(dossierUrl, {
                         token: session?.token
                     }),
                     authorizedFetch(`/api/productivity/heatmap/${basicStaff.id}`, {
@@ -65,6 +70,12 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                     }).catch(() => null) // fail gracefully
                 ]);
                 setStaff(data);
+                setProfileForm({
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone || '',
+                    bankAccount: data.bankAccount || ''
+                });
                 if (heatmap) setHeatmapData(heatmap);
             } catch (error) {
                 console.error('Failed to fetch staff dossier', error);
@@ -153,6 +164,24 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
             setIsSubmitting(false);
         }
     };
+    const handleProfileUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            setIsSubmitting(true);
+            const session = getSavedSession();
+            await authorizedFetch('/api/firm/my-profile', {
+                method: 'PUT',
+                token: session?.token,
+                body: JSON.stringify(profileForm)
+            });
+            setStaff(prev => prev ? { ...prev, ...profileForm } : null);
+            setEditingProfile(false);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     // Handle ESC to close
     React.useEffect(() => {
@@ -176,54 +205,147 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
 
     const renderProfile = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Full Name</p>
-                    <p className="text-sm text-white font-medium">{staff.name}</p>
-                </div>
-                <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Role / Department</p>
-                    <p className="text-sm text-white font-medium">{staff.role} • {staff.department}</p>
-                </div>
-                <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Contact Email</p>
-                    <p className="text-sm text-slate-300 font-mono">{staff.email}</p>
-                </div>
-                <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Start Date</p>
-                    <p className="text-sm text-slate-300 font-mono">{staff.startDate}</p>
-                </div>
-            </div>
-
-            <div className="bg-red-500/5 border border-red-500/10 p-6 rounded-2xl space-y-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-500/10 rounded-xl text-red-400">
-                        <Lock size={18} />
+            <form onSubmit={handleProfileUpdate} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Full Name</p>
+                        {editingProfile ? (
+                            <input
+                                title="Full Name"
+                                type="text"
+                                value={profileForm.name}
+                                onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+                                className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white w-full focus:outline-none focus:border-blue-500"
+                            />
+                        ) : (
+                            <p className="text-sm text-white font-medium">{staff.name}</p>
+                        )}
                     </div>
-                    <div>
-                        <h4 className="text-sm font-bold text-red-200">Danger Zone: Access Control</h4>
-                        <p className="text-xs text-red-400/60 mt-0.5">Modify NomosDesk access for this practitioner.</p>
+                    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Role / Department</p>
+                        <p className="text-sm text-white font-medium">{staff.role} • {staff.department}</p>
                     </div>
-                </div>
-                <div className="flex gap-3">
-                    {staff.status === 'Suspended' ? (
-                        <button
-                            onClick={() => onUpdateStatus(staff.id, 'Active')}
-                            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
-                        >
-                            <Unlock size={14} /> Restore Access
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => onUpdateStatus(staff.id, 'Suspended')}
-                            className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
-                        >
-                            <Lock size={14} /> Suspend Access
-                        </button>
+                    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Contact Email</p>
+                        {editingProfile ? (
+                            <input
+                                title="Email"
+                                type="email"
+                                value={profileForm.email}
+                                onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
+                                className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white w-full focus:outline-none focus:border-blue-500"
+                            />
+                        ) : (
+                            <p className="text-sm text-slate-300 font-mono">{staff.email}</p>
+                        )}
+                    </div>
+                    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Contact Phone</p>
+                        {editingProfile ? (
+                            <input
+                                title="Phone"
+                                type="text"
+                                value={profileForm.phone}
+                                onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
+                                className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white w-full focus:outline-none focus:border-blue-500"
+                            />
+                        ) : (
+                            <p className="text-sm text-slate-300 font-mono">{staff.phone || 'N/A'}</p>
+                        )}
+                    </div>
+                    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Start Date</p>
+                        <p className="text-sm text-slate-300 font-mono">{staff.startDate}</p>
+                    </div>
+                    {isSelfService && (
+                        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Bank Account</p>
+                            {editingProfile ? (
+                                <input
+                                    title="Bank Account"
+                                    type="text"
+                                    value={profileForm.bankAccount}
+                                    onChange={e => setProfileForm({ ...profileForm, bankAccount: e.target.value })}
+                                    className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white w-full focus:outline-none focus:border-blue-500"
+                                />
+                            ) : (
+                                <p className="text-sm text-slate-300 font-mono">{staff.bankAccount || 'N/A'}</p>
+                            )}
+                        </div>
                     )}
                 </div>
-            </div>
-        </div >
+
+                {isSelfService && (
+                    <div className="flex gap-3">
+                        {editingProfile ? (
+                            <>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+                                >
+                                    {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />} Save Changes
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setEditingProfile(false);
+                                        setProfileForm({
+                                            name: staff.name,
+                                            email: staff.email,
+                                            phone: staff.phone || '',
+                                            bankAccount: staff.bankAccount || ''
+                                        });
+                                    }}
+                                    className="text-slate-500 text-xs font-bold hover:text-slate-300 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setEditingProfile(true)}
+                                className="bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/20 px-6 py-2 rounded-xl text-xs font-bold transition-all"
+                            >
+                                Edit Profile Details
+                            </button>
+                        )}
+                    </div>
+                )}
+            </form>
+
+            {!isSelfService && (
+                <div className="bg-red-500/5 border border-red-500/10 p-6 rounded-2xl space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-500/10 rounded-xl text-red-400">
+                            <Lock size={18} />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-red-200">Danger Zone: Access Control</h4>
+                            <p className="text-xs text-red-400/60 mt-0.5">Modify NomosDesk access for this practitioner.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        {staff.status === 'Suspended' ? (
+                            <button
+                                onClick={() => onUpdateStatus(staff.id, 'Active')}
+                                className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+                            >
+                                <Unlock size={14} /> Restore Access
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => onUpdateStatus(staff.id, 'Suspended')}
+                                className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+                            >
+                                <Lock size={14} /> Suspend Access
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
     );
 
     const renderLeave = () => (
@@ -238,15 +360,17 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Sick Days Taken</p>
                 </div>
             </div>
-            <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl">
-                <div className="flex items-center gap-3 text-sm text-slate-300">
-                    <FileText size={16} className="text-slate-500" />
-                    Manually adjust leave balance
+            {!isSelfService && (
+                <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+                    <div className="flex items-center gap-3 text-sm text-slate-300">
+                        <FileText size={16} className="text-slate-500" />
+                        Manually adjust leave balance
+                    </div>
+                    <button className="text-xs bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold transition-all">
+                        Adjust Balance
+                    </button>
                 </div>
-                <button className="text-xs bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold transition-all">
-                    Adjust Balance
-                </button>
-            </div>
+            )}
         </div>
     );
 
@@ -273,9 +397,11 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                 <div className="text-center py-10 bg-slate-900 border border-slate-800 rounded-[2rem]">
                     <Award size={32} className="mx-auto text-slate-600 mb-3" />
                     <p className="text-sm text-slate-400 font-medium">No external training certificates logged.</p>
-                    <button className="mt-4 text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-4 py-2 rounded-xl font-bold transition-all">
-                        Log CLE Credit
-                    </button>
+                    {!isSelfService && (
+                        <button className="mt-4 text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-4 py-2 rounded-xl font-bold transition-all">
+                            Log CLE Credit
+                        </button>
+                    )}
                 </div>
             </div>
         );
@@ -348,17 +474,19 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                     </div>
                 </form>
             )}
-            <div className="flex gap-2">
-                <button
-                    onClick={() => setShowAppraisalForm(true)}
-                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl text-xs font-bold transition-all"
-                >
-                    Schedule Review
-                </button>
-                <button className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 py-3 rounded-xl text-xs font-bold transition-all">
-                    Add Disciplinary Note
-                </button>
-            </div>
+            {!isSelfService && (
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowAppraisalForm(true)}
+                        className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl text-xs font-bold transition-all"
+                    >
+                        Schedule Review
+                    </button>
+                    <button className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 py-3 rounded-xl text-xs font-bold transition-all">
+                        Add Disciplinary Note
+                    </button>
+                </div>
+            )}
         </div>
     );
 
@@ -472,37 +600,39 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                     </div>
                 </form>
             )}
-
-            <div className="flex flex-col gap-2">
-                <button
-                    onClick={() => {
-                        setSalaryForm({ amount: staff.salary.toString(), bankAccount: staff.bankAccount, effectiveFrom: new Date().toISOString().slice(0, 10) });
-                        setShowSalaryForm(true);
-                    }}
-                    className="w-full flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all text-left"
-                >
-                    <div className="flex items-center gap-3">
-                        <Plus size={16} className="text-emerald-400" />
-                        <div>
-                            <span className="text-sm font-bold text-white block">Update Compensation Scheme</span>
-                            <span className="text-xs text-slate-500">Record a salary increment or update bank details.</span>
+            {!isSelfService && (
+                <div className="flex flex-col gap-2">
+                    <button
+                        onClick={() => {
+                            setSalaryForm({ amount: staff.salary.toString(), bankAccount: staff.bankAccount, effectiveFrom: new Date().toISOString().slice(0, 10) });
+                            setShowSalaryForm(true);
+                        }}
+                        className="w-full flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all text-left"
+                    >
+                        <div className="flex items-center gap-3">
+                            <Plus size={16} className="text-emerald-400" />
+                            <div>
+                                <span className="text-sm font-bold text-white block">Update Compensation Scheme</span>
+                                <span className="text-xs text-slate-500">Record a salary increment or update bank details.</span>
+                            </div>
                         </div>
-                    </div>
-                    <ChevronRight size={16} className="text-slate-600" />
-                </button>
-                <button className="w-full flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all text-left">
-                    <div className="flex items-center gap-3">
-                        <TrendingDown size={16} className="text-red-400" />
-                        <div>
-                            <span className="text-sm font-bold text-white block">Log Deduction</span>
-                            <span className="text-xs text-slate-500">Record unpaid leave or clawback.</span>
+                        <ChevronRight size={16} className="text-slate-600" />
+                    </button>
+                    <button className="w-full flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all text-left">
+                        <div className="flex items-center gap-3">
+                            <TrendingDown size={16} className="text-red-400" />
+                            <div>
+                                <span className="text-sm font-bold text-white block">Log Deduction</span>
+                                <span className="text-xs text-slate-500">Record unpaid leave or clawback.</span>
+                            </div>
                         </div>
-                    </div>
-                    <ChevronRight size={16} className="text-slate-600" />
-                </button>
-            </div>
+                        <ChevronRight size={16} className="text-slate-600" />
+                    </button>
+                </div>
+            )}
         </div>
     );
+
 
     const renderAssets = () => (
         <div className="space-y-4 animate-in fade-in duration-300">
@@ -522,9 +652,11 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                     </span>
                 </div>
             ))}
-            <button className="w-full py-4 border border-dashed border-slate-700 text-slate-400 hover:border-blue-500/50 hover:text-blue-400 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2">
-                <Plus size={16} /> Assign Hardware Asset
-            </button>
+            {!isSelfService && (
+                <button className="w-full py-4 border border-dashed border-slate-700 text-slate-400 hover:border-blue-500/50 hover:text-blue-400 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2">
+                    <Plus size={16} /> Assign Hardware Asset
+                </button>
+            )}
         </div>
     );
 

@@ -127,19 +127,12 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         id,
         name: f.name,
         size: (f.size / 1024 / 1024).toFixed(2) + ' MB',
-        status: 'scanning' as const
+        status: 'encrypted' as const,
+        file: f
       };
     });
 
     setAttachedFiles(prev => [...prev, ...newFiles]);
-
-    // Simulate API upload for now until backend endpoint is ready
-    for (const file of newFiles) {
-      await new Promise(resolve => setTimeout(resolve, 800)); // Minimal delay
-      setAttachedFiles(current =>
-        current.map(item => item.id === file.id ? { ...item, status: 'encrypted' } : item)
-      );
-    }
   };
 
   const removeFile = (id: string) => {
@@ -190,6 +183,30 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
         });
       } catch (billingErr) {
         console.error("Failed to link Billing Component, proceeding with Matter creation:", billingErr);
+      }
+
+      // Upload artifacts
+      if (attachedFiles.length > 0) {
+        for (const fileItem of attachedFiles) {
+          if (fileItem.file) {
+            const formDataPayload = new FormData();
+            formDataPayload.append('file', fileItem.file);
+            formDataPayload.append('matterId', newMatter.id);
+            formDataPayload.append('region', flatFormData.region);
+
+            try {
+              await fetch('/api/documents/upload', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${session.token}`
+                },
+                body: formDataPayload
+              });
+            } catch (err) {
+              console.error('Failed to upload artifact:', err);
+            }
+          }
+        }
       }
 
       setCreatedMatter(newMatter);

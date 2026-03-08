@@ -161,6 +161,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
             killSwitchActive={killSwitchActive}
             userRole={contextRole as UserRole}
             userName={userName}
+            userId={userId}
             theme={theme}
             setTheme={setTheme}
         >

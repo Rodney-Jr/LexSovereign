@@ -473,4 +473,107 @@ router.post('/appraisals', async (req: Request, res: Response) => {
     }
 });
 
+// ---------------------------------------------------------------------------
+// SELF-SERVICE DOSSIER
+// ---------------------------------------------------------------------------
+router.get('/my-dossier', async (req: Request, res: Response) => {
+    try {
+        const user = req.user as InternalUser;
+        const tenantId = user.tenantId;
+        const id = user.id;
+
+        const [dbUser, assets, leaves, cle, salary, appraisals] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id, tenantId },
+                select: { id: true, name: true, email: true, roleString: true, departmentId: true, isActive: true, createdAt: true }
+            }),
+            prisma.firmAsset.findMany({ where: { assignedToId: id, tenantId } }),
+            prisma.leaveRecord.findMany({ where: { userId: id, tenantId } }),
+            prisma.cLERecord.findMany({ where: { userId: id, tenantId } }),
+            prisma.salaryRecord.findFirst({
+                where: { userId: id, tenantId },
+                orderBy: { effectiveFrom: 'desc' }
+            }),
+            prisma.performanceAppraisal.findMany({
+                where: { userId: id, tenantId },
+                include: { reviewer: true },
+                orderBy: { date: 'desc' }
+            })
+        ]);
+
+        if (!dbUser) return res.status(404).json({ error: 'User not found' });
+
+        res.json({
+            id: dbUser.id,
+            name: dbUser.name,
+            role: dbUser.roleString,
+            department: dbUser.departmentId || 'Operations',
+            email: dbUser.email,
+            startDate: dbUser.createdAt.toISOString().split('T')[0],
+            status: dbUser.isActive ? 'Active' : 'Suspended',
+            annualLeaveTotal: 25,
+            annualLeaveUsed: leaves.length * 2,
+            sickDaysUsed: 1,
+            cleRequired: 12,
+            cleEarned: cle.reduce((s, c) => s + c.credits, 0),
+            salary: salary?.baseSalary || 0,
+            bankAccount: salary?.bankAccount || 'N/A',
+            hardware: assets.map(a => ({ id: a.id, type: a.category, name: a.name, status: a.status })),
+            appraisals: appraisals.map(a => ({
+                date: a.date.toISOString().split('T')[0],
+                rating: a.rating,
+                reviewer: a.reviewer.name,
+                notes: a.notes
+            }))
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.put('/my-profile', async (req: Request, res: Response) => {
+    try {
+        const user = req.user as InternalUser;
+        const { name, email, phone, bankAccount } = req.body;
+
+        // Update User Model (Basic Fields)
+        const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: { name, email }
+        });
+
+        // Update Phone/Contact in metadata if we had a profile model, 
+        // but for now, we'll just handle basic names.
+        // Update Salary Record for Bank Account (Since dossier reads from there)
+        if (bankAccount) {
+            const latestSalary = await prisma.salaryRecord.findFirst({
+                where: { userId: user.id },
+                orderBy: { effectiveFrom: 'desc' }
+            });
+
+            if (latestSalary) {
+                await prisma.salaryRecord.update({
+                    where: { id: latestSalary.id },
+                    data: { bankAccount }
+                });
+            } else {
+                // Create a shell salary record just for the bank account if none exists
+                await prisma.salaryRecord.create({
+                    data: {
+                        userId: user.id,
+                        tenantId: user.tenantId,
+                        baseSalary: 0,
+                        bankAccount,
+                        effectiveFrom: new Date()
+                    }
+                });
+            }
+        }
+
+        res.json({ success: true, user: updatedUser });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
