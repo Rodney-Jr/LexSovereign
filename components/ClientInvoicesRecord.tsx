@@ -145,6 +145,59 @@ const ClientInvoicesRecord: React.FC = () => {
         setAiSuggestions(prev => prev.filter((_, i) => i !== idx));
     };
 
+    const handleExportCSV = () => {
+        if (filteredInvoices.length === 0) return;
+        const headers = ['Invoice ID', 'Matter', 'Client', 'Amount', 'Status', 'Created', 'Issued', 'Due Date'];
+        const rows = filteredInvoices.map(inv => [
+            '#' + inv.id.slice(0, 8).toUpperCase(),
+            `"${inv.matter.name}"`,
+            `"${inv.matter.client}"`,
+            inv.totalAmount.toFixed(2),
+            inv.status,
+            inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '',
+            inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString() : '',
+            inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : ''
+        ]);
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoices_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+
+    const handleBulkProcess = async () => {
+        const draftInvoices = filteredInvoices.filter(i => i.status === 'DRAFT');
+        if (draftInvoices.length === 0) {
+            alert('No DRAFT invoices to process. All invoices are already issued or paid.');
+            return;
+        }
+        const session = getSavedSession();
+        if (!session?.token) return;
+        try {
+            setIsBulkProcessing(true);
+            await Promise.all(
+                draftInvoices.map(inv =>
+                    authorizedFetch(`/api/billing/invoices/${inv.id}/status`, {
+                        method: 'PATCH',
+                        token: session.token,
+                        body: JSON.stringify({ status: 'ISSUED' })
+                    })
+                )
+            );
+            await fetchInvoices();
+        } catch (e) {
+            console.error('[Invoicing] Bulk process failed:', e);
+            alert('Bulk processing failed. Some invoices may not have been updated.');
+        } finally {
+            setIsBulkProcessing(false);
+        }
+    };
+
     const filteredInvoices = invoices.filter(inv => {
         const matchesSearch = inv.matter.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             inv.matter.client.toLowerCase().includes(searchTerm.toLowerCase());
@@ -192,7 +245,10 @@ const ClientInvoicesRecord: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl text-xs font-bold transition-all active:scale-95">
+                    <button
+                        onClick={handleExportCSV}
+                        disabled={filteredInvoices.length === 0}
+                        className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl text-xs font-bold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
                         <Download size={16} /> Export CSV
                     </button>
                 </div>
@@ -391,8 +447,11 @@ const ClientInvoicesRecord: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <button className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black uppercase transition-all shadow-xl shadow-blue-900/20 active:scale-95">
-                                Bulk Process Invoices
+                            <button
+                                onClick={handleBulkProcess}
+                                disabled={isBulkProcessing || filteredInvoices.filter(i => i.status === 'DRAFT').length === 0}
+                                className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black uppercase transition-all shadow-xl shadow-blue-900/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                {isBulkProcessing ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</> : `Issue ${filteredInvoices.filter(i => i.status === 'DRAFT').length} Draft Invoices`}
                             </button>
                         </div>
                     </div>
