@@ -37,7 +37,7 @@ async function createDemoTenant(
 
     const tenantId = tenant.id;
 
-    // 2. Ensure System Roles exist and are cloned to Tenant
+    // 2. Ensure System Roles logic
     console.log('   Ensuring System Roles logic...');
     const sysRoles = await prisma.role.findMany({
         where: { tenantId: null, isSystem: true },
@@ -45,20 +45,35 @@ async function createDemoTenant(
     });
 
     for (const sysRole of sysRoles) {
-        await prisma.role.upsert({
-            where: { name_tenantId: { name: sysRole.name, tenantId } },
-            update: {},
-            create: {
-                id: randomUUID(),
-                name: sysRole.name,
-                description: sysRole.description,
-                isSystem: true,
-                tenantId: tenantId,
-                permissions: {
-                    connect: sysRole.permissions.map(p => ({ id: p.id }))
-                }
-            }
+        let existingRole = await prisma.role.findFirst({
+            where: { name: sysRole.name, tenantId }
         });
+
+        if (existingRole) {
+            await prisma.role.update({
+                where: { id: existingRole.id },
+                data: {
+                    description: sysRole.description,
+                    isSystem: true,
+                    permissions: {
+                        set: sysRole.permissions.map(p => ({ id: p.id }))
+                    }
+                }
+            });
+        } else {
+            await prisma.role.create({
+                data: {
+                    id: randomUUID(),
+                    name: sysRole.name,
+                    description: sysRole.description,
+                    isSystem: true,
+                    tenantId: tenantId,
+                    permissions: {
+                        connect: sysRole.permissions.map(p => ({ id: p.id }))
+                    }
+                }
+            });
+        }
     }
 
     // 3. Create/Update Users
