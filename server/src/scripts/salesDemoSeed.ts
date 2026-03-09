@@ -15,18 +15,25 @@ async function createDemoTenant(
     console.log(`🏗️  Provisioning Tenant: ${name} (${appMode})...`);
 
     // 1. Create or Update Tenant
-    const tenant = await prisma.tenant.upsert({
-        where: { name },
-        update: { appMode, plan: 'ENTERPRISE', primaryRegion: region, status: 'ACTIVE' },
-        create: {
-            id: randomUUID(),
-            name,
-            plan: 'ENTERPRISE',
-            primaryRegion: region,
-            appMode,
-            status: 'ACTIVE'
-        }
-    });
+    let tenant = await prisma.tenant.findFirst({ where: { name } });
+
+    if (tenant) {
+        tenant = await prisma.tenant.update({
+            where: { id: tenant.id },
+            data: { appMode, plan: 'ENTERPRISE', primaryRegion: region, status: 'ACTIVE' }
+        });
+    } else {
+        tenant = await prisma.tenant.create({
+            data: {
+                id: randomUUID(),
+                name,
+                plan: 'ENTERPRISE',
+                primaryRegion: region,
+                appMode,
+                status: 'ACTIVE'
+            }
+        });
+    }
 
     const tenantId = tenant.id;
 
@@ -39,7 +46,7 @@ async function createDemoTenant(
 
     for (const sysRole of sysRoles) {
         await prisma.role.upsert({
-            where: { tenantId_name: { tenantId, name: sysRole.name } },
+            where: { name_tenantId: { name: sysRole.name, tenantId } },
             update: {},
             create: {
                 id: randomUUID(),
