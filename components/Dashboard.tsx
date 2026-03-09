@@ -64,13 +64,13 @@ const Dashboard: React.FC<{
         </div>
         <div className="flex items-center gap-3">
           <a
-            href="/NomosDesk_User_Manual.md"
-            download="NomosDesk_User_Manual.md"
+            href="/NomosDesk_User_Manual.pdf"
+            download="NomosDesk_User_Manual.pdf"
             className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-2xl transition-colors border border-slate-700 text-xs font-bold"
-            title="Download User Manual"
+            title="Download User Manual (PDF)"
           >
             <Download size={16} className="text-blue-400" />
-            <span className="hidden sm:inline">User Manual</span>
+            <span className="hidden sm:inline">User Manual (PDF)</span>
           </a>
           <div className="flex items-center gap-3 bg-brand-sidebar border border-brand-border px-4 py-2 rounded-2xl">
             <Activity size={16} className="text-brand-primary" />
