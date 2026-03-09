@@ -1,3 +1,8 @@
+/**
+ * NomosDesk Sales Demo Provisioning Script
+ * Version: 2.1 (Timestamp: 2026-03-09T20:15:00Z)
+ * Fix: Uses findFirst to avoid brittle unique constraint type errors.
+ */
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
@@ -14,7 +19,7 @@ async function createDemoTenant(
 
     console.log(`🏗️  Provisioning Tenant: ${name} (${appMode})...`);
 
-    // 1. Create or Update Tenant
+    // 1. Create or Update Tenant using findFirst (Resilient to non-unique constraints)
     let tenant = await prisma.tenant.findFirst({ where: { name } });
 
     if (tenant) {
@@ -37,7 +42,7 @@ async function createDemoTenant(
 
     const tenantId = tenant.id;
 
-    // 2. Ensure System Roles logic
+    // 2. Ensure System Roles logic (Resilient findFirst + create/update)
     console.log('   Ensuring System Roles logic...');
     const sysRoles = await prisma.role.findMany({
         where: { tenantId: null, isSystem: true },
@@ -81,6 +86,7 @@ async function createDemoTenant(
     const hashedPass = await bcrypt.hash(password, 10);
 
     for (const u of users) {
+        // Find role by name within this tenant
         const role = await prisma.role.findFirst({
             where: { tenantId, name: u.roleName }
         });
@@ -177,4 +183,3 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
-
