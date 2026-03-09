@@ -14,3 +14,21 @@ prismaClient.$use(tenantIsolationMiddleware(() => {
 }));
 
 export const prisma = prismaClient;
+
+/**
+ * Verifies database connectivity and logs connection details (masked).
+ */
+export const verifyConnection = async () => {
+    try {
+        const url = process.env.DATABASE_URL || '';
+        const maskedUrl = url.replace(/:([^:@]+)@/, ':****@');
+        console.log(`[Database] Attempting to connect to: ${maskedUrl}`);
+
+        await prisma.$queryRaw`SELECT 1`;
+        console.log('✅ [Database] Connection successful.');
+        return true;
+    } catch (error: any) {
+        console.error('❌ [Database] Connection failed:', error.message);
+        return false;
+    }
+};

@@ -47,6 +47,7 @@ import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
 import { SchedulerService } from './services/SchedulerService';
 import { startFxWebSocket } from './services/fxWebSocketService';
+import { verifyConnection } from './db';
 
 const app = express();
 // Force reload for env var update (Key Rotation 2)
@@ -203,6 +204,13 @@ app.get('*', (req, res) => {
 app.listen(Number(port), '0.0.0.0', () => {
     console.log(`[Sovereign Proxy] Server running on port ${port}`);
     console.log(`[Sovereign Proxy] Environment: ${process.env.NODE_ENV}`);
+
+    // Verify Database Connection on startup
+    verifyConnection().then(success => {
+        if (!success && process.env.NODE_ENV === 'production') {
+            console.warn('[SECURITY] Database unreachable. Some features may be degraded.');
+        }
+    });
 
     // Heartbeat to prove process is alive in logs
     setInterval(() => {

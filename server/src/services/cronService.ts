@@ -34,12 +34,20 @@ export const initCronJobs = () => {
             for (const tenant of tenants) {
                 try {
                     await StripeService.syncUsageToStripe(tenant.id);
-                } catch (error) {
-                    console.error(`[Cron] Stripe sync failed for tenant ${tenant.id}:`, error);
+                } catch (error: any) {
+                    if (error.name === 'PrismaClientInitializationError') {
+                        console.error(`[Cron] Database connection lost during Stripe sync for tenant ${tenant.id}. Skipping...`);
+                        break; // Stop loop if DB is down
+                    }
+                    console.error(`[Cron] Stripe sync failed for tenant ${tenant.id}:`, error.message);
                 }
             }
-        } catch (error) {
-            console.error('[Cron] Stripe sync job failed:', error);
+        } catch (error: any) {
+            if (error.name === 'PrismaClientInitializationError') {
+                console.error('[Cron] Stripe sync job aborted: Database is unreachable.');
+            } else {
+                console.error('[Cron] Stripe sync job failed:', error.message);
+            }
         }
     });
 
