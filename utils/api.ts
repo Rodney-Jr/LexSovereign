@@ -88,6 +88,11 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
                 window.dispatchEvent(new CustomEvent('nomosdesk-auth-failed', {
                     detail: { status: response.status, error: errorData.error }
                 }));
+            } else if (response.status === 403 && errorData.code === 'TRIAL_EXPIRED') {
+                console.warn(`[API] Sovereign Trial Matured. Triggering UI Lockout.`);
+                window.dispatchEvent(new CustomEvent('nomosdesk-trial-expired', {
+                    detail: errorData
+                }));
             } else {
                 console.warn(`[API] Request Forbidden (Business Logic/Permission): ${errorData.error}`);
             }

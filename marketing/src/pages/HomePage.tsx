@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Button, Section, SectionHeader } from '../components/ui';
-import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3, Receipt } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3, Receipt, TrendingUp, Package, BookOpenCheck, Rocket } from 'lucide-react';
 import { Link, StaticRouter, HelmetProvider } from '../utils/ssr-compat';
 import RelatedInsights from '../components/RelatedInsights';
 import type { SsgOptions } from 'vite-plugin-ssg';
@@ -328,6 +328,69 @@ export default function HomePage() {
                         icon={<Receipt className="w-8 h-8 text-emerald-400" />}
                         title="Digital Disbursements"
                         description="Turn AI from a cost center into a billable asset. AI usage is automatically mapped to draft invoices for 100% cost recovery."
+                    />
+                </div>
+            </Section>
+
+            {/* NEW: SOVEREIGN TRIAL BANNER */}
+            <section className="py-16 px-6 bg-gradient-to-br from-indigo-950/60 to-slate-950 border-y border-indigo-900/30 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_right,_var(--tw-gradient-stops))] from-indigo-700/10 to-transparent pointer-events-none" />
+                <div className="max-w-5xl mx-auto relative z-10">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div className="flex items-center gap-5">
+                            <div className="flex-shrink-0 w-14 h-14 bg-indigo-500/20 border border-indigo-500/30 rounded-2xl flex items-center justify-center">
+                                <Rocket className="w-7 h-7 text-indigo-400" />
+                            </div>
+                            <div>
+                                <div className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1">Limited Time</div>
+                                <h3 className="text-2xl font-bold text-white">30-Day Sovereign Trial — No Credit Card Required</h3>
+                                <p className="text-slate-400 mt-1">Provision your secure legal enclave in seconds. Full feature access, trial-ready AI credits included.</p>
+                            </div>
+                        </div>
+                        <div className="flex-shrink-0">
+                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Start Free Trial</Button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* NEW: PLATFORM POWER TOOLS */}
+            <Section darker>
+                <SectionHeader
+                    title="Complete Firm Operations Suite"
+                    subtitle="Beyond legal matters — NomosDesk governs every dimension of your firm's operations in one unified enclave."
+                />
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <FeatureCard
+                        icon={<TrendingUp className="w-8 h-8 text-emerald-400" />}
+                        title="Sovereign Accounting"
+                        description="Automated trust ledgers, general ledger management, and client billing workflows — all within your secure enclave. Immutable audit trails included."
+                    />
+                    <FeatureCard
+                        icon={<Receipt className="w-8 h-8 text-amber-400" />}
+                        title="Expense Tracker"
+                        description="Capture every operational outflow in real time. Assign expenses to matters or departments, set budget limits, and automate staff reimbursements."
+                    />
+                    <FeatureCard
+                        icon={<Package className="w-8 h-8 text-sky-400" />}
+                        title="Asset Manager"
+                        description="Maintain an institutional record of every device, license, and resource from procurement to decommission. Compliance-ready inventory reports on demand."
+                    />
+                    <FeatureCard
+                        icon={<BookOpenCheck className="w-8 h-8 text-purple-400" />}
+                        title="My Dossier: Staff Self-Service"
+                        description="Empower your team to manage their own professional profiles and credentials within a governed, privacy-first portal that feeds directly into HR Workbench."
+                    />
+                    <FeatureCard
+                        icon={<Sparkles className="w-8 h-8 text-indigo-400" />}
+                        title="Enclave Intelligence"
+                        description="Generative AI for case summarization, contract risk analysis, and deadline prediction — with credit governance to keep trial and subscription costs transparent."
+                    />
+                    <FeatureCard
+                        icon={<Users className="w-8 h-8 text-rose-400" />}
+                        title="Governance Control Plane"
+                        description="Configure granular RBAC from Managing Partner down to Junior Associate. Manage multi-office deployments from a single sovereign dashboard."
                     />
                 </div>
             </Section>

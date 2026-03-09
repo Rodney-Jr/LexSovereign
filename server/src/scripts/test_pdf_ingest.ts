@@ -9,7 +9,7 @@ dotenv.config();
 
 async function testPdf() {
     const filename = 'constitutionofghana.pdf';
-    const filepath = 'C:\\Users\\LENOVO\\Desktop\\LexSovereign\\law_knowlege_base\\fg\\1992 constitution\\constitutionofghana.pdf';
+    const filepath = 'C:\\Users\\LENOVO\\Desktop\\Nomosdesk\\law_knowlege_base\\fg\\1992 constitution\\constitutionofghana.pdf';
 
     console.log(`Loading ${filepath}...`);
     const buffer = fs.readFileSync(filepath);

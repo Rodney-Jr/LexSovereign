@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Tenant" ADD COLUMN     "aiCreditLimit" DOUBLE PRECISION NOT NULL DEFAULT 20.0,
+ADD COLUMN     "isTrial" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "trialExpiresAt" TIMESTAMP(3);

@@ -3,7 +3,7 @@ const logPath = 'C:\\Users\\LENOVO\\.gemini\\antigravity\\brain\\03db3362-8fad-4
 const logData = fs.readFileSync(logPath, 'utf8');
 
 // Find all tool call outputs for `HRWorkbench.tsx`
-const regex = /File Path: `file:\/\/\/c:\/Users\/LENOVO\/Desktop\/LexSovereign\/components\/HRWorkbench\.tsx`[\s\S]*?Showing lines (\d+) to (\d+)[\s\S]*?removing the line number, colon, and leading space\.((?:\n\d+: .*)*)/g;
+const regex = /File Path: `file:\/\/\/c:\/Users\/LENOVO\/Desktop\/nomosdesk\/components\/HRWorkbench\.tsx`[\s\S]*?Showing lines (\d+) to (\d+)[\s\S]*?removing the line number, colon, and leading space\.((?:\n\d+: .*)*)/g;
 
 let matches;
 const lines = [];
@@ -49,5 +49,5 @@ for (let i = 1; i <= 584; i++) {
 }
 
 const finalFileContent = lines.slice(1, 585).join('\n');
-fs.writeFileSync('c:\\Users\\LENOVO\\Desktop\\LexSovereign\\components\\HRWorkbench.tsx', finalFileContent);
+fs.writeFileSync('c:\\Users\\LENOVO\\Desktop\\nomosdesk\\components\\HRWorkbench.tsx', finalFileContent);
 console.log('Successfully recovered original 584 line file.');

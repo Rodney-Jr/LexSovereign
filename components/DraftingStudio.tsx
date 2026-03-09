@@ -70,7 +70,7 @@ interface DraftingStudioProps {
 const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, onClose, onSave }) => {
     const [template, setTemplate] = useState<Template | null>(null);
     const [branding, setBranding] = useState<Partial<BrandingProfile>>({
-        watermarkText: 'LEX SOVEREIGN',
+        watermarkText: 'Nomosdesk',
         primaryFont: 'serif',
         headerText: '',
         footerText: ''
@@ -130,7 +130,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
             if (Array.isArray(profiles) && profiles.length > 0) {
                 const profile = profiles[0];
                 setBranding({
-                    watermarkText: profile.watermarkText || profile.name?.toUpperCase() || 'LEX SOVEREIGN',
+                    watermarkText: profile.watermarkText || profile.name?.toUpperCase() || 'Nomosdesk',
                     primaryFont: profile.primaryFont || 'serif',
                     headerText: profile.headerText || '',
                     footerText: profile.footerText || ''
@@ -319,7 +319,7 @@ const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, o
 
             // Prepare metadata
             const metadata = {
-                firm_name: 'Lex Sovereign Firm', // Should ideally come from context
+                firm_name: 'Nomosdesk Firm', // Should ideally come from context
                 draft_id: `DRFT-${Math.random().toString(16).slice(2, 8).toUpperCase()}`,
                 generation_date: new Date().toLocaleDateString()
             };

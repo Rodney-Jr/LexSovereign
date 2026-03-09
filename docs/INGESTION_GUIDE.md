@@ -30,7 +30,7 @@ After adding files, you must run the ingestion script to parse and index them in
 1.  Open a terminal.
 2.  Navigate to the server directory:
     ```powershell
-    cd c:\Users\LENOVO\Desktop\LexSovereign\server
+    cd c:\Users\LENOVO\Desktop\Nomosdesk\server
     ```
 3.  Run the ingestion command:
     ```powershell

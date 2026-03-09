@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as cheerio from 'cheerio';
 import { prisma } from '../db';
 
-const SOURCE_DIR = 'C:\\Users\\LENOVO\\Desktop\\LexSovereign\\law_knowlege_base\\fg';
+const SOURCE_DIR = 'C:\\Users\\LENOVO\\Desktop\\Nomosdesk\\law_knowlege_base\\fg';
 
 async function ingestFiles() {
     console.log('Starting enhanced ingestion from:', SOURCE_DIR);

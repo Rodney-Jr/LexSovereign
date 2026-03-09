@@ -106,6 +106,9 @@ model Tenant {
   stripeCustomerId     String?            @unique
   stripeSubscriptionId String?            @unique
   subscriptionStatus   String?
+  trialExpiresAt       DateTime?
+  aiCreditLimit        Float              @default(20.0)
+  isTrial              Boolean            @default(false)
   enabledModules       String[]           @default(["CORE"])
   attributes           Json?              @default("{}")
   lastStorageSyncedAt  DateTime?

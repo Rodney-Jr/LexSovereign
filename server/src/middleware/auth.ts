@@ -34,7 +34,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
                 (prisma as any).user.findUnique({
                     where: { id: user.id },
                     include: {
-                        tenant: { select: { status: true, enabledModules: true } },
+                        tenant: { select: { status: true, enabledModules: true, isTrial: true, trialExpiresAt: true } },
                         department: true
                     }
                 })
@@ -46,6 +46,29 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
             if (dbUser.tenant && dbUser.tenant.status === 'SUSPENDED') {
                 return res.status(403).json({ error: 'Tenant enclave suspended. Access denied.', code: 'TENANT_SUSPENDED' });
+            }
+
+            // Trial Enforce: Maturity Check
+            if (dbUser.tenant && dbUser.tenant.isTrial) {
+                const now = new Date();
+                const expiresAt = dbUser.tenant.trialExpiresAt ? new Date(dbUser.tenant.trialExpiresAt) : null;
+
+                if (dbUser.tenant.status === 'TRIAL_EXPIRED' || (expiresAt && now > expiresAt)) {
+                    // Auto-update status to TRIAL_EXPIRED if maturity hit
+                    if (dbUser.tenant.status !== 'TRIAL_EXPIRED') {
+                        await prisma.tenant.update({
+                            where: { id: user.tenantId },
+                            data: { status: 'TRIAL_EXPIRED' }
+                        }).catch(e => console.error("[TrialGuard] Failed to auto-suspend expired trial:", e));
+                    }
+
+                    return res.status(403).json({
+                        error: 'Sovereign Trial Matured',
+                        code: 'TRIAL_EXPIRED',
+                        message: 'Your 30-day sovereign trial has concluded. Please upgrade to maintain access to your data.',
+                        expiresAt: dbUser.tenant.trialExpiresAt
+                    });
+                }
             }
 
             console.log(`[Auth] JWT Verified for user: ${user.email} (Role: ${user.role})`);

@@ -59,6 +59,7 @@ import { useInactivityLogout } from './hooks/useInactivityLogout';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import { useSovereignData } from './hooks/useSovereignData';
+import TrialExpirationModal from './components/TrialExpirationModal';
 
 const AppContent: React.FC = () => {
   // Persist Active Tab
@@ -130,6 +131,7 @@ const AppContent: React.FC = () => {
   const { hasAnyPermission, checkVisibility } = usePermissions();
 
   const [killSwitchActive, setKillSwitchActive] = useState(false);
+  const [trialExpiredData, setTrialExpiredData] = useState<{ expiresAt?: string } | null>(null);
 
   // API Sentinel
   useEffect(() => {
@@ -137,8 +139,18 @@ const AppContent: React.FC = () => {
       console.warn("[App] Session revoked via API signal. Forced logout.");
       handleLogout();
     };
+    const handleTrialExpired = (e: any) => {
+      console.warn("[App] Sovereign Trial Matured. Locking UI.");
+      setTrialExpiredData(e.detail);
+    };
+
     window.addEventListener('nomosdesk-auth-failed', handleAuthFailure);
-    return () => window.removeEventListener('nomosdesk-auth-failed', handleAuthFailure);
+    window.addEventListener('nomosdesk-trial-expired', handleTrialExpired);
+
+    return () => {
+      window.removeEventListener('nomosdesk-auth-failed', handleAuthFailure);
+      window.removeEventListener('nomosdesk-trial-expired', handleTrialExpired);
+    };
   }, [handleLogout]);
 
   // Security Policy
@@ -373,6 +385,9 @@ const AppContent: React.FC = () => {
         isOpen={showLeaveModal}
         onClose={() => setShowLeaveModal(false)}
       />
+      {trialExpiredData && (
+        <TrialExpirationModal expiresAt={trialExpiredData.expiresAt} />
+      )}
     </AppRouter>
   );
 };

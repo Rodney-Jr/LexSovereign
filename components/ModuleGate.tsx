@@ -73,7 +73,7 @@ const ModuleGate: React.FC<ModuleGateProps> = ({
                 </div>
                 <h2 className="text-3xl font-black text-white italic tracking-tighter mb-4 uppercase">Upgrade Your Sovereignty</h2>
                 <p className="text-slate-400 text-sm max-w-lg mb-10 leading-relaxed">
-                    The <strong>{featureName}</strong> is part of the LexSovereign Enterprise suite.
+                    The <strong>{featureName}</strong> is part of the Nomosdesk Enterprise suite.
                     {description}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">

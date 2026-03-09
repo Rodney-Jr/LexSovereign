@@ -9,10 +9,10 @@ const localPrisma = new PrismaClient();
 
 // Also try other potential DB names the older scripts may have used
 const alternateUrls = [
-    'postgresql://postgres:postgres@localhost:5434/lexsovereign',
+    'postgresql://postgres:postgres@localhost:5434/Nomosdesk',
     'postgresql://postgres:postgres@localhost:5434/nomosdesk_legal',
     'postgresql://postgres:postgres@localhost:5432/nomosdesk',
-    'postgresql://postgres:postgres@localhost:5432/lexsovereign',
+    'postgresql://postgres:postgres@localhost:5432/Nomosdesk',
 ];
 
 async function checkDb(url: string) {

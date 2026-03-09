@@ -5,7 +5,7 @@ async function recover() {
     const logData = fs.readFileSync(logPath, 'utf8');
 
     // Make the regex very forgiving
-    const regex = /c:\\\/Users\\\/LENOVO\\\/Desktop\\\/LexSovereign\\\/components\\\/HRWorkbench\.tsx`\r?\nTotal Lines: 584\r?\nTotal Bytes: \d+\r?\nShowing lines (\d+) to (\d+)\r?\n[\s\S]*?leading space\.\r?\n([\s\S]*?)(?:The above content )/g;
+    const regex = /c:\\\/Users\\\/LENOVO\\\/Desktop\\\/nomosdesk\\\/components\\\/HRWorkbench\.tsx`\r?\nTotal Lines: 584\r?\nTotal Bytes: \d+\r?\nShowing lines (\d+) to (\d+)\r?\n[\s\S]*?leading space\.\r?\n([\s\S]*?)(?:The above content )/g;
 
     let matches;
     const lines = [];
@@ -52,7 +52,7 @@ async function recover() {
     }
 
     const finalFileContent = lines.slice(1, 585).join('\n');
-    fs.writeFileSync('c:\\Users\\LENOVO\\Desktop\\LexSovereign\\components\\HRWorkbench.tsx', finalFileContent);
+    fs.writeFileSync('c:\\Users\\LENOVO\\Desktop\\nomosdesk\\components\\HRWorkbench.tsx', finalFileContent);
     console.log(`Successfully recovered file with ${584 - missing} lines found from logs.`);
 }
 

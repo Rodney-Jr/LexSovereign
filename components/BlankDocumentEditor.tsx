@@ -368,7 +368,7 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({
 
                                 {/* A4 Footer Indicator */}
                                 <div className="absolute bottom-8 left-[25mm] right-[25mm] border-t border-slate-100 pt-4 flex justify-between items-center opacity-30 select-none">
-                                    <span className="text-[10px] uppercase tracking-widest font-bold">Lex Sovereign Sovereign Drafting</span>
+                                    <span className="text-[10px] uppercase tracking-widest font-bold">Nomosdesk Sovereign Drafting</span>
                                     <span className="text-[10px] font-mono">Page 1 of 1</span>
                                 </div>
                             </div>
@@ -407,7 +407,7 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({
                             >
                                 {/* Watermark */}
                                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black">
-                                    LEX SOVEREIGN
+                                    Nomosdesk
                                 </div>
 
                                 <div className="relative z-10">

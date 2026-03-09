@@ -4,7 +4,7 @@ The **Resource Utilization Ledger** (implemented in `SovereignBilling.tsx`) is a
 
 ## 1. The Three Primary Meters
 *   **AI Credits (Inference)**: This tracks the "computational brainpower" consumed by the Silo. Every time the AI generates a contract, summarizes a brief, or performs a KYC check, it consumes credits based on the model used (e.g., Gemini Pro vs. Flash).
-*   **Vault Storage (Pinned)**: Tracks the physical data footprint of legal artifacts. Because LexSovereign uses "Route-Based Sovereignty," this storage is physically pinned to the chosen regional silo (e.g., Lagos, London) and tracked against the residency limit.
+*   **Vault Storage (Pinned)**: Tracks the physical data footprint of legal artifacts. Because Nomosdesk uses "Route-Based Sovereignty," this storage is physically pinned to the chosen regional silo (e.g., Lagos, London) and tracked against the residency limit.
 *   **Active Team Slots**: Manages per-seat licenses. It reflects the number of "Active Guardrails" or users currently provisioned within the logical enclave.
 
 ## 2. Predictive Analytics & Burn Rate

@@ -1,5 +1,5 @@
 /**
- * Shared API utility for LexSovereign Marketing Website
+ * Shared API utility for Nomosdesk Marketing Website
  * Ensures robust URL construction regardless of environment variable formatting
  */
 

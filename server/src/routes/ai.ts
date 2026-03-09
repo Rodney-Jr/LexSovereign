@@ -7,10 +7,10 @@ const router = express.Router();
 /**
  * Trigger AI Risk Analysis for a contract
  */
-router.post('/analyze-contract', authenticateToken, async (req, res) => {
+router.post('/analyze-contract', authenticateToken, async (req: any, res) => {
     try {
         const { matterId, content } = req.body;
-        const analysis = await AIService.analyzeContractRisk(matterId, content);
+        const analysis = await AIService.analyzeContractRisk(req.user.tenantId, matterId, content);
         res.json(analysis);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -20,10 +20,10 @@ router.post('/analyze-contract', authenticateToken, async (req, res) => {
 /**
  * Generate AI Case Summary
  */
-router.post('/summarize-case', authenticateToken, async (req, res) => {
+router.post('/summarize-case', authenticateToken, async (req: any, res) => {
     try {
         const { matterId, documents } = req.body;
-        const summary = await AIService.summarizeCase(matterId, documents || []);
+        const summary = await AIService.summarizeCase(req.user.tenantId, matterId, documents || []);
         res.json({ summary });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -33,10 +33,10 @@ router.post('/summarize-case', authenticateToken, async (req, res) => {
 /**
  * Predict Deadline Risk
  */
-router.get('/deadline-risk/:id', authenticateToken, async (req, res) => {
+router.get('/deadline-risk/:id', authenticateToken, async (req: any, res) => {
     try {
         const { id } = req.params;
-        const risk = await AIService.predictDeadlineRisk(id);
+        const risk = await AIService.predictDeadlineRisk(req.user.tenantId, id);
         res.json(risk);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

@@ -99,7 +99,7 @@ const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoice, onCl
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3 text-slate-950">
                                     <Globe size={32} className="text-blue-600" />
-                                    <span className="text-2xl font-black italic tracking-tighter">LEX SOVEREIGN</span>
+                                    <span className="text-2xl font-black italic tracking-tighter">Nomosdesk</span>
                                 </div>
                                 <div className="text-[10px] text-slate-500 font-medium leading-relaxed max-w-[200px]">
                                     Institutional Legal Operations<br />
@@ -193,13 +193,13 @@ const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoice, onCl
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Sovereign Proof of Legitimacy</p>
                                     <p className="text-[9px] text-slate-500 leading-snug">
-                                        This invoice is cryptographically signed and stored on the LexSovereign Ledger. Any tampering with this document will invalidate the Sovereign checksum linked to the matter's root certificate.
+                                        This invoice is cryptographically signed and stored on the Nomosdesk Ledger. Any tampering with this document will invalidate the Sovereign checksum linked to the matter's root certificate.
                                     </p>
                                 </div>
                             </div>
                             <div className="flex justify-between items-end">
                                 <div className="text-[9px] text-slate-400 font-medium uppercase tracking-widest">
-                                    &copy; 2026 LexSovereign Enclave &bull; Generated via Institutional Node Alpha-1
+                                    &copy; 2026 Nomosdesk Enclave &bull; Generated via Institutional Node Alpha-1
                                 </div>
                                 <div className="flex items-center gap-2 text-[9px] font-bold text-slate-900">
                                     <div className="w-2 h-2 rounded-full bg-blue-600"></div>

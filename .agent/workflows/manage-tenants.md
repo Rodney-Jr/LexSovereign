@@ -4,7 +4,7 @@ description: How to manage tenant lifecycles (Suspend, Deactivate, Delete)
 
 # Workflow: Managing Tenant Lifecycles
 
-This workflow governs how Global Admins manage tenant organizations on the LexSovereign platform, specifically addressing non-payment of fees and decommissioning.
+This workflow governs how Global Admins manage tenant organizations on the nomosdesk platform, specifically addressing non-payment of fees and decommissioning.
 
 ## 1. Suspending a Tenant for Non-Payment
 

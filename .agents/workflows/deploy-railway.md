@@ -12,7 +12,7 @@ Deployment to Railway uses the project's `Dockerfile` and `railway.json` configu
 
 2.  **Verify the deployment in Railway Dashboard**
     - Go to your Railway project.
-    - Confirm the deployment for the `LexSovereign` service has started.
+    - Confirm the deployment for the `nomosdesk` service has started.
 
 3.  **Redeploy with No Cache (Recommended for schema changes)**
     If you see persistent TypeScript errors in the Railway logs, it may be due to cached layers. To fix:

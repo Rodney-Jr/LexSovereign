@@ -44,13 +44,21 @@ export class TenantService {
             await prisma.$transaction(async (tx) => {
                 // 1. Create Tenant
                 console.log(`[Provisioning] Step 1: Creating Tenant: ${tenantId}`);
+
+                // Trial Logic: 30 days from now
+                const trialExpiresAt = new Date();
+                trialExpiresAt.setDate(trialExpiresAt.getDate() + 30);
+
                 const tenant = await tx.tenant.create({
                     data: {
                         id: tenantId,
                         name,
                         plan,
                         primaryRegion: region,
-                        appMode
+                        appMode,
+                        isTrial: true,
+                        trialExpiresAt,
+                        aiCreditLimit: 50.0 // Default $50 worth of AI credits for trial
                     }
                 });
 

@@ -8,7 +8,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const prisma = new PrismaClient();
-const SOURCE_DIR = 'C:\\Users\\LENOVO\\Desktop\\LexSovereign\\law_knowlege_base\\fg';
+const SOURCE_DIR = 'C:\\Users\\LENOVO\\Desktop\\Nomosdesk\\law_knowlege_base\\fg';
 
 async function getFiles(dir: string): Promise<string[]> {
     const dirents = await fs.promises.readdir(dir, { withFileTypes: true });

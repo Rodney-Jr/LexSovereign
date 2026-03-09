@@ -80,7 +80,7 @@ const App = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
               <Shield className="text-white" size={24} />
             </div>
-            <span className="text-2xl font-black tracking-tighter text-white font-outfit uppercase">LEX<span className="text-blue-500">SOVEREIGN</span></span>
+            <span className="text-2xl font-black tracking-tighter text-white font-outfit uppercase">NOMOS<span className="text-blue-500">DESK</span></span>
           </div>
           
           <div className="hidden md:flex items-center gap-8">
@@ -106,7 +106,7 @@ const App = () => {
           </h1>
           
           <p className="max-w-2xl mx-auto text-xl text-slate-400 mb-12 leading-relaxed">
-            LexSovereign is a high-fidelity Sovereign Legal Operating System designed for private regional enclaves. Hard-pin your data to jurisdictional boundaries with physical Root of Trust.
+            Nomosdesk is a high-fidelity Sovereign Legal Operating System designed for private regional enclaves. Hard-pin your data to jurisdictional boundaries with physical Root of Trust.
           </p>
           
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
@@ -197,11 +197,11 @@ const App = () => {
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <Shield className="text-blue-500" size={24} />
-            <span className="font-bold tracking-tight text-white font-outfit uppercase">LEXSOVEREIGN</span>
+            <span className="font-bold tracking-tight text-white font-outfit uppercase">NOMOSDESK</span>
           </div>
           <p className="text-slate-500 text-sm mb-8 italic">"The Absolute Standard in Jurisdictional Legal Ops"</p>
           <div className="text-slate-600 text-xs">
-            © 2026 LexSovereign Systems. All Rights Reserved. Verified Sovereign Instance.
+            © 2026 Nomosdesk Systems. All Rights Reserved. Verified Sovereign Instance.
           </div>
         </div>
       </footer>

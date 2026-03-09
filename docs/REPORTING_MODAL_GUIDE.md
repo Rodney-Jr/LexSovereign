@@ -75,10 +75,10 @@ As documented in the `MODALS_GUIDE.md`, a dedicated **Audit Log Viewer Modal** i
 
 ## 6. Relevant Code References
 
-- **Frontend Component**: [ComplianceExport.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/components/ComplianceExport.tsx)
-- **Backend Service**: [auditService.ts](file:///c:/Users/LENOVO/Desktop/LexSovereign/server/src/services/auditService.ts)
-- **AI Synthesis**: [geminiService.ts](file:///c:/Users/LENOVO/Desktop/LexSovereign/services/geminiService.ts)
-- **Global Control**: [GlobalControlPlane.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/components/GlobalControlPlane.tsx)
+- **Frontend Component**: [ComplianceExport.tsx](file:///c:/Users/LENOVO/Desktop/Nomosdesk/components/ComplianceExport.tsx)
+- **Backend Service**: [auditService.ts](file:///c:/Users/LENOVO/Desktop/Nomosdesk/server/src/services/auditService.ts)
+- **AI Synthesis**: [geminiService.ts](file:///c:/Users/LENOVO/Desktop/Nomosdesk/services/geminiService.ts)
+- **Global Control**: [GlobalControlPlane.tsx](file:///c:/Users/LENOVO/Desktop/Nomosdesk/components/GlobalControlPlane.tsx)
 
 ---
 

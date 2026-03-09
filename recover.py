@@ -5,7 +5,7 @@ with open(log_path, 'r', encoding='utf-8') as f:
     log_data = f.read()
 
 # find blocks
-pattern = r"File Path: `file:\/\/\/c:\/Users\/LENOVO\/Desktop\/LexSovereign\/components\/HRWorkbench\.tsx`\r?\nTotal Lines: (?:584|692)\r?\nTotal Bytes: \d+\r?\nShowing lines (\d+) to (\d+)\r?\n[\s\S]*?leading space\.\r?\n([\s\S]*?)(?:The above content)"
+pattern = r"File Path: `file:\/\/\/c:\/Users\/LENOVO\/Desktop\/nomosdesk\/components\/HRWorkbench\.tsx`\r?\nTotal Lines: (?:584|692)\r?\nTotal Bytes: \d+\r?\nShowing lines (\d+) to (\d+)\r?\n[\s\S]*?leading space\.\r?\n([\s\S]*?)(?:The above content)"
 matches = re.finditer(pattern, log_data)
 
 lines = {}
@@ -30,7 +30,7 @@ result = []
 for i in range(1, 585):
     result.append(lines.get(i, ''))
 
-with open(r"c:\Users\LENOVO\Desktop\LexSovereign\components\HRWorkbench.tsx", "w", encoding='utf-8') as fw:
+with open(r"c:\Users\LENOVO\Desktop\nomosdesk\components\HRWorkbench.tsx", "w", encoding='utf-8') as fw:
     fw.write('\n'.join(result))
 
 print(f"Recovered {len(lines)} lines out of 584.")
