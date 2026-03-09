@@ -12,7 +12,7 @@ import {
   Cell
 } from 'recharts';
 import { AppMode } from '../types';
-import { Clock, DollarSign, CheckCircle2, AlertTriangle, TrendingUp, Activity, Shield, Loader2 } from 'lucide-react';
+import { Clock, DollarSign, CheckCircle2, AlertTriangle, TrendingUp, Activity, Shield, Loader2, Download } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api'; // Ensure this utility exists or use fetch
 
 const Dashboard: React.FC<{
@@ -62,11 +62,22 @@ const Dashboard: React.FC<{
           <h2 className="text-2xl font-bold text-white tracking-tight">Welcome back, {userName}</h2>
           <p className="text-slate-500 text-sm mt-1">Here's what's happening in your {mode === AppMode.LAW_FIRM ? 'practice' : 'organization'} today.</p>
         </div>
-        <div className="flex items-center gap-3 bg-brand-sidebar border border-brand-border px-4 py-2 rounded-2xl">
-          <Activity size={16} className="text-brand-primary" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Silo Pulse: <span className={metrics?.siloHealth === 'DEGRADED' ? 'text-rose-400' : 'text-emerald-400'}>{metrics?.siloHealth || 'Nominal'}</span>
-          </span>
+        <div className="flex items-center gap-3">
+          <a
+            href="/NomosDesk_User_Manual.md"
+            download="NomosDesk_User_Manual.md"
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-2xl transition-colors border border-slate-700 text-xs font-bold"
+            title="Download User Manual"
+          >
+            <Download size={16} className="text-blue-400" />
+            <span className="hidden sm:inline">User Manual</span>
+          </a>
+          <div className="flex items-center gap-3 bg-brand-sidebar border border-brand-border px-4 py-2 rounded-2xl">
+            <Activity size={16} className="text-brand-primary" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Silo Pulse: <span className={metrics?.siloHealth === 'DEGRADED' ? 'text-rose-400' : 'text-emerald-400'}>{metrics?.siloHealth || 'Nominal'}</span>
+            </span>
+          </div>
         </div>
       </div>
 
