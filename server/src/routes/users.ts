@@ -10,7 +10,7 @@ const router = express.Router();
  * Returns all users within the current tenant enclave.
  * Restricted to TENANT_ADMIN and GLOBAL_ADMIN.
  */
-router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN', 'MANAGING_PARTNER', 'PARTNER', 'ADMIN_MANAGER', 'LEGAL_OPS']), async (req, res) => {
+router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN', 'MANAGING_PARTNER', 'PARTNER', 'ADMIN_MANAGER', 'LEGAL_OPS', 'JUNIOR_ASSOCIATE', 'CLERK']), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         if (!isGlobalAdmin && !req.user?.tenantId) {
