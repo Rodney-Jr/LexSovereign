@@ -290,6 +290,23 @@ router.post('/recruitment/candidates', async (req: Request, res: Response) => {
     }
 });
 
+router.put('/recruitment/candidates/:id/stage', async (req: Request, res: Response) => {
+    try {
+        const tenantId = (req.user as InternalUser).tenantId;
+        const { status } = req.body;
+
+        if (!status) return res.status(400).json({ error: 'status is required' });
+
+        const updated = await prisma.candidate.update({
+            where: { id: req.params.id, tenantId },
+            data: { status }
+        });
+        res.json(updated);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ---------------------------------------------------------------------------
 // CLE / COMPLIANCE
 // ---------------------------------------------------------------------------
@@ -371,6 +388,24 @@ router.put('/onboarding/:id/toggle', async (req: Request, res: Response) => {
             data: { isCompleted: !item.isCompleted }
         });
         res.json(updated);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.put('/staff/:id/status', async (req: Request, res: Response) => {
+    try {
+        const tenantId = (req.user as InternalUser).tenantId;
+        const { status } = req.body; // 'Active' | 'Suspended'
+
+        if (!status) return res.status(400).json({ error: 'status is required' });
+
+        const isActive = status === 'Active';
+        const updated = await prisma.user.update({
+            where: { id: req.params.id, tenantId },
+            data: { isActive }
+        });
+        res.json({ id: updated.id, status: updated.isActive ? 'Active' : 'Suspended' });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

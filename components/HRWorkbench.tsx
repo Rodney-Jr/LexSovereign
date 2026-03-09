@@ -66,7 +66,8 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
     const [showAddCandidate, setShowAddCandidate] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-    const [candidateForm, setCandidateForm] = useState({ name: '', position: '', stage: 'Applied' as CandidateStage, notes: '' });
+    const [candidateForm, setCandidateForm] = useState({ name: '', email: '', position: '', stage: 'Applied' as CandidateStage, notes: '' });
+    const [editingSalary, setEditingSalary] = useState<{ id: string; value: string } | null>(null);
 
     const isAdminManager = !userRole || userRole === 'ADMIN_MANAGER' || userRole === 'OWNER' || userRole === 'TENANT_ADMIN';
 
@@ -168,9 +169,10 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                 token: session?.token,
                 body: JSON.stringify({
                     name: candidateForm.name,
-                    email: 'candidate@example.com', // Placeholder since not in form
+                    email: candidateForm.email || 'candidate@pending.com',
                     role: candidateForm.position,
-                    status: candidateForm.stage
+                    status: candidateForm.stage,
+                    notes: candidateForm.notes
                 })
             });
 
@@ -183,7 +185,7 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                 notes: candidateForm.notes || undefined,
             }, ...prev]);
 
-            setCandidateForm({ name: '', position: '', stage: 'Applied', notes: '' });
+            setCandidateForm({ name: '', email: '', position: '', stage: 'Applied', notes: '' });
             setShowAddCandidate(false);
         } catch (e) {
             console.error(e);
@@ -192,10 +194,53 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
         }
     };
 
-    const handleUpdateStaffStatus = (id: string, newStatus: 'Active' | 'Suspended') => {
+    const handleUpdateStaffStatus = async (id: string, newStatus: 'Active' | 'Suspended') => {
+        try {
+            const session = getSavedSession();
+            await authorizedFetch(`/api/firm/staff/${id}/status`, {
+                method: 'PUT',
+                token: session?.token,
+                body: JSON.stringify({ status: newStatus })
+            });
+        } catch (e) {
+            console.error('[HR] Failed to update staff status:', e);
+        }
         setStaffDirectory(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
         if (selectedStaff && selectedStaff.id === id) {
             setSelectedStaff(prev => prev ? { ...prev, status: newStatus } : null);
+        }
+    };
+
+    const handleMoveStage = async (candidateId: string, newStage: CandidateStage) => {
+        try {
+            const session = getSavedSession();
+            await authorizedFetch(`/api/firm/recruitment/candidates/${candidateId}/stage`, {
+                method: 'PUT',
+                token: session?.token,
+                body: JSON.stringify({ status: newStage })
+            });
+            setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, stage: newStage } : c));
+        } catch (e) {
+            console.error('[HR] Failed to move candidate stage:', e);
+        }
+    };
+
+    const handleSalaryUpdate = async (userId: string) => {
+        if (!editingSalary || editingSalary.id !== userId) return;
+        const amount = parseFloat(editingSalary.value);
+        if (isNaN(amount) || amount < 0) return;
+        try {
+            const session = getSavedSession();
+            await authorizedFetch('/api/firm/salary', {
+                method: 'POST',
+                token: session?.token,
+                body: JSON.stringify({ userId, baseSalary: amount, effectiveFrom: new Date().toISOString() })
+            });
+            setPayrollData((prev: any[]) => prev.map(p => p.id === userId ? { ...p, salary: amount, lastUpdated: new Date().toISOString().split('T')[0] } : p));
+        } catch (e) {
+            console.error('[HR] Failed to update salary:', e);
+        } finally {
+            setEditingSalary(null);
         }
     };
 
@@ -453,13 +498,21 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                                             </div>
                                             <div className="space-y-3">
                                                 {stageCandidates.map(candidate => (
-                                                    <div key={candidate.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl hover:border-slate-700 transition-all group cursor-pointer">
+                                                    <div key={candidate.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl hover:border-slate-700 transition-all group">
                                                         <p className="text-sm font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{candidate.name}</p>
-                                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">{candidate.position}</p>
-                                                        <div className="flex items-center justify-between text-[9px] text-slate-600 font-bold">
-                                                            <span>Applied 2d ago</span>
-                                                            <ChevronRight size={12} />
-                                                        </div>
+                                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-2">{candidate.position}</p>
+                                                        <p className="text-[10px] text-slate-600 font-bold mb-3">
+                                                            Applied: {candidate.appliedDate ? new Date(candidate.appliedDate).toLocaleDateString() : 'N/A'}
+                                                        </p>
+                                                        <select
+                                                            title="Move to stage"
+                                                            value={candidate.stage}
+                                                            onChange={e => handleMoveStage(candidate.id, e.target.value as CandidateStage)}
+                                                            onClick={e => e.stopPropagation()}
+                                                            className="w-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold uppercase tracking-widest rounded-lg px-2 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        >
+                                                            {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                                                        </select>
                                                     </div>
                                                 ))}
                                                 {stageCandidates.length === 0 && (
@@ -612,6 +665,16 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                                 />
                             </div>
                             <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Address</label>
+                                <input
+                                    type="email"
+                                    placeholder="e.g. candidate@email.com"
+                                    value={candidateForm.email}
+                                    onChange={e => setCandidateForm(f => ({ ...f, email: e.target.value }))}
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3.5 text-sm text-white focus:border-blue-500/50 focus:outline-none transition-all"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Position Applied For</label>
                                 <input
                                     required
@@ -711,7 +774,7 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {payrollData.map(p => (
+                                            {payrollData.map((p: any) => (
                                                 <tr key={p.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors group">
                                                     <td className="px-6 py-4">
                                                         <div>
@@ -720,7 +783,29 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className="text-sm font-bold text-white font-mono">GHS {p.salary.toLocaleString()}</span>
+                                                        {editingSalary?.id === p.id ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs text-slate-400">GHS</span>
+                                                                <input
+                                                                    type="number"
+                                                                    title="Salary amount"
+                                                                    autoFocus
+                                                                    className="w-28 bg-slate-800 border border-blue-500/40 rounded-lg px-2 py-1 text-sm text-white font-mono focus:outline-none"
+                                                                    value={editingSalary.value}
+                                                                    onChange={e => setEditingSalary({ id: p.id, value: e.target.value })}
+                                                                    onBlur={() => handleSalaryUpdate(p.id)}
+                                                                    onKeyDown={e => { if (e.key === 'Enter') handleSalaryUpdate(p.id); if (e.key === 'Escape') setEditingSalary(null); }}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => setEditingSalary({ id: p.id, value: String(p.salary) })}
+                                                                className="text-sm font-bold text-white font-mono hover:text-blue-400 transition-colors cursor-pointer"
+                                                                title="Click to edit salary"
+                                                            >
+                                                                GHS {p.salary.toLocaleString()}
+                                                            </button>
+                                                        )}
                                                     </td>
                                                     <td className="px-6 py-4 text-xs text-slate-400 font-mono">{p.lastUpdated}</td>
                                                     <td className="px-6 py-4 text-right">
