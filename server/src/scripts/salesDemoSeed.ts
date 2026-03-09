@@ -10,61 +10,57 @@ async function createDemoTenant(
     users: { email: string; name: string; roleName: string }[],
     password: string
 ) {
-    const tenantId = randomUUID();
     const region = 'GH_ACC_1';
 
     console.log(`🏗️  Provisioning Tenant: ${name} (${appMode})...`);
 
-    // 1. Create Tenant
-    console.log('   Creating Tenant record...');
-    await prisma.tenant.create({
-        data: {
-            id: tenantId,
+    // 1. Create or Update Tenant
+    const tenant = await prisma.tenant.upsert({
+        where: { name },
+        update: { appMode, plan: 'ENTERPRISE', primaryRegion: region, status: 'ACTIVE' },
+        create: {
+            id: randomUUID(),
             name,
             plan: 'ENTERPRISE',
             primaryRegion: region,
-            appMode
+            appMode,
+            status: 'ACTIVE'
         }
     });
 
-    // 2. Clone System Roles to Tenant
-    console.log('   Cloning System Roles...');
-    const rawSystemRoles = await prisma.role.findMany({
+    const tenantId = tenant.id;
+
+    // 2. Ensure System Roles exist and are cloned to Tenant
+    console.log('   Ensuring System Roles logic...');
+    const sysRoles = await prisma.role.findMany({
         where: { tenantId: null, isSystem: true },
         include: { permissions: true }
     });
 
-    // Uniqueify by name to avoid P2002 errors if duplicates exist in source
-    const systemRoles = Array.from(new Map(rawSystemRoles.map(role => [role.name, role])).values());
-
-    for (const sysRole of systemRoles) {
-        console.log(`      Found system role: ${sysRole.name}. Cloning...`);
-        try {
-            await prisma.role.create({
-                data: {
-                    id: randomUUID(),
-                    name: sysRole.name,
-                    description: sysRole.description,
-                    isSystem: true,
-                    tenantId: tenantId,
-                    permissions: {
-                        connect: sysRole.permissions.map(p => ({ id: p.id }))
-                    }
+    for (const sysRole of sysRoles) {
+        await prisma.role.upsert({
+            where: { tenantId_name: { tenantId, name: sysRole.name } },
+            update: {},
+            create: {
+                id: randomUUID(),
+                name: sysRole.name,
+                description: sysRole.description,
+                isSystem: true,
+                tenantId: tenantId,
+                permissions: {
+                    connect: sysRole.permissions.map(p => ({ id: p.id }))
                 }
-            });
-        } catch (e: any) {
-            console.error(`      ❌ Failed to clone role ${sysRole.name}:`, e.message);
-            throw e;
-        }
+            }
+        });
     }
 
-    // 3. Create Users
-    console.log('   Creating Users...');
+    // 3. Create/Update Users
+    console.log('   Provisioning Users...');
     const hashedPass = await bcrypt.hash(password, 10);
 
     for (const u of users) {
         const role = await prisma.role.findFirst({
-            where: { tenantId: tenantId, name: u.roleName }
+            where: { tenantId, name: u.roleName }
         });
 
         if (!role) {
@@ -72,8 +68,25 @@ async function createDemoTenant(
             continue;
         }
 
-        await prisma.user.create({
-            data: {
+        const licenseId = `BAR-${Math.floor(Math.random() * 90000) + 10000}`;
+        const credentials = [
+            { type: 'JURISDICTION_BAR_LICENSE', id: licenseId, region: 'GH_ACC_1' }
+        ];
+
+        await prisma.user.upsert({
+            where: { email: u.email },
+            update: {
+                name: u.name,
+                passwordHash: hashedPass,
+                tenantId: tenantId,
+                roleId: role.id,
+                roleString: role.name,
+                region: region,
+                jurisdictionPins: ['GH_ACC_1'],
+                credentials: credentials as any,
+                isActive: true
+            },
+            create: {
                 id: randomUUID(),
                 email: u.email,
                 name: u.name,
@@ -82,22 +95,18 @@ async function createDemoTenant(
                 roleId: role.id,
                 roleString: role.name,
                 region: region,
-                roleSeniority: u.roleName === 'MANAGING_PARTNER' ? 10.0 : 5.0
+                roleSeniority: u.roleName === 'MANAGING_PARTNER' ? 10.0 : 5.0,
+                jurisdictionPins: ['GH_ACC_1'],
+                credentials: credentials as any,
+                isActive: true
             }
         });
-        console.log(`   ✅ Created User: ${u.email} (${u.roleName})`);
+        console.log(`   ✅ Provisioned User: ${u.email} (${u.roleName})`);
     }
 }
 
 async function main() {
     const COMMON_PASSWORD = 'NomosDemo2026!';
-
-    // Check if the first demo user exists to avoid duplicates
-    const check = await prisma.user.findFirst({ where: { email: 'mpartner@sovlegal.com' } });
-    if (check) {
-        console.log('ℹ️  Demo accounts already exist. Skipping.');
-        return;
-    }
 
     try {
         // Route 1: Law Firm
@@ -116,7 +125,7 @@ async function main() {
         // Route 2: Enterprise Legal
         await createDemoTenant(
             'Global Tech Legal',
-            'LAW_FIRM', // Using standard mode, but named for Enterprise
+            'LAW_FIRM',
             [
                 { email: 'gc@globaltech.com', name: 'Elena Vance (General Counsel)', roleName: 'MANAGING_PARTNER' },
                 { email: 'counsel@globaltech.com', name: 'Marcus Cole (Legal Counsel)', roleName: 'JUNIOR_ASSOCIATE' },
@@ -146,3 +155,4 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
+
