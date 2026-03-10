@@ -555,7 +555,16 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                     </div>
                     {activity.type === 'DOCUMENT' && (
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 self-center">
-                        <span className="text-[8px] font-bold text-brand-secondary uppercase tracking-widest bg-brand-secondary/10 px-2 py-1 rounded-lg border border-brand-secondary/20">Double-Click to Edit</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDocumentDoubleClick?.(activity.id);
+                          }}
+                          className="text-[8px] font-bold text-brand-secondary uppercase tracking-widest bg-brand-secondary/10 hover:bg-brand-secondary/20 px-3 py-1.5 rounded-lg border border-brand-secondary/20 transition-all active:scale-95"
+                          title="Open in Drafting Studio"
+                        >
+                          Edit Artifact
+                        </button>
                       </div>
                     )}
                   </div>
