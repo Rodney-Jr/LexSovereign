@@ -72,6 +72,7 @@ const AppContent: React.FC = () => {
   }, [activeTab]);
 
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [isPlatformMode, setIsPlatformMode] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
   const [isUserInvitation, setIsUserInvitation] = useState(false);
@@ -317,6 +318,8 @@ const AppContent: React.FC = () => {
             getDocumentContent={getDocumentContent}
             documents={documents}
             matterId={selectedMatter}
+            initialEditingDocId={editingDocId}
+            onClearInitialDoc={() => setEditingDocId(null)}
           />
         )}
         {activeTab === 'analysis' && <CaseAnalysisModal isOpen={true} onClose={() => setActiveTab('dashboard')} />}
@@ -332,7 +335,16 @@ const AppContent: React.FC = () => {
 
         {activeTab === 'vault' && (
           selectedMatter ? (
-            <MatterIntelligence matterId={selectedMatter} mode={mode} onBack={() => setSelectedMatter(null)} documents={documents.filter(d => checkVisibility(d))} />
+            <MatterIntelligence
+              matterId={selectedMatter}
+              mode={mode}
+              onBack={() => setSelectedMatter(null)}
+              documents={documents.filter(d => checkVisibility(d))}
+              onDocumentDoubleClick={(id) => {
+                setEditingDocId(id);
+                setActiveTab('drafting');
+              }}
+            />
           ) : (
             <div className="space-y-8">
               <DocumentVault

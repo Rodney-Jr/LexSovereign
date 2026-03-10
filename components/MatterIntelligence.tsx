@@ -27,6 +27,7 @@ interface MatterIntelligenceProps {
   mode: AppMode;
   onBack: () => void;
   documents: DocumentMetadata[];
+  onDocumentDoubleClick?: (docId: string) => void;
 }
 
 interface TeamMember {
@@ -54,7 +55,7 @@ interface LiveTimeEntry {
 
 const gemini = new LexGeminiService();
 
-const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode, onBack, documents }) => {
+const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode, onBack, documents, onDocumentDoubleClick }) => {
   const isFirm = mode === AppMode.LAW_FIRM;
 
   // ---------- State ----------
@@ -249,6 +250,28 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
   };
+
+  // Combine and sort activities
+  const activities = [
+    ...timeEntries.map(t => ({
+      id: t.id,
+      type: 'TIME' as const,
+      title: t.user?.name || t.lawyerName || 'Counsel',
+      description: t.description,
+      timestamp: t.startTime || new Date().toISOString(), // Use startTime or fallback
+      duration: `${t.durationMinutes}m`,
+      status: t.status
+    })),
+    ...documents.filter(d => d.matterId === matterId).map(d => ({
+      id: d.id,
+      type: 'DOCUMENT' as const,
+      title: d.name,
+      description: `Sovereign Artifact • ${d.classification}`,
+      timestamp: d.uploadedAt || new Date().toISOString(),
+      duration: d.size || 'Unknown Size',
+      status: d.status || 'COMMITTED'
+    }))
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   // ---------- Render ----------
   if (isLoading) {
@@ -499,33 +522,42 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
               <span className="text-[10px] text-brand-muted/70 font-mono">{totalHours.toFixed(1)} Total Hours</span>
             </div>
 
-            {timeEntries.length === 0 ? (
+            {activities.length === 0 ? (
               <div className="bg-brand-sidebar border border-dashed border-brand-border p-8 rounded-3xl flex flex-col items-center gap-3 text-brand-muted">
                 <Activity size={24} className="opacity-30" />
-                <p className="text-xs">No time entries logged yet. Start the timer above to record activity.</p>
+                <p className="text-xs">No activity logged yet. Commencing ledger tracking...</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {timeEntries.map(entry => (
-                  <div key={entry.id} className="bg-brand-sidebar border border-brand-border p-5 rounded-3xl hover:border-brand-primary/30 transition-all flex items-start gap-4 group cursor-default">
-                    <div className="w-10 h-10 rounded-2xl bg-brand-bg flex items-center justify-center text-brand-primary shrink-0 border border-brand-border">
-                      <History size={20} />
+                {activities.map(activity => (
+                  <div
+                    key={activity.id}
+                    onDoubleClick={() => activity.type === 'DOCUMENT' && onDocumentDoubleClick?.(activity.id)}
+                    className={`bg-brand-sidebar border border-brand-border p-5 rounded-3xl transition-all flex items-start gap-4 group cursor-default ${activity.type === 'DOCUMENT' ? 'hover:border-brand-secondary/40 cursor-pointer active:scale-[0.99]' : 'hover:border-brand-primary/30'}`}
+                  >
+                    <div className={`w-10 h-10 rounded-2xl bg-brand-bg flex items-center justify-center shrink-0 border border-brand-border ${activity.type === 'DOCUMENT' ? 'text-brand-secondary' : 'text-brand-primary'}`}>
+                      {activity.type === 'DOCUMENT' ? <FileSignature size={20} /> : <History size={20} />}
                     </div>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-brand-text">
-                          {entry.user?.name || entry.lawyerName || 'Unknown Counsel'}
+                          {activity.title}
                         </span>
-                        <span className="text-[10px] font-mono text-brand-muted">{entry.durationMinutes}m</span>
+                        <span className="text-[10px] font-mono text-brand-muted">{activity.duration}</span>
                       </div>
-                      <p className="text-[11px] text-brand-muted leading-relaxed italic">"{entry.description}"</p>
+                      <p className="text-[11px] text-brand-muted leading-relaxed italic">"{activity.description}"</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${entry.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
-                          }`}>
-                          {entry.status}
+                        <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${activity.status === 'Approved' || activity.status === 'COMMITTED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                          {activity.status}
                         </span>
+                        <span className="text-[9px] text-brand-muted/50 font-mono">{relativeTime(activity.timestamp)}</span>
                       </div>
                     </div>
+                    {activity.type === 'DOCUMENT' && (
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 self-center">
+                        <span className="text-[8px] font-bold text-brand-secondary uppercase tracking-widest bg-brand-secondary/10 px-2 py-1 rounded-lg border border-brand-secondary/20">Double-Click to Edit</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

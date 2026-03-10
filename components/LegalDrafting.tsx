@@ -13,6 +13,8 @@ interface LegalDraftingProps {
     getDocumentContent: (id: string) => Promise<string>;
     documents: DocumentMetadata[];
     matterId?: string | null;
+    initialEditingDocId?: string | null;
+    onClearInitialDoc?: () => void;
 }
 
 const LegalDrafting: React.FC<LegalDraftingProps> = ({
@@ -20,13 +22,30 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
     onUpdateDocument,
     getDocumentContent,
     documents,
-    matterId
+    matterId,
+    initialEditingDocId,
+    onClearInitialDoc
 }) => {
     const [showMarketplace, setShowMarketplace] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
     const [showBlankEditor, setShowBlankEditor] = useState(false);
     const [showVaultSelector, setShowVaultSelector] = useState(false);
     const [editingDoc, setEditingDoc] = useState<{ id: string, name: string, content: string } | null>(null);
+
+    React.useEffect(() => {
+        if (initialEditingDocId) {
+            const loadInitialDoc = async () => {
+                const doc = documents.find(d => d.id === initialEditingDocId);
+                if (doc) {
+                    const content = await getDocumentContent(doc.id);
+                    setEditingDoc({ id: doc.id, name: doc.name, content });
+                    setShowBlankEditor(true);
+                }
+                onClearInitialDoc?.();
+            };
+            loadInitialDoc();
+        }
+    }, [initialEditingDocId, documents, getDocumentContent, onClearInitialDoc]);
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
