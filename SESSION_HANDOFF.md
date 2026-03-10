@@ -1,24 +1,23 @@
 # Antigravity Session Handoff
 
-##  - [x] **Matter Activity Ledger Integration**
-    - [x] Displayed matter-associated documents in the `MatterActivityLedger`.
-    - [x] Implemented double-click to launch `DraftingStudio` directly.
-- [ ] **UI Polish & Linting Fixes**
-- Fixed `PATCH /api/documents/:id` in `server/src/routes/documents.ts` (added `matterId` to destructuring).
-- Relocated "Change Matter" button to the Actions column in `DocumentVault.tsx`.
-- Fixed React `key` warnings in `DocumentVault.tsx`.
-- Committed all current progress to `master` (SHA: `2490821`).
+## Current Focus
+Completed the **Matter Activity Ledger** integration and hardened the direct editing workflow.
+
+## Recent Changes
+- **Feature Completion**: Integrated matter-associated documents into the Activity Ledger in `MatterIntelligence.tsx`.
+- **Workflow Hardening**: 
+    - Converted the interaction to a functional **Edit Artifact** button.
+    - Fixed an RBAC issue in `constants.ts` where `TENANT_ADMIN` and `GLOBAL_ADMIN` lacked drafting permissions.
+    - Cleaned up all temporary debug logs from `App.tsx`, `MatterIntelligence.tsx`, and `LegalDrafting.tsx`.
+- **Backend**: Verified `PATCH /api/documents/:id` in `server/src/routes/documents.ts` handles `matterId` correctly.
+- **UI UX**: Added tooltips, hover states, and smooth navigation to the Drafting Studio.
 
 ## Architectural Decisions
-- **Document Re-association**: Uses the existing `PATCH /api/documents/:id` endpoint for simplicity.
-- **Vault Visibility**: `checkVisibility` hook/utility is used in `App.tsx` around line 335 to filter documents passed to `MatterIntelligence`.
-- **Handoff Protocol**: Initialized `SESSION_HANDOFF.md`## Recent Changes
-- Integrated documents into the **Matter Activity Ledger** in `components/MatterIntelligence.tsx`.
-- Implemented **Double-Click to Edit** workflow across `App.tsx` and `LegalDrafting.tsx`.
-- Fixed `PATCH /api/documents/:id` in `server/src/routes/documents.ts`.
-- Relocated "Change Matter" in `DocumentVault.tsx`.
-- Fixed React `key` warnings and `relativeTime` regression.
-- Committed all current progress to `master` (SHA: `2490821` - Note: newer changes pending commit).
+- **Permission Sentinel**: RBAC logic in `App.tsx` now correctly gates the `drafting` tab based on granular permissions in `constants.ts`.
+- **Navigation State**: `App.tsx` manages `editingDocId` to facilitate cross-component document pre-loading.
+
+## Pending Bugs
+- **Linting**: Accessibility lints in `FileUploader.tsx` (missing labels) and inline CSS lints in `SovereignStaffDossierModal.tsx` are next on the backlog.
 
 ## Successor Command
-The core document ecosystem is now robust. The next priority is to address the **UI Polish & Linting Fixes** listed in `PROJECT_PLAN.md`, specifically fixing accessibility lints in `FileUploader.tsx` and migrating inline styles in `SovereignStaffDossierModal.tsx`.
+The Document/Matter ecosystem is now fully integrated. The next priority is to tackle the **UI Polish & Linting Fixes** listed in `PROJECT_PLAN.md`.

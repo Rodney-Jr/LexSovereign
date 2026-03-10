@@ -557,11 +557,14 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 self-center">
                         <button
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
-                            onDocumentDoubleClick?.(activity.id);
+                            if (onDocumentDoubleClick) {
+                              onDocumentDoubleClick(activity.id);
+                            }
                           }}
-                          className="text-[8px] font-bold text-brand-secondary uppercase tracking-widest bg-brand-secondary/10 hover:bg-brand-secondary/20 px-3 py-1.5 rounded-lg border border-brand-secondary/20 transition-all active:scale-95"
-                          title="Open in Drafting Studio"
+                          className="text-[8px] font-bold text-brand-secondary uppercase tracking-widest bg-brand-secondary/20 hover:bg-brand-secondary/30 px-3 py-1.5 rounded-lg border border-brand-secondary/40 transition-all active:scale-95 cursor-pointer z-10"
+                          title="Open in Legal Drafting Studio"
                         >
                           Edit Artifact
                         </button>

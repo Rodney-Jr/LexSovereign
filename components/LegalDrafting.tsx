@@ -37,9 +37,18 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
             const loadInitialDoc = async () => {
                 const doc = documents.find(d => d.id === initialEditingDocId);
                 if (doc) {
-                    const content = await getDocumentContent(doc.id);
-                    setEditingDoc({ id: doc.id, name: doc.name, content });
-                    setShowBlankEditor(true);
+                    try {
+                        const content = await getDocumentContent(doc.id);
+                        setEditingDoc({ id: doc.id, name: doc.name, content });
+                        setShowBlankEditor(true);
+                    } catch (err) {
+                        console.error("[LegalDrafting] Failed to fetch doc content:", err);
+                    }
+                } else if (documents.length > 0) {
+                    onClearInitialDoc?.();
+                    return;
+                } else {
+                    return;
                 }
                 onClearInitialDoc?.();
             };
