@@ -64,6 +64,8 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
   const [matterName, setMatterName] = useState('');
   const [matterClient, setMatterClient] = useState('');
   const [matterDept, setMatterDept] = useState('');
+  const [internalCounselId, setInternalCounselId] = useState<string | null>(null);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [timeEntries, setTimeEntries] = useState<LiveTimeEntry[]>([]);
@@ -99,6 +101,7 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
       setMatterName(data.matter.name);
       setMatterClient(data.matter.client);
       setMatterDept(data.matter.department || '');
+      setInternalCounselId(data.matter.internalCounselId);
       setTeam(data.team);
       setTimeEntries(data.matter.timeEntries || []);
       setTotalHours(data.metrics.totalHours);
@@ -208,6 +211,22 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
       setBriefingText('Sovereign Briefing Enclave: Synthesis Timeout.');
     } finally {
       setIsBriefing(false);
+    }
+  };
+
+  const handleSelfAssign = async () => {
+    if (!matterId) return;
+    setIsAssigning(true);
+    try {
+      const updatedMatter = await gemini.assignMatter(matterId);
+      setInternalCounselId(updatedMatter.internalCounselId);
+      // Refresh intelligence to update team list and metrics
+      await fetchIntelligence();
+    } catch (e: any) {
+      console.error('Self-assignment failed', e);
+      alert('Failed to claim matter: ' + (e.message || 'Unknown error'));
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -332,10 +351,21 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
               <span className="text-[10px] font-mono text-brand-muted">{team.length} member{team.length !== 1 ? 's' : ''}</span>
             </div>
 
-            {team.length === 0 ? (
-              <div className="flex flex-col items-center py-6 gap-2 text-brand-muted">
+            {team.length === 0 && !internalCounselId ? (
+              <div className="flex flex-col items-center py-8 gap-4 text-brand-muted text-center">
                 <Users size={24} className="opacity-40" />
-                <p className="text-[11px]">No team members assigned</p>
+                <div className="space-y-1">
+                  <p className="text-[11px] font-bold uppercase tracking-tight">Matter Unassigned</p>
+                  <p className="text-[9px] italic opacity-60">High Priority Candidate for Enclave Inception</p>
+                </div>
+                <button
+                  onClick={handleSelfAssign}
+                  disabled={isAssigning}
+                  className="w-full bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/30 text-brand-primary px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all flex items-center justify-center gap-2"
+                >
+                  {isAssigning ? <RefreshCw size={12} className="animate-spin" /> : <UserPlus size={12} />}
+                  Claim Matter
+                </button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -352,12 +382,28 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                             OOO
                           </span>
                         )}
+                        {member.id === internalCounselId && (
+                          <span className="px-1.5 py-0.5 bg-brand-primary/10 text-brand-primary text-[8px] font-bold uppercase rounded border border-brand-primary/20">
+                            Lead
+                          </span>
+                        )}
                       </div>
                       <p className="text-[10px] text-brand-secondary uppercase tracking-tighter">{member.roleString.replace(/_/g, ' ')}</p>
                     </div>
                     <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${member.isOnLeave ? 'bg-slate-600' : 'bg-emerald-400'}`} title={member.isOnLeave ? 'Out of Office' : 'Active'} />
                   </div>
                 ))}
+
+                {!internalCounselId && (
+                  <button
+                    onClick={handleSelfAssign}
+                    disabled={isAssigning}
+                    className="w-full mt-2 bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/30 text-brand-primary px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all flex items-center justify-center gap-2"
+                  >
+                    {isAssigning ? <RefreshCw size={12} className="animate-spin" /> : <UserPlus size={12} />}
+                    Self-Assign as Lead
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -163,7 +163,7 @@ model Matter {
   riskLevel             String                 @default("LOW")
   description           String?
   tenantId              String
-  internalCounselId     String
+  internalCounselId     String?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   attributes            Json?                  @default("{}")
@@ -186,7 +186,7 @@ model Matter {
   hearings              Hearing[]
   invoices              Invoice[]
   department            Department?            @relation(fields: [departmentId], references: [id])
-  internalCounsel       User                   @relation(fields: [internalCounselId], references: [id])
+  internalCounsel       User?                   @relation(fields: [internalCounselId], references: [id])
   matterType            MatterType?            @relation(fields: [matterTypeId], references: [id])
   tenant                Tenant                 @relation(fields: [tenantId], references: [id])
   workflowState         WorkflowState?         @relation(fields: [workflowStateId], references: [id])

@@ -140,6 +140,12 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   };
 
   const handleSubmit = async () => {
+    // Step 1: Internal validation safety net (Pro Fix)
+    if (!formData.name || !formData.client || !formData.type) {
+      alert('Inception Protocol Halted: Required fields (Name, Client/Entity) are missing.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const session = getSavedSession();
@@ -258,7 +264,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
   };
 
   const isStep1Valid = conflictResult === 'CLEAN';
-  const isStep2Valid = formData.name && formData.client && formData.description;
+  const isStep2Valid = formData.name && formData.client && formData.type;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/95 backdrop-blur-xl animate-in fade-in duration-300">
@@ -367,8 +373,8 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
           {step === 2 && (
             <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
               <div className="grid grid-cols-2 gap-8">
-                <MetadataInput label="Matter Name" placeholder="e.g. Standard Corporate Restructure" value={formData.name} onChange={(v: string) => setFormData({ ...formData, name: v })} />
-                <MetadataInput label={isFirm ? "Client Entity" : "Internal Business Unit"} placeholder="Search verified directory..." value={formData.client} onChange={(v: string) => setFormData({ ...formData, client: v })} />
+                <MetadataInput label="Matter Name *" placeholder="e.g. Standard Corporate Restructure" value={formData.name} onChange={(v: string) => setFormData({ ...formData, name: v })} />
+                <MetadataInput label={isFirm ? "Client Entity *" : "Internal Business Unit *"} placeholder="Search verified directory..." value={formData.client} onChange={(v: string) => setFormData({ ...formData, client: v })} />
               </div>
               <div className="space-y-2.5">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Matter Description</label>
@@ -381,7 +387,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
               </div>
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-2.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1" htmlFor="internalCounsel">Assigned Practitioner</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1" htmlFor="internalCounsel">Assigned Practitioner (Optional)</label>
                   <select
                     id="internalCounsel"
                     title="Select assigned practitioner"
@@ -389,7 +395,7 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
                     value={formData.internalCounsel}
                     onChange={e => setFormData({ ...formData, internalCounsel: e.target.value })}
                   >
-                    <option value="">Select Practitioner...</option>
+                    <option value="">Skip for now / Unassigned</option>
                     {practitioners.map(p => (
                       <option key={p.id} value={p.id}>{p.name} ({p.role})</option>
                     ))}

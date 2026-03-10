@@ -24,8 +24,8 @@ const IdentityHub: React.FC = () => {
   ]);
 
   const [sessions, setSessions] = useState<MobileSession[]>([
-    { id: 'sess_1', userId: 'Senior Counsel', platform: 'Whist (Secure)', status: 'Active', sanitizationLevel: 'Strict', expiresAt: '12m' },
-    { id: 'sess_2', userId: 'Junior Associate', platform: 'iOS (Managed)', status: 'Active', sanitizationLevel: 'Metadata-Only', expiresAt: '45m' }
+    { id: 'sess_1', userId: 'Senior Counsel', platform: 'Whist (Secure)', status: 'Active', sanitizationLevel: 'Strict', expiresAt: '12m', licenseAttestation: 'BAR-GH-8821' },
+    { id: 'sess_2', userId: 'Junior Associate', platform: 'iOS (Managed)', status: 'Active', sanitizationLevel: 'Metadata-Only', expiresAt: '45m', licenseAttestation: 'BAR-GH-9912' }
   ]);
 
   const [showMfaSetup, setShowMfaSetup] = useState(false);
@@ -155,6 +155,7 @@ const IdentityHub: React.FC = () => {
                 <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Subject</th>
                 <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Platform</th>
                 <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Policy</th>
+                <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Attestation</th>
                 <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Expires</th>
                 <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 text-right">Control</th>
               </tr>
@@ -180,6 +181,16 @@ const IdentityHub: React.FC = () => {
                     <span className="px-2 py-0.5 rounded border border-purple-500/20 bg-purple-500/10 text-purple-400 text-[9px] font-bold uppercase">
                       {s.sanitizationLevel}
                     </span>
+                  </td>
+                  <td className="px-8 py-5">
+                    {s.licenseAttestation ? (
+                      <span className="flex items-center gap-2 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold">
+                        <ShieldCheck size={10} />
+                        {s.licenseAttestation}
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-bold text-slate-500 italic">Unverified</span>
+                    )}
                   </td>
                   <td className="px-8 py-5 font-mono text-xs text-slate-500">
                     {s.expiresAt}

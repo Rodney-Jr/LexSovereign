@@ -460,6 +460,7 @@ export interface MobileSession {
   status: string;
   sanitizationLevel: string;
   expiresAt: string;
+  licenseAttestation?: string;
 }
 
 export enum EnclaveStatus {

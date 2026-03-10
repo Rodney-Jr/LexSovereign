@@ -144,42 +144,47 @@ router.post('/', authenticateToken, async (req, res) => {
         const { name, client, type, region, internalCounselId, tenantId, description, complexityWeight, overrideJustification } = req.body;
 
         // Basic validation
-        if (!name || !client || !type || !internalCounselId || !tenantId) {
+        if (!name || !client || !type || !tenantId) {
             res.status(400).json({ error: 'Missing required fields' });
             return;
         }
 
-        // Capacity & Eligibility Lock
-        const validation = await CapacityService.validateAssignment(internalCounselId, {
-            riskLevel: 'LOW',
-            region,
-            complexityWeight
-        });
+        // Capacity & Eligibility Lock (Only if counsel is provided during creation)
+        if (internalCounselId) {
+            const validation = await CapacityService.validateAssignment(internalCounselId, {
+                riskLevel: 'LOW',
+                region,
+                complexityWeight
+            });
 
-        if (!validation.allowed) {
-            if (validation.severity === 'OVERRIDE' && overrideJustification) {
-                // Log the override
-                await AuditService.log(
-                    'CAPACITY_OVERRIDE',
-                    req.user?.id || null,
-                    name,
-                    `Manual override for assignment to ${internalCounselId}. Reason: ${overrideJustification}`
-                );
-            } else {
-                res.status(403).json({
-                    error: validation.reason,
-                    severity: validation.severity,
-                    details: validation.details
-                });
-                return;
+            if (!validation.allowed) {
+                if (validation.severity === 'OVERRIDE' && overrideJustification) {
+                    await AuditService.log(
+                        'CAPACITY_OVERRIDE',
+                        req.user?.id || null,
+                        name,
+                        `Manual override for assignment to ${internalCounselId}. Reason: ${overrideJustification}`
+                    );
+                } else {
+                    res.status(403).json({
+                        error: validation.reason,
+                        severity: validation.severity,
+                        details: validation.details
+                    });
+                    return;
+                }
             }
         }
 
-        // Fetch counsel to get their department
-        const counsel = await prisma.user.findUnique({
-            where: { id: internalCounselId },
-            select: { departmentId: true }
-        });
+        // Fetch counsel to get their department (If assignment made)
+        let departmentId = undefined;
+        if (internalCounselId) {
+            const counsel = await prisma.user.findUnique({
+                where: { id: internalCounselId },
+                select: { departmentId: true }
+            });
+            departmentId = counsel?.departmentId || undefined;
+        }
 
         const matter = await prisma.matter.create({
             data: {
@@ -190,13 +195,67 @@ router.post('/', authenticateToken, async (req, res) => {
                 riskLevel: 'LOW',
                 description: description || '',
                 complexityWeight: complexityWeight || 5.0,
-                internalCounselId,
+                internalCounselId: internalCounselId || null,
                 tenantId,
-                departmentId: counsel?.departmentId || undefined
+                departmentId
             }
         });
 
         res.json(matter);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Assign or self-assign a counsel to an existing matter
+router.patch('/:id/assign', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { internalCounselId, overrideJustification } = req.body;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+        // Target counsel can be provided in body, or fall back to current user (Self-assign)
+        const targetCounselId = internalCounselId || user.id;
+
+        // Perform capacity check for the assignment
+        const validation = await CapacityService.validateAssignment(targetCounselId, {
+            riskLevel: 'LOW',
+            complexityWeight: 5.0 // Default for post-assignment
+        });
+
+        if (!validation.allowed) {
+            if (validation.severity === 'OVERRIDE' && overrideJustification) {
+                await AuditService.log(
+                    'CAPACITY_OVERRIDE_POST_ASSIGN',
+                    user.id,
+                    id,
+                    `Manual override during post-assignment to ${targetCounselId}. Reason: ${overrideJustification}`
+                );
+            } else {
+                return res.status(403).json({
+                    error: validation.reason,
+                    severity: validation.severity,
+                    details: validation.details
+                });
+            }
+        }
+
+        const counsel = await prisma.user.findUnique({
+            where: { id: targetCounselId },
+            select: { departmentId: true }
+        });
+
+        const updated = await prisma.matter.update({
+            where: { id, tenantId: user.tenantId },
+            data: {
+                internalCounselId: targetCounselId,
+                departmentId: counsel?.departmentId || undefined
+            }
+        });
+
+        res.json(updated);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

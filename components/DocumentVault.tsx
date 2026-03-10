@@ -25,6 +25,7 @@ import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
+import { LexGeminiService } from '../services/geminiService';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
 interface DocumentVaultProps {
@@ -65,6 +66,11 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [brandingProfiles, setBrandingProfiles] = useState<any[]>([]);
   const [selectedBrandingId, setSelectedBrandingId] = useState<string>("");
+  const [allMatters, setAllMatters] = useState<any[]>([]);
+  const [changingMatterDocId, setChangingMatterDocId] = useState<string | null>(null);
+  const [isUpdatingMatter, setIsUpdatingMatter] = useState(false);
+
+  const gemini = new LexGeminiService();
 
   useEffect(() => {
     const fetchBranding = async () => {
@@ -79,7 +85,17 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
         console.warn('Could not fetch branding profiles');
       }
     };
+    const fetchMatters = async () => {
+      try {
+        const session = getSavedSession();
+        const data = await authorizedFetch('/api/matters', { token: session?.token || '' });
+        if (Array.isArray(data)) setAllMatters(data);
+      } catch (err) {
+        console.error('Failed to fetch matters for vault:', err);
+      }
+    };
     fetchBranding();
+    fetchMatters();
   }, []);
 
   const handleExport = async (id: string, format: 'DOCX' | 'PDF', name: string) => {
@@ -165,6 +181,21 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
       alert('Failed to load document for editing.');
     } finally {
       setIsEditingLoading(false);
+    }
+  };
+
+  const handleChangeMatter = async (docId: string, newMatterId: string) => {
+    if (!newMatterId) return;
+    setIsUpdatingMatter(true);
+    try {
+      await gemini.updateDocumentMetadata(docId, { matterId: newMatterId });
+      await onUpdateDocument(docId, { matterId: newMatterId });
+      setChangingMatterDocId(null);
+    } catch (err: any) {
+      console.error('Failed to update document matter:', err);
+      alert('Failed to update matter assignment: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsUpdatingMatter(false);
     }
   };
 
@@ -273,7 +304,11 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                 onChange={e => setFilterMatterId(e.target.value)}
               >
                 <option value="All" className="bg-brand-bg">All Matters</option>
-                {uniqueMatterIds.map(m => <option key={m} value={m} className="bg-brand-bg">{m}</option>)}
+                {uniqueMatterIds.map(m => (
+                  <option key={`filter-matter-${m || 'null'}`} value={m || ''} className="bg-brand-bg">
+                    {m || 'UNCATEGORIZED'}
+                  </option>
+                ))}
               </select>
               <ChevronDown size={12} className="text-brand-muted -ml-4 pointer-events-none" />
             </div>
@@ -287,7 +322,11 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                 onChange={e => setSelectedBrandingId(e.target.value)}
               >
                 <option value="" className="bg-brand-bg">Default Branding</option>
-                {brandingProfiles.map(p => <option key={p.id} value={p.id} className="bg-brand-bg">{p.name}</option>)}
+                {brandingProfiles.map(p => (
+                  <option key={`brand-opt-${p.id}`} value={p.id} className="bg-brand-bg">
+                    {p.name}
+                  </option>
+                ))}
               </select>
               <ChevronDown size={12} className="text-brand-muted -ml-4 pointer-events-none" />
             </div>
@@ -374,8 +413,10 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                         <div className="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition-colors truncate">
                           {highlightText(doc.name, search)}
                         </div>
-                        <div className="text-[10px] text-slate-500 mono tracking-tighter uppercase">
-                          {highlightText(doc.matterId || 'UNCATEGORIZED', search)}
+                        <div className="flex items-center gap-2">
+                          <div className="text-[10px] text-slate-500 mono tracking-tighter uppercase">
+                            {highlightText(doc.matterId || 'UNCATEGORIZED', search)}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -421,36 +462,64 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                     </div>
                   </td>
                   <td className="px-8 py-5 text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                      <button
-                        title="View Document"
-                        onClick={() => handleView(doc)}
-                        className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button
-                        title="Export DOCX"
-                        onClick={() => handleExport(doc.id, 'DOCX', doc.name)}
-                        className="p-2.5 hover:bg-emerald-500/10 rounded-xl text-slate-500 hover:text-emerald-400 transition-all"
-                      >
-                        <FileText size={18} />
-                      </button>
-                      <button
-                        title="Export PDF"
-                        onClick={() => handleExport(doc.id, 'PDF', doc.name)}
-                        className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-500 hover:text-red-400 transition-all"
-                      >
-                        <ShieldAlert size={18} />
-                      </button>
-                      <button
-                        title="Delete Document"
-                        onClick={() => handleDelete(doc)}
-                        disabled={deletingId === doc.id}
-                        className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-600 hover:text-red-400 transition-all disabled:opacity-40"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                        <button
+                          title="Change Matter Association"
+                          onClick={() => setChangingMatterDocId(changingMatterDocId === doc.id ? null : doc.id)}
+                          className={`p-2.5 rounded-xl transition-all ${changingMatterDocId === doc.id ? 'bg-brand-secondary/20 text-brand-secondary' : 'hover:bg-slate-800 text-slate-500 hover:text-brand-secondary'}`}
+                        >
+                          <Briefcase size={18} />
+                        </button>
+                        <button
+                          title="View Document"
+                          onClick={() => handleView(doc)}
+                          className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button
+                          title="Export DOCX"
+                          onClick={() => handleExport(doc.id, 'DOCX', doc.name)}
+                          className="p-2.5 hover:bg-emerald-500/10 rounded-xl text-slate-500 hover:text-emerald-400 transition-all"
+                        >
+                          <FileText size={18} />
+                        </button>
+                        <button
+                          title="Export PDF"
+                          onClick={() => handleExport(doc.id, 'PDF', doc.name)}
+                          className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-500 hover:text-red-400 transition-all"
+                        >
+                          <ShieldAlert size={18} />
+                        </button>
+                        <button
+                          title="Delete Document"
+                          onClick={() => handleDelete(doc)}
+                          disabled={deletingId === doc.id}
+                          className="p-2.5 hover:bg-red-500/10 rounded-xl text-slate-600 hover:text-red-400 transition-all disabled:opacity-40"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                      {changingMatterDocId === doc.id && (
+                        <div className="mt-1 flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                          <select
+                            title="Select New Matter"
+                            className="bg-brand-bg border border-brand-border rounded-lg text-[10px] px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-secondary text-brand-text shadow-xl"
+                            value={doc.matterId || ''}
+                            disabled={isUpdatingMatter}
+                            onChange={(e) => handleChangeMatter(doc.id, e.target.value)}
+                          >
+                            <option value="">UNCATEGORIZED</option>
+                            {allMatters.map(m => (
+                              <option key={`change-matter-opt-${m.id}`} value={m.id}>
+                                {m.name} ({m.id})
+                              </option>
+                            ))}
+                          </select>
+                          {isUpdatingMatter && <RefreshCw size={12} className="animate-spin text-brand-secondary" />}
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>

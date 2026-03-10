@@ -119,7 +119,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
                             uploadedBy: 'Sovereign AI',
                             uploadedAt: new Date().toLocaleString(),
                             region: Region.PRIMARY,
-                            matterId: 'UNCATEGORIZED',
+                            matterId: matterId || 'UNCATEGORIZED',
                             privilege: PrivilegeStatus.PRIVILEGED,
                             classification: 'Confidential',
                             encryption: 'DAS',

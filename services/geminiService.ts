@@ -189,6 +189,15 @@ export class LexGeminiService {
     });
   }
 
+  async assignMatter(matterId: string, internalCounselId?: string, overrideJustification?: string): Promise<any> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${matterId}/assign`, {
+      method: 'PATCH',
+      token: session?.token,
+      body: JSON.stringify({ internalCounselId, overrideJustification })
+    });
+  }
+
   async analyzeDocument(content: string | File, type: 'CASE' | 'CONTRACT'): Promise<string> {
     const session = getSavedSession();
 
@@ -210,5 +219,14 @@ export class LexGeminiService {
       body
     });
     return data.report;
+  }
+
+  async updateDocumentMetadata(id: string, metadata: Partial<DocumentMetadata>): Promise<any> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/documents/${id}`, {
+      method: 'PATCH',
+      token: session?.token,
+      body: JSON.stringify(metadata)
+    });
   }
 }

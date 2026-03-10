@@ -490,7 +490,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 router.patch('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, content, status, classification, privilege } = req.body;
+        const { name, content, status, classification, privilege, matterId } = req.body;
 
         if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -514,6 +514,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
                 status,
                 classification,
                 privilege,
+                matterId,
                 updatedAt: new Date()
             }
         });
