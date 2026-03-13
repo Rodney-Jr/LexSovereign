@@ -515,8 +515,8 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                             return (
                                 <div
                                     key={day.date}
-                                    className="w-4 h-4 rounded-sm hover:ring-2 hover:ring-slate-400 transition-all cursor-pointer relative group"
-                                    style={{ backgroundColor: day.count === 0 ? '#1e293b' : `rgba(52, 211, 153, ${intensity})` }}
+                                    className="w-4 h-4 rounded-sm hover:ring-2 hover:ring-slate-400 transition-all cursor-pointer relative group heatmap-cell"
+                                    style={{ '--cell-color': day.count === 0 ? '#1e293b' : `rgba(52, 211, 153, ${intensity})` } as React.CSSProperties}
                                 >
                                     <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] py-1 flex items-center justify-center p-2 rounded whitespace-nowrap z-50 pointer-events-none shadow-xl border border-slate-700">
                                         <div>

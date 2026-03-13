@@ -60,6 +60,10 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     }, [setRole, setPermissions, setEnabledModules]);
 
     const handleLogout = useCallback(() => {
+        // Clear server-side cookie by calling logout endpoint (non-blocking)
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+
+        // Clear all local state and storage
         setIsAuthenticated(false);
         setUserId(null);
         setUserName(null);

@@ -97,6 +97,50 @@ const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentI
         }
     };
 
+    // Resizable Split Logic
+    const [leftWidth, setLeftWidth] = useState(() => {
+        const saved = localStorage.getItem('nomosdesk_reviewSplitWidth');
+        return saved ? parseFloat(saved) : 60; // Default 60%
+    });
+    const [isResizingSplit, setIsResizingSplit] = useState(false);
+
+    const startResizingSplit = React.useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizingSplit(true);
+    }, []);
+
+    const stopResizingSplit = React.useCallback(() => {
+        setIsResizingSplit(false);
+    }, []);
+
+    const resizeSplit = React.useCallback((e: MouseEvent) => {
+        if (isResizingSplit) {
+            const container = document.getElementById('review-split-container');
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
+                if (newWidth >= 30 && newWidth <= 80) {
+                    setLeftWidth(newWidth);
+                    localStorage.setItem('nomosdesk_reviewSplitWidth', newWidth.toString());
+                }
+            }
+        }
+    }, [isResizingSplit]);
+
+    useEffect(() => {
+        if (isResizingSplit) {
+            window.addEventListener('mousemove', resizeSplit);
+            window.addEventListener('mouseup', stopResizingSplit);
+        } else {
+            window.removeEventListener('mousemove', resizeSplit);
+            window.removeEventListener('mouseup', stopResizingSplit);
+        }
+        return () => {
+            window.removeEventListener('mousemove', resizeSplit);
+            window.removeEventListener('mouseup', stopResizingSplit);
+        };
+    }, [isResizingSplit, resizeSplit, stopResizingSplit]);
+
     return (
         <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24">
             {/* Header section */}
@@ -122,9 +166,15 @@ const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentI
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div 
+                id="review-split-container"
+                className={`flex flex-col lg:flex-row gap-0 items-start ${isResizingSplit ? 'select-none' : ''}`}
+            >
                 {/* Left Panel: Document Preview */}
-                <div className="lg:col-span-7 bg-brand-sidebar border border-brand-border rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-sm flex flex-col h-[700px]">
+                <div 
+                    className="bg-brand-sidebar border border-brand-border rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-sm flex flex-col h-[700px]"
+                    style={{ width: `calc(${leftWidth}% - 8px)` }}
+                >
                     <div className="bg-brand-bg/50 border-b border-brand-border p-6 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <FileText className="text-brand-muted" size={20} />
@@ -146,8 +196,15 @@ const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentI
                     </div>
                 </div>
 
+                {/* Splitter */}
+                <div 
+                    onMouseDown={startResizingSplit}
+                    className={`v-splitter hidden lg:flex mx-2 rounded-full ${isResizingSplit ? 'is-resizing' : ''}`} 
+                    style={{ height: '700px' }}
+                />
+
                 {/* Right Panel: Sentinel Audit Workspace */}
-                <div className="lg:col-span-5">
+                <div className="flex-1 w-full lg:w-auto">
                     <SentinelSidebar
                         activeFlags={activeFlags}
                         detectedValue={detectedValue}

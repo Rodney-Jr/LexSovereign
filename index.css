@@ -68,9 +68,44 @@
   .dynamic-width {
     width: var(--width, 0%);
   }
+
+  .heatmap-cell {
+    background-color: var(--cell-color, #1e293b);
+  }
+
+  .sidebar-resize-handle-left {
+    @apply absolute top-0 -left-0.5 w-1 h-full cursor-col-resize transition-all z-50;
+  }
+
+  .sidebar-resize-handle-left:hover {
+    background-color: var(--brand-primary);
+    opacity: 0.4;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+  }
+
+  .sidebar-resize-handle-left.is-resizing {
+    background-color: var(--brand-primary);
+    width: 2px;
+  }
+
+  .v-splitter {
+    @apply w-1 h-full cursor-col-resize transition-all;
+    background-color: var(--brand-border);
+  }
+  .v-splitter:hover {
+    background-color: var(--brand-primary);
+  }
+  .v-splitter.is-resizing {
+    background-color: var(--brand-primary);
+    width: 2px;
+  }
 }
 
-/* Scrollbar Customization */
+:root {
+  --sidebar-width: 256px;
+}
+
+/* Scrollbar Customization - Cross-browser */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -86,6 +121,12 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--brand-muted);
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-border) var(--brand-bg);
 }
 
 /* Animations - Keeping these here as they were in index.html style block */

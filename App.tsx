@@ -60,6 +60,7 @@ import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import { useSovereignData } from './hooks/useSovereignData';
 import TrialExpirationModal from './components/TrialExpirationModal';
+import { NotificationProvider, useNotification } from './components/NotificationProvider';
 
 const AppContent: React.FC = () => {
   // Persist Active Tab
@@ -134,25 +135,37 @@ const AppContent: React.FC = () => {
   const [killSwitchActive, setKillSwitchActive] = useState(false);
   const [trialExpiredData, setTrialExpiredData] = useState<{ expiresAt?: string } | null>(null);
 
-  // API Sentinel
-  useEffect(() => {
-    const handleAuthFailure = () => {
-      console.warn("[App] Session revoked via API signal. Forced logout.");
-      handleLogout();
-    };
-    const handleTrialExpired = (e: any) => {
-      console.warn("[App] Sovereign Trial Matured. Locking UI.");
-      setTrialExpiredData(e.detail);
-    };
+    const { notify } = useNotification();
 
-    window.addEventListener('nomosdesk-auth-failed', handleAuthFailure);
-    window.addEventListener('nomosdesk-trial-expired', handleTrialExpired);
+    // API Sentinel
+    useEffect(() => {
+        const handleAuthFailure = () => {
+            console.warn("[App] Session revoked via API signal. Forced logout.");
+            handleLogout();
+        };
+        const handleTrialExpired = (e: any) => {
+            console.warn("[App] Sovereign Trial Matured. Locking UI.");
+            setTrialExpiredData(e.detail);
+        };
+        const handleApiError = (e: any) => {
+            notify('error', e.detail.message || 'API Error', e.detail.description);
+        };
+        const handleApiSuccess = (e: any) => {
+            notify('success', e.detail.message || 'Action Completed');
+        };
 
-    return () => {
-      window.removeEventListener('nomosdesk-auth-failed', handleAuthFailure);
-      window.removeEventListener('nomosdesk-trial-expired', handleTrialExpired);
-    };
-  }, [handleLogout]);
+        window.addEventListener('nomosdesk-auth-failed', handleAuthFailure);
+        window.addEventListener('nomosdesk-trial-expired', handleTrialExpired);
+        window.addEventListener('nomosdesk-api-error', handleApiError);
+        window.addEventListener('nomosdesk-api-success', handleApiSuccess);
+
+        return () => {
+            window.removeEventListener('nomosdesk-auth-failed', handleAuthFailure);
+            window.removeEventListener('nomosdesk-trial-expired', handleTrialExpired);
+            window.removeEventListener('nomosdesk-api-error', handleApiError);
+            window.removeEventListener('nomosdesk-api-success', handleApiSuccess);
+        };
+    }, [handleLogout, notify]);
 
   // Security Policy
   useInactivityLogout(handleLogout, 1800000, isAuthenticated && !isOnboarding);
@@ -437,16 +450,20 @@ export default function WrappedApp() {
   const AppWrapper = hasValidGoogleClientId ? (
     <GoogleOAuthProvider clientId={googleClientId}>
       <PermissionProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
+        <NotificationProvider>
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
+        </NotificationProvider>
       </PermissionProvider>
     </GoogleOAuthProvider>
   ) : (
     <PermissionProvider>
-      <ErrorBoundary>
-        <AppContent />
-      </ErrorBoundary>
+      <NotificationProvider>
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
+      </NotificationProvider>
     </PermissionProvider>
   );
 

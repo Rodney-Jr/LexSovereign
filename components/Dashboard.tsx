@@ -13,7 +13,8 @@ import {
 } from 'recharts';
 import { AppMode } from '../types';
 import { Clock, DollarSign, CheckCircle2, AlertTriangle, TrendingUp, Activity, Shield, Loader2, Download } from 'lucide-react';
-import { authorizedFetch, getSavedSession } from '../utils/api'; // Ensure this utility exists or use fetch
+import { authorizedFetch, getSavedSession } from '../utils/api';
+import { useNotification } from './NotificationProvider';
 
 const Dashboard: React.FC<{
   mode: AppMode;
@@ -25,6 +26,7 @@ const Dashboard: React.FC<{
   const [historyData, setHistoryData] = useState<{ name: string; value: number }[]>([]);
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { notify } = useNotification();
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -40,12 +42,13 @@ const Dashboard: React.FC<{
         setMetrics(metricsRes);
       } catch (error) {
         console.error("Failed to load analytics", error);
+        notify('error', 'Analytics Offline', 'Failed to synchronize real-time metrics with the enclave.');
       } finally {
         setLoading(false);
       }
     };
     fetchAnalytics();
-  }, []);
+  }, [notify]);
 
   const data = historyData.length > 0 ? historyData : [
     { name: 'Jan', value: 0 },

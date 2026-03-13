@@ -209,7 +209,7 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
                             uploadedBy: 'Sovereign AI',
                             uploadedAt: new Date().toLocaleTimeString(),
                             region: Region.PRIMARY,
-                            matterId: 'UNCATEGORIZED',
+                            matterId: 'MT-GENERAL',
                             privilege: PrivilegeStatus.PRIVILEGED,
                             classification: 'Confidential',
                             encryption: 'DAS'

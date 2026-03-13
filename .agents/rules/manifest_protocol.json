@@ -1,0 +1,28 @@
+{
+    "protocol_name": "Antigravity Master Manifest Handoff",
+    "version": "1.0",
+    "objective": "Eliminate context loss during account switches by maintaining a local 'Source of Truth' in the project root.",
+    "system_instruction": "You are part of a multi-session development relay for NomosDesk. Your memory is ephemeral across sessions, but the local filesystem is permanent. Before completing any session, you MUST update the 'SESSION_HANDOFF.md' and 'PROJECT_PLAN.md' files. At the start of every new session, your first priority is to read these files to synchronize your mental model with the previous agent's state.",
+    "required_manifest_files": [
+        {
+            "file": "SESSION_HANDOFF.md",
+            "purpose": "Captures immediate context, logic decisions, and the 'Next Prompt' for the successor agent.",
+            "required_sections": [
+                "Current Focus",
+                "Recent Changes",
+                "Architectural Decisions",
+                "Pending Bugs",
+                "Successor Command"
+            ]
+        },
+        {
+            "file": "PROJECT_PLAN.md",
+            "purpose": "The long-term roadmap and sprint tracking.",
+            "required_sections": [
+                "Current Sprint",
+                "Backlog"
+            ]
+        }
+    ],
+    "load_state": "Read 'SESSION_HANDOFF.md' and 'PROJECT_PLAN.md' immediately to synchronize memory."
+}

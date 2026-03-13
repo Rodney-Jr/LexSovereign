@@ -3,6 +3,7 @@ import { prisma } from '../db';
 import { authenticateToken } from '../middleware/auth';
 import multer from 'multer';
 import { saveDocumentContent } from '../utils/fileStorage';
+import { ComplianceService } from '../services/ComplianceService';
 
 const router = express.Router();
 
@@ -14,9 +15,8 @@ router.get('/', authenticateToken, async (req, res) => {
             return;
         }
 
-        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
         const documents = await prisma.document.findMany({
-            where: isGlobalAdmin ? {} : {
+            where: {
                 matter: {
                     tenantId: req.user.tenantId
                 }
@@ -60,11 +60,10 @@ router.get('/matter/:matterId', authenticateToken, async (req, res) => {
             return;
         }
 
-        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
         const documents = await prisma.document.findMany({
             where: {
                 matterId,
-                matter: isGlobalAdmin ? {} : {
+                matter: {
                     tenantId: req.user.tenantId
                 }
             },
@@ -129,6 +128,14 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
 
         const uri = `file://${relativePath}`;
 
+        // 🧠 Incept Sovereign AI Compliance Scrub
+        const complianceData = await ComplianceService.analyzeFile(
+            file.buffer, 
+            file.originalname, 
+            file.mimetype, 
+            region || matter.tenant.primaryRegion || 'GHANA'
+        );
+
         const doc = await prisma.document.create({
             data: {
                 name: file.originalname,
@@ -144,10 +151,26 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
                 attributes: {
                     type: file.mimetype,
                     size: (file.size / 1024).toFixed(1) + ' KB',
-                    originalName: file.originalname
+                    originalName: file.originalname,
+                    complianceScore: complianceData.complianceScore,
+                    piiCount: complianceData.piiCount,
+                    riskLevel: complianceData.riskLevel,
+                    issues: complianceData.issues
                 }
             },
             include: { matter: true }
+        });
+
+        // Create Initial Version
+        await prisma.documentVersion.create({
+            data: {
+                documentId: doc.id,
+                versionNumber: 1,
+                uri: doc.uri,
+                authorId: req.user?.id,
+                changeSummary: 'Initial upload',
+                isCurrent: true
+            }
         });
 
         res.status(201).json({
@@ -178,15 +201,38 @@ router.post('/', authenticateToken, async (req, res) => {
             return;
         }
 
-        // 1. Verify Matter and Tenant Mode
+        let actualMatterId = matterId;
+
+        // 1. Resolve magic string 'MT-GENERAL' to tenant's actual general matter
+        if (matterId === 'MT-GENERAL') {
+            let generalMatter = await prisma.matter.findFirst({
+                where: { tenantId, name: 'General Enclave Matters' }
+            });
+
+            if (!generalMatter) {
+                // Provision a general matter for this tenant on the fly if missing
+                console.log(`[Backend] Provisioning missing General Enclave for tenant: ${tenantId}`);
+                generalMatter = await prisma.matter.create({
+                    data: {
+                        name: 'General Enclave Matters',
+                        client: 'Firm Internal',
+                        type: 'ADMIN',
+                        status: 'OPEN',
+                        riskLevel: 'LOW',
+                        tenantId: tenantId
+                    }
+                });
+            }
+            actualMatterId = generalMatter.id;
+        }
+
+        // 2. Verify Matter and Tenant Mode
         const matter = await prisma.matter.findUnique({
-            where: { id: matterId },
+            where: { id: actualMatterId },
             include: { tenant: true }
         });
 
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-
-        if (!matter || (!isGlobalAdmin && matter.tenantId !== tenantId)) {
+        if (!matter || matter.tenantId !== tenantId) {
             res.status(403).json({ error: 'Invalid Matter ID' });
             return;
         }
@@ -233,6 +279,15 @@ router.post('/', authenticateToken, async (req, res) => {
             actualFileSize = BigInt(Buffer.byteLength(req.body.content, 'utf8'));
         }
 
+        // 🧠 Incept Sovereign AI Compliance Scrub (Text Drafts)
+        let complianceData = undefined;
+        if (req.body.content) {
+             complianceData = ComplianceService.analyzeDocument(
+                req.body.content, 
+                region || matter.tenant.primaryRegion || 'GHANA'
+            );
+        }
+
         const doc = await prisma.document.create({
             data: {
                 name,
@@ -245,11 +300,44 @@ router.post('/', authenticateToken, async (req, res) => {
                 encryptionIV,
                 encryptionKeyId,
                 fileSize: actualFileSize,
-                attributes: { type, size: size || '0 KB' }
+                attributes: { 
+                    type, 
+                    size: size || '0 KB',
+                    ...(complianceData ? {
+                        complianceScore: complianceData.complianceScore,
+                        piiCount: complianceData.piiCount,
+                        riskLevel: complianceData.riskLevel,
+                        issues: complianceData.issues
+                    } : {})
+                }
             },
             include: {
                 matter: true
             }
+        });
+
+        // Create Initial Version
+        const version = await prisma.documentVersion.create({
+            data: {
+                documentId: doc.id,
+                versionNumber: 1,
+                uri: doc.uri,
+                authorId: req.user?.id,
+                changeSummary: 'Initial creation',
+                isCurrent: true
+            }
+        });
+
+        // Audit Log for Initial Creation
+        await prisma.auditLog.create({
+            data: {
+                action: 'DOCUMENT_VERSION_CREATED',
+                userId: req.user?.id,
+                matterId: doc.matterId,
+                resourceId: doc.id,
+                details: `Vault Version 1 committed for artifact: ${doc.name}`,
+                // metadata is not in schema or needs (prisma as any)
+            } as any
         });
 
         res.json({
@@ -281,10 +369,9 @@ router.get('/review-needed', authenticateToken, async (req, res) => {
             return;
         }
 
-        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
         const documents = await prisma.document.findMany({
             where: {
-                matter: isGlobalAdmin ? {} : {
+                matter: {
                     tenantId: req.user.tenantId
                 },
                 status: { not: 'APPROVED' }
@@ -332,8 +419,7 @@ router.get('/:id/content', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-        if (!isGlobalAdmin && doc.matter.tenantId !== tenantId) {
+        if (doc.matter.tenantId !== tenantId) {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
@@ -363,8 +449,7 @@ router.post('/:id/approve', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-        if (!isGlobalAdmin && doc.matter.tenantId !== tenantId) {
+        if (doc.matter.tenantId !== tenantId) {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
@@ -419,11 +504,13 @@ router.get('/client-audit', authenticateToken, async (req, res) => {
             const logDetails = log.details || "";
             return {
                 id: log.id,
-                type: log.action.includes('ENCLAVE') ? 'ENCLAVE' :
-                    log.action.includes('AI') ? 'AI' :
-                        log.action.includes('SECURITY') || log.action.includes('SCRUB') ? 'SECURITY' : 'JURISDICTION',
+                type: log.action.includes('VERSION') ? 'VERSION' :
+                    log.action.includes('ENCLAVE') ? 'ENCLAVE' :
+                        log.action.includes('AI') ? 'AI' :
+                            log.action.includes('SECURITY') || log.action.includes('SCRUB') ? 'SECURITY' : 'JURISDICTION',
                 message: logDetails.length > 50 ? `${logDetails.substring(0, 50)}...` : logDetails,
-                timestamp: new Date(log.timestamp).toLocaleTimeString() + ' ' + new Date(log.timestamp).toLocaleDateString()
+                timestamp: new Date(log.timestamp).toLocaleTimeString() + ' ' + new Date(log.timestamp).toLocaleDateString(),
+                metadata: (log as any).metadata || {}
             };
         });
 
@@ -446,8 +533,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
-        if (!isGlobalAdmin && doc.matter.tenantId !== req.user.tenantId) {
+        if (doc.matter.tenantId !== req.user.tenantId) {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
@@ -472,8 +558,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
-        if (!isGlobalAdmin && doc.matter.tenantId !== req.user.tenantId) {
+        if (doc.matter.tenantId !== req.user.tenantId) {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
@@ -501,25 +586,193 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
-        if (!isGlobalAdmin && doc.matter.tenantId !== req.user.tenantId) {
+        if (doc.matter.tenantId !== req.user.tenantId) {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
-        const updatedDoc = await prisma.document.update({
-            where: { id },
+        // Create new version if content or name changed
+        const latestVersion = await prisma.documentVersion.findFirst({
+            where: { documentId: id },
+            orderBy: { versionNumber: 'desc' }
+        });
+
+        const nextVersionNumber = (latestVersion?.versionNumber || 0) + 1;
+
+        const [_, version] = await prisma.$transaction([
+            prisma.documentVersion.updateMany({
+                where: { documentId: id },
+                data: { isCurrent: false }
+            }),
+            prisma.documentVersion.create({
+                data: {
+                    documentId: id,
+                    versionNumber: nextVersionNumber,
+                    uri: content || doc.uri,
+                    authorId: req.user?.id,
+                    changeSummary: req.body.changeSummary || 'Artifact update',
+                    isCurrent: true
+                }
+            }),
+            prisma.document.update({
+                where: { id },
+                data: {
+                    name,
+                    uri: content || doc.uri,
+                    status,
+                    classification,
+                    privilege,
+                    matterId,
+                    updatedAt: new Date()
+                }
+            })
+        ]);
+
+        // Explicit Audit Log for Versioning
+        await prisma.auditLog.create({
             data: {
-                name,
-                uri: content, // Map content to uri field
-                status,
-                classification,
-                privilege,
-                matterId,
+                action: 'DOCUMENT_VERSION_CREATED',
+                userId: req.user?.id,
+                matterId: doc.matterId,
+                resourceId: id,
+                details: `Vault Version ${nextVersionNumber} committed for artifact: ${name || doc.name}`,
+            } as any
+        });
+
+        const updatedDoc = await prisma.document.findUnique({ where: { id } });
+        res.json(updatedDoc);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Bulk Update documents
+router.patch('/bulk-update', authenticateToken, async (req, res) => {
+    try {
+        const { ids, data } = req.body;
+        const tenantId = req.user?.tenantId;
+
+        if (!ids || !Array.isArray(ids) || !data) {
+            return res.status(400).json({ error: 'Invalid bulk update request' });
+        }
+
+        // Verify all documents belong to the user's tenant
+        const count = await prisma.document.count({
+            where: {
+                id: { in: ids },
+                matter: { tenantId }
+            }
+        });
+
+        if (count !== ids.length) {
+            return res.status(403).json({ error: 'Unauthorized access to some records' });
+        }
+
+        // Perform update
+        const updated = await prisma.document.updateMany({
+            where: { id: { in: ids } },
+            data: {
+                ...data,
                 updatedAt: new Date()
             }
         });
 
-        res.json(updatedDoc);
+        res.json({ success: true, count: updated.count });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Bulk Delete documents
+router.post('/bulk-delete', authenticateToken, async (req, res) => {
+    try {
+        const { ids } = req.body;
+        const tenantId = req.user?.tenantId;
+
+        if (!ids || !Array.isArray(ids)) {
+            return res.status(400).json({ error: 'Invalid bulk delete request' });
+        }
+
+        // Verify all documents belong to the user's tenant
+        const count = await prisma.document.count({
+            where: {
+                id: { in: ids },
+                matter: { tenantId }
+            }
+        });
+
+        if (count !== ids.length) {
+            return res.status(403).json({ error: 'Unauthorized access to some records' });
+        }
+
+        // Perform delete
+        await prisma.document.deleteMany({
+            where: { id: { in: ids } }
+        });
+
+        res.json({ success: true, count: ids.length });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get document versions
+router.get('/:id/versions', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        if (doc.matter.tenantId !== tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const versions = await prisma.documentVersion.findMany({
+            where: { documentId: id },
+            orderBy: { versionNumber: 'desc' },
+            include: { author: { select: { name: true } } }
+        });
+
+        res.json(versions);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get content for a specific version
+router.get('/:id/versions/:versionId/content', authenticateToken, async (req, res) => {
+    try {
+        const { id, versionId } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        if (doc.matter.tenantId !== tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const version = await prisma.documentVersion.findUnique({
+            where: { id: versionId }
+        });
+
+        if (!version || version.documentId !== id) {
+            return res.status(404).json({ error: 'Version not found' });
+        }
+
+        // Simulating content retrieval from URI (enclave storage)
+        const content = `[OFFICIAL VERSION ${version.versionNumber}]\n\nSource: ${version.uri}\nCreated by: ${req.user?.name}\n\n[Sovereign Content Placeholder]\nThis is the historical artifact content as it existed at version ${version.versionNumber}.`;
+
+        res.json({ content });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

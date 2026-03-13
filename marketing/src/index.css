@@ -1,12 +1,5 @@
 @import "tailwindcss";
-
-@font-face {
-    font-family: 'Inter';
-    src: url('/fonts/inter-var.woff2') format('woff2-variations');
-    font-weight: 100 900;
-    font-display: swap;
-    font-style: normal;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
 @font-face {
     font-family: 'Outfit';
@@ -85,12 +78,13 @@ body {
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
-    scrollbar-width: none;
-    /* Hide scrollbar for cleaner look */
+    /* Cross-browser scrollbar hiding: scrollbar-width for Firefox, overflow for others */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
 }
 
 .snap-container::-webkit-scrollbar {
-    display: none;
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .snap-section {
@@ -113,7 +107,7 @@ body {
     }
 
     .snap-section {
-        min-height: auto;
+        min-height: 0; /* Cross-browser reset: 'auto' unsupported in Firefox; 0 achieves the same override */
         padding-top: 6rem;
         padding-bottom: 6rem;
     }

@@ -82,7 +82,7 @@ const DocumentSelectorModal: React.FC<DocumentSelectorModalProps> = ({ isOpen, o
                                     <div>
                                         <h4 className="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">{doc.name}</h4>
                                         <div className="flex items-center gap-3 mt-1">
-                                            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate max-w-[150px]">{doc.matterId || 'UNCATEGORIZED'}</span>
+                                            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate max-w-[150px]">{doc.matterId || 'MT-GENERAL'}</span>
                                             <div className="w-1 h-1 rounded-full bg-slate-700" />
                                             <div className="flex items-center gap-1 text-[9px] text-slate-600">
                                                 <MapPin size={10} />

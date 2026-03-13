@@ -6,6 +6,7 @@
 
 export interface FetchOptions extends RequestInit {
     token?: string;
+    silent?: boolean;
 }
 
 /**
@@ -16,9 +17,10 @@ export interface FetchOptions extends RequestInit {
 declare const __SOVEREIGN_PIN__: string;
 
 export async function authorizedFetch(url: string, options: FetchOptions = {}) {
-    const { token, ...fetchOptions } = options;
+    const { token, silent, ...fetchOptions } = options;
 
     const headers = new Headers(fetchOptions.headers || {});
+    // ... (rest of headers logic stays same)
     if (token && token !== 'undefined') {
         headers.set('Authorization', `Bearer ${token}`);
     } else {
@@ -44,6 +46,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     try {
         const response = await fetch(url, {
             ...fetchOptions,
+            credentials: 'include', // Ensure HttpOnly cookies are sent with every request
             headers
         });
 
@@ -95,6 +98,14 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
                 }));
             } else {
                 console.warn(`[API] Request Forbidden (Business Logic/Permission): ${errorData.error}`);
+                if (!silent) {
+                    window.dispatchEvent(new CustomEvent('nomosdesk-api-error', {
+                        detail: { 
+                            message: errorData.error || 'Action Forbidden',
+                            description: `Reference: ${response.status} at ${url.split('/').pop()}`
+                        }
+                    }));
+                }
             }
 
             throw new Error(errorData.error || 'Request failed');
@@ -103,6 +114,14 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         return await response.json();
     } catch (error: any) {
         console.error(`[API Fetch Error] ${url}:`, error.message);
+        if (!silent && !url.includes('/auth/login')) {
+            window.dispatchEvent(new CustomEvent('nomosdesk-api-error', {
+                detail: { 
+                    message: 'Connection Failed',
+                    description: error.message || 'The server could not be reached.'
+                }
+            }));
+        }
         throw error;
     }
 }

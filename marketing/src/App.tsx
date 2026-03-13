@@ -101,9 +101,15 @@ const LegalDocumentAutomationGuide = lazySSR(() => import('./pages/insights/Lega
 const LawFirmBillingSoftwareComparison = lazySSR(() => import('./pages/insights/LawFirmBillingSoftwareComparison'));
 const AiMatterManagementSoftware = lazySSR(() => import('./pages/insights/AiMatterManagementSoftware'));
 const LegalComplianceManagementSoftware = lazySSR(() => import('./pages/insights/LegalComplianceManagementSoftware'));
+// Authority Layer Pages
+const PilotProgramPage = lazySSR(() => import('./pages/PilotProgramPage'));
+const LegalOperationsPage = lazySSR(() => import('./pages/LegalOperationsPage'));
+const AILegalIntelligencePage = lazySSR(() => import('./pages/AILegalIntelligencePage'));
+const AboutPage = lazySSR(() => import('./pages/AboutPage'));
+const FoundingFirmsPage = lazySSR(() => import('./pages/FoundingFirmsPage'));
+
 const AiForGovernmentLegalDepartments = lazySSR(() => import('./pages/insights/AiForGovernmentLegalDepartments'));
 const DocumentManagementForLawFirms = lazySSR(() => import('./pages/insights/DocumentManagementForLawFirms'));
-
 
 // Page-transition loading fallback
 function PageLoader() {
@@ -233,6 +239,13 @@ export default function App() {
                     <Route path="/insights/legal-compliance-management-software" element={<LegalComplianceManagementSoftware />} />
                     <Route path="/insights/ai-for-government-legal-departments" element={<AiForGovernmentLegalDepartments />} />
                     <Route path="/insights/document-management-for-law-firms" element={<DocumentManagementForLawFirms />} />
+
+                    {/* Authority Layer Routes */}
+                    <Route path="/pilot-program" element={<PilotProgramPage />} />
+                    <Route path="/legal-operations" element={<LegalOperationsPage />} />
+                    <Route path="/ai-legal-intelligence" element={<AILegalIntelligencePage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/founding-firms" element={<FoundingFirmsPage />} />
 
 
                 </Routes>

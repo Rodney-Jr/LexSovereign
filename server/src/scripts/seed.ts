@@ -363,6 +363,7 @@ async function main() {
 
         // Matters
         const matterData = [
+            { id: 'MT-GENERAL', name: 'General Enclave Matters', client: 'Firm Internal', type: 'ADMIN', status: 'OPEN', riskLevel: 'LOW' },
             { id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH' },
             { id: 'MT-881', name: 'Zylos Tech IP Dispute', client: 'Zylos Tech', type: 'LITIGATION', status: 'OPEN', riskLevel: 'MEDIUM' },
             { id: 'MT-990', name: 'Global Finance Compliance', client: 'Global Finance', type: 'COMPLIANCE', status: 'OPEN', riskLevel: 'LOW' },

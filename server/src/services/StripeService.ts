@@ -100,7 +100,13 @@ export class StripeService {
         }
 
         const userCount = await prisma.user.count({
-            where: { tenantId, isActive: true }
+            where: { 
+                tenantId, 
+                isActive: true,
+                roleString: {
+                    notIn: ['CLIENT', 'EXTERNAL_COUNSEL']
+                }
+            }
         });
 
         // Fetch subscription to get the per-user item ID

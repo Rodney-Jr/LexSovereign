@@ -29,7 +29,12 @@ async function checkTenantUserLimit(tenantId: string) {
     if (!pricing) return true; // Fail open if no pricing config
 
     const currentUsers = await prisma.user.count({
-        where: { tenantId }
+        where: { 
+            tenantId,
+            roleString: {
+                notIn: ['CLIENT', 'EXTERNAL_COUNSEL']
+            }
+        }
     });
 
     if (currentUsers >= (pricing as any).maxUsers) {
@@ -520,6 +525,17 @@ router.post('/login', async (req, res) => {
             appMode
         }, JWT_SECRET, { expiresIn: '8h' });
 
+        // Set HttpOnly Secure cookie (primary hardened mechanism)
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('token', token, {
+            httpOnly: true,     // JS cannot read this cookie (XSS protection)
+            secure: isProduction, // Only sent over HTTPS in production (Railway)
+            sameSite: 'lax',    // CSRF protection; allows top-level navigations
+            maxAge: 8 * 60 * 60 * 1000, // 8 hours in ms, matching JWT expiry
+            path: '/'
+        });
+
+        // Also return token in JSON body for backward compatibility with existing frontend auth flow
         return res.json({
             token,
             user: {
@@ -535,6 +551,12 @@ router.post('/login', async (req, res) => {
     } catch (error: any) {
         return res.status(500).json({ error: error.message });
     }
+});
+
+// Logout - Clears the HttpOnly session cookie
+router.post('/logout', (req, res) => {
+    res.clearCookie('token', { path: '/' });
+    res.json({ success: true, message: 'Logged out successfully.' });
 });
 
 // 5. Google Login - PUBLIC

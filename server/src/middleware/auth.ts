@@ -8,10 +8,13 @@ import { AuthUser } from '../types';
 
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+    // Priority: 1. HttpOnly Cookie (hardened), 2. Authorization header (legacy/API compatibility)
+    const cookieToken = req.cookies?.token;
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const headerToken = authHeader && authHeader.split(' ')[1];
+    const token = cookieToken || headerToken;
 
-    console.log(`[Auth-Diag] Request to ${req.originalUrl || req.url} | Header: ${authHeader ? 'Y' : 'N'} | Token: ${token ? (token === 'undefined' ? 'UNDEFINED_STR' : 'EXISTS') : 'MISSING'}`);
+    console.log(`[Auth-Diag] Request to ${req.originalUrl || req.url} | Cookie: ${cookieToken ? 'Y' : 'N'} | Header: ${authHeader ? 'Y' : 'N'} | Token: ${token ? (token === 'undefined' ? 'UNDEFINED_STR' : 'EXISTS') : 'MISSING'}`);
 
     if (!token || token === 'undefined') {
         res.sendStatus(401); // Unauthorized

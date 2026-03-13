@@ -96,6 +96,41 @@ const Layout: React.FC<LayoutProps> = ({
     return localStorage.getItem('nomosdesk_advancedMode') === 'true';
   });
 
+  // Resizable Sidebar Logic
+  const [sidebarWidth, setSidebarWidth] = React.useState(() => {
+    const saved = localStorage.getItem('nomosdesk_sidebarWidth');
+    return saved ? parseInt(saved, 10) : 256;
+  });
+  const [isResizing, setIsResizing] = React.useState(false);
+
+  const startResizing = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = React.useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = React.useCallback((e: MouseEvent) => {
+    if (isResizing) {
+      const newWidth = e.clientX;
+      if (newWidth >= 240 && newWidth <= 480) {
+        setSidebarWidth(newWidth);
+        localStorage.setItem('nomosdesk_sidebarWidth', newWidth.toString());
+      }
+    }
+  }, [isResizing]);
+
+  React.useEffect(() => {
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResizing);
+    return () => {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResizing);
+    };
+  }, [resize, stopResizing]);
+
   const toggleAdvanced = () => {
     const newState = !showAdvanced;
     setShowAdvanced(newState);
@@ -168,7 +203,10 @@ const Layout: React.FC<LayoutProps> = ({
     return hasAnyPermission(required);
   };
   return (
-    <div className={`flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500 theme-${theme}`}>
+    <div 
+      className={`flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500 theme-${theme} ${isResizing ? 'select-none cursor-col-resize' : ''}`}
+      style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+    >
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
@@ -178,10 +216,17 @@ const Layout: React.FC<LayoutProps> = ({
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 w-64 border-r border-brand-border bg-brand-sidebar flex flex-col shadow-2xl transition-transform duration-300 z-[100] lg:relative lg:translate-x-0
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      <aside 
+        className={`
+          fixed inset-y-0 left-0 border-r border-brand-border bg-brand-sidebar flex flex-col shadow-2xl transition-transform duration-300 z-[100] lg:relative lg:translate-x-0
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+        style={{ width: isSidebarOpen ? '16rem' : 'var(--sidebar-width, 16rem)' }}
+      >
+        <div 
+          onMouseDown={startResizing}
+          className={`sidebar-resize-handle hidden lg:block ${isResizing ? 'is-resizing' : ''}`} 
+        />
         <div className="p-6 flex items-center justify-between">
           <a href={import.meta.env.VITE_MARKETING_URL || 'https://nomosdesk.com'} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="bg-emerald-500/20 p-2 rounded-lg">

@@ -9,11 +9,12 @@ import {
     FileCheck,
     Download,
     Printer,
-    Award,
-    Zap,
+    AlertCircle,
     DollarSign,
-    AlertCircle
+    Award,
+    Zap
 } from 'lucide-react';
+import LeadPipeline from './LeadPipeline';
 
 import { getJurisdictionConfig } from '../utils/jurisdictionEngine';
 
@@ -24,6 +25,7 @@ const GrowthDashboard: React.FC = () => {
     const [feeRecovery, setFeeRecovery] = useState(0);
     const [tatReduction, setTatReduction] = useState(0);
     const [liveRates, setLiveRates] = useState<any | null>(null);
+    const [activeTab, setActiveTab] = useState<'metrics' | 'leads'>('metrics');
 
     const config = useMemo(() => {
         const sovPin = localStorage.getItem('nomosdesk_pin') || 'GHANA';
@@ -82,14 +84,31 @@ const GrowthDashboard: React.FC = () => {
                     </p>
                 </div>
                 <div className="flex gap-4 print:hidden">
+                    <div className="bg-brand-sidebar border border-brand-border p-1 rounded-2xl flex gap-1">
+                        <button
+                            onClick={() => setActiveTab('metrics')}
+                            className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'metrics' ? 'bg-brand-primary text-brand-bg shadow-lg shadow-brand-primary/20' : 'text-brand-muted hover:text-brand-text'}`}
+                        >
+                            Executive Metrics
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('leads')}
+                            className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'leads' ? 'bg-brand-primary text-brand-bg shadow-lg shadow-brand-primary/20' : 'text-brand-muted hover:text-brand-text'}`}
+                        >
+                            Acquisition Pipeline
+                        </button>
+                    </div>
                     <button
                         onClick={handlePrint}
-                        className="bg-brand-primary hover:bg-brand-primary/90 text-brand-bg px-6 py-3 rounded-2xl flex items-center gap-2 font-bold transition-all shadow-lg shadow-brand-primary/20"
+                        className="bg-brand-sidebar border border-brand-border hover:border-brand-primary/50 text-brand-text px-6 py-3 rounded-2xl flex items-center gap-2 font-bold transition-all"
                     >
-                        <Printer size={18} /> Generate Monthly Report
+                        <Printer size={18} /> Generate Report
                     </button>
                 </div>
             </div>
+
+            {activeTab === 'metrics' ? (
+                <>
 
             {/* Main ROI Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -227,6 +246,11 @@ const GrowthDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+                </>
+            ) : (
+                <LeadPipeline />
+            )}
 
             {/* Print Footer */}
             <div className="hidden print:block pt-12 mt-12 border-t border-black text-center text-[10px] uppercase tracking-[0.2em]">

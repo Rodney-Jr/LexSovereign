@@ -199,6 +199,12 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         })
       });
 
+      // DIRECT STRIPE CHECKOUT DISABLED FOR EARLY PILOT PHASE
+      alert("Inception Gate: Your pilot application is being reviewed. Our institutional team will contact you with a private onboarding link.");
+      setIsProvisioning(false);
+      return;
+
+      /*
       if (response.url) {
         // Save state to recover on return
         sessionStorage.setItem('onboarding_form_data', JSON.stringify(formData));
@@ -207,6 +213,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
       } else {
         throw new Error("Failed to generate payment session");
       }
+      */
     } catch (e: any) {
       alert(`Payment Error: ${e.message}`);
       setIsProvisioning(false);
@@ -351,7 +358,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
                   <div className="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20"><CreditCard className="text-purple-400" size={20} /></div>
                   Silo Deployment Action
                 </h3>
-                <p className="text-slate-400 text-sm max-w-lg leading-relaxed">Confirm your sovereign resource allocation to initiate the cryptographically isolated environment.</p>
+                <p className="text-slate-400 text-sm max-w-lg leading-relaxed">Submit your sovereign resource allocation request for institutional review. Payments are handled via private onboarding links after approval.</p>
               </div>
 
               {formData.plan ? (
@@ -521,7 +528,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
             disabled={(step === 1 && !isStep1Valid) || (step === 4 && isProvisioning) || (step === 6 && !affidavitSigned)}
             className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white px-12 py-3.5 rounded-2xl font-bold flex items-center gap-3 transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
           >
-            {step === 3 ? 'Proceed to Payment' : (step === 6 ? 'Launch Legal Silo' : 'Initialize Phase')}
+            {step === 3 ? 'Submit for Pilot Review' : (step === 6 ? 'Launch Legal Silo' : 'Initialize Phase')}
             {step < 6 && <ChevronRight size={20} />}
           </button>
         </div>

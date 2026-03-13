@@ -6,9 +6,12 @@ import {
     Globe,
     Fingerprint,
     Activity,
-    Loader2
+    Loader2,
+    Eye,
+    Clock
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
+import VersionPreviewModal from './VersionPreviewModal';
 
 interface ActivityItem {
     id: string;
@@ -20,6 +23,7 @@ interface ActivityItem {
 const ActivityFeed: React.FC = () => {
     const [activities, setActivities] = useState<ActivityItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [previewTarget, setPreviewTarget] = useState<{ docId: string; versionId: string } | null>(null);
 
     useEffect(() => {
         const fetchActivities = async () => {
@@ -46,6 +50,7 @@ const ActivityFeed: React.FC = () => {
             case 'AI': return <Cpu size={14} className="text-purple-400" />;
             case 'SECURITY': return <Fingerprint size={14} className="text-emerald-400" />;
             case 'JURISDICTION': return <Globe size={14} className="text-amber-400" />;
+            case 'VERSION': return <Clock size={14} className="text-indigo-400" />;
             default: return <Activity size={14} />;
         }
     };
@@ -76,16 +81,37 @@ const ActivityFeed: React.FC = () => {
                         </div>
                         <div className="flex-1 w-px bg-slate-800 my-1" />
                     </div>
-                    <div className="flex-1 pb-4">
+                    <div className="flex-1 space-y-1">
                         <p className="text-xs text-slate-300 font-medium leading-relaxed group-hover:text-white transition-colors">
                             {activity.message}
                         </p>
+                        
+                        {(activity as any).metadata?.documentId && (activity as any).metadata?.versionId && (
+                            <button 
+                                onClick={() => setPreviewTarget({ 
+                                    docId: (activity as any).metadata.documentId, 
+                                    versionId: (activity as any).metadata.versionId 
+                                })}
+                                className="mt-2 text-[9px] font-bold text-brand-primary uppercase tracking-[0.2em] flex items-center gap-2 hover:text-brand-secondary transition-colors"
+                            >
+                                <Eye size={12} /> Preview Artifact State
+                            </button>
+                        )}
+
                         <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">
                             {activity.timestamp}
                         </p>
                     </div>
                 </div>
             ))}
+
+            {previewTarget && (
+                <VersionPreviewModal 
+                    documentId={previewTarget.docId}
+                    versionId={previewTarget.versionId}
+                    onClose={() => setPreviewTarget(null)}
+                />
+            )}
         </div>
     );
 };

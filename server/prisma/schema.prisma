@@ -469,6 +469,7 @@ model AuditLog {
   details    String?
   ipAddress  String?
   resourceId String?
+  metadata   Json?    @default("{}")
   matterId   String?
   matter     Matter?  @relation(fields: [matterId], references: [id])
   user       User?    @relation(fields: [userId], references: [id])

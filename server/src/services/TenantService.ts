@@ -137,6 +137,19 @@ export class TenantService {
                         watermarkText: 'CONFIDENTIAL'
                     }
                 });
+
+                // 6. Create Default General Matter
+                console.log(`[Provisioning] Step 7: Creating Default General Matter`);
+                await tx.matter.create({
+                    data: {
+                        name: 'General Enclave Matters',
+                        client: 'Firm Internal',
+                        type: 'ADMIN',
+                        status: 'OPEN',
+                        riskLevel: 'LOW',
+                        tenantId: tenant.id
+                    }
+                });
             });
             console.log(`✅ [TenantService] Database transaction successful for tenant: ${tenantId}`);
         } catch (error: any) {

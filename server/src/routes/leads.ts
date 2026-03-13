@@ -22,36 +22,37 @@ router.post('/', async (req, res) => {
                 company,
                 phone,
                 source: source || 'WEB_MODAL',
-                status: 'NEW'
-            }
+                status: 'NEW',
+                metadata: req.body.metadata || {}
+            } as any
         });
 
-        // Auto-provision a sovereign tenant and send welcome email (non-blocking)
-        const tenantName = company || `${name}'s Firm`;
-        TenantService.provisionTenant({
-            name: tenantName,
-            adminEmail: email,
-            adminName: name,
-            plan: 'STANDARD',
-            region: 'GH_ACC_1'
-        }).then(async (result) => {
-            // Update lead status to CONVERTED
-            await prisma.lead.update({
-                where: { id: lead.id },
-                data: { status: 'CONVERTED' }
-            }).catch(() => { });
-
-            // Send demo-specific welcome email with credentials
-            return sendDemoProvisionedEmail({
-                to: email,
+        // ONLY AUTO-PROVISION FOR REGULAR WEB LEADS, NOT FOUNDING PILOTS
+        if (source !== 'FOUNDING_PILOT') {
+            const tenantName = company || `${name}'s Firm`;
+            TenantService.provisionTenant({
+                name: tenantName,
+                adminEmail: email,
                 adminName: name,
-                tenantName,
-                tempPassword: result.tempPassword,
-                loginUrl: result.loginUrl
+                plan: 'STANDARD',
+                region: 'GH_ACC_1'
+            }).then(async (result) => {
+                await prisma.lead.update({
+                    where: { id: lead.id },
+                    data: { status: 'CONVERTED' }
+                }).catch(() => { });
+
+                return sendDemoProvisionedEmail({
+                    to: email,
+                    adminName: name,
+                    tenantName,
+                    tempPassword: result.tempPassword,
+                    loginUrl: result.loginUrl
+                });
+            }).catch(err => {
+                console.error(`[DemoAutomation] Provisioning failed for ${email}:`, err.message);
             });
-        }).catch(err => {
-            console.error(`[DemoAutomation] Provisioning failed for ${email}:`, err.message);
-        });
+        }
 
         res.status(201).json(lead);
     } catch (error: any) {

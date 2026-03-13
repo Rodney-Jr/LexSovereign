@@ -293,6 +293,14 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
                            <button className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-cyan-900/20">
                               Sovereign Report (Board Level)
                            </button>
+
+                           <a 
+                              href="/NomosDesk_Staff_Training_Manual.pdf" 
+                              download="NomosDesk_Staff_Training_Manual.pdf"
+                              className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all text-center block mt-4"
+                           >
+                              Download Staff Training Manual (PDF)
+                           </a>
                         </div>
                      </div>
 

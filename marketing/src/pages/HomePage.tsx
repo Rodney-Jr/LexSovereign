@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Button, Section, SectionHeader } from '../components/ui';
-import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3, Receipt, TrendingUp, Package, BookOpenCheck, Rocket } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3, Receipt, TrendingUp, Package, BookOpenCheck, Rocket, Briefcase, ShieldAlert, Calendar, Scale, Award, Building2, Play, Eye } from 'lucide-react';
 import { Link, StaticRouter, HelmetProvider } from '../utils/ssr-compat';
 import RelatedInsights from '../components/RelatedInsights';
+import EarlyAccessForm from '../components/EarlyAccessForm';
+import { ROICalculator } from '../components/ROICalculator';
+import VideoModal from '../components/VideoModal';
 import type { SsgOptions } from 'vite-plugin-ssg';
 
 export const ssgOptions: SsgOptions = {
@@ -20,11 +23,13 @@ export const ssgOptions: SsgOptions = {
 };
 
 export default function HomePage() {
+    const [isVideoOpen, setIsVideoOpen] = useState(false);
+
     return (
         <Layout>
             <SEO
-                title="Secure Legal Matter Management & Governance Platform"
-                description="NomosDesk is a secure legal operating system for law firms and institutions, featuring built-in conflict checking and role-based governance."
+                title="NomosDesk | Comprehensive Legal Operations Platform"
+                description="Secure legal operations for modern law firms. Manage matters, conflict checks, documents, and workflows from one institutional system."
                 schema={[
                     {
                         "@context": "https://schema.org",
@@ -59,25 +64,31 @@ export default function HomePage() {
                 <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
                     <div className="flex flex-col items-center">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-medium mb-6 animate-fade-in">
-                            <Shield className="w-4 h-4" /> Professional Responsibility & Governance
+                            <Shield className="w-4 h-4" /> Comprehensive Legal Operations
                         </div>
 
-                        <h1 className="text-5xl md:text-6xl font-bold leading-tight tracking-tight mb-6 text-white drop-shadow-sm">
-                            Secure Legal Management. <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-100">
-                                Built for Institutions.
+                        <h1 className="text-5xl md:text-6xl font-black leading-tight tracking-tight mb-6 text-white drop-shadow-sm">
+                            The Legal Operations Platform <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-100 italic">
+                                For Modern Law Firms.
                             </span>
                         </h1>
 
                         <p className="text-xl text-slate-300 mb-10 leading-relaxed max-w-2xl mx-auto">
-                            NomosDesk is a secure platform designed for professional accountability.
-                            Manage matters, enforce conflict checks, and protect client confidentiality
-                            within a structured governance system.
+                            Manage matters, conflict checks, legal documents, billing, and governance from one secure institutional system.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center">
-                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request Private Demo</Button>
-                            {String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <Button asLink="/for-law-firms" variant="outline" size="lg">Explore Solutions</Button>}
+                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request a Private Demo</Button>
+                            <Button 
+                                variant="outline" 
+                                size="lg" 
+                                className="flex items-center gap-2 group"
+                                onClick={() => setIsVideoOpen(true)}
+                            >
+                                <Play className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+                                Watch System Demo
+                            </Button>
                         </div>
 
                         <p className="text-sm text-slate-500 flex items-center gap-6 justify-center">
@@ -88,33 +99,61 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* VALUE PROPS */}
+            {/* NEW: BUILT FOR LAW FIRMS */}
             <Section darker>
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-6">Built for Law Firms and Legal Departments</h2>
+                        <p className="text-slate-400 text-lg leading-relaxed max-w-3xl mx-auto">
+                            NomosDesk replaces fragmented systems used by many firms today. Instead of juggling email, spreadsheets, and multiple tools, your firm operates from one secure platform.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[
+                            { title: "Manage matters and case files", icon: <Briefcase className="w-5 h-5 text-indigo-400" /> },
+                            { title: "Run conflict checks before accepting new clients", icon: <ShieldAlert className="w-5 h-5 text-indigo-400" /> },
+                            { title: "Store documents securely with role-based access", icon: <Lock className="w-5 h-5 text-indigo-400" /> },
+                            { title: "Track deadlines and legal workflows", icon: <Calendar className="w-5 h-5 text-indigo-400" /> },
+                            { title: "Generate legal documents with AI assistance", icon: <Sparkles className="w-5 h-5 text-indigo-400" /> },
+                            { title: "Maintain governance and compliance records", icon: <CheckCircle className="w-5 h-5 text-indigo-400" /> },
+                        ].map((benefit, idx) => (
+                            <div key={idx} className="flex items-center gap-4 bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                                <div className="p-2 bg-indigo-500/10 rounded-lg">{benefit.icon}</div>
+                                <span className="text-sm font-semibold text-slate-200">{benefit.title}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </Section>
+
+            {/* VALUE PROPS (WHY FIRMS CHOOSE) */}
+            <Section>
                 <SectionHeader
-                    title="Designed for Institutional Governance"
-                    subtitle="NomosDesk replaces fragmented tools with a single, secure source of truth for your legal operations."
+                    title="Why Firms Choose NomosDesk"
+                    subtitle="NomosDesk replaces fragmented tools with a single structured system for managing legal work."
                 />
 
                 <div className="grid md:grid-cols-4 gap-8">
                     <FeatureCard
                         icon={<Shield className="w-8 h-8 text-indigo-400" />}
-                        title="Conflict Prevention"
-                        description="Mandatory conflict checking workflows before matter creation protects your firm from professional risk."
+                        title="Security First"
+                        description="Enterprise-grade encryption and role-based access protect confidential client data."
                     />
                     <FeatureCard
-                        icon={<FileText className="w-8 h-8 text-emerald-400" />}
-                        title="Document Security"
-                        description="Documents are physically segregated by matter. Granular access controls ensure only authorized counsel can view sensitive files."
+                        icon={<Scale className="w-8 h-8 text-emerald-400" />}
+                        title="Governance by Design"
+                        description="Built-in conflict checks, access controls, and audit trails support ethical and regulatory compliance."
                     />
                     <FeatureCard
-                        icon={<Users className="w-8 h-8 text-blue-400" />}
-                        title="Role Governance"
-                        description="Pre-configured roles (Partner, Associate, General Counsel) strictly enforce hierarchy and permission boundaries."
+                        icon={<Package className="w-8 h-8 text-blue-400" />}
+                        title="All-in-One Platform"
+                        description="Replace fragmented tools with a single structured system for managing legal work."
                     />
                     <FeatureCard
                         icon={<Globe className="w-8 h-8 text-purple-400" />}
-                        title="Judicial Intelligence"
-                        description="Ground your research in a Sovereign Registry of constitutional law, statutes, and verified casefiles."
+                        title="Built for Emerging Markets"
+                        description="Local regulatory context, jurisdiction intelligence, and workflows designed for modern African law firms."
                     />
                 </div>
             </Section>
@@ -189,6 +228,54 @@ export default function HomePage() {
                             </div>
                         </div>
                     </div>
+                </div>
+            </Section>
+
+            {/* VISUAL EVIDENCE SECTION */}
+            <Section darker className="border-y border-slate-900">
+                <SectionHeader 
+                    title="Visual Evidence: The LexSovereign Workspace" 
+                    subtitle="Go beyond the promises. See the actual outputs generated within our secure legal enclaves."
+                />
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[
+                        { title: "Matter Intake Mastery", desc: "Automated workflow distribution following a successful client intake session.", img: "/images/demos/matter_intake_filled.png" },
+                        { title: "Sovereign Registry", desc: "Digital evidence vault with immutable metadata and chain of custody tracking.", img: "/images/demos/matter_success_born.png" },
+                        { title: "Drafting Studio", desc: "AI-enhanced legal document creation with jurisdiction-aware precedent integration.", img: "/images/demos/matter_drafting_filled.png" },
+                    ].map((demo, idx) => (
+                        <div key={idx} className="group relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all duration-300">
+                            <div className="aspect-video overflow-hidden">
+                                <img 
+                                    src={demo.img} 
+                                    alt={demo.title} 
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-60" />
+                            </div>
+                            <div className="p-6 relative z-10">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-lg font-bold text-white uppercase tracking-tight">{demo.title}</h4>
+                                    <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-400">
+                                        <Eye size={16} />
+                                    </div>
+                                </div>
+                                <p className="text-slate-400 text-sm leading-relaxed">{demo.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="mt-16 text-center">
+                    <Button 
+                        variant="ghost" 
+                        size="lg" 
+                        className="gap-2"
+                        onClick={() => setIsVideoOpen(true)}
+                    >
+                        <Play size={20} className="text-indigo-500" />
+                        Experience the Full Walkthrough
+                    </Button>
                 </div>
             </Section>
 
@@ -443,6 +530,67 @@ export default function HomePage() {
                 </div>
             </Section>
 
+            {/* NEW: ROI CALCULATOR */}
+            <ROICalculator />
+
+            {/* NEW: FOUNDING FIRMS RECOGNITION */}
+            <Section darker className="border-t border-slate-800">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-center gap-12">
+                        <div className="flex-1 space-y-6">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-widest">
+                                <Award className="w-3 h-3" /> Founding Firms Program
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight">Trusted by Forward-Thinking Law Firms</h2>
+                            <p className="text-lg text-slate-400 leading-relaxed">
+                                NomosDesk is being shaped in collaboration with pioneering law firms committed to modernizing legal operations. Our founding firms receive lifetime benefits and direct influence over the platform's evolution.
+                            </p>
+                            <div className="pt-4">
+                                <Button asLink="/founding-firms" variant="outline">Learn About Founding Status</Button>
+                            </div>
+                        </div>
+                        <div className="flex-1 grid grid-cols-2 gap-4">
+                            <FoundingFirmLogo name="Cohort Q2 Member" />
+                            <FoundingFirmLogo name="Cohort Q2 Member" />
+                            <FoundingFirmLogo name="Cohort Q2 Member" />
+                            <div className="aspect-video bg-slate-900/50 border border-indigo-500/30 border-dashed rounded-2xl flex flex-col items-center justify-center text-center p-4">
+                                <Users className="text-indigo-400/50 mb-2" size={24} />
+                                <span className="text-[10px] font-bold text-indigo-400/50 uppercase tracking-widest">Spot Available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+
+            {/* NEW: EARLY ACCESS FORM SECTION */}
+            <Section darker className="bg-gradient-to-t from-slate-950 to-indigo-950/20 shadow-2xl">
+                <div className="grid md:grid-cols-2 gap-16 items-center">
+                    <div>
+                        <h2 className="text-3xl md:text-5xl font-black text-white mb-6 uppercase tracking-tight">Request Early Access</h2>
+                        <p className="text-xl text-slate-300 leading-relaxed mb-6">
+                            Secure your place in the future of legal infrastructure. We are selectively onboarding institutional partners to the NomosDesk ecosystem.
+                        </p>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20"><Rocket className="w-4 h-4 text-indigo-400" /></div>
+                                <span className="text-slate-400 font-medium text-sm">Priority onboarding for pilot firms</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20"><Users className="w-4 h-4 text-emerald-400" /></div>
+                                <span className="text-slate-400 font-medium text-sm">Direct collaboration with engineering team</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                            <Rocket size={100} />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-6 relative z-10">Application for Pilot Program</h3>
+                        <EarlyAccessForm />
+                    </div>
+                </div>
+            </Section>
+
             {/* TRUST & SECURITY */}
             <Section darker className="bg-slate-950">
                 <SectionHeader
@@ -498,7 +646,7 @@ export default function HomePage() {
                         Schedule a confidential demonstration with our institutional team to discuss your specific governance needs.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Request Access</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request a Private Demo</Button>
                         {String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <Button asLink="/pricing" variant="outline" size="lg">View Pricing</Button>}
                     </div>
                 </div>
@@ -510,6 +658,11 @@ export default function HomePage() {
                     { slug: '/insights/conflict-checking-software-law-firms', title: 'Conflict Checking Software for Law Firms', excerpt: 'Why manual conflict checks fail and how automated conflict software protects your firm.', readTime: '9 min read' },
                     ...(String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' ? [{ slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'An honest comparison of features, pricing, African market support, and data governance.', readTime: '14 min read' }] : []),
                 ]}
+            />
+            <VideoModal 
+                isOpen={isVideoOpen} 
+                onClose={() => setIsVideoOpen(false)} 
+                videoSrc="/videos/demo_v1.webp" 
             />
         </Layout >
     );
@@ -586,5 +739,15 @@ function ChevronRight(props: any) {
         >
             <path d="m9 18 6-6-6-6" />
         </svg>
+    );
+}
+function FoundingFirmLogo({ name }: { name: string }) {
+    return (
+        <div className="aspect-video bg-white/5 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-4 group hover:border-indigo-500/50 transition-colors">
+            <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-400 mb-2 group-hover:scale-110 transition-transform">
+                <Building2 size={20} />
+            </div>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-tight">{name}</span>
+        </div>
     );
 }

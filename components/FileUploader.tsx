@@ -40,23 +40,34 @@ const FileUploader: React.FC<FileUploaderProps> = ({ files, onFilesAdded, onRemo
 
   return (
     <div className="space-y-4">
+      <input
+        type="file"
+        multiple
+        ref={fileInputRef}
+        onChange={(e) => e.target.files && onFilesAdded(e.target.files)}
+        className="hidden"
+        aria-hidden="true"
+      />
+
       <div
         onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative group cursor-pointer border-2 border-dashed rounded-[2rem] p-10 text-center transition-all duration-300 ${isDragging
-            ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.2)] scale-[1.01]'
-            : 'border-slate-800 bg-slate-950/50 hover:border-blue-500/40 hover:bg-blue-500/5'
+        role="button"
+        tabIndex={0}
+        aria-label="Attach evidentiary artifacts"
+        className={`relative group cursor-pointer border-2 border-dashed rounded-[2rem] p-10 text-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${isDragging
+          ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.2)] scale-[1.01]'
+          : 'border-slate-800 bg-slate-950/50 hover:border-blue-500/40 hover:bg-blue-500/5'
           }`}
       >
-        <input
-          type="file"
-          multiple
-          ref={fileInputRef}
-          onChange={(e) => e.target.files && onFilesAdded(e.target.files)}
-          className="hidden"
-        />
 
         <div className="flex flex-col items-center gap-4 relative z-10">
           <div className={`p-4 rounded-2xl transition-all duration-300 ${isDragging ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400 group-hover:scale-110 group-hover:text-blue-400'

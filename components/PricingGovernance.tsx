@@ -28,7 +28,29 @@ export const PricingGovernance: React.FC = () => {
             const token = session?.token || '';
             const data = await authorizedFetch('/api/pricing', { token });
             if (data.error) throw new Error(data.error);
-            setConfigs(data);
+            
+            // Safely parse JSON strings from Prisma to prevent "map is not a function"
+            const parsedConfigs = data.map((c: any) => {
+                let parsedFeatures = c.features;
+                if (typeof parsedFeatures === 'string') {
+                    try {
+                        parsedFeatures = JSON.parse(parsedFeatures);
+                    } catch (e) {
+                        parsedFeatures = [];
+                    }
+                }
+                if (!Array.isArray(parsedFeatures)) {
+                    // Try to extract from an object format if Prisma returned `{0: "feature1", 1: "feature2"}`
+                    if (typeof parsedFeatures === 'object' && parsedFeatures !== null) {
+                       parsedFeatures = Object.values(parsedFeatures);
+                    } else {
+                       parsedFeatures = [];
+                    }
+                }
+                return { ...c, features: parsedFeatures };
+            });
+            
+            setConfigs(parsedConfigs);
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -44,10 +66,15 @@ export const PricingGovernance: React.FC = () => {
 
             const session = getSavedSession();
             const token = session?.token || '';
+            const updatePayload = {
+                ...config,
+                features: JSON.stringify(config.features)
+            };
+            
             const data = await authorizedFetch(`/api/pricing/${config.id}`, {
                 method: 'PUT',
                 token,
-                body: JSON.stringify(config)
+                body: JSON.stringify(updatePayload)
             });
 
             if (data.error) throw new Error(data.error);

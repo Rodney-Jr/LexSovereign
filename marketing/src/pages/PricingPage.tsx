@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Settings, Check } from 'lucide-react';
+import { Loader2, Settings, Check, Shield, Lock, Users, Sparkles, Building2, Globe, TrendingUp } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
@@ -29,25 +29,25 @@ interface PricingConfig {
 
 const DEFAULT_PRICING: PricingConfig[] = [
     {
-        id: 'Solo',
-        basePrice: 19,
-        pricePerUser: 5,
+        id: 'Starter',
+        basePrice: 0,
+        pricePerUser: 0,
         creditsIncluded: 0,
-        features: ['3 User Seats', 'Core Case Management', 'Digital Intake Hub', 'Mobile-First Access', 'Metered AI Top-ups (Pay-per-use)']
+        features: ['Matter management', 'Document storage', 'Conflict checks', 'Basic reporting']
     },
     {
         id: 'Professional',
-        basePrice: 79,
-        pricePerUser: 10,
-        creditsIncluded: 5000,
-        features: ['10 User Seats', '5,000 AI Credits Included', 'Professional Enclave Branding', 'Advanced Financial Reporting', 'Priority Disbursement Tracking']
+        basePrice: 0,
+        pricePerUser: 0,
+        creditsIncluded: 0,
+        features: ['Advanced workflows', 'AI document tools', 'Compliance tracking', 'Team collaboration']
     },
     {
-        id: 'Institutional',
-        basePrice: 299,
+        id: 'Enterprise',
+        basePrice: 0,
         pricePerUser: 0,
-        creditsIncluded: 20000,
-        features: ['Unlimited User Seats', '20,000 AI Credits Included', 'Dedicated Sovereign Region', 'SSO & 2FA Enclave Security', '99.9% Sovereign Uptime SLA']
+        creditsIncluded: 0,
+        features: ['Custom integrations', 'Governance controls', 'Advanced analytics', 'Dedicated infrastructure support']
     }
 ];
 
@@ -126,10 +126,10 @@ export default function PricingPage() {
             <Section className="pt-32">
                 <div className="text-center max-w-3xl mx-auto mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                        Built for the World's Emerging Legal Markets
+                        Transparent Pricing for Modern Legal Infrastructure
                     </h1>
                     <p className="text-xl text-slate-300">
-                        From solo practitioners in Accra to institutional chambers in Nairobi — transparent, usage-based pricing with no surprises.
+                        NomosDesk offers flexible pricing based on the size and operational needs of your firm.
                     </p>
                 </div>
 
@@ -144,14 +144,14 @@ export default function PricingPage() {
                             <PricingCard
                                 key={config.id}
                                 title={config.id}
-                                price={config.basePrice === 0 ? 'Custom' : `$${config.basePrice}`}
+                                price={config.id === 'Enterprise' ? 'Custom' : 'Tiered'}
                                 pricePerUser={config.pricePerUser}
-                                userMonth={config.pricePerUser > 0}
-                                featured={config.id === 'Institutional' || config.id === 'Professional'}
+                                userMonth={false}
+                                featured={config.id === 'Professional'}
                                 description={
-                                    config.id === 'Solo' ? "For solo practitioners and small chambers." :
+                                    config.id === 'Starter' ? "For small law firms establishing digital foundations." :
                                         config.id === 'Professional' ? "For growing firms requiring AI-powered oversight." :
-                                            "For enterprise-grade institutions and government bodies."
+                                            "For large firms and institutional legal departments."
                                 }
                                 features={config.features}
                             />
@@ -159,31 +159,89 @@ export default function PricingPage() {
                     </div>
                 )}
 
+                {/* Founding Firms Program */}
+                <div className="mt-32 max-w-6xl mx-auto">
+                    <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900/60 border border-indigo-500/30 rounded-[3rem] p-12 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-12 text-indigo-500/5 group-hover:text-indigo-500/10 transition-colors">
+                            <Sparkles size={240} />
+                        </div>
+                        <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <h2 className="text-3xl font-bold text-white mb-6">Founding Firms Program</h2>
+                                <p className="text-slate-300 text-lg leading-relaxed mb-8">
+                                    NomosDesk is onboarding a limited number of early adopter firms who will collaborate with our development team and receive preferential lifetime pricing.
+                                </p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex items-center gap-3 text-sm text-slate-300">
+                                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-400 font-bold">1</div>
+                                        Lifetime preferential pricing
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-slate-300">
+                                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-400 font-bold">2</div>
+                                        Priority feature influence
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-slate-300">
+                                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-400 font-bold">3</div>
+                                        Direct access to product team
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-slate-300">
+                                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-400 font-bold">4</div>
+                                        Founding firm recognition
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-slate-950/50 border border-slate-800 p-8 rounded-3xl flex flex-col items-center text-center">
+                                <h3 className="text-xl font-bold text-white mb-4">Limited Availability</h3>
+                                <p className="text-slate-400 text-sm mb-8">We are accepting only 10 firms for the Q2 Founding Cohort.</p>
+                                <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales'))} className="w-full">Apply for Founding Firm Status</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Trust & Infrastructure Layers */}
+                <div className="mt-20 grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <TrustBlock 
+                        icon={<Shield className="text-emerald-400" />}
+                        title="Security First"
+                        description="Enterprise-grade encryption and access controls protect confidential legal data."
+                    />
+                    <TrustBlock 
+                        icon={<Lock className="text-indigo-400" />}
+                        title="Governance by Design"
+                        description="Built-in conflict checks, audit trails, and structured workflows support regulatory compliance."
+                    />
+                    <TrustBlock 
+                        icon={<Building2 className="text-blue-400" />}
+                        title="Built for Legal Institutions"
+                        description="Designed specifically for law firms and legal departments managing complex matters."
+                    />
+                </div>
+
                 <div className="mt-20 grid md:grid-cols-2 gap-8 max-w-6xl mx-auto items-center">
                     <div className="p-8 bg-slate-900/40 border border-slate-800 rounded-[2.5rem] relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 text-emerald-500/10 group-hover:text-emerald-500/20 transition-colors">
                             <Settings size={120} />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                            <Settings className="text-emerald-400" /> Hybrid Pricing Governance
+                            <Settings className="text-emerald-400" /> Legal Infrastructure
                         </h3>
                         <p className="text-slate-300 mb-6 leading-relaxed relative z-10">
-                            NomosDesk isn't just a platform; it's a governance layer. Institutional clients can manage their own tiered rates,
-                            user allocations, and internal feature sets directly through the <strong>Sovereign Control Plane</strong>.
+                            NomosDesk replaces fragmented systems with a secure, unified platform for managing legal operations, governance, and firm workflows.
                         </p>
                         <div className="flex flex-wrap gap-3 mb-6">
-                            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono rounded-full border border-emerald-500/20">Dynamic Calibration</span>
-                            <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 text-xs font-mono rounded-full border border-indigo-500/20">Enclave Billing</span>
-                            <span className="px-3 py-1 bg-slate-800 text-slate-300 text-xs font-mono rounded-full">RBAC Enforcement</span>
+                            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono rounded-full border border-emerald-500/20">Unified Platform</span>
+                            <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 text-xs font-mono rounded-full border border-indigo-500/20">Governance Layer</span>
+                            <span className="px-3 py-1 bg-slate-800 text-slate-300 text-xs font-mono rounded-full">Secure Infrastructure</span>
                         </div>
                     </div>
 
                     <div className="bg-gradient-to-br from-indigo-900/20 to-slate-900/40 border border-indigo-900/50 rounded-[2.5rem] p-8 text-center md:text-left">
-                        <h3 className="text-xl font-bold text-white mb-2">Emerging Market Program</h3>
+                        <h3 className="text-xl font-bold text-white mb-2">Early Adopter Pilot Program</h3>
                         <p className="text-slate-300 mb-6">
-                            We advocate for rule of law worldwide. Special pricing is available for qualifying institutions in emerging markets.
+                            We are currently onboarding a small number of firms through a structured pilot program designed to help shape the future of legal operations technology.
                         </p>
-                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales'))} variant="outline">Contact for Eligibility</Button>
+                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales'))} variant="outline">Apply for Pilot Access</Button>
                     </div>
                 </div>
             </Section>
@@ -229,12 +287,23 @@ function PricingCard({ title, price, userMonth, pricePerUser, description, featu
 
             <Button
                 variant={featured ? 'primary' : 'outline'}
-                asLink={price === 'Custom' ? undefined : `${import.meta.env.VITE_PLATFORM_URL || 'http://localhost:3000'}/?plan=${title}`}
-                onClick={price === 'Custom' ? () => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales')) : undefined}
+                onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales'))}
                 className="w-full"
             >
-                {price === 'Custom' ? 'Contact Sales' : `Deploy ${title}`}
+                {title === 'Enterprise' ? 'Contact Sales' : 'Request Demo'}
             </Button>
+        </div>
+    );
+}
+
+function TrustBlock({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+    return (
+        <div className="p-8 bg-slate-900/40 border border-slate-800 rounded-3xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-xl shadow-inner">
+                {icon}
+            </div>
+            <h4 className="text-lg font-bold text-white">{title}</h4>
+            <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
         </div>
     );
 }

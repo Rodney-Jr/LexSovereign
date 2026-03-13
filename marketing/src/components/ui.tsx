@@ -7,10 +7,17 @@ export function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
 }
 
+// Simulated Telemetry Helper
+export const trackEvent = (eventName: string, properties?: Record<string, any>) => {
+    // In production, this would bridge to Mixpanel, PostHog, or Segment.
+    console.log(`[Telemetry EVENT] ${eventName}`, properties || {});
+};
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
     size?: 'sm' | 'md' | 'lg';
     asLink?: string;
+    trackingId?: string; // NEW: For telemetry
 }
 
 export function Button({
@@ -19,6 +26,7 @@ export function Button({
     size = 'md',
     children,
     asLink,
+    trackingId, // NEW: For telemetry
     ...props
 }: ButtonProps) {
     const baseStyles = "inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-slate-950";
@@ -38,26 +46,45 @@ export function Button({
 
     const classes = cn(baseStyles, variants[variant], sizes[size], className);
 
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (trackingId) {
+            trackEvent('CTA_CLICKED', {
+                trackingId,
+                variant,
+                text: typeof children === 'string' ? children : 'Component'
+            });
+        }
+        if (props.onClick) props.onClick(e);
+    };
+
     if (asLink) {
         const isExternal = asLink.startsWith('http') || asLink.startsWith('https') || asLink.startsWith('//');
 
         if (isExternal) {
             return (
-                <a href={asLink} className={classes}>
+                <a
+                    href={asLink}
+                    className={classes}
+                    onClick={trackingId ? () => trackEvent('CTA_CLICKED', { trackingId, variant, destination: asLink }) : undefined}
+                >
                     {children}
                 </a>
             );
         }
 
         return (
-            <Link to={asLink} className={classes}>
+            <Link
+                to={asLink}
+                className={classes}
+                onClick={trackingId ? () => trackEvent('CTA_CLICKED', { trackingId, variant, destination: asLink }) : undefined}
+            >
                 {children}
             </Link>
         );
     }
 
     return (
-        <button className={classes} {...props}>
+        <button className={classes} onClick={handleClick} {...props}>
             {children}
         </button>
     );

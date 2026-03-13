@@ -34,6 +34,9 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
 
     React.useEffect(() => {
         if (initialEditingDocId) {
+            // Wait for documents to load before searching
+            if (documents.length === 0) return;
+
             const loadInitialDoc = async () => {
                 const doc = documents.find(d => d.id === initialEditingDocId);
                 if (doc) {
@@ -43,14 +46,14 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
                         setShowBlankEditor(true);
                     } catch (err) {
                         console.error("[LegalDrafting] Failed to fetch doc content:", err);
+                    } finally {
+                        onClearInitialDoc?.();
                     }
-                } else if (documents.length > 0) {
-                    onClearInitialDoc?.();
-                    return;
                 } else {
-                    return;
+                    // Only clear if documents are loaded and we still can't find it
+                    console.log("[LegalDrafting] Document not found in vault:", initialEditingDocId);
+                    onClearInitialDoc?.();
                 }
-                onClearInitialDoc?.();
             };
             loadInitialDoc();
         }
@@ -147,7 +150,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
                             uploadedBy: 'Sovereign AI',
                             uploadedAt: new Date().toLocaleString(),
                             region: Region.PRIMARY,
-                            matterId: matterId || 'UNCATEGORIZED',
+                            matterId: matterId || 'MT-GENERAL',
                             privilege: PrivilegeStatus.PRIVILEGED,
                             classification: 'Confidential',
                             encryption: 'DAS',
@@ -175,7 +178,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
                                 name,
                                 type: 'Draft',
                                 region: Region.PRIMARY,
-                                matterId: matterId || 'UNCATEGORIZED',
+                                matterId: matterId || 'MT-GENERAL',
                                 privilege: PrivilegeStatus.PRIVILEGED,
                                 classification: 'Confidential',
                                 uploadedAt: new Date().toLocaleString(),

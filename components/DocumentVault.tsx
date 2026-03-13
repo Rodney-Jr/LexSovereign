@@ -18,7 +18,8 @@ import {
   Download,
   AlertTriangle,
   Edit3,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 import BlankDocumentEditor from './BlankDocumentEditor';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
@@ -69,6 +70,10 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
   const [allMatters, setAllMatters] = useState<any[]>([]);
   const [changingMatterDocId, setChangingMatterDocId] = useState<string | null>(null);
   const [isUpdatingMatter, setIsUpdatingMatter] = useState(false);
+
+  // Selection state
+  const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
+  const [showBulkMatterMenu, setShowBulkMatterMenu] = useState(false);
 
   const gemini = new LexGeminiService();
 
@@ -213,6 +218,92 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
     return matchesSearch && matchesRegion && matchesMatter && matchesPrivilege && matchesClassification;
   });
 
+  const toggleSelection = (id: string) => {
+    const newSelection = new Set(selectedDocIds);
+    if (newSelection.has(id)) {
+      newSelection.delete(id);
+    } else {
+      newSelection.add(id);
+    }
+    setSelectedDocIds(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedDocIds.size === filteredDocs.length && filteredDocs.length > 0) {
+      setSelectedDocIds(new Set());
+    } else {
+      setSelectedDocIds(new Set(filteredDocs.map(doc => doc.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Permanently delete ${selectedDocIds.size} artifacts from the Sovereign Vault? This cannot be undone.`)) return;
+
+    try {
+      const session = getSavedSession();
+      const token = session?.token || '';
+      const response = await fetch('/api/documents/bulk-delete', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ ids: Array.from(selectedDocIds) })
+      });
+
+      if (!response.ok) throw new Error('Bulk delete failed');
+
+      // Update local state
+      selectedDocIds.forEach(id => onRemoveDocument(id));
+      setSelectedDocIds(new Set());
+    } catch (err: any) {
+      alert('Bulk delete failed: ' + err.message);
+    }
+  };
+
+  const handleBulkMatterUpdate = async (newMatterId: string) => {
+    if (!newMatterId) return;
+    setIsUpdatingMatter(true);
+    try {
+      const session = getSavedSession();
+      const token = session?.token || '';
+      const response = await fetch('/api/documents/bulk-update', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ 
+          ids: Array.from(selectedDocIds),
+          data: { matterId: newMatterId }
+        })
+      });
+
+      if (!response.ok) throw new Error('Bulk update failed');
+
+      // Update local state
+      for (const id of selectedDocIds) {
+        await onUpdateDocument(id, { matterId: newMatterId });
+      }
+      
+      setSelectedDocIds(new Set());
+      setShowBulkMatterMenu(false);
+    } catch (err: any) {
+      alert('Bulk update failed: ' + err.message);
+    } finally {
+      setIsUpdatingMatter(false);
+    }
+  };
+
+  const handleBulkExport = async (format: 'DOCX' | 'PDF') => {
+    const selectedDocs = filteredDocs.filter(doc => selectedDocIds.has(doc.id));
+    for (const doc of selectedDocs) {
+      await handleExport(doc.id, format, doc.name);
+      // Brief delay to prevent browser download congestion
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  };
+
   const clearFilters = () => {
     setSearch('');
     setFilterRegion('All');
@@ -306,7 +397,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                 <option value="All" className="bg-brand-bg">All Matters</option>
                 {uniqueMatterIds.map(m => (
                   <option key={`filter-matter-${m || 'null'}`} value={m || ''} className="bg-brand-bg">
-                    {m || 'UNCATEGORIZED'}
+                    {m || 'MT-GENERAL'}
                   </option>
                 ))}
               </select>
@@ -393,6 +484,15 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
           <table className="w-full text-left">
             <thead className="bg-brand-sidebar border-b border-brand-border">
               <tr>
+                <th className="px-8 py-5 w-12">
+                  <input 
+                    type="checkbox"
+                    title="Select All Tracked Artifacts"
+                    className="w-4 h-4 rounded border-brand-border bg-brand-bg text-brand-primary focus:ring-brand-primary"
+                    checked={selectedDocIds.size === filteredDocs.length && filteredDocs.length > 0}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted">Document / Matter</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted">Sovereignty Info</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-muted">Classification</th>
@@ -403,7 +503,16 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
             </thead>
             <tbody className="divide-y divide-brand-border">
               {filteredDocs.map((doc) => (
-                <tr key={doc.id} className="hover:bg-brand-primary/5 transition-all group">
+                <tr key={doc.id} className={`hover:bg-brand-primary/5 transition-all group ${selectedDocIds.has(doc.id) ? 'bg-brand-primary/10' : ''}`}>
+                  <td className="px-8 py-5 w-12 text-center">
+                    <input 
+                      type="checkbox"
+                      title={`Select ${doc.name}`}
+                      className="w-4 h-4 rounded border-brand-border bg-brand-bg text-brand-primary focus:ring-brand-primary"
+                      checked={selectedDocIds.has(doc.id)}
+                      onChange={() => toggleSelection(doc.id)}
+                    />
+                  </td>
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
                       <div className="p-2.5 bg-brand-bg rounded-xl group-hover:bg-brand-primary/10 transition-colors">
@@ -415,7 +524,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="text-[10px] text-slate-500 mono tracking-tighter uppercase">
-                            {highlightText(doc.matterId || 'UNCATEGORIZED', search)}
+                            {highlightText(doc.matterId || 'MT-GENERAL', search)}
                           </div>
                         </div>
                       </div>
@@ -510,7 +619,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                             disabled={isUpdatingMatter}
                             onChange={(e) => handleChangeMatter(doc.id, e.target.value)}
                           >
-                            <option value="">UNCATEGORIZED</option>
+                            <option value="">MT-GENERAL</option>
                             {allMatters.map(m => (
                               <option key={`change-matter-opt-${m.id}`} value={m.id}>
                                 {m.name} ({m.id})
@@ -569,7 +678,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white truncate max-w-xs">{viewingDoc.name}</h3>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-widest">{viewingDoc.matterId || 'UNCATEGORIZED'}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest">{viewingDoc.matterId || 'MT-GENERAL'}</p>
                 </div>
               </div>
               <button title="Close Preview" onClick={() => setViewingDoc(null)} className="p-2 rounded-xl hover:bg-slate-800 text-slate-500 hover:text-white transition-colors">
@@ -634,6 +743,82 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
         </div>
       )}
 
+      {/* Floating Bulk Action Bar */}
+      {selectedDocIds.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-bottom-8 duration-500">
+          <div className="bg-brand-sidebar/80 backdrop-blur-xl border border-brand-primary/30 rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-6">
+            <div className="flex items-center gap-3 pr-6 border-r border-brand-border">
+              <div className="w-8 h-8 rounded-full bg-brand-primary text-brand-bg flex items-center justify-center font-bold text-sm">
+                {selectedDocIds.size}
+              </div>
+              <span className="text-xs font-bold text-brand-text uppercase tracking-widest">Selected</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <button 
+                  onClick={() => setShowBulkMatterMenu(!showBulkMatterMenu)}
+                  className="px-4 py-2 bg-brand-bg border border-brand-border rounded-xl text-[10px] font-bold text-brand-secondary uppercase tracking-widest hover:border-brand-secondary/40 transition-all flex items-center gap-2"
+                >
+                  <Briefcase size={14} /> Reassign Matter
+                </button>
+                
+                {showBulkMatterMenu && (
+                  <div className="absolute bottom-full mb-3 left-0 bg-brand-sidebar border border-brand-border rounded-xl p-2 shadow-2xl w-64 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="max-h-48 overflow-y-auto space-y-1">
+                      <button 
+                        onClick={() => handleBulkMatterUpdate('')}
+                        className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-bold text-brand-muted hover:bg-brand-bg hover:text-brand-text transition-colors"
+                      >
+                        MT-GENERAL
+                      </button>
+                      {allMatters.map(m => (
+                        <button 
+                          key={`bulk-matter-${m.id}`}
+                          onClick={() => handleBulkMatterUpdate(m.id)}
+                          className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-bold text-brand-muted hover:bg-brand-bg hover:text-brand-text transition-colors"
+                        >
+                          {m.name} ({m.id})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button 
+                onClick={handleBulkDelete}
+                className="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-[10px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center gap-2"
+              >
+                <Trash2 size={14} /> Delete Bulk
+              </button>
+
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => handleBulkExport('DOCX')}
+                  className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-[10px] font-bold text-emerald-400 uppercase tracking-widest hover:bg-emerald-500/20 transition-all flex items-center gap-2"
+                >
+                  <FileText size={14} /> DOCX
+                </button>
+                <button 
+                  onClick={() => handleBulkExport('PDF')}
+                  className="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-[10px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center gap-2"
+                >
+                  <ShieldAlert size={14} /> PDF
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setSelectedDocIds(new Set())}
+                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showIngest && (
         <DocumentIngestModal
           onClose={() => setShowIngest(false)}
@@ -667,7 +852,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
               uploadedBy: 'Sovereign AI',
               uploadedAt: new Date().toLocaleString(),
               region: filterRegion !== 'All' ? (filterRegion as Region) : Region.PRIMARY,
-              matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : ''),
+              matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : 'MT-GENERAL'),
               privilege: PrivilegeStatus.PRIVILEGED,
               classification: 'Confidential',
               encryption: 'DAS',
@@ -694,7 +879,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                 name,
                 type: 'Draft',
                 region: Region.PRIMARY,
-                matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : ''),
+                matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : 'MT-GENERAL'),
                 privilege: PrivilegeStatus.PRIVILEGED,
                 classification: 'Confidential',
                 uploadedAt: new Date().toLocaleString(),

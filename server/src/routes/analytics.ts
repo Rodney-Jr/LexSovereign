@@ -12,19 +12,17 @@ router.get('/metrics', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
 
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-
         const [mattersCount, docsCount, rulesCount] = await Promise.all([
-            prisma.matter.count({ where: isGlobalAdmin ? {} : { tenantId } }),
-            prisma.document.count({ where: isGlobalAdmin ? {} : { matter: { tenantId } } }),
+            prisma.matter.count({ where: { tenantId } }),
+            prisma.document.count({ where: { matter: { tenantId } } }),
             prisma.regulatoryRule.count()
         ]);
 
         // Fetch tenant attributes for configurable heuristics
-        const tenant = !isGlobalAdmin ? await prisma.tenant.findUnique({
+        const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
             select: { attributes: true }
-        }) : null;
+        });
 
         const attributes = (tenant?.attributes as any) || {};
         const hoursPerMatter = attributes.hoursPerMatter ?? 10;
@@ -43,19 +41,19 @@ router.get('/metrics', authenticateToken, async (req, res) => {
 
         // staffCount: Pull from users in tenant
         const staffCount = await prisma.user.count({
-            where: isGlobalAdmin ? {} : { tenantId }
+            where: { tenantId }
         });
 
         // AI Validation Score: Calculate from AuditLog successes
         const successfulValidations = await prisma.auditLog.count({
             where: {
-                ...(isGlobalAdmin ? {} : { userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) } }),
+                userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) },
                 action: 'AI_VALIDATION_PASS'
             }
         });
         const totalValidations = await prisma.auditLog.count({
             where: {
-                ...(isGlobalAdmin ? {} : { userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) } }),
+                userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) },
                 action: { in: ['AI_VALIDATION_PASS', 'AI_VALIDATION_FAIL'] }
             }
         });
@@ -88,14 +86,13 @@ router.get('/metrics', authenticateToken, async (req, res) => {
 // Returns matter creation history for the last 6 months
 router.get('/history', authenticateToken, async (req, res) => {
     try {
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         const tenantId = req.user?.tenantId;
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // Go back 5 months + current
 
         const matters = await prisma.matter.findMany({
             where: {
-                ...(isGlobalAdmin ? {} : { tenantId }),
+                tenantId,
                 createdAt: { gte: sixMonthsAgo }
             },
             select: { createdAt: true }
@@ -188,15 +185,14 @@ router.get('/clm/stats', authenticateToken, async (req, res) => {
 router.get('/case-center', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
 
         const [matters, deadlines] = await Promise.all([
             prisma.matter.findMany({
-                where: isGlobalAdmin ? {} : { tenantId },
+                where: { tenantId },
                 select: { status: true, id: true }
             }),
             prisma.deadline.findMany({
-                where: { matter: isGlobalAdmin ? {} : { tenantId } }
+                where: { matter: { tenantId } }
             })
         ]);
 

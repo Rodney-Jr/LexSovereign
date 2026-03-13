@@ -24,6 +24,47 @@ const AIIntelligenceSidebar: React.FC<AIIntelligenceSidebarProps> = ({ matterId,
     const [analysis, setAnalysis] = useState<any>(null);
     const [summary, setSummary] = useState<string>('');
 
+    // Resizable Sidebar Logic
+    const [sidebarWidth, setSidebarWidth] = useState(() => {
+        const saved = localStorage.getItem('nomosdesk_aiSidebarWidth');
+        return saved ? parseInt(saved, 10) : 450;
+    });
+    const [isResizing, setIsResizing] = useState(false);
+
+    const startResizing = React.useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizing(true);
+    }, []);
+
+    const stopResizing = React.useCallback(() => {
+        setIsResizing(false);
+    }, []);
+
+    const resize = React.useCallback((e: MouseEvent) => {
+        if (isResizing) {
+            // Inverse logic: dragging left (decreasing clientX relative to sidebar origin) increases width
+            const newWidth = window.innerWidth - e.clientX;
+            if (newWidth >= 320 && newWidth <= 800) {
+                setSidebarWidth(newWidth);
+                localStorage.setItem('nomosdesk_aiSidebarWidth', newWidth.toString());
+            }
+        }
+    }, [isResizing]);
+
+    useEffect(() => {
+        if (isResizing) {
+            window.addEventListener('mousemove', resize);
+            window.addEventListener('mouseup', stopResizing);
+        } else {
+            window.removeEventListener('mousemove', resize);
+            window.removeEventListener('mouseup', stopResizing);
+        }
+        return () => {
+            window.removeEventListener('mousemove', resize);
+            window.removeEventListener('mouseup', stopResizing);
+        };
+    }, [isResizing, resize, stopResizing]);
+
     useEffect(() => {
         if (isOpen && matterId) {
             triggerAnalysis();
@@ -62,10 +103,15 @@ const AIIntelligenceSidebar: React.FC<AIIntelligenceSidebarProps> = ({ matterId,
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className={`fixed right-0 top-0 h-full w-[450px] bg-[#0a0c10] border-l border-slate-800 shadow-2xl z-[150] transition-transform duration-500 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div 
+            className={`fixed right-0 top-0 h-full bg-[#0a0c10] border-l border-slate-800 shadow-2xl z-[150] transition-transform duration-500 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} ${isResizing ? 'select-none' : ''}`}
+            style={{ width: `${sidebarWidth}px` }}
+        >
+            <div 
+                onMouseDown={startResizing}
+                className={`sidebar-resize-handle-left hidden lg:block ${isResizing ? 'is-resizing' : ''}`} 
+            />
             <div className="flex flex-col h-full">
                 {/* Header */}
                 <div className="p-8 border-b border-slate-800 bg-sky-500/5 flex items-center justify-between">

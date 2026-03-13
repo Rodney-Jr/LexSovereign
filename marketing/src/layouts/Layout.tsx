@@ -115,7 +115,7 @@ export default function Layout({ children }: LayoutProps) {
                             }}
                             className="bg-indigo-600 text-white px-6 py-3 rounded-xl text-center font-semibold"
                         >
-                            Request a Demonstration
+                            Request a Private Demo
                         </button>
                     </div>
                 )}
@@ -158,8 +158,9 @@ export default function Layout({ children }: LayoutProps) {
                             <h4 className="font-semibold text-white mb-4">Platform</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
                                 <li><Link to="/security-and-compliance" className="hover:text-indigo-400 transition-colors">Security & Compliance</Link></li>
-                                <li><Link to="/security-and-compliance#audit" className="hover:text-indigo-400 transition-colors">Audit Trails</Link></li>
-                                <li><Link to="/security-and-compliance#roles" className="hover:text-indigo-400 transition-colors">Role Governance</Link></li>
+                                <li><Link to="/about" className="hover:text-indigo-400 transition-colors">About Mission</Link></li>
+                                <li><Link to="/legal-operations" className="hover:text-indigo-400 transition-colors">Legal Operations Hub</Link></li>
+                                <li><Link to="/pilot-program" className="hover:text-indigo-400 transition-colors font-bold text-indigo-400 border-b border-indigo-500/30 inline-block pb-1">Pilot Program</Link></li>
                             </ul>
                         </div>
 

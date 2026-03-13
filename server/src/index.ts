@@ -13,6 +13,8 @@ import express from 'express';
 console.log("[VERSION CHECK] v5 - AUTH DIAGNOSTICS ENHANCED...");
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 import mattersRouter from './routes/matters';
@@ -42,6 +44,7 @@ import billingRouter from './routes/billing';
 import firmRouter from './routes/firm';
 import accountingRouter from './routes/accounting';
 import productivityRouter from './routes/productivity';
+import { errorHandler } from './middleware/errorHandler';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
 import { initCronJobs } from './services/cronService';
@@ -50,6 +53,8 @@ import { startFxWebSocket } from './services/fxWebSocketService';
 import { verifyConnection } from './db';
 
 const app = express();
+// Critical: Trust Railway's reverse proxy so 'Secure' cookies work and rate-limiter sees real client IPs
+app.set('trust proxy', 1);
 // Force reload for env var update (Key Rotation 2)
 const port = process.env.PORT || 3001;
 
@@ -74,7 +79,22 @@ app.use(helmet({
         },
     },
 }));
-app.use(cors());
+app.use(cors({
+    origin: process.env.PLATFORM_URL || 'http://localhost:5173',
+    credentials: true
+}));
+
+// Cookie parser for HttpOnly session cookies
+app.use(cookieParser());
+
+// Rate limiter for auth endpoints - prevents credential stuffing
+const authRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 15, // max 15 attempts per IP per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many login attempts. Please try again in 15 minutes.', code: 'RATE_LIMITED' }
+});
 
 // Stripe Webhook needs raw body for signature verification
 // This must be BEFORE express.json()
@@ -104,8 +124,8 @@ app.use('/api/fx-rates', fxRatesRouter);
 // Chat Attachments
 app.use('/api/attachments', authenticateToken, express.static(path.join(__dirname, '../uploads')));
 
-// Authentication (Handshake/Login)
-app.use('/api/auth', authRouter);
+// Authentication (Handshake/Login) - Rate limited
+app.use('/api/auth', authRateLimiter, authRouter);
 
 // Tenant Actions (Must be above /api catchall)
 app.use('/api/tenant', authenticateToken, tenantRouter);
@@ -130,6 +150,9 @@ app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
 app.use('/api/billing', authenticateToken, billingRouter);
 app.use('/api/accounting', accountingRouter);
 app.use('/api/productivity', productivityRouter);
+
+// Centralized Error Handling (MUST be last)
+app.use(errorHandler);
 
 // 3. Static Asset Resolution
 import fs from 'fs';
