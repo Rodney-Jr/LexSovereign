@@ -189,3 +189,34 @@
 .stagger-4 {
   animation-delay: 400ms;
 }
+
+/* --- Elastic Layout & Smart Handles --- */
+.smart-handle {
+  z-index: 50;
+}
+
+.smart-handle:hover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+@keyframes haptic-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.haptic-active {
+  animation: haptic-pulse 0.2s ease-in-out;
+}
+
+.resizable-transition {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}

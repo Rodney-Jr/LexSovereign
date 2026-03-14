@@ -10,6 +10,7 @@ import {
 import { getJurisdictionConfig } from '../utils/jurisdictionEngine';
 import { LiveFxRates } from '../utils/jurisdictions/ghana/finance';
 import SentinelSidebar from './SentinelSidebar';
+import { useDynamicLayout } from '../hooks/useDynamicLayout';
 
 const DEFAULT_CONTRACT = `This Agreement is made between Parties for commercial services. 
 Any Dispute Resolution shall be settled through Litigation in Accra.
@@ -97,49 +98,27 @@ const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentI
         }
     };
 
-    // Resizable Split Logic
-    const [leftWidth, setLeftWidth] = useState(() => {
-        const saved = localStorage.getItem('nomosdesk_reviewSplitWidth');
-        return saved ? parseFloat(saved) : 60; // Default 60%
+    // Smart Resizable Split Logic
+    const [containerWidth, setContainerWidth] = React.useState(0);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+        if (containerRef.current) setContainerWidth(containerRef.current.offsetWidth);
+    }, []);
+
+    const { size: leftPx, isResizing: isResizingSplit, startResizing: startResizingSplit } = useDynamicLayout({
+        id: 'review-split',
+        initialSize: containerWidth * 0.6 || 600,
+        minSize: containerWidth * 0.25 || 200,
+        maxSize: containerWidth * 0.80 || 900,
+        direction: 'horizontal',
+        snapPoints: containerWidth ? [
+            containerWidth * 0.30,
+            containerWidth * 0.50,
+            containerWidth * 0.70,
+        ] : [],
+        snapThreshold: 20,
     });
-    const [isResizingSplit, setIsResizingSplit] = useState(false);
-
-    const startResizingSplit = React.useCallback((e: React.MouseEvent) => {
-        e.preventDefault();
-        setIsResizingSplit(true);
-    }, []);
-
-    const stopResizingSplit = React.useCallback(() => {
-        setIsResizingSplit(false);
-    }, []);
-
-    const resizeSplit = React.useCallback((e: MouseEvent) => {
-        if (isResizingSplit) {
-            const container = document.getElementById('review-split-container');
-            if (container) {
-                const rect = container.getBoundingClientRect();
-                const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
-                if (newWidth >= 30 && newWidth <= 80) {
-                    setLeftWidth(newWidth);
-                    localStorage.setItem('nomosdesk_reviewSplitWidth', newWidth.toString());
-                }
-            }
-        }
-    }, [isResizingSplit]);
-
-    useEffect(() => {
-        if (isResizingSplit) {
-            window.addEventListener('mousemove', resizeSplit);
-            window.addEventListener('mouseup', stopResizingSplit);
-        } else {
-            window.removeEventListener('mousemove', resizeSplit);
-            window.removeEventListener('mouseup', stopResizingSplit);
-        }
-        return () => {
-            window.removeEventListener('mousemove', resizeSplit);
-            window.removeEventListener('mouseup', stopResizingSplit);
-        };
-    }, [isResizingSplit, resizeSplit, stopResizingSplit]);
+    const leftWidth = containerWidth > 0 ? (leftPx / containerWidth) * 100 : 60;
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24">
@@ -168,7 +147,8 @@ const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentI
 
             <div 
                 id="review-split-container"
-                className={`flex flex-col lg:flex-row gap-0 items-start ${isResizingSplit ? 'select-none' : ''}`}
+                ref={containerRef}
+                className={`flex flex-col lg:flex-row gap-0 items-start ${isResizingSplit ? 'select-none cursor-col-resize' : ''}`}
             >
                 {/* Left Panel: Document Preview */}
                 <div 
@@ -196,12 +176,18 @@ const SovereignReviewScreen: React.FC<SovereignReviewScreenProps> = ({ documentI
                     </div>
                 </div>
 
-                {/* Splitter */}
+                {/* Splitter - Smart Handle */}
                 <div 
                     onMouseDown={startResizingSplit}
-                    className={`v-splitter hidden lg:flex mx-2 rounded-full ${isResizingSplit ? 'is-resizing' : ''}`} 
+                    className={`smart-handle hidden lg:flex items-center justify-center mx-1 w-2 rounded-full cursor-col-resize transition-all duration-300 ${isResizingSplit ? 'bg-brand-primary shadow-[0_0_12px_rgba(16,185,129,0.4)]' : 'bg-brand-border hover:bg-brand-primary/40'}`}
                     style={{ height: '700px' }}
-                />
+                >
+                    <div className={`flex flex-col gap-1 items-center pointer-events-none transition-opacity duration-300 ${isResizingSplit ? 'opacity-100' : 'opacity-0 hover:opacity-60'}`}>
+                        <div className="w-0.5 h-4 bg-white/20 rounded-full" />
+                        <div className="w-0.5 h-6 bg-white/40 rounded-full" />
+                        <div className="w-0.5 h-4 bg-white/20 rounded-full" />
+                    </div>
+                </div>
 
                 {/* Right Panel: Sentinel Audit Workspace */}
                 <div className="flex-1 w-full lg:w-auto">

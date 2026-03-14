@@ -12,6 +12,7 @@ import {
     Zap
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
+import { useDynamicLayout } from '../hooks/useDynamicLayout';
 
 interface AIIntelligenceSidebarProps {
     matterId: string;
@@ -24,46 +25,15 @@ const AIIntelligenceSidebar: React.FC<AIIntelligenceSidebarProps> = ({ matterId,
     const [analysis, setAnalysis] = useState<any>(null);
     const [summary, setSummary] = useState<string>('');
 
-    // Resizable Sidebar Logic
-    const [sidebarWidth, setSidebarWidth] = useState(() => {
-        const saved = localStorage.getItem('nomosdesk_aiSidebarWidth');
-        return saved ? parseInt(saved, 10) : 450;
+    // Smart Resizable Sidebar
+    const { size: sidebarWidth, isResizing, startResizing } = useDynamicLayout({
+        id: 'ai-intelligence-sidebar',
+        initialSize: 450,
+        minSize: 320,
+        maxSize: 800,
+        direction: 'horizontal',
+        snapPoints: [400, 550, 700],
     });
-    const [isResizing, setIsResizing] = useState(false);
-
-    const startResizing = React.useCallback((e: React.MouseEvent) => {
-        e.preventDefault();
-        setIsResizing(true);
-    }, []);
-
-    const stopResizing = React.useCallback(() => {
-        setIsResizing(false);
-    }, []);
-
-    const resize = React.useCallback((e: MouseEvent) => {
-        if (isResizing) {
-            // Inverse logic: dragging left (decreasing clientX relative to sidebar origin) increases width
-            const newWidth = window.innerWidth - e.clientX;
-            if (newWidth >= 320 && newWidth <= 800) {
-                setSidebarWidth(newWidth);
-                localStorage.setItem('nomosdesk_aiSidebarWidth', newWidth.toString());
-            }
-        }
-    }, [isResizing]);
-
-    useEffect(() => {
-        if (isResizing) {
-            window.addEventListener('mousemove', resize);
-            window.addEventListener('mouseup', stopResizing);
-        } else {
-            window.removeEventListener('mousemove', resize);
-            window.removeEventListener('mouseup', stopResizing);
-        }
-        return () => {
-            window.removeEventListener('mousemove', resize);
-            window.removeEventListener('mouseup', stopResizing);
-        };
-    }, [isResizing, resize, stopResizing]);
 
     useEffect(() => {
         if (isOpen && matterId) {
@@ -108,9 +78,10 @@ const AIIntelligenceSidebar: React.FC<AIIntelligenceSidebarProps> = ({ matterId,
             className={`fixed right-0 top-0 h-full bg-[#0a0c10] border-l border-slate-800 shadow-2xl z-[150] transition-transform duration-500 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} ${isResizing ? 'select-none' : ''}`}
             style={{ width: `${sidebarWidth}px` }}
         >
+            {/* Smart Resize Handle (left edge, right-anchored sidebar) */}
             <div 
                 onMouseDown={startResizing}
-                className={`sidebar-resize-handle-left hidden lg:block ${isResizing ? 'is-resizing' : ''}`} 
+                className={`smart-handle absolute left-0 top-0 w-1 h-full cursor-col-resize hover:w-2 transition-all duration-300 ${isResizing ? 'bg-brand-primary shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-transparent hover:bg-brand-primary/30'}`}
             />
             <div className="flex flex-col h-full">
                 {/* Header */}
