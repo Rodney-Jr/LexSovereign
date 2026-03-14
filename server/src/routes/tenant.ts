@@ -389,4 +389,43 @@ router.get('/templates', authenticateToken, async (req, res) => {
     }
 });
 
+// POST /api/tenant/support/grant
+// Grant temporary access to Global Admins for support
+router.post('/support/grant', authenticateToken, requireRole(['TENANT_ADMIN']), async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
+
+        // Set expiration to 1 hour from now
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+        const grant = await (prisma as any).supportAccessGrant.create({
+            data: {
+                tenantId,
+                grantedByUserId: req.user?.id,
+                expiresAt,
+                isActive: true
+            }
+        });
+
+        // Audit the grant
+        await prisma.auditLog.create({
+            data: {
+                action: 'SUPPORT_ACCESS_GRANTED',
+                userId: req.user?.id,
+                details: `Support access granted to platform admins until ${expiresAt.toISOString()}.`,
+                metadata: { grantId: grant.id }
+            } as any
+        });
+
+        res.json({
+            success: true,
+            expiresAt,
+            grantId: grant.id
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

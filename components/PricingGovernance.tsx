@@ -30,7 +30,8 @@ export const PricingGovernance: React.FC = () => {
             if (data.error) throw new Error(data.error);
             
             // Safely parse JSON strings from Prisma to prevent "map is not a function"
-            const parsedConfigs = data.map((c: any) => {
+            const dataToParse = Array.isArray(data) ? data : [];
+            const parsedConfigs = dataToParse.map((c: any) => {
                 let parsedFeatures = c.features;
                 if (typeof parsedFeatures === 'string') {
                     try {
@@ -188,9 +189,8 @@ export const PricingGovernance: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Included Features</label>
                                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                    {config.features.map((feature, fIdx) => (
+                                    {(Array.isArray(config.features) ? config.features : []).map((feature, fIdx) => (
                                         <div key={fIdx} className="flex items-center gap-2 bg-slate-800/50 px-3 py-2 rounded-lg group/item">
                                             <span className="text-sm text-slate-300 flex-1 truncate">{feature}</span>
                                             <button

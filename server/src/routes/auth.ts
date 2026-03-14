@@ -468,9 +468,17 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
+        if (!req.body || typeof req.body !== 'object') {
+            return res.status(400).json({ error: 'Request body is missing or invalid' });
+        }
+        
         let { email, password } = req.body;
-        if (email) email = email.toLowerCase().trim();
+        
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required' });
+        }
 
+        email = email.toLowerCase().trim();
         console.log(`[AuthFlow] Attempting login for normalized email: ${email}`);
 
         const user = await prisma.user.findUnique({
@@ -521,7 +529,7 @@ router.post('/login', async (req, res) => {
             email: user.email,
             role: (user as any)?.role?.name || 'UNKNOWN',
             permissions,
-            tenantId: user.tenantId,
+            tenantId: user.tenantId || (user.roleString === 'GLOBAL_ADMIN' ? '__PLATFORM__' : null),
             appMode
         }, JWT_SECRET, { expiresIn: '8h' });
 

@@ -86,8 +86,29 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
                 ...user,
                 department: (dbUser as any).department || undefined,
                 name: dbUser.name,
-                tenant: (dbUser as any).tenant
+                tenant: (dbUser as any).tenant,
+                isImpersonating: user.isImpersonating || false,
+                impersonatorId: user.impersonatorId || undefined
             };
+
+            // 🛡️ [SECURITY] Impersonation Guard: Verify active grant
+            if (req.user?.isImpersonating) {
+                const grant = await (prisma as any).supportAccessGrant.findFirst({
+                    where: {
+                        tenantId: user.tenantId,
+                        expiresAt: { gte: new Date() },
+                        isActive: true
+                    }
+                });
+
+                if (!grant) {
+                    console.warn(`[SECURITY] Revoking invalid/expired impersonation session for Admin ${user.email} on Tenant ${user.tenantId}`);
+                    return res.status(403).json({ 
+                        error: 'Support access expired or revoked.', 
+                        code: 'IMPERSONATION_REVOKED' 
+                    });
+                }
+            }
 
             requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {
                 next();

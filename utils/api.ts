@@ -111,7 +111,15 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
             throw new Error(errorData.error || 'Request failed');
         }
 
-        return await response.json();
+        const text = await response.text();
+        if (!text) return {}; // Handle empty successful response
+        
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error(`[API] Failed to parse successful response for ${url}:`, text);
+            return {};
+        }
     } catch (error: any) {
         console.error(`[API Fetch Error] ${url}:`, error.message);
         if (!silent && !url.includes('/auth/login')) {

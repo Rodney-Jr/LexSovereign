@@ -578,7 +578,7 @@ const PlanCard = ({ plan, active, onClick, pricing, loading, highlight }: any) =
         )}
       </div>
       <div className="space-y-2 flex-1">
-        {features.map((f: string, i: number) => (
+        {(Array.isArray(features) ? features : []).map((f: string, i: number) => (
           <div key={i} className="flex items-center gap-2 text-[9px] text-slate-300">
             <Sparkles size={10} className="text-emerald-500 shrink-0" /> {f}
           </div>

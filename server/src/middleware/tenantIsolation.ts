@@ -5,7 +5,14 @@ export function tenantIsolationMiddleware(currentTenantIdProvider: () => string 
         const tenantId = currentTenantIdProvider();
 
         // Models that require isolation
-        const ISOLATED_MODELS = ['Matter', 'User', 'Role', 'Policy'];
+        const ISOLATED_MODELS = [
+            'Matter', 'User', 'Role', 'Policy', 'Document', 'AuditLog', 
+            'Task', 'Deadline', 'TimeEntry', 'CollaborationMessage', 
+            'AIRiskAnalysis', 'ActivityEntry', 'Approval', 'PredictiveRisk',
+            'ContractMetadata', 'CaseMetadata', 'Hearing', 'EvidenceLink',
+            'DocumentVersion', 'ActivityEntry', 'AIUsage', 'BrandingProfile',
+            'Department'
+        ];
 
         if (params.model && ISOLATED_MODELS.includes(params.model) && tenantId) {
             // Ensure args exists

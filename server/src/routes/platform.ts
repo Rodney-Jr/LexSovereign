@@ -130,10 +130,11 @@ router.get('/stats', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (re
     try {
         const [tenantCount, userCount, matterCount, docCount, errorCount] = await Promise.all([
             prisma.tenant.count(),
-            prisma.user.count(),
-            prisma.matter.count(),
-            prisma.document.count(),
-            prisma.auditLog.count({ where: { action: { contains: 'FAIL' } } })
+            // [HARDENED] Counts remain global for platform pulse, but detail access is blocked by middleware
+            (prisma as any).user.count(), 
+            (prisma as any).matter.count(),
+            (prisma as any).document.count(),
+            (prisma as any).auditLog.count({ where: { action: { contains: 'FAIL' } } })
         ]);
 
         const systemHealth = errorCount > 0 ? Math.max(90, 100 - (errorCount * 0.1)).toFixed(2) : 100;
@@ -216,6 +217,7 @@ router.post('/admins', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (
 router.get('/audit-logs', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
     try {
         const logs = await prisma.auditLog.findMany({
+            where: { tenantId: null }, // [ZERO ACCESS] Only show platform-level logs
             take: 20,
             orderBy: { timestamp: 'desc' },
             include: { user: { select: { name: true, email: true } } }

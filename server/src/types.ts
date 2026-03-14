@@ -9,6 +9,8 @@ export interface AuthUser {
     permissions: string[];
     department?: string;
     attributes?: Record<string, any>;
+    isImpersonating?: boolean;
+    impersonatorId?: string;
 }
 
 declare global {

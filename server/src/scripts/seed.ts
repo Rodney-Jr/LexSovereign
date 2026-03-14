@@ -373,7 +373,7 @@ async function main() {
         for (const m of matterData) {
             await prisma.matter.upsert({
                 where: { id: m.id },
-                update: { riskLevel: m.riskLevel },
+                update: { riskLevel: m.riskLevel, tenantId: tenantId! },
                 create: {
                     ...m,
                     tenantId: tenantId!,
@@ -386,13 +386,14 @@ async function main() {
         // Create a mock encrypted document to verify BYOK logic
         await prisma.document.upsert({
             where: { id: 'DOC-SOV-ENCRYPTED' },
-            update: {},
+            update: { tenantId: tenantId! },
             create: {
                 id: 'DOC-SOV-ENCRYPTED',
                 name: 'Sovereign Acquisition Memo (Encrypted)',
                 uri: 'local://vault/acme/memo_encrypted.pdf',
                 jurisdiction: 'GH_ACC_1',
-                matterId: 'MT-772'
+                matterId: 'MT-772',
+                tenantId: tenantId!
             }
         });
         console.log('✅ Seeded Encrypted Mock Document');
@@ -401,9 +402,9 @@ async function main() {
         console.log('🌱 Seeding AI usage audit logs...');
         await prisma.auditLog.createMany({
             data: [
-                { action: 'AI_ACCESS_DRAFT', userId: counselId, details: 'Drafted NDA', matterId: 'MT-772' } as any,
-                { action: 'AI_ACCESS_RESEARCH', userId: counselId, details: 'Researched merger laws', matterId: 'MT-772' } as any,
-                { action: 'AI_OVERRIDE', userId: counselId, details: 'Overrode PII check for authorized partner', matterId: 'MT-772' } as any
+                { action: 'AI_ACCESS_DRAFT', userId: counselId, details: 'Drafted NDA', matterId: 'MT-772', tenantId: tenantId! } as any,
+                { action: 'AI_ACCESS_RESEARCH', userId: counselId, details: 'Researched merger laws', matterId: 'MT-772', tenantId: tenantId! } as any,
+                { action: 'AI_OVERRIDE', userId: counselId, details: 'Overrode PII check for authorized partner', matterId: 'MT-772', tenantId: tenantId! } as any
             ]
         });
 
@@ -411,8 +412,8 @@ async function main() {
         console.log('🌱 Seeding deadlines...');
         await (prisma as any).deadline.createMany({
             data: [
-                { title: 'Merger Filing', dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), status: 'PENDING', matterId: 'MT-772' },
-                { title: 'Discovery Response', dueDate: new Date(Date.now() + 48 * 60 * 60 * 1000), status: 'PENDING', matterId: 'MT-881' }
+                { title: 'Merger Filing', dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), status: 'PENDING', matterId: 'MT-772', tenantId: tenantId! },
+                { title: 'Discovery Response', dueDate: new Date(Date.now() + 48 * 60 * 60 * 1000), status: 'PENDING', matterId: 'MT-881', tenantId: tenantId! }
             ]
         });
 

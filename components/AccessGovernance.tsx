@@ -487,6 +487,53 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
           </div>
         </div>
       )}
+      
+      {/* 🛡️ Support & Maintenance Section */}
+      <div className="bg-slate-900/30 border border-slate-800 rounded-[2rem] p-8 mt-12">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20">
+              <ShieldAlert className="text-purple-400" size={24} />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-white tracking-tight">Support & Maintenance</h4>
+              <p className="text-slate-400 text-sm">Grant platform admins temporary access for troubleshooting.</p>
+            </div>
+          </div>
+          <button
+            onClick={async () => {
+              if (!confirm('This will grant platform administrators temporary (1-hour) access to your tenant for support purposes. All actions will be audited. Proceed?')) return;
+              try {
+                const session = getSavedSession();
+                const res = await authorizedFetch('/api/tenant/support/grant', {
+                  method: 'POST',
+                  token: session?.token
+                });
+                alert(`Support access granted. Expires at: ${new Date(res.expiresAt).toLocaleTimeString()}`);
+              } catch (e: any) {
+                alert(e.message);
+              }
+            }}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-purple-900/20 flex items-center gap-2"
+          >
+            <Zap size={14} /> Grant Support Access
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800/50">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Access Model</div>
+            <div className="text-xs text-slate-300 font-medium">Explicit Consent Only</div>
+          </div>
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800/50">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Duration</div>
+            <div className="text-xs text-slate-300 font-medium">60 Minute Window</div>
+          </div>
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800/50">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Audit Trail</div>
+            <div className="text-xs text-slate-300 font-medium">Immutable Record</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

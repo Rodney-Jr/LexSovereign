@@ -90,10 +90,19 @@ app.use(cookieParser());
 // Rate limiter for auth endpoints - prevents credential stuffing
 const authRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 15, // max 15 attempts per IP per window
+    max: 20, // max 20 attempts per IP per window
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many login attempts. Please try again in 15 minutes.', code: 'RATE_LIMITED' }
+});
+
+// Standard API rate limiter - prevents platform abuse
+const standardApiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500, // max 500 requests per IP per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests. Please slow down.', code: 'RATE_LIMITED' }
 });
 
 // Stripe Webhook needs raw body for signature verification
@@ -101,6 +110,9 @@ const authRateLimiter = rateLimit({
 app.use('/api/stripe/webhook', stripeRouter);
 
 app.use(express.json());
+
+// Global API rate limiting
+app.use('/api', standardApiLimiter);
 
 // Routes
 app.get('/health', (req, res) => {
@@ -124,7 +136,7 @@ app.use('/api/fx-rates', fxRatesRouter);
 // Chat Attachments
 app.use('/api/attachments', authenticateToken, express.static(path.join(__dirname, '../uploads')));
 
-// Authentication (Handshake/Login) - Rate limited
+// Authentication (Handshake/Login) - Higher security rate limit
 app.use('/api/auth', authRateLimiter, authRouter);
 
 // Tenant Actions (Must be above /api catchall)

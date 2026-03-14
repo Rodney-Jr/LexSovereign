@@ -423,6 +423,17 @@ router.get('/:id/content', authenticateToken, async (req, res) => {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
+        // 🛡️ [SECURITY] Audit document read access
+        await prisma.auditLog.create({
+            data: {
+                action: 'DOCUMENT_CONTENT_READ',
+                userId: req.user?.id,
+                matterId: doc.matterId,
+                resourceId: doc.id,
+                details: `Artifact content read by user ${req.user?.email}. Classification: ${doc.classification}`,
+            } as any
+        });
+
         // In a real app, read from storage (uri)
         // For now, return the URI or a placeholder if it's a seed
         let content = `[ENCLAVE CONTENT]: Original artifact content for '${doc.name}' at URI ${doc.uri}. 
@@ -536,6 +547,17 @@ router.get('/:id', authenticateToken, async (req, res) => {
         if (doc.matter.tenantId !== req.user.tenantId) {
             return res.status(403).json({ error: 'Forbidden' });
         }
+
+        // 🛡️ [SECURITY] Audit document metadata pull
+        await prisma.auditLog.create({
+            data: {
+                action: 'DOCUMENT_METADATA_READ',
+                userId: req.user?.id,
+                matterId: doc.matterId,
+                resourceId: doc.id,
+                details: `Artifact overview accessed. Classification: ${doc.classification}`,
+            } as any
+        });
 
         const content = `[VAULT DOCUMENT: ${doc.name}]\n\nJurisdiction: ${doc.jurisdiction}\nClassification: ${doc.classification}\nPrivilege: ${doc.privilege}\n\n---\n\n${doc.uri || 'Content pending vault integration.'}`;
 
@@ -757,10 +779,6 @@ router.get('/:id/versions/:versionId/content', authenticateToken, async (req, re
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        if (doc.matter.tenantId !== tenantId) {
-            return res.status(403).json({ error: 'Forbidden' });
-        }
-
         const version = await prisma.documentVersion.findUnique({
             where: { id: versionId }
         });
@@ -768,6 +786,17 @@ router.get('/:id/versions/:versionId/content', authenticateToken, async (req, re
         if (!version || version.documentId !== id) {
             return res.status(404).json({ error: 'Version not found' });
         }
+
+        // 🛡️ [SECURITY] Audit historical version read
+        await prisma.auditLog.create({
+            data: {
+                action: 'DOCUMENT_VERSION_CONTENT_READ',
+                userId: req.user?.id,
+                matterId: doc.matterId,
+                resourceId: versionId,
+                details: `Historical version ${version?.versionNumber} read for artifact: ${doc.name}`,
+            } as any
+        });
 
         // Simulating content retrieval from URI (enclave storage)
         const content = `[OFFICIAL VERSION ${version.versionNumber}]\n\nSource: ${version.uri}\nCreated by: ${req.user?.name}\n\n[Sovereign Content Placeholder]\nThis is the historical artifact content as it existed at version ${version.versionNumber}.`;
