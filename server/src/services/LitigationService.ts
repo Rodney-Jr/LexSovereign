@@ -12,6 +12,14 @@ export class LitigationService {
         judgeName?: string;
         filedDate?: string;
     }) {
+        // 1. Fetch Matter to get tenantId
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            select: { tenantId: true }
+        });
+
+        if (!matter) throw new Error('Matter not found');
+
         return await prisma.caseMetadata.upsert({
             where: { matterId },
             update: {
@@ -23,6 +31,7 @@ export class LitigationService {
             },
             create: {
                 matterId,
+                tenantId: matter.tenantId,
                 jurisdiction: metadata.jurisdiction,
                 caseNumber: metadata.caseNumber,
                 courtName: metadata.courtName,
@@ -41,9 +50,17 @@ export class LitigationService {
         description?: string;
         priority?: string;
     }) {
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            select: { tenantId: true }
+        });
+
+        if (!matter) throw new Error('Matter not found');
+
         const newDeadline = await prisma.deadline.create({
             data: {
                 matterId,
+                tenantId: matter.tenantId,
                 title: deadline.title,
                 dueDate: new Date(deadline.dueDate),
                 description: deadline.description,
@@ -64,9 +81,17 @@ export class LitigationService {
         purpose?: string;
         notes?: string;
     }) {
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            select: { tenantId: true }
+        });
+
+        if (!matter) throw new Error('Matter not found');
+
         const newHearing = await prisma.hearing.create({
             data: {
                 matterId,
+                tenantId: matter.tenantId,
                 hearingDate: new Date(hearing.hearingDate),
                 location: hearing.location,
                 purpose: hearing.purpose,
@@ -86,9 +111,17 @@ export class LitigationService {
         description?: string;
         profferedBy?: string;
     }) {
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            select: { tenantId: true }
+        });
+
+        if (!matter) throw new Error('Matter not found');
+
         return await prisma.evidenceLink.create({
             data: {
                 matterId,
+                tenantId: matter.tenantId,
                 documentId,
                 exhibitNumber: evidence.exhibitNumber,
                 description: evidence.description,

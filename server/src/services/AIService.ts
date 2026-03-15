@@ -83,6 +83,7 @@ export class AIService {
         await prisma.aIRiskAnalysis.create({
             data: {
                 matterId,
+                tenantId,
                 riskScore: result.score,
                 summary: result.summary,
                 identifiedClauses: result.clauses,
@@ -106,6 +107,7 @@ export class AIService {
         await prisma.activityEntry.create({
             data: {
                 matterId,
+                tenantId,
                 type: 'AI_INSIGHT',
                 details: `Auto-summary generated: ${parsed.summary}`
             }

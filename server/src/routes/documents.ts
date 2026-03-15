@@ -143,6 +143,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
                 jurisdiction: region || matter.tenant.primaryRegion || 'GH_ACC_1',
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
+                tenantId,
                 matterId,
                 isEncrypted,
                 encryptionIV,
@@ -165,6 +166,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
         await prisma.documentVersion.create({
             data: {
                 documentId: doc.id,
+                tenantId,
                 versionNumber: 1,
                 uri: doc.uri,
                 authorId: req.user?.id,
@@ -296,6 +298,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
                 matterId,
+                tenantId,
                 isEncrypted,
                 encryptionIV,
                 encryptionKeyId,
@@ -320,6 +323,7 @@ router.post('/', authenticateToken, async (req, res) => {
         const version = await prisma.documentVersion.create({
             data: {
                 documentId: doc.id,
+                tenantId,
                 versionNumber: 1,
                 uri: doc.uri,
                 authorId: req.user?.id,
@@ -332,6 +336,7 @@ router.post('/', authenticateToken, async (req, res) => {
         await prisma.auditLog.create({
             data: {
                 action: 'DOCUMENT_VERSION_CREATED',
+                tenantId,
                 userId: req.user?.id,
                 matterId: doc.matterId,
                 resourceId: doc.id,
@@ -628,6 +633,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
             prisma.documentVersion.create({
                 data: {
                     documentId: id,
+                    tenantId: doc.tenantId,
                     versionNumber: nextVersionNumber,
                     uri: content || doc.uri,
                     authorId: req.user?.id,

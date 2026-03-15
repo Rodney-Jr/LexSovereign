@@ -67,7 +67,10 @@ router.post('/approve', authenticateToken, async (req, res) => {
 router.post('/clm/initialize', authenticateToken, async (req, res) => {
     try {
         const { matterId, metadata } = req.body;
-        const contractMetadata = await CLMService.initializeContract(matterId, metadata);
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(401).json({ error: 'Unauthorized' });
+
+        const contractMetadata = await CLMService.initializeContract(matterId, tenantId, metadata);
         res.json(contractMetadata);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

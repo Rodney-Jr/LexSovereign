@@ -79,7 +79,14 @@ async function main() {
     const docId = `doc-${m.id}`;
     await prisma.document.upsert({
       where: { id: docId },
-      create: { id: docId, name: m.docName, matterId: m.id, uri: `s3://mock/${docId}.pdf`, jurisdiction: 'GH' },
+      create: { 
+        id: docId, 
+        name: m.docName, 
+        matterId: m.id, 
+        tenantId: lawFirm.id, 
+        uri: `s3://mock/${docId}.pdf`, 
+        jurisdiction: 'GH' 
+      },
       update: { name: m.docName }
     });
   }
@@ -139,7 +146,14 @@ async function main() {
     const docId = `doc-${m.id}`;
     await prisma.document.upsert({
       where: { id: docId },
-      create: { id: docId, name: m.docName, matterId: m.id, uri: `s3://mock/${docId}.pdf`, jurisdiction: 'GH' },
+      create: { 
+        id: docId, 
+        name: m.docName, 
+        matterId: m.id, 
+        tenantId: enterprise.id, 
+        uri: `s3://mock/${docId}.pdf`, 
+        jurisdiction: 'GH' 
+      },
       update: { name: m.docName }
     });
   }

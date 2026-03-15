@@ -154,12 +154,14 @@ async function main() {
                     text: 'Welcome to the secure project enclave. We have uploaded the preliminary due diligence report for your review.',
                     authorId: adminId,
                     matterId: matter.id,
+                    tenantId: tenantId,
                     isRead: true
                 },
                 {
                     text: 'Thank you for the update. My team is reviewing the IP section now.',
                     authorId: clientUser.id,
                     matterId: matter.id,
+                    tenantId: tenantId,
                     isRead: false
                 }
             ]
