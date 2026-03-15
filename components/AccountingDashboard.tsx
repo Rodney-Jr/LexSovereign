@@ -201,12 +201,7 @@ const AccountingDashboard: React.FC = () => {
         : allEntries;
 
     return (
-        <ModuleGate
-            module="ACCOUNTING_HUB"
-            featureName="Sovereign Accounting Hub"
-            description="The complete double-entry bookkeeping system for Sovereign law firms. Automated IOLTA tracking, GAAP-compliant ledgers, and real-time financial reporting."
-        >
-            <div className="space-y-6">
+        <div className="space-y-6">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -571,7 +566,6 @@ const AccountingDashboard: React.FC = () => {
                         </>
                     )}
                 </div>
-            </div>
 
             {/* ── NEW JOURNAL ENTRY MODAL ── */}
             {showJournalModal && (
@@ -677,7 +671,7 @@ const AccountingDashboard: React.FC = () => {
                     </div>
                 </div>
             )}
-        </ModuleGate>
+        </div>
     );
 };
 

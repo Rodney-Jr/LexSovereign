@@ -69,7 +69,7 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
     const [candidateForm, setCandidateForm] = useState({ name: '', email: '', position: '', stage: 'Applied' as CandidateStage, notes: '' });
     const [editingSalary, setEditingSalary] = useState<{ id: string; value: string } | null>(null);
 
-    const isAdminManager = !userRole || userRole === 'ADMIN_MANAGER' || userRole === 'OWNER' || userRole === 'TENANT_ADMIN';
+    const isAdminManager = !userRole || userRole === 'ADMIN_MANAGER' || userRole === 'OWNER' || userRole === 'TENANT_ADMIN' || userRole === 'MANAGING_PARTNER';
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -310,11 +310,6 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                         {tab.key === 'leave' && pendingCount > 0 && (
                             <span className="bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{pendingCount}</span>
                         )}
-                        {'isPremium' in tab && tab.isPremium && (
-                            <div className="absolute -top-1 -right-1">
-                                <Zap size={8} fill="#f59e0b" className="text-amber-500" />
-                            </div>
-                        )}
                     </button>
                 ))}
             </div>
@@ -475,13 +470,7 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
 
             {/* ─── RECRUITMENT TAB ─── */}
             {activeTab === 'recruitment' && (
-                <ModuleGate
-                    module="HR_ENTERPRISE"
-                    featureName="Recruitment Pipeline"
-                    description="The Sovereign Recruitment module enables multi-stage candidate tracking, AI-assisted resume screening, and automated offer management."
-                    variant="tab"
-                >
-                    <div className="space-y-6">
+                <div className="space-y-6">
                         {isLoading ? (
                             <div className="p-16 flex justify-center items-center text-blue-500">
                                 <Loader2 className="animate-spin" size={32} />
@@ -527,18 +516,11 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                             </div>
                         )}
                     </div>
-                </ModuleGate>
             )}
 
             {/* ─── COMPLIANCE / CLE TAB ─── */}
             {activeTab === 'compliance' && (
-                <ModuleGate
-                    module="HR_ENTERPRISE"
-                    featureName="CLE & Compliance Tracking"
-                    description="Monitor Continuing Legal Education (CLE) credits and automated onboarding compliance for every practitioner."
-                    variant="tab"
-                >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                         {isLoading ? (
                             <div className="p-16 flex justify-center items-center text-blue-500">
                                 <Loader2 className="animate-spin" size={32} />
@@ -621,7 +603,6 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                             </>
                         )}
                     </div>
-                </ModuleGate>
             )}
 
             {!isAdminManager && (
@@ -722,13 +703,7 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
 
             {/* ─── PAYROLL OVERVIEW TAB ─── */}
             {activeTab === 'payroll' && (
-                <ModuleGate
-                    module="HR_ENTERPRISE"
-                    featureName="Sovereign Payroll Control"
-                    description="Automate salary disbursements, tax withholding, and benefit administration with hardware-enclave security."
-                    variant="tab"
-                >
-                    <div className="space-y-6">
+                <div className="space-y-6">
                         {isLoading ? (
                             <div className="p-16 flex justify-center items-center text-blue-500">
                                 <Loader2 className="animate-spin" size={32} />
@@ -821,7 +796,6 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                             </>
                         )}
                     </div>
-                </ModuleGate>
             )}
 
             {selectedStaff && (

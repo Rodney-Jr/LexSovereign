@@ -34,7 +34,13 @@ const SovereignMarketplace: React.FC<SovereignMarketplaceProps> = ({ onAddDocume
     const [templates, setTemplates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const isTenantAdmin = userRole === UserRole.TENANT_ADMIN;
+    const isTenantAdmin = [
+        UserRole.TENANT_ADMIN, 
+        UserRole.MANAGING_PARTNER, 
+        UserRole.ADMIN_MANAGER, 
+        UserRole.OWNER,
+        UserRole.GLOBAL_ADMIN
+    ].includes(userRole as any);
 
     useEffect(() => {
         if (category === 'DOCUMENTS') {

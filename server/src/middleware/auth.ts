@@ -31,13 +31,19 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             });
         }
 
+        // Normalize Platform Admin TenantID
+        if (user.tenantId === '__PLATFORM__') {
+            user.tenantId = null;
+        }
+
         try {
-            // Check User & Tenant Status
-            const dbUser: any = await requestContext.run({ tenantId: user.tenantId, userId: user.id }, () =>
+            // [SECURITY] Bypass isolation for authentication lookup to find user across any/no tenant
+            const dbUser: any = await requestContext.run({ tenantId: undefined, userId: user.id }, () =>
                 (prisma as any).user.findUnique({
                     where: { id: user.id },
                     include: {
                         tenant: { select: { status: true, enabledModules: true, isTrial: true, trialExpiresAt: true } },
+                        role: { include: { permissions: true } },
                         department: true
                     }
                 })
@@ -81,12 +87,15 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
                 user.tenantId = CONFIG.SINGLE_TENANT_ID;
             }
 
-            // Hydrate sensitive context from DB (Department, Attributes, Modules)
+            // Hydrate sensitive context from DB (Department, Permissions, Attributes, Modules)
+            const dbPermissions = dbUser.role?.permissions?.map((p: any) => p.id) || [];
+            
             req.user = {
                 ...user,
                 department: (dbUser as any).department || undefined,
                 name: dbUser.name,
                 tenant: (dbUser as any).tenant,
+                permissions: dbPermissions,
                 isImpersonating: user.isImpersonating || false,
                 impersonatorId: user.impersonatorId || undefined
             };
@@ -138,3 +147,20 @@ export const authorizeRole = (allowedRoles: string[]) => {
 };
 
 export const requireRole = authorizeRole; // Alias for compatibility
+
+export const requirePermission = (permissionId: string) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (!req.user) {
+            res.sendStatus(401);
+            return;
+        }
+
+        if (!req.user.permissions?.includes(permissionId)) {
+            console.warn(`[RBAC] User ${req.user.email} (Role: ${req.user.role}) lacks required permission: ${permissionId}`);
+            res.status(403).json({ error: 'Insufficient permissions' });
+            return;
+        }
+
+        next();
+    };
+};

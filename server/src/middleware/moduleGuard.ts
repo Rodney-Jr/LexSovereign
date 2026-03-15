@@ -11,7 +11,10 @@ export const moduleGuard = (requiredModule: string) => {
 
         const enabledModules = tenant.enabledModules || ["CORE"];
 
-        if (!enabledModules.includes(requiredModule) && !enabledModules.includes("ALL")) {
+        // ACCOUNTING_HUB and HR_ENTERPRISE are now free for all tenants
+        const isFreeModule = requiredModule === "ACCOUNTING_HUB" || requiredModule === "HR_ENTERPRISE";
+
+        if (!isFreeModule && !enabledModules.includes(requiredModule) && !enabledModules.includes("ALL")) {
             return res.status(402).json({
                 error: "Payment Required",
                 message: `The '${requiredModule}' module is not enabled for this tenant.`,

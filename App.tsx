@@ -167,7 +167,8 @@ const AppContent: React.FC = () => {
         };
     }, [handleLogout, notify]);
 
-  // Security Policy
+  // Security Policy: Hardened 30-minute inactivity logout
+  // This helps prevent session hijacking on public or shared terminals.
   useInactivityLogout(handleLogout, 1800000, isAuthenticated && !isOnboarding);
 
   // RBAC Sentinel — uses authoritative canAccessTab from usePermissions hook
@@ -251,8 +252,8 @@ const AppContent: React.FC = () => {
                   </button>
                 </div>
               </div>
-              {/* Quick Actions - Hidden for technical/admin-only roles */}
-              {contextRole !== 'GLOBAL_ADMIN' && contextRole !== 'ADMIN_MANAGER' && contextRole !== 'TENANT_ADMIN' && (
+              {/* Quick Actions - Visible for everyone except Global Admin (who has platform-ops) */}
+              {contextRole !== 'GLOBAL_ADMIN' && (
                 <>
                   <div onClick={() => setActiveTab('drafting')} className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-primary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-primary/5">
                     <div className="p-3 bg-brand-primary/20 rounded-2xl animate-pulse"><Sparkles className="text-brand-primary" size={24} /></div>

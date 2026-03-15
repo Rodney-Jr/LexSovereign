@@ -1,13 +1,13 @@
 import express from 'express';
 import { prisma } from '../db';
-import { authenticateToken, requireRole } from '../middleware/auth';
+import { authenticateToken, requireRole, requirePermission } from '../middleware/auth';
 import { StripeService } from '../services/StripeService';
 
 const router = express.Router();
 
 // GET /api/tenant/admin-stats
 // Returns live counts for the current tenant
-router.get('/admin-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.get('/admin-stats', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         const tenantId = req.user?.tenantId;
@@ -43,7 +43,7 @@ router.get('/admin-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOB
 
 // GET /api/tenant/capacity-stats
 // Returns aggregated firm load and readiness metrics
-router.get('/capacity-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.get('/capacity-stats', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
         if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
@@ -83,7 +83,7 @@ router.get('/capacity-stats', authenticateToken, requireRole(['TENANT_ADMIN', 'G
 
 // GET /api/tenant/insights
 // Returns operational insights for the dashboard
-router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.get('/insights', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
         if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
@@ -162,7 +162,7 @@ router.get('/insights', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_
 
 // GET /api/tenant/billing
 // Returns plan details and usage metrics
-router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.get('/billing', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -293,7 +293,7 @@ router.get('/billing', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 
 // GET /api/tenant/settings
 // Returns organization-specific settings
-router.get('/settings', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.get('/settings', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         if (!isGlobalAdmin && !req.user?.tenantId) {
@@ -320,7 +320,7 @@ router.get('/settings', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_
 
 // POST /api/tenant/settings/mode
 // Update Data Separation Mode
-router.post('/settings/mode', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.post('/settings/mode', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
         const { mode } = req.body;
         const tenantId = req.user?.tenantId;
@@ -347,7 +347,7 @@ router.post('/settings/mode', authenticateToken, requireRole(['TENANT_ADMIN', 'G
 
 // POST /api/tenant/users/:userId/department
 // Assign a user to a department
-router.post('/users/:userId/department', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.post('/users/:userId/department', authenticateToken, requirePermission('manage_users'), async (req, res) => {
     try {
         const { userId } = req.params;
         const { departmentId } = req.body; // e.g. "uuid-here"

@@ -203,11 +203,11 @@ const SovereignBilling: React.FC = () => {
                   </div>
                </div>
 
-               {/* Modular Add-ons */}
+               {/* Modular Capabilities */}
                <div className="space-y-6">
                   <div className="flex items-center justify-between px-2">
                      <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                        <Plus size={14} className="text-blue-400" /> Modular Capability Add-ons
+                        <CheckCircle2 size={14} className="text-emerald-400" /> Included Sovereign Capabilities
                      </h4>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -215,43 +215,17 @@ const SovereignBilling: React.FC = () => {
                         title="Sovereign Accounting"
                         description="GAAP-compliant ledger, automated Trust accounting, and QuickBooks/LawPay sync."
                         moduleKey="ACCOUNTING_HUB"
-                        isEnabled={billingData?.enabledModules?.includes('ACCOUNTING_HUB')}
-                        onProcure={async () => {
-                           const session = getSavedSession();
-                           if (!session?.token) return;
-                           try {
-                              await authorizedFetch('/api/stripe/modules/procure', {
-                                 method: 'POST',
-                                 body: JSON.stringify({ moduleKey: 'ACCOUNTING_HUB' }),
-                                 token: session.token
-                              });
-                              fetchBilling();
-                           } catch (e) {
-                              console.error("[Billing] Procure failed:", e);
-                              alert("Procurement failed. Ensure you have an active Stripe subscription.");
-                           }
-                        }}
+                        isEnabled={true}
+                        isPreActivated={true}
+                        onProcure={() => {}}
                      />
                      <ModuleProcurementCard
                         title="HR Enterprise"
                         description="Recruitment pipelines, Payroll management, and automated Compliance tracking."
                         moduleKey="HR_ENTERPRISE"
-                        isEnabled={billingData?.enabledModules?.includes('HR_ENTERPRISE')}
-                        onProcure={async () => {
-                           const session = getSavedSession();
-                           if (!session?.token) return;
-                           try {
-                              await authorizedFetch('/api/stripe/modules/procure', {
-                                 method: 'POST',
-                                 body: JSON.stringify({ moduleKey: 'HR_ENTERPRISE' }),
-                                 token: session.token
-                              });
-                              fetchBilling();
-                           } catch (e) {
-                              console.error("[Billing] Procure failed:", e);
-                              alert("Procurement failed. Ensure you have an active Stripe subscription.");
-                           }
-                        }}
+                        isEnabled={true}
+                        isPreActivated={true}
+                        onProcure={() => {}}
                      />
                   </div>
                </div>
@@ -366,7 +340,7 @@ const InvoiceRow = ({ cycle, delta, amount, status, downloadUrl }: any) => (
    </tr>
 );
 
-const ModuleProcurementCard = ({ title, description, moduleKey, isEnabled, onProcure }: { title: string, description: string, moduleKey: string, isEnabled: boolean, onProcure: () => void }) => (
+const ModuleProcurementCard = ({ title, description, moduleKey, isEnabled, onProcure, isPreActivated }: { title: string, description: string, moduleKey: string, isEnabled: boolean, onProcure: () => void, isPreActivated?: boolean }) => (
    <div className={`p-8 rounded-[2rem] border transition-all flex flex-col justify-between ${isEnabled ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900 border-slate-800 hover:border-blue-500/30'}`}>
       <div className="space-y-4">
          <div className="flex items-center justify-between">
@@ -374,7 +348,7 @@ const ModuleProcurementCard = ({ title, description, moduleKey, isEnabled, onPro
             {isEnabled ? (
                <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                   <CheckCircle2 size={10} className="text-emerald-500" />
-                  <span className="text-[10px] font-black uppercase text-emerald-500">Active</span>
+                  <span className="text-[10px] font-black uppercase text-emerald-500">{isPreActivated ? 'Forever Free' : 'Active'}</span>
                </div>
             ) : (
                <Zap size={16} className="text-blue-500" />
@@ -389,7 +363,7 @@ const ModuleProcurementCard = ({ title, description, moduleKey, isEnabled, onPro
          onClick={onProcure}
          className={`mt-6 w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${isEnabled ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 active:scale-95'}`}
       >
-         {isEnabled ? 'Capability Enabled' : `Activate ${title}`}
+         {isPreActivated ? 'Capability Included' : isEnabled ? 'Capability Enabled' : `Activate ${title}`}
       </button>
    </div>
 );

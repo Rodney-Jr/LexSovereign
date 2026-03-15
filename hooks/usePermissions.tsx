@@ -32,7 +32,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     const [userId, setUserId] = useState<string | null>(null);
     const [department, setDepartment] = useState<Department | undefined>(undefined);
     const [separationMode, setSeparationMode] = useState<'OPEN' | 'DEPARTMENTAL' | 'STRICT'>('OPEN');
-    const [enabledModules, setEnabledModules] = useState<string[]>(["CORE"]);
+    const [enabledModules, setEnabledModules] = useState<string[]>(["CORE", "ACCOUNTING_HUB", "HR_ENTERPRISE"]);
 
     // Load from local storage on mount if available (for persistence across refreshes)
     useEffect(() => {
@@ -44,7 +44,13 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
                 if (parsed.role) setRole(parsed.role);
                 if (parsed.userId) setUserId(parsed.userId);
                 if (parsed.department) setDepartment(parsed.department);
-                if (parsed.enabledModules) setEnabledModules(parsed.enabledModules);
+                
+                // Merge default free modules with tenant's enabled modules
+                const modules = parsed.enabledModules || ["CORE"];
+                const freeModules = ["ACCOUNTING_HUB", "HR_ENTERPRISE"];
+                const combined = Array.from(new Set([...modules, ...freeModules]));
+                setEnabledModules(combined);
+                
                 // separationMode might not be in session, but we can try
                 if (parsed.separationMode) setSeparationMode(parsed.separationMode);
             } catch (e) {
@@ -64,6 +70,9 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     }, [role, permissions]);
 
     const hasModule = React.useCallback((moduleId: string): boolean => {
+        // HR and Accounting are now free for everyone
+        if (moduleId === 'ACCOUNTING_HUB' || moduleId === 'HR_ENTERPRISE') return true;
+        
         if (role === 'GLOBAL_ADMIN') return true;
         if (enabledModules.includes('ALL')) return true;
         return enabledModules.includes(moduleId);
@@ -80,6 +89,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         }
 
         if (separationMode === 'STRICT') {
+            if (role === 'CLIENT') return true;
             if (resource.internalCounsel === userId) return true;
             if (resource.team && Array.isArray(resource.team)) {
                 return resource.team.some((member: any) => member.id === userId);

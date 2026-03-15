@@ -73,9 +73,15 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         setRole('');
         setPermissions([]);
         setEnabledModules(["CORE"]);
+
+        // Explicitly clear storage
         localStorage.removeItem('nomosdesk_session');
         localStorage.removeItem('nomosdesk_pin');
+        localStorage.removeItem('nomosdesk_activeTab');
         sessionStorage.removeItem('nomosdesk_session');
+        
+        // Final fallback: redirect to home or reload to ensure clean State
+        window.location.href = '/';
     }, [setRole, setPermissions, setEnabledModules]);
 
     useEffect(() => {

@@ -35,21 +35,56 @@ async function main() {
 
         // 2. Create Roles
         console.log('Creating Roles...');
-        const partnerRole = await prisma.role.create({
+
+        // Base Partner permissions plus new granular modules
+        const adminPermissions = [
+            'manage_tenant', 'manage_users', 'manage_roles',
+            'read_billing', 'read_all_audits', 'create_matter',
+            'read_assigned_matter', 'check_conflicts', 'review_work',
+            'upload_document', 'create_draft', 'edit_draft',
+            'approve_document', 'export_final', 'ai_chat_execute',
+            'use_legal_chat', 'view_confidential',
+            'access_hr_workbench', 'access_accounting_hub', 
+            'access_platform_roadmap', 'access_infrastructure_plane', 'view_trial_status'
+        ];
+
+        const ownerRole = await prisma.role.create({
             data: {
-                name: 'PARTNER',
-                description: 'Senior Management & Legal Counsel',
+                name: 'OWNER',
+                description: 'Firm Owner - Full Sovereignty',
+                isSystem: true,
+                tenantId: tenantId,
+                permissions: {
+                    connect: adminPermissions.map(id => ({ id }))
+                }
+            }
+        });
+
+        const managingPartnerRole = await prisma.role.create({
+            data: {
+                name: 'MANAGING_PARTNER',
+                description: 'Managing Partner - Executive Operations',
+                isSystem: true,
+                tenantId: tenantId,
+                permissions: {
+                    connect: adminPermissions.map(id => ({ id }))
+                }
+            }
+        });
+
+        const adminManagerRole = await prisma.role.create({
+            data: {
+                name: 'ADMIN_MANAGER',
+                description: 'Administrative Manager - Firm Operations',
                 isSystem: true,
                 tenantId: tenantId,
                 permissions: {
                     connect: [
-                        { id: 'manage_tenant' }, { id: 'manage_users' }, { id: 'manage_roles' },
-                        { id: 'read_billing' }, { id: 'read_all_audits' }, { id: 'create_matter' },
-                        { id: 'read_assigned_matter' }, { id: 'check_conflicts' }, { id: 'review_work' },
-                        { id: 'upload_document' }, { id: 'create_draft' }, { id: 'edit_draft' },
-                        { id: 'approve_document' }, { id: 'export_final' }, { id: 'ai_chat_execute' },
-                        { id: 'use_legal_chat' }, { id: 'view_confidential' }
-                    ]
+                        'manage_users', 'manage_roles', 'read_billing', 
+                        'access_hr_workbench', 'access_accounting_hub',
+                        'access_platform_roadmap', 'view_trial_status',
+                        'manage_tenant'
+                    ].map(id => ({ id }))
                 }
             }
         });
@@ -62,11 +97,11 @@ async function main() {
                 tenantId: tenantId,
                 permissions: {
                     connect: [
-                        { id: 'read_assigned_matter' }, { id: 'check_conflicts' }, { id: 'upload_document' },
-                        { id: 'create_draft' }, { id: 'edit_draft' }, { id: 'submit_review' },
-                        { id: 'create_matter' }, { id: 'ai_chat_execute' }, { id: 'use_legal_chat' },
-                        { id: 'view_confidential' }
-                    ]
+                        'read_assigned_matter', 'check_conflicts', 'upload_document',
+                        'create_draft', 'edit_draft', 'submit_review',
+                        'create_matter', 'ai_chat_execute', 'use_legal_chat',
+                        'view_confidential'
+                    ].map(id => ({ id }))
                 }
             }
         });
@@ -79,26 +114,56 @@ async function main() {
                 tenantId: tenantId,
                 permissions: {
                     connect: [
-                        { id: 'read_assigned_matter' }, { id: 'client_portal_access' }
-                    ]
+                        'read_assigned_matter', 'client_portal_access'
+                    ].map(id => ({ id }))
                 }
             }
         });
 
-        // 3. Create Admin (Partner) User
-        console.log('Creating Admin Partner...');
+        // 3. Create Users
+        console.log('Creating Admin Users...');
         const hashedPartnerPassword = await bcrypt.hash(password, 10);
+        
+        // Owner
+        await prisma.user.create({
+            data: {
+                email: 'owner@enterpriselegal.com',
+                name: 'Firm Owner',
+                passwordHash: hashedPartnerPassword,
+                tenantId: tenantId,
+                roleId: ownerRole.id,
+                roleString: 'OWNER',
+                region: region,
+                roleSeniority: 10.0
+            }
+        });
+
+        // Managing Partner
         await prisma.user.create({
             data: {
                 id: adminId,
                 email: adminEmail,
-                name: 'Senior Partner',
+                name: 'Senior Managing Partner',
                 passwordHash: hashedPartnerPassword,
                 tenantId: tenantId,
-                roleId: partnerRole.id,
-                roleString: 'PARTNER',
+                roleId: managingPartnerRole.id,
+                roleString: 'MANAGING_PARTNER',
                 region: region,
-                roleSeniority: 10.0
+                roleSeniority: 9.0
+            }
+        });
+
+        // Admin Manager
+        await prisma.user.create({
+            data: {
+                email: 'admin@enterpriselegal.com',
+                name: 'Admin Manager',
+                passwordHash: hashedPartnerPassword,
+                tenantId: tenantId,
+                roleId: adminManagerRole.id,
+                roleString: 'ADMIN_MANAGER',
+                region: region,
+                roleSeniority: 5.0
             }
         });
 
@@ -170,7 +235,9 @@ async function main() {
 
         console.log('\n🌟 ENTERPRISE LEGAL DEMO READY 🌟');
         console.log('-----------------------------------');
-        console.log('PARTNER: partner@enterpriselegal.com / password123');
+        console.log('OWNER: owner@enterpriselegal.com / password123');
+        console.log('MANAGING PARTNER: partner@enterpriselegal.com / password123');
+        console.log('ADMIN MANAGER: admin@enterpriselegal.com / password123');
         console.log('ASSOCIATE: associate@enterpriselegal.com / password123');
         console.log('CLIENT: client@enterpriselegal.com / password123');
         console.log('-----------------------------------');

@@ -301,7 +301,7 @@ const CLMIntakeModal: React.FC<CLMIntakeModalProps> = ({ onClose, onCreated, exi
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

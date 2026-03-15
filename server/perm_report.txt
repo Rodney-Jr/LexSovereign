@@ -1,0 +1,229 @@
+--- Role Permissions Report ---
+Role: GLOBAL_ADMIN
+Permissions: manage_platform, read_all_audits, manage_tenant, use_legal_chat
+----------------------------
+Role: TENANT_ADMIN
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, design_workflow
+----------------------------
+Role: MANAGING_PARTNER
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses
+----------------------------
+Role: PARTNER
+Permissions: read_all_audits, manage_users, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, approve_document, export_final, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget
+----------------------------
+Role: SENIOR_COUNSEL
+Permissions: create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: INTERNAL_COUNSEL
+Permissions: create_matter, upload_document, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: JUNIOR_ASSOCIATE
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: LEGAL_OPS
+Permissions: read_all_audits, manage_users, create_matter, design_workflow, upload_document, read_billing, check_conflicts, read_assigned_matter, create_draft, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: COMPLIANCE
+Permissions: read_all_audits, manage_tenant, use_legal_chat
+----------------------------
+Role: FINANCE_BILLING
+Permissions: read_billing
+----------------------------
+Role: EXTERNAL_COUNSEL
+Permissions: create_matter, upload_document, read_assigned_matter, create_draft, use_legal_chat
+----------------------------
+Role: DEPUTY_GC
+Permissions: read_all_audits, manage_users, manage_roles, create_matter, design_workflow, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, approve_document, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: CLIENT
+Permissions: read_assigned_matter, client_portal_access
+----------------------------
+Role: EXECUTIVE_BOARD
+Permissions: read_all_audits, read_billing, use_legal_chat
+----------------------------
+Role: OWNER
+Permissions: manage_platform, create_draft, edit_draft, approve_document, submit_review, export_final, use_legal_chat, freeze_budget
+----------------------------
+Role: PARALEGAL
+Permissions: create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+Role: AUDITOR
+Permissions: read_all_audits, read_assigned_matter
+----------------------------
+Role: CLERK
+Permissions: upload_document, read_assigned_matter, use_legal_chat, view_confidential
+----------------------------
+Role: ADMIN_MANAGER
+Permissions: manage_users, approve_spend, read_billing, use_legal_chat, view_confidential, manage_expenses
+----------------------------
+Role: TENANT_ADMIN
+Permissions: read_all_audits, manage_tenant, manage_users, manage_roles, create_matter, read_billing
+----------------------------
+Role: INTERNAL_COUNSEL
+Permissions: create_matter, read_assigned_matter, create_draft, edit_draft
+----------------------------
+Role: GLOBAL_ADMIN
+Permissions: manage_platform, read_all_audits, manage_tenant, use_legal_chat
+----------------------------
+Role: TENANT_ADMIN
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, design_workflow
+----------------------------
+Role: MANAGING_PARTNER
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses
+----------------------------
+Role: PARTNER
+Permissions: read_all_audits, manage_users, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, approve_document, export_final, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget
+----------------------------
+Role: SENIOR_COUNSEL
+Permissions: create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: INTERNAL_COUNSEL
+Permissions: create_matter, upload_document, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: JUNIOR_ASSOCIATE
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: LEGAL_OPS
+Permissions: read_all_audits, manage_users, create_matter, design_workflow, upload_document, read_billing, check_conflicts, read_assigned_matter, create_draft, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: COMPLIANCE
+Permissions: read_all_audits, manage_tenant, use_legal_chat
+----------------------------
+Role: FINANCE_BILLING
+Permissions: read_billing
+----------------------------
+Role: EXTERNAL_COUNSEL
+Permissions: create_matter, upload_document, read_assigned_matter, create_draft, use_legal_chat
+----------------------------
+Role: DEPUTY_GC
+Permissions: read_all_audits, manage_users, manage_roles, create_matter, design_workflow, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, approve_document, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: CLIENT
+Permissions: read_assigned_matter, client_portal_access
+----------------------------
+Role: EXECUTIVE_BOARD
+Permissions: read_all_audits, read_billing, use_legal_chat
+----------------------------
+Role: OWNER
+Permissions: manage_platform, create_draft, edit_draft, approve_document, submit_review, export_final, use_legal_chat, freeze_budget
+----------------------------
+Role: PARALEGAL
+Permissions: create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+Role: AUDITOR
+Permissions: read_all_audits, read_assigned_matter
+----------------------------
+Role: CLERK
+Permissions: upload_document, read_assigned_matter, use_legal_chat, view_confidential
+----------------------------
+Role: ADMIN_MANAGER
+Permissions: manage_users, approve_spend, read_billing, use_legal_chat, view_confidential, manage_expenses
+----------------------------
+Role: GLOBAL_ADMIN
+Permissions: manage_platform, read_all_audits, manage_tenant, use_legal_chat
+----------------------------
+Role: TENANT_ADMIN
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, design_workflow
+----------------------------
+Role: MANAGING_PARTNER
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses
+----------------------------
+Role: PARTNER
+Permissions: read_all_audits, manage_users, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, approve_document, export_final, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget
+----------------------------
+Role: SENIOR_COUNSEL
+Permissions: create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: INTERNAL_COUNSEL
+Permissions: create_matter, upload_document, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: JUNIOR_ASSOCIATE
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: LEGAL_OPS
+Permissions: read_all_audits, manage_users, create_matter, design_workflow, upload_document, read_billing, check_conflicts, read_assigned_matter, create_draft, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: COMPLIANCE
+Permissions: read_all_audits, manage_tenant, use_legal_chat
+----------------------------
+Role: FINANCE_BILLING
+Permissions: read_billing
+----------------------------
+Role: EXTERNAL_COUNSEL
+Permissions: create_matter, upload_document, read_assigned_matter, create_draft, use_legal_chat
+----------------------------
+Role: DEPUTY_GC
+Permissions: read_all_audits, manage_users, manage_roles, create_matter, design_workflow, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, approve_document, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: CLIENT
+Permissions: read_assigned_matter, client_portal_access
+----------------------------
+Role: EXECUTIVE_BOARD
+Permissions: read_all_audits, read_billing, use_legal_chat
+----------------------------
+Role: OWNER
+Permissions: manage_platform, create_draft, edit_draft, approve_document, submit_review, export_final, use_legal_chat, freeze_budget
+----------------------------
+Role: PARALEGAL
+Permissions: create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+Role: AUDITOR
+Permissions: read_all_audits, read_assigned_matter
+----------------------------
+Role: CLERK
+Permissions: upload_document, read_assigned_matter, use_legal_chat, view_confidential
+----------------------------
+Role: ADMIN_MANAGER
+Permissions: manage_users, approve_spend, read_billing, use_legal_chat, view_confidential, manage_expenses
+----------------------------
+Role: MANAGING_PARTNER
+Permissions: manage_tenant, create_matter, ai_chat_execute
+----------------------------
+Role: MANAGING_PARTNER
+Permissions: manage_tenant, create_matter, ai_chat_execute
+----------------------------
+Role: MANAGING_PARTNER
+Permissions: 
+----------------------------
+Role: SENIOR_ASSOCIATE
+Permissions: 
+----------------------------
+Role: JUNIOR_ASSOCIATE
+Permissions: 
+----------------------------
+Role: PARALEGAL
+Permissions: 
+----------------------------
+Role: FINANCE_MANAGER
+Permissions: 
+----------------------------
+Role: GENERAL_COUNSEL
+Permissions: 
+----------------------------
+Role: SENIOR_COUNSEL
+Permissions: 
+----------------------------
+Role: CONTRACT_MANAGER
+Permissions: 
+----------------------------
+Role: COMPLIANCE_OFFICER
+Permissions: 
+----------------------------
+Role: LEGAL_OPS
+Permissions: 
+----------------------------
+Role: OWNER
+Permissions: read_all_audits, manage_tenant, manage_users, manage_roles, create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, approve_document, export_final, ai_chat_execute, use_legal_chat, view_confidential, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+Role: MANAGING_PARTNER
+Permissions: read_all_audits, manage_tenant, manage_users, manage_roles, create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, approve_document, export_final, ai_chat_execute, use_legal_chat, view_confidential, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+Role: ADMIN_MANAGER
+Permissions: manage_tenant, manage_users, manage_roles, read_billing, access_hr_workbench, access_accounting_hub, access_platform_roadmap, view_trial_status
+----------------------------
+Role: JUNIOR_ASSOCIATE
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential
+----------------------------
+Role: CLIENT
+Permissions: read_assigned_matter, client_portal_access
+----------------------------

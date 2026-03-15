@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../db';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, requirePermission } from '../middleware/auth';
 import { DocumentAssemblyService } from '../services/DocumentAssemblyService';
 import { DocumentExportService } from '../services/DocumentExportService';
 import { readDocumentContent } from '../utils/fileStorage';
@@ -11,7 +11,7 @@ const router = express.Router();
  * POST /api/documents/:id/export
  * Body: { format: 'DOCX' | 'PDF', brandingProfileId?: string }
  */
-router.post('/:id/export', authenticateToken, async (req, res) => {
+router.post('/:id/export', authenticateToken, requirePermission('export_final'), async (req, res) => {
     try {
         const { id } = req.params;
         const { format, brandingProfileId } = req.body;
@@ -27,7 +27,7 @@ router.post('/:id/export', authenticateToken, async (req, res) => {
             include: { matter: true }
         });
 
-        if (!document || document.matter.tenantId !== tenantId) {
+        if (!document || (document.matter.tenantId !== tenantId && req.user?.role !== 'GLOBAL_ADMIN')) {
             return res.status(404).json({ error: 'Document not found' });
         }
 
@@ -42,13 +42,18 @@ router.post('/:id/export', authenticateToken, async (req, res) => {
             }
         }
 
-        // 3. Retrieve Content
-        const contentMatch = document.uri.match(/file:\/\/(.+)/);
-        if (!contentMatch) {
-            return res.status(500).json({ error: 'Document content is not stored locally' });
+        // 3. Retrieve Content - Support multiple URI schemes
+        let contentPath = '';
+        if (document.uri.startsWith('file://')) {
+            contentPath = document.uri.replace('file://', '');
+        } else if (document.uri.startsWith('silo://') || document.uri.startsWith('local://')) {
+            // Local/Silo URIs in development map to vault structure
+            contentPath = document.uri.replace('silo://', '').replace('local://', '');
+        } else {
+            return res.status(500).json({ error: `Document scheme '${document.uri.split(':')[0]}' not supported for direct export.` });
         }
 
-        const rawContent = await readDocumentContent(contentMatch[1]);
+        const rawContent = await readDocumentContent(contentPath);
 
         // 4. Parse Elements
         const lines = rawContent.split('\n');

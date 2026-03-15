@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../db';
-import { authenticateToken, requireRole } from '../middleware/auth';
+import { authenticateToken, requireRole, requirePermission } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -57,7 +57,7 @@ router.get('/permissions', authenticateToken, async (req, res) => {
 });
 
 // Create a custom role
-router.post('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.post('/', authenticateToken, requirePermission('manage_roles'), async (req, res) => {
     try {
         const { name, description, permissionIds } = req.body;
 
@@ -186,7 +186,7 @@ router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 
 });
 
 // Update a role
-router.put('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.put('/:id', authenticateToken, requirePermission('manage_roles'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, permissionIds } = req.body;
@@ -232,7 +232,7 @@ router.put('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN
 });
 
 // Delete a role
-router.delete('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.delete('/:id', authenticateToken, requirePermission('manage_roles'), async (req, res) => {
     try {
         const { id } = req.params;
 

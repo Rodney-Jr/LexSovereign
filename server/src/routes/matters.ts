@@ -32,7 +32,17 @@ router.get('/', authenticateToken, async (req, res) => {
         // Apply Separation Logic. Only TENANT_ADMIN bypasses departmental separation for their own tenant.
         const isAdmin = user.role === 'TENANT_ADMIN';
 
-        if (!isAdmin) {
+        if (user.role === 'CLIENT') {
+            // Clients see matters associated with their name/organization
+            // In this demo, we match the client string in the matter
+            whereClause = {
+                ...whereClause,
+                OR: [
+                    { client: { contains: user.name, mode: 'insensitive' } },
+                    { client: { contains: user.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } }
+                ]
+            };
+        } else if (!isAdmin) {
             if (separationMode === 'STRICT') {
                 // Only see matters YOU are assigned to
                 whereClause = {

@@ -69,7 +69,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits', 'use_legal_chat', 'create_draft', 'upload_document'],
   'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing', 'design_workflow', 'use_legal_chat'],
   'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter', 'create_draft', 'use_legal_chat'],
-  'CLIENT': ['read_assigned_matter', 'client_portal_access'],
+  'CLIENT': ['read_assigned_matter', 'client_portal_access', 'export_final'],
   'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing', 'use_legal_chat'],
   'COMPLIANCE': ['read_all_audits', 'manage_tenant', 'use_legal_chat'],
   'FINANCE_BILLING': ['read_billing'],
@@ -79,7 +79,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
 
   // Approval Workflow Permissions
-  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'use_legal_chat', 'can_freeze_budget', 'access_hr_workbench', 'access_accounting_hub'],
+  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'manage_tenant', 'manage_users', 'manage_roles', 'use_legal_chat', 'can_freeze_budget', 'access_hr_workbench', 'access_accounting_hub'],
   'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
   'AUDITOR': ['read_all_audits', 'read_assigned_matter'],
   'CLERK': ['upload_field_intake', 'use_legal_chat', 'read_assigned_matter'],

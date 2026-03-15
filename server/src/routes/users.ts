@@ -1,7 +1,7 @@
 import express from 'express';
 import { prisma } from '../db';
 import { StripeService } from '../services/StripeService';
-import { authenticateToken, requireRole } from '../middleware/auth';
+import { authenticateToken, requireRole, requirePermission } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ const router = express.Router();
  * Returns all users within the current tenant enclave.
  * Restricted to TENANT_ADMIN and GLOBAL_ADMIN.
  */
-router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN', 'MANAGING_PARTNER', 'PARTNER', 'ADMIN_MANAGER', 'LEGAL_OPS', 'JUNIOR_ASSOCIATE', 'CLERK']), async (req, res) => {
+router.get('/', authenticateToken, requirePermission('manage_users'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         if (!isGlobalAdmin && !req.user?.tenantId) {
@@ -65,7 +65,7 @@ router.get('/', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN', 
  * Removes a user from the tenant.
  * Restricted to TENANT_ADMIN and GLOBAL_ADMIN.
  */
-router.delete('/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.delete('/:id', authenticateToken, requirePermission('manage_users'), async (req, res) => {
     try {
         const userId = req.params.id;
         const tenantId = req.user?.tenantId;

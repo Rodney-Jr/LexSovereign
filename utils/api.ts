@@ -25,7 +25,13 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         headers.set('Authorization', `Bearer ${token}`);
     } else {
         // Only log warning for non-public routes
-        const isPublicAuth = url.includes('/api/auth/resolve-invite') || url.includes('/api/auth/login') || url.includes('/api/auth/register') || url.includes('/api/auth/forgot-password');
+        const isPublicAuth = 
+            url.includes('/api/auth/resolve-invite') || 
+            url.includes('/api/auth/login') || 
+            url.includes('/api/auth/register') || 
+            url.includes('/api/auth/forgot-password') ||
+            url.includes('/api/pricing') ||
+            url.includes('/api/stripe/create-checkout-session');
         if (!isPublicAuth) {
             console.warn(`[API-Diag] No token found for ${url}. Token Value: ${token}`);
         }
