@@ -30,3 +30,30 @@ Since NomosDesk backend is deployed on Railway, use the following steps to execu
    ```bash
    npx ts-node src/scripts/seedProductionDemos.ts
    ```
+
+---
+
+## Phase 2: Demo Admin & Client Accounts
+
+The `seedDemoAccounts.ts` script provisions a **TENANT_ADMIN** and a **CLIENT** user for each primary demo tenant. It is fully idempotent.
+
+### Run Locally
+```bash
+npx ts-node server/src/scripts/seedDemoAccounts.ts
+```
+
+### Run on Production (Railway)
+```bash
+npx ts-node src/scripts/seedDemoAccounts.ts
+```
+
+### Seeded Credentials (Password: `Demo@2024!`)
+
+| Tenant | Role | Email |
+|---|---|---|
+| Apex Law Partners | `TENANT_ADMIN` | `admin@apexlaw.demo` |
+| Apex Law Partners | `CLIENT` | `client@apexlaw.demo` |
+| Global Logistics Corp | `TENANT_ADMIN` | `admin@globallogistics.demo` |
+| Global Logistics Corp | `CLIENT` | `client@globallogistics.demo` |
+
+> **Note**: The `TENANT_ADMIN` account has full access to the Firm Governance panel and can assign/revoke permissions for any role within the tenant. The `CLIENT` account will be routed directly to the Client Portal.
