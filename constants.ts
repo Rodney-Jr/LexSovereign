@@ -83,7 +83,16 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
   'AUDITOR': ['read_all_audits', 'read_assigned_matter'],
   'CLERK': ['upload_field_intake', 'use_legal_chat', 'read_assigned_matter'],
-  'ADMIN_MANAGER': ['read_billing', 'manage_tenant', 'read_analytics', 'manage_users', 'manage_roles', 'check_conflicts', 'manage_expenses']
+  'ADMIN_MANAGER': ['read_billing', 'manage_tenant', 'read_analytics', 'manage_users', 'manage_roles', 'check_conflicts', 'manage_expenses'],
+  // Demo tenant roles - Law Firm (Apex Law Partners)
+  'FINANCE_MANAGER': ['read_billing', 'manage_expenses', 'read_analytics', 'manage_users', 'read_all_audits'],
+  'SENIOR_ASSOCIATE': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat', 'read_billing'],
+  // Demo tenant roles - Enterprise (Global Logistics Corp)
+  'GENERAL_COUNSEL': ['manage_tenant', 'manage_users', 'manage_roles', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'approve_document', 'use_legal_chat', 'manage_expenses', 'read_analytics'],
+  'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat', 'read_billing'],
+  'CONTRACT_MANAGER': ['create_matter', 'read_assigned_matter', 'design_workflow', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'use_legal_chat', 'read_billing', 'manage_expenses'],
+  'COMPLIANCE_OFFICER': ['read_all_audits', 'manage_tenant', 'review_work', 'read_assigned_matter', 'upload_document', 'use_legal_chat'],
+  'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts', 'use_legal_chat', 'manage_expenses', 'read_analytics']
 };
 
 
