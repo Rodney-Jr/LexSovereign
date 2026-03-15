@@ -236,7 +236,7 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
           </h3>
           <p className="text-slate-400 text-sm mt-1">Manage tenant permissions and enforce least-privilege access.</p>
         </div>
-        {userRole === UserRole.TENANT_ADMIN && (
+        {contextRole === 'GLOBAL_ADMIN' && (
           <div className="flex gap-3">
             <button
               onClick={() => setShowMarketplace(true)}
@@ -254,11 +254,13 @@ const AccessGovernance: React.FC<AccessGovernanceProps> = ({ userRole }) => {
         )}
       </div>
 
-      <RoleTemplateMarketplace
-        isOpen={showMarketplace}
-        onClose={() => setShowMarketplace(false)}
-        onApplySuccess={fetchData}
-      />
+      {contextRole === 'GLOBAL_ADMIN' && (
+        <RoleTemplateMarketplace
+          isOpen={showMarketplace}
+          onClose={() => setShowMarketplace(false)}
+          onApplySuccess={fetchData}
+        />
+      )}
 
       <div className="grid grid-cols-12 gap-8">
         {/* Roles List */}

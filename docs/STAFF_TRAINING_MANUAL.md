@@ -59,6 +59,27 @@ Law firms must share data with clients without losing cryptographic control over
 3. The External Client logs into the Client Portal using their specific credentials.
 4. They can view, comment on, and approve the document within the firm's silo boundary. Complete data residency validation!
 
+---
+
+### Attorney-Client Collaboration Workflow
+The collaboration workflow is built around **Sovereign Isolation** and **Secure Signaling**, ensuring a unified communication thread without compromising data residency.
+
+#### 1. Attorney (Practitioner) Workflow
+*   **Matter Intelligence Hub**: Attorneys manage collaboration within the `MatterIntelligence` dashboard for a specific case.
+*   **Collaboration Hub**: A dedicated sidebar for posting "Signals" (secure messages/notes).
+*   **Legal AI Chat**: Insights from the AI (anchored to the matter's vault) can be shared as collaboration notes to the client.
+*   **Activity Ledger**: Every log entry from the **Sovereign Time Tracker** appears in the **Matter Activity Ledger**, providing client transparency.
+
+#### 2. Client Portal Workflow
+*   **Encrypted Signal Channel**: Clients log into the `ClientPortal` to see a real-time feed of signals from their lawyer.
+*   **Feedback & Attachments**: Clients can reply and attach "Secure Artifacts" directly to the chat, stored in the matter's sovereign vault.
+*   **Document Approval**: Clients view repository documents and approve them, instantly updating the status for the attorney team.
+*   **Real-Time Polling**: The portal polls for new messages every 10 seconds to maintain a live connection.
+
+#### 3. Technical Safeguards
+*   **Data Isolation**: Messages utilize the `CollaborationMessage` model, enforcing strict `tenantId` partitioning.
+*   **Sovereign Context**: Every communication is explicitly anchored to a specific Matter ID, preventing cross-mandate context leakage.
+
 ## Module 4: Advanced Practitioner Workflows (Drafting, CLM, & Analysis)
 
 The platform offers specialized interfaces for drafting contracts, managing case lifecycles, and analyzing risks.

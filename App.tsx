@@ -410,7 +410,7 @@ const AppContent: React.FC = () => {
         isOpen={showLeaveModal}
         onClose={() => setShowLeaveModal(false)}
       />
-      {trialExpiredData && (
+      {trialExpiredData && contextRole === 'GLOBAL_ADMIN' && (
         <TrialExpirationModal expiresAt={trialExpiredData.expiresAt} />
       )}
     </AppRouter>

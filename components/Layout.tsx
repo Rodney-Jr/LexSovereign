@@ -120,7 +120,7 @@ const Layout: React.FC<LayoutProps> = ({
     if (role === 'GLOBAL_ADMIN') return true;
 
     // Platform owner items are STRICTLY for GLOBAL_ADMIN
-    const platformTabs = ['platform-ops', 'global-governance'];
+    const platformTabs = ['platform-ops', 'global-governance', 'status', 'system-settings'];
     if (platformTabs.includes(tab)) return false;
 
     // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)
