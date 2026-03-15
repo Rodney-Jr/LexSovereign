@@ -116,58 +116,31 @@ const Layout: React.FC<LayoutProps> = ({
   }, []);
 
   const isAllowed = (tab: string) => {
-    // If global admin, allow everything (fail-safe)
+    // 1. Global Admin Override (Fail-safe for platform operations)
     if (role === 'GLOBAL_ADMIN') return true;
 
-    // Platform owner items are STRICTLY for GLOBAL_ADMIN
-    const platformTabs = ['platform-ops', 'global-governance', 'status', 'system-settings'];
+    // 2. Permission-based Gating (Primary)
+    const required = TAB_REQUIRED_PERMISSIONS[tab];
+    if (required && required.length > 0) {
+      return hasAnyPermission(required);
+    }
+
+    // 3. Structural/Legacy Role Checks (Fallback for tabs without explicit permissions)
+    // Platform owner tabs without defined permissions are strictly restricted.
+    const platformTabs = ['platform-ops', 'global-governance'];
     if (platformTabs.includes(tab)) return false;
 
-    // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)
-    const adminTabs = ['identity', 'tenant-admin'];
-    if (role === 'MANAGING_PARTNER' && adminTabs.includes(tab)) return false;
-
-    // Managing Partner gets full clearance for practice/firm items
-    if (role === 'MANAGING_PARTNER') return true;
-
-    if (role === 'ADMIN_MANAGER') {
-      const adminManagerAllowedTabs = [
-        'dashboard',
-        'hr-workbench',
-        'expense-tracker',
-        'asset-tracker',
-        'billing',
-        'capacity'
-      ];
-      if (!adminManagerAllowedTabs.includes(tab)) {
-        return false;
-      }
+    // Managing Partner gets default clearance for firm items if not explicitly permissioned or restricted.
+    if (role === 'MANAGING_PARTNER') {
+        const platformMgmtTabs = ['identity', 'tenant-admin'];
+        if (platformMgmtTabs.includes(tab)) return false;
+        return true;
     }
 
-    // Tenant Admin restricted to Technical/Governance context
-    if (role === 'TENANT_ADMIN') {
-      const technicalAdminAllowedTabs = [
-        'dashboard',
-        'tenant-governance',
-        'tenant-admin',
-        'org-blueprint',
-        'integration-bridge',
-        'identity',
-        'tenant-settings',
-        'accounting-hub',
-        'audit'
-      ];
-      if (!technicalAdminAllowedTabs.includes(tab)) {
-        return false;
-      }
-    }
-
-    const required = TAB_REQUIRED_PERMISSIONS[tab];
-    // If no specific permissions required (and not explicitly restricted), allow or deny?
-    // Let's say if list is empty [] it is public.
+    // Public/Default tabs (e.g. dashboard)
     if (!required || required.length === 0) return true;
 
-    return hasAnyPermission(required);
+    return false;
   };
   return (
     <div 

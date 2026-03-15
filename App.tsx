@@ -130,7 +130,7 @@ const AppContent: React.FC = () => {
     getDocumentContent
   } = useSovereignData(isAuthenticated);
 
-  const { hasAnyPermission, checkVisibility } = usePermissions();
+  const { hasPermission, hasAnyPermission, checkVisibility } = usePermissions();
 
   const [killSwitchActive, setKillSwitchActive] = useState(false);
   const [trialExpiredData, setTrialExpiredData] = useState<{ expiresAt?: string } | null>(null);
@@ -410,7 +410,7 @@ const AppContent: React.FC = () => {
         isOpen={showLeaveModal}
         onClose={() => setShowLeaveModal(false)}
       />
-      {trialExpiredData && contextRole === 'GLOBAL_ADMIN' && (
+      {trialExpiredData && hasPermission('view_trial_status') && (
         <TrialExpirationModal expiresAt={trialExpiredData.expiresAt} />
       )}
     </AppRouter>
