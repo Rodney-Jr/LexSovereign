@@ -28,7 +28,8 @@ async function main() {
                 name: tenantName,
                 plan: 'ENTERPRISE',
                 primaryRegion: region,
-                appMode: 'LAW_FIRM'
+                appMode: 'LAW_FIRM',
+                enabledModules: ['CORE', 'ACCOUNTING_HUB', 'HR_ENTERPRISE']
             }
         });
 

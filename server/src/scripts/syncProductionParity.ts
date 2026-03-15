@@ -19,7 +19,7 @@ async function main() {
         {
             id: 'demo-tenant-enterprise',
             name: 'Global Logistics Corp',
-            modules: ['CORE', 'HR_ENTERPRISE']
+            modules: ['CORE', 'ACCOUNTING_HUB', 'HR_ENTERPRISE']
         }
     ];
 
