@@ -1,0 +1,133 @@
+--- User Role Inspection ---
+User: admin@nomosdesk.com
+Role: GLOBAL_ADMIN (ID: 0cf63ba5-a304-4b55-ae6e-ba95315063ee)
+Permissions: manage_platform, read_all_audits, manage_tenant, upload_document, create_draft, use_legal_chat
+----------------------------
+User: counsel@nomosdesk.com
+Role: INTERNAL_COUNSEL (ID: 5a57a185-fcd3-4bc4-9074-942642554fb2)
+Permissions: create_matter, upload_document, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, use_legal_chat
+----------------------------
+User: associate1@nomosdesk.com
+Role: INTERNAL_COUNSEL (ID: 5a57a185-fcd3-4bc4-9074-942642554fb2)
+Permissions: create_matter, upload_document, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, use_legal_chat
+----------------------------
+User: associate2@nomosdesk.com
+Role: INTERNAL_COUNSEL (ID: 5a57a185-fcd3-4bc4-9074-942642554fb2)
+Permissions: create_matter, upload_document, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, use_legal_chat
+----------------------------
+User: associate3@nomosdesk.com
+Role: INTERNAL_COUNSEL (ID: 5a57a185-fcd3-4bc4-9074-942642554fb2)
+Permissions: create_matter, upload_document, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, use_legal_chat
+----------------------------
+User: associate@sovlegal.com
+Role: JUNIOR_ASSOCIATE (ID: 48bbbef6-e073-4253-ac77-ebc3ca86d1f5)
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: admin@sovlegal.com
+Role: ADMIN_MANAGER (ID: 83a128ec-79f6-4cc1-be84-8e170d4c41ed)
+Permissions: manage_tenant, manage_users, manage_roles, read_billing, access_hr_workbench, access_accounting_hub, access_platform_roadmap, view_trial_status
+----------------------------
+User: clerk@sovlegal.com
+Role: CLERK (ID: 8868dfd1-0553-4bde-8b99-624477bb4f3c)
+Permissions: read_assigned_matter, use_legal_chat, upload_field_intake
+----------------------------
+User: gc@globaltech.com
+Role: MANAGING_PARTNER (ID: ba880e52-250e-4caa-93b3-f6dd74c4b0b4)
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+User: counsel@globaltech.com
+Role: JUNIOR_ASSOCIATE (ID: 13867d04-e217-4fe7-a5fc-ca118e49d03f)
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: ops@globaltech.com
+Role: ADMIN_MANAGER (ID: 18582b22-1335-45bd-990e-eb6639c24796)
+Permissions: manage_tenant, manage_users, manage_roles, read_billing, access_hr_workbench, access_accounting_hub, access_platform_roadmap, view_trial_status
+----------------------------
+User: legalassistant@globaltech.com
+Role: CLERK (ID: b6a426de-2d0b-45ba-8231-658c3c391167)
+Permissions: read_assigned_matter, use_legal_chat, upload_field_intake
+----------------------------
+User: mpartner@sovlegal.com
+Role: MANAGING_PARTNER (ID: f0d0d6f1-9ba7-4a07-9432-3f6f41d78979)
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+User: 
+Role: TENANT_ADMIN (ID: dfeb5894-52ec-491b-b863-f0a72a061175)
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, design_workflow, upload_document, create_draft, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+User: kwakudey@gmail.com
+Role: SENIOR_COUNSEL (ID: e4622bf6-b359-4d3f-92e4-30c2ee20e02b)
+Permissions: create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: clerk@nomosdesk.com
+Role: undefined (ID: null)
+Permissions: undefined
+----------------------------
+User: admin_manager@nomosdesk.com
+Role: undefined (ID: null)
+Permissions: undefined
+----------------------------
+User: kofi.adu@nomoslaw.com
+Role: MANAGING_PARTNER (ID: 2939d29a-bbac-4cf9-acc0-7299dd479137)
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+User: kofi.partner@apexlaw.demo
+Role: MANAGING_PARTNER (ID: 50fe965d-a743-450c-8ee2-c871370d833a)
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+User: ama.senior@apexlaw.demo
+Role: SENIOR_ASSOCIATE (ID: b6f210a2-97c0-4b16-987b-37775e247756)
+Permissions: create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: kwame.junior@apexlaw.demo
+Role: JUNIOR_ASSOCIATE (ID: 07e54bc3-4436-4a24-b4a6-7f5c57bf1b59)
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: abena.para@apexlaw.demo
+Role: PARALEGAL (ID: 7d9eb0bf-65a3-491e-b73e-3e1c4dd3033d)
+Permissions: create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: yaw.finance@apexlaw.demo
+Role: FINANCE_MANAGER (ID: b05b624c-1e31-49eb-a65f-c8ea3be33ce2)
+Permissions: read_all_audits, manage_users, read_billing, manage_expenses, read_analytics
+----------------------------
+User: sarah.gc@globallogistics.demo
+Role: GENERAL_COUNSEL (ID: 83d5149d-680a-4b31-b030-dd6c9f0f5bef)
+Permissions: read_all_audits, manage_tenant, manage_users, manage_roles, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, approve_document, use_legal_chat, manage_expenses, read_analytics
+----------------------------
+User: michael.senior@globallogistics.demo
+Role: SENIOR_COUNSEL (ID: 31f95c0c-fb0c-4d4e-9bf7-b83d48b11832)
+Permissions: create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: emily.contracts@globallogistics.demo
+Role: CONTRACT_MANAGER (ID: d426a223-e65c-49e5-92c4-ba5a9660df07)
+Permissions: create_matter, design_workflow, upload_document, read_billing, review_work, read_assigned_matter, create_draft, edit_draft, use_legal_chat, manage_expenses
+----------------------------
+User: david.compliance@globallogistics.demo
+Role: COMPLIANCE_OFFICER (ID: 101e3e6f-3464-44a5-a52b-4f16e13c82f5)
+Permissions: read_all_audits, manage_tenant, upload_document, review_work, read_assigned_matter, use_legal_chat
+----------------------------
+User: jessica.ops@globallogistics.demo
+Role: LEGAL_OPS (ID: b3679499-dbbb-470b-92b0-276f20d1bfc1)
+Permissions: read_all_audits, manage_users, create_matter, design_workflow, upload_document, read_billing, check_conflicts, read_assigned_matter, create_draft, use_legal_chat, manage_expenses, read_analytics
+----------------------------
+User: owner@enterpriselegal.com
+Role: OWNER (ID: 3de6b162-46c8-4094-8138-634a27326a45)
+Permissions: read_all_audits, manage_tenant, manage_users, manage_roles, create_matter, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, approve_document, export_final, ai_chat_execute, use_legal_chat, view_confidential, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+User: partner@enterpriselegal.com
+Role: MANAGING_PARTNER (ID: 0c9326f3-7181-4f90-ac4d-198b3d330a62)
+Permissions: configure_bridge, read_all_audits, manage_tenant, manage_users, manage_roles, approve_spend, create_matter, design_workflow, upload_document, read_billing, review_work, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, ai_chat_execute, use_legal_chat, view_confidential, freeze_budget, manage_expenses, access_hr_workbench, access_accounting_hub, access_platform_roadmap, access_infrastructure_plane, view_trial_status
+----------------------------
+User: admin@enterpriselegal.com
+Role: ADMIN_MANAGER (ID: 7beeeb62-1dc3-45cc-82e6-0c27ddeace50)
+Permissions: manage_tenant, manage_users, manage_roles, read_billing, access_hr_workbench, access_accounting_hub, access_platform_roadmap, view_trial_status
+----------------------------
+User: associate@enterpriselegal.com
+Role: JUNIOR_ASSOCIATE (ID: 061406a4-2a90-48f3-a649-1c62cef08cdc)
+Permissions: create_matter, upload_document, check_conflicts, read_assigned_matter, create_draft, edit_draft, submit_review, use_legal_chat
+----------------------------
+User: client@enterpriselegal.com
+Role: CLIENT (ID: ef0254f7-bee9-4a80-ae24-bb626ffa8d73)
+Permissions: read_assigned_matter, client_portal_access
+----------------------------
