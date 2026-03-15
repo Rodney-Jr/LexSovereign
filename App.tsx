@@ -130,7 +130,7 @@ const AppContent: React.FC = () => {
     getDocumentContent
   } = useSovereignData(isAuthenticated);
 
-  const { hasPermission, hasAnyPermission, checkVisibility } = usePermissions();
+  const { hasPermission, hasAnyPermission, checkVisibility, canAccessTab } = usePermissions();
 
   const [killSwitchActive, setKillSwitchActive] = useState(false);
   const [trialExpiredData, setTrialExpiredData] = useState<{ expiresAt?: string } | null>(null);
@@ -170,30 +170,14 @@ const AppContent: React.FC = () => {
   // Security Policy
   useInactivityLogout(handleLogout, 1800000, isAuthenticated && !isOnboarding);
 
-  // RBAC Sentinel
+  // RBAC Sentinel — uses authoritative canAccessTab from usePermissions hook
   useEffect(() => {
-    if (isAuthenticated) {
-      const isAllowed = (tab: string) => {
-        if (contextRole === 'GLOBAL_ADMIN') return true;
-
-        // Platform owner items are STRICTLY for GLOBAL_ADMIN
-        const platformTabs = ['platform-ops', 'global-governance'];
-        if (platformTabs.includes(tab)) return false;
-
-        // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)
-        const adminTabs = ['identity', 'tenant-admin'];
-        if (contextRole === 'MANAGING_PARTNER' && adminTabs.includes(tab)) return false;
-
-        if (contextRole === 'MANAGING_PARTNER') return true;
-        const required = TAB_REQUIRED_PERMISSIONS[tab];
-        return !required || required.length === 0 || hasAnyPermission(required);
-      };
-
-      if (!isAllowed(activeTab)) {
+    if (isAuthenticated && !isOnboarding) {
+      if (!canAccessTab(activeTab)) {
         setActiveTab('dashboard');
       }
     }
-  }, [activeTab, contextRole, isAuthenticated, hasAnyPermission]);
+  }, [activeTab, canAccessTab, isAuthenticated, isOnboarding]);
 
   // Client Portal Redirection
   useEffect(() => {

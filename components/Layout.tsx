@@ -89,7 +89,7 @@ const Layout: React.FC<LayoutProps> = ({
   setTheme,
   userId
 }) => {
-  const { hasAnyPermission, role } = usePermissions();
+  const { hasAnyPermission, role, canAccessTab } = usePermissions();
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showMyDossierModal, setShowMyDossierModal] = React.useState(false);
@@ -115,33 +115,7 @@ const Layout: React.FC<LayoutProps> = ({
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, []);
 
-  const isAllowed = (tab: string) => {
-    // 1. Global Admin Override (Fail-safe for platform operations)
-    if (role === 'GLOBAL_ADMIN') return true;
-
-    // 2. Permission-based Gating (Primary)
-    const required = TAB_REQUIRED_PERMISSIONS[tab];
-    if (required && required.length > 0) {
-      return hasAnyPermission(required);
-    }
-
-    // 3. Structural/Legacy Role Checks (Fallback for tabs without explicit permissions)
-    // Platform owner tabs without defined permissions are strictly restricted.
-    const platformTabs = ['platform-ops', 'global-governance'];
-    if (platformTabs.includes(tab)) return false;
-
-    // Managing Partner gets default clearance for firm items if not explicitly permissioned or restricted.
-    if (role === 'MANAGING_PARTNER') {
-        const platformMgmtTabs = ['identity', 'tenant-admin'];
-        if (platformMgmtTabs.includes(tab)) return false;
-        return true;
-    }
-
-    // Public/Default tabs (e.g. dashboard)
-    if (!required || required.length === 0) return true;
-
-    return false;
-  };
+  const isAllowed = (tab: string) => canAccessTab(tab);
   return (
     <div 
       className={`flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500 theme-${theme}`}

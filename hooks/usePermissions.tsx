@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Department } from '../types';
+import { TAB_REQUIRED_PERMISSIONS } from '../constants';
 
 // Define the shape of our context
 interface PermissionContextType {
@@ -18,6 +19,7 @@ interface PermissionContextType {
     hasAnyPermission: (permissionIds: string[]) => boolean;
     hasModule: (moduleId: string) => boolean;
     checkVisibility: (resource: any) => boolean;
+    canAccessTab: (tabId: string) => boolean;
 }
 
 // Create context with default values
@@ -68,32 +70,54 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     }, [role, enabledModules]);
 
     const checkVisibility = React.useCallback((resource: any): boolean => {
-        if (role === 'GLOBAL_ADMIN' || role === 'TENANT_ADMIN') return true; // Admins see all
+        if (role === 'GLOBAL_ADMIN' || role === 'TENANT_ADMIN') return true;
 
-        // OPEN Mode: Everyone sees everything (unless specifically restricted, but that's handled elsewhere)
         if (separationMode === 'OPEN') return true;
 
-        // DEPARTMENTAL Mode: Must match department
         if (separationMode === 'DEPARTMENTAL') {
-            if (!resource.department) return true; // Unassigned resources are visible to all in dept mode? Or maybe implied global? Let's say visible.
+            if (!resource.department) return true;
             return resource.department === department;
         }
 
-        // STRICT Mode: Must be assigned
         if (separationMode === 'STRICT') {
-            // Check implicit assignment via ID (e.g. if I am the internalCounsel or in the team)
             if (resource.internalCounsel === userId) return true;
             if (resource.team && Array.isArray(resource.team)) {
                 return resource.team.some((member: any) => member.id === userId);
             }
-            // If it's a document context, maybe check 'uploadedBy'
             if (resource.uploadedBy === userId) return true;
-
             return false;
         }
 
         return true;
     }, [role, separationMode, department, userId]);
+
+    const canAccessTab = React.useCallback((tab: string): boolean => {
+        // 1. Global Admin Override
+        if (role === 'GLOBAL_ADMIN') return true;
+
+        // 2. Permission-based Gating (Primary)
+        const required = TAB_REQUIRED_PERMISSIONS[tab];
+        if (required && required.length > 0) {
+            return hasAnyPermission(required);
+        }
+
+        // 3. Fallback / Structural Role Rules
+        // Platform owner items are STRICTLY for GLOBAL_ADMIN
+        const platformTabs = ['platform-ops', 'global-governance', 'status', 'system-settings'];
+        if (platformTabs.includes(tab)) return false;
+
+        // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)
+        const adminTabs = ['identity', 'tenant-admin'];
+        if (role === 'MANAGING_PARTNER' && adminTabs.includes(tab)) return false;
+
+        // Managing Partner gets default clearance for firm items
+        if (role === 'MANAGING_PARTNER') return true;
+
+        // If no specific permissions required, it is public/default
+        if (!required || required.length === 0) return true;
+
+        return false;
+    }, [role, hasAnyPermission]);
 
     const updatePermissions = React.useCallback((perms: string[]) => {
         setPermissions(prev => {
@@ -121,8 +145,9 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         hasPermission,
         hasAnyPermission,
         hasModule,
-        checkVisibility
-    }), [permissions, role, userId, department, separationMode, enabledModules, updatePermissions, updateRole, hasPermission, hasAnyPermission, hasModule, checkVisibility]);
+        checkVisibility,
+        canAccessTab
+    }), [permissions, role, userId, department, separationMode, enabledModules, updatePermissions, updateRole, hasPermission, hasAnyPermission, hasModule, checkVisibility, canAccessTab]);
 
     return (
         <PermissionContext.Provider value={contextValue}>
