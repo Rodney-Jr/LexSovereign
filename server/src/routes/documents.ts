@@ -297,7 +297,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 jurisdiction: region || 'GH_ACC_1',
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
-                matterId,
+                matterId: actualMatterId,
                 tenantId,
                 isEncrypted,
                 encryptionIV,
@@ -617,6 +617,40 @@ router.patch('/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
+        const tenantId = req.user.tenantId!;
+        let actualMatterId = matterId || doc.matterId;
+
+        // Resolve magic string 'MT-GENERAL' to tenant's actual general matter
+        if (matterId === 'MT-GENERAL') {
+            let generalMatter = await prisma.matter.findFirst({
+                where: { tenantId, name: 'General Enclave Matters' }
+            });
+
+            if (!generalMatter) {
+                generalMatter = await prisma.matter.create({
+                    data: {
+                        name: 'General Enclave Matters',
+                        client: 'Firm Internal',
+                        type: 'ADMIN',
+                        status: 'OPEN',
+                        riskLevel: 'LOW',
+                        tenantId: tenantId
+                    }
+                });
+            }
+            actualMatterId = generalMatter.id;
+        }
+
+        // Verify Matter if changed
+        if (actualMatterId !== doc.matterId) {
+            const matter = await prisma.matter.findUnique({
+                where: { id: actualMatterId }
+            });
+            if (!matter || matter.tenantId !== tenantId) {
+                return res.status(403).json({ error: 'Invalid Matter ID' });
+            }
+        }
+
         // Create new version if content or name changed
         const latestVersion = await prisma.documentVersion.findFirst({
             where: { documentId: id },
@@ -649,7 +683,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
                     status,
                     classification,
                     privilege,
-                    matterId,
+                    matterId: actualMatterId,
                     updatedAt: new Date()
                 }
             })
