@@ -142,26 +142,29 @@ app.use('/api/auth', authRateLimiter, authRouter);
 // Tenant Actions (Must be above /api catchall)
 app.use('/api/tenant', authenticateToken, tenantRouter);
 app.use('/api/firm', authenticateToken, firmRouter);
-app.use('/api/platform', sovereignGuard, platformRouter);
 app.use('/api/document-templates', authenticateToken, documentTemplatesRouter);
-app.use('/api/branding-profiles', sovereignGuard, brandingRouter);
 app.use('/api/documents', authenticateToken, documentsRouter);
-app.use('/api/rules', sovereignGuard, rulesRouter);
-app.use('/api/users', sovereignGuard, usersRouter);
-app.use('/api', sovereignGuard, apiRouter);
 
-// Matter Management
+// Analytics & Reporting (authenticated, no sovereign pin required)
+app.use('/api/analytics', authenticateToken, analyticsRouter);
+app.use('/api/export', authenticateToken, exportRouter);
+app.use('/api/billing', authenticateToken, billingRouter);
+app.use('/api/accounting', accountingRouter);
+app.use('/api/productivity', productivityRouter);
 app.use('/api/matters', authenticateToken, mattersRouter);
 app.use('/api/bridges', authenticateToken, bridgesRouter);
 app.use('/api/roles', authenticateToken, rolesRouter);
 app.use('/api/webhooks', authenticateToken, webhooksRouter);
-app.use('/api/analytics', authenticateToken, analyticsRouter);
 app.use('/api/workflows', authenticateToken, workflowsRouter);
-app.use('/api/export', authenticateToken, exportRouter);
 app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
-app.use('/api/billing', authenticateToken, billingRouter);
-app.use('/api/accounting', accountingRouter);
-app.use('/api/productivity', productivityRouter);
+
+// Sovereign-guarded routes (require x-sov-pin header)
+app.use('/api/platform', sovereignGuard, platformRouter);
+app.use('/api/branding-profiles', sovereignGuard, brandingRouter);
+app.use('/api/rules', sovereignGuard, rulesRouter);
+app.use('/api/users', sovereignGuard, usersRouter);
+app.use('/api', sovereignGuard, apiRouter);
+
 
 // Centralized Error Handling (MUST be last)
 app.use(errorHandler);
