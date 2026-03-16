@@ -30,6 +30,17 @@ const getSovereignPin = (): string => {
    return '';
 };
 
+// Safe JSON parse to prevent "Unexpected end of JSON input" on empty server responses
+const parseJson = async (response: Response): Promise<any> => {
+   const text = await response.text();
+   if (!text) return {};
+   try {
+      return JSON.parse(text);
+   } catch {
+      return { error: text || `Server error ${response.status}` };
+   }
+};
+
 interface AuthFlowProps {
    onAuthenticated: (session: SessionData) => Promise<void> | void;
    onStartOnboarding: () => void;
@@ -77,7 +88,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             body: JSON.stringify({ email })
          });
 
-         const data = await response.json();
+         const data = await parseJson(response);
          if (!response.ok) throw new Error(data.error || 'Failed to send reset link');
          setForgotPasswordSent(true);
       } catch (err: unknown) {
@@ -108,7 +119,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             body: JSON.stringify(payload)
          });
 
-         const data = await response.json();
+         const data = await parseJson(response);
 
          if (!response.ok) {
             throw new Error(data.error || 'Authentication failed');
@@ -154,7 +165,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             body: JSON.stringify({ idToken: credentialResponse.credential })
          });
 
-         const data = await response.json();
+         const data = await parseJson(response);
 
          if (!response.ok) {
             throw new Error(data.error || 'Google Authentication failed');
@@ -198,7 +209,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             body: JSON.stringify({ mfaToken, code: mfaCode })
          });
 
-         const data = await response.json();
+         const data = await parseJson(response);
          if (!response.ok) throw new Error(data.error || 'MFA Verification failed');
 
          await onAuthenticated({

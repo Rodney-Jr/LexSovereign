@@ -25,20 +25,22 @@ interface Lead {
     source: string;
     status: 'NEW' | 'PROSPECT' | 'OUTREACH' | 'DEMO' | 'PILOT' | 'CONVERTED' | 'REJECTED';
     metadata: any;
+    tenantId?: string;
+    notes?: string;
     createdAt: string;
 }
 
 const stages = [
-    { id: 'NEW', label: 'New Inbox', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-    { id: 'PROSPECT', label: 'Qualified', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
-    { id: 'OUTREACH', label: 'In Contact', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-    { id: 'DEMO', label: 'Demo Done', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
-    { id: 'PILOT', label: 'Pilot Phase', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-    { id: 'CONVERTED', label: 'Converted', color: 'bg-green-600/10 text-green-400 border-green-600/20' },
-    { id: 'REJECTED', label: 'Rejected', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
+    { id: 'NEW', label: 'New Inquiry', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+    { id: 'PROSPECT', label: 'Pre-Screened', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
+    { id: 'OUTREACH', label: 'In Discussion', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+    { id: 'DEMO', label: 'Consultation Complete', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+    { id: 'PILOT', label: 'Retainer Issued', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+    { id: 'CONVERTED', label: 'Client Retained', color: 'bg-green-600/10 text-green-400 border-green-600/20' },
+    { id: 'REJECTED', label: 'Declined', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
 ];
 
-const sources = ['ALL', 'WEB_MODAL', 'FOUNDING_PILOT', 'REFERRAL', 'EVENT', 'COLD_OUTREACH', 'INBOUND'];
+const sources = ['ALL', 'WEB_MODAL', 'FOUNDING_PILOT', 'REFERRAL', 'EVENT', 'COLD_OUTREACH', 'INBOUND', 'MANUAL_ENTRY', 'FIRM_CHATBOT', 'MARKETING_CHATBOT'];
 
 interface AddLeadModalProps {
     onClose: () => void;
@@ -46,7 +48,7 @@ interface AddLeadModalProps {
 }
 
 const AddLeadModal: React.FC<AddLeadModalProps> = ({ onClose, onSuccess }) => {
-    const [form, setForm] = useState({ name: '', email: '', company: '', phone: '', source: 'MANUAL_ENTRY', firmSize: '' });
+    const [form, setForm] = useState({ name: '', email: '', company: '', phone: '', source: 'MANUAL_ENTRY', firmSize: '', notes: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -66,6 +68,7 @@ const AddLeadModal: React.FC<AddLeadModalProps> = ({ onClose, onSuccess }) => {
                     company: form.company,
                     phone: form.phone,
                     source: form.source,
+                    notes: form.notes,
                     metadata: { firmSize: form.firmSize, addedManually: true }
                 })
             });
@@ -146,6 +149,15 @@ const AddLeadModal: React.FC<AddLeadModalProps> = ({ onClose, onSuccess }) => {
                                 <option value="LARGE">Large (50+)</option>
                             </select>
                         </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest">Initial Notes / Context</label>
+                        <textarea 
+                            value={form.notes} 
+                            onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                            className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-sm text-brand-text h-20 focus:outline-none focus:border-brand-primary transition-colors resize-none"
+                            placeholder="e.g. Seeking legal advice on Ghanaian land acquisition..."
+                        />
                     </div>
                     <div className="flex gap-3 pt-2">
                         <button type="button" onClick={onClose}
@@ -316,6 +328,11 @@ const LeadPipeline: React.FC = () => {
                                                 <p className="text-xs text-brand-muted">{lead.name}</p>
                                                 {lead.metadata?.firmSize && (
                                                     <span className="text-[9px] font-bold text-brand-secondary uppercase tracking-tighter">{lead.metadata.firmSize}</span>
+                                                )}
+                                                {lead.notes && (
+                                                    <p className="text-[10px] text-brand-muted italic mt-1 line-clamp-1 border-l-2 border-brand-primary/30 pl-2">
+                                                        {lead.notes}
+                                                    </p>
                                                 )}
                                             </div>
                                         </div>

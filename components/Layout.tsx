@@ -249,17 +249,7 @@ const Layout: React.FC<LayoutProps> = ({
                 />
               )}
 
-              {/* Accounting Hub - Re-introduced as billable module */}
-              {isAllowed('accounting-hub') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
-                <NavItem
-                  icon={<Banknote size={18} className="text-amber-400" />}
-                  label="Sovereign Accounting"
-                  isActive={activeTab === 'accounting-hub'}
-                  onClick={() => setActiveTab('accounting-hub')}
-                  setIsSidebarOpen={setIsSidebarOpen}
-                  isPremium
-                />
-              )}
+
 
               {isAllowed('expense-tracker') && (
                 <NavItem
