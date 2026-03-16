@@ -58,7 +58,7 @@ export const detectMonetaryValue = (text: string): { amount: number, currency: '
     const ghsPattern = /(GHS|Cedis)\s?([0-9,]+(\.[0-9]{2})?)/i;
 
     const usdMatch = text.match(usdPattern);
-    if (usdMatch) {
+    if (usdMatch && usdMatch[1]) {
         return {
             amount: parseFloat(usdMatch[1].replace(/,/g, '')),
             currency: 'USD'

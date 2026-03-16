@@ -19,6 +19,11 @@ async function main() {
     console.log(`Tenant: ${user.tenant?.name} (ID: ${user.tenantId})`);
     console.log(`Separation Mode: ${user.tenant?.separationMode}`);
 
+    if (!user.tenantId) {
+        console.log('User has no tenant');
+        return;
+    }
+
     const matters = await prisma.matter.findMany({
         where: { tenantId: user.tenantId }
     });

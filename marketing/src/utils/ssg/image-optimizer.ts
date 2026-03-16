@@ -76,7 +76,7 @@ function extractImages(html: string): ImageInfo[] {
 
         // Extract src
         const srcMatch = attrs.match(/src=["']([^"']+)["']/i);
-        if (!srcMatch) continue;
+        if (!srcMatch || !srcMatch[1]) continue;
 
         // Decode HTML entities in URL
         const url = decodeHtmlEntities(srcMatch[1]);
