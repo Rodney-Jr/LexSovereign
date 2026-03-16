@@ -1,5 +1,6 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { getSavedSession } from '../utils/api';
 import {
     TrendingUp,
     ShieldCheck,
@@ -7,66 +8,91 @@ import {
     Users,
     Scale,
     FileCheck,
-    Download,
     Printer,
     AlertCircle,
     DollarSign,
     Award,
-    Zap
+    Zap,
+    RefreshCw
 } from 'lucide-react';
 import LeadPipeline from './LeadPipeline';
 
 import { getJurisdictionConfig } from '../utils/jurisdictionEngine';
 
 const GrowthDashboard: React.FC = () => {
-    const [partnerRate, setPartnerRate] = useState(5625); // Approx for $450
+    const [partnerRate, setPartnerRate] = useState(5625);
     const [hoursSaved, setHoursSaved] = useState(0);
     const [staffCount, setStaffCount] = useState(0);
     const [feeRecovery, setFeeRecovery] = useState(0);
     const [tatReduction, setTatReduction] = useState(0);
     const [liveRates, setLiveRates] = useState<any | null>(null);
     const [activeTab, setActiveTab] = useState<'metrics' | 'leads'>('metrics');
+    const [isLoading, setIsLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string | null>(null);
 
     const config = useMemo(() => {
         const sovPin = localStorage.getItem('nomosdesk_pin') || 'GHANA';
         return getJurisdictionConfig(sovPin);
     }, []);
 
-    React.useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const rates = await config.getLiveRates();
-                setLiveRates(rates);
+    const fetchDashboardData = useCallback(async () => {
+        setIsLoading(true);
+        setFetchError(null);
+        try {
+            const rates = await config.getLiveRates();
+            setLiveRates(rates);
 
-                const sessionData = localStorage.getItem('nomosdesk_session');
-                const token = sessionData ? JSON.parse(sessionData).token : '';
+            const session = getSavedSession();
+            const token = session?.token || '';
 
-                const response = await fetch('/api/analytics/metrics', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
+            const response = await fetch('/api/analytics/metrics', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-                if (data.growth) {
-                    setHoursSaved(data.growth.hoursSaved || 0);
-                    setStaffCount(data.growth.staffCount || 0);
-                    setFeeRecovery(data.growth.feeRecovery || 0);
-                    setTatReduction(data.growth.tatReduction || 0);
-                    if (data.growth.partnerRate) setPartnerRate(data.growth.partnerRate);
-                }
-            } catch (error) {
-                console.error("Failed to fetch growth metrics:", error);
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const data = await response.json();
+
+            if (data.growth) {
+                setHoursSaved(data.growth.hoursSaved || 0);
+                setStaffCount(data.growth.staffCount || 0);
+                setFeeRecovery(data.growth.feeRecovery || 0);
+                setTatReduction(data.growth.tatReduction || 0);
+                if (data.growth.partnerRate) setPartnerRate(data.growth.partnerRate);
             }
-        };
+        } catch (error: any) {
+            console.error("Failed to fetch growth metrics:", error);
+            setFetchError(error.message || 'Unable to load metrics.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [config]);
 
+    React.useEffect(() => {
         fetchDashboardData();
-    }, []);
+    }, [fetchDashboardData]);
 
     const revenueProtected = useMemo(() => hoursSaved * partnerRate, [hoursSaved, partnerRate]);
     const extraCapacity = useMemo(() => Math.floor(hoursSaved / 8), [hoursSaved]);
 
-    const handlePrint = () => {
-        window.print();
-    };
+    const handlePrint = () => window.print();
+
+    // Dynamic multiplier bar: cap at 100%, using hoursSaved vs a realistic max of 200h/month
+    const multiplierPct = Math.min(Math.round((extraCapacity / 25) * 100), 100);
+
+    if (isLoading) return (
+        <div className="flex flex-col items-center justify-center h-96 space-y-4">
+            <RefreshCw size={32} className="animate-spin text-brand-primary" />
+            <p className="text-brand-muted text-sm font-mono">Loading growth signals…</p>
+        </div>
+    );
+
+    if (fetchError) return (
+        <div className="flex flex-col items-center justify-center h-96 space-y-4">
+            <AlertCircle size={32} className="text-red-500" />
+            <p className="text-brand-muted text-sm">{fetchError}</p>
+            <button onClick={fetchDashboardData} className="text-xs text-brand-primary underline">Retry</button>
+        </div>
+    );
 
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24 print:bg-white print:text-black">
@@ -227,8 +253,12 @@ const GrowthDashboard: React.FC = () => {
                     </div>
 
                     <div className="h-2 bg-brand-bg rounded-full overflow-hidden border border-brand-border">
-                        <div className="h-full bg-brand-primary w-3/4 shadow-[0_0_12px_rgba(16,185,129,0.4)]"></div>
+                        <div
+                            className="h-full bg-brand-primary shadow-[0_0_12px_rgba(16,185,129,0.4)] transition-all duration-700"
+                            style={{ width: `${multiplierPct}%` }}
+                        />
                     </div>
+                    <p className="text-[10px] font-mono text-brand-muted text-right">{multiplierPct}% capacity utilized</p>
                 </div>
 
                 <div className="lg:col-span-5 bg-brand-sidebar border border-brand-border p-10 rounded-[3rem] flex items-center gap-6 relative overflow-hidden group backdrop-blur-sm">
@@ -254,7 +284,7 @@ const GrowthDashboard: React.FC = () => {
 
             {/* Print Footer */}
             <div className="hidden print:block pt-12 mt-12 border-t border-black text-center text-[10px] uppercase tracking-[0.2em]">
-                Strictly Confidential • Generated by NomosDesk Alpha • Distributed to Executive Board
+                Strictly Confidential • Generated by LexSovereign • Distributed to Executive Board
             </div>
         </div>
     );
