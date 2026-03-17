@@ -27,7 +27,7 @@ import DocumentIngestModal from './DocumentIngestModal';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
 import { LexGeminiService } from '../services/geminiService';
-import { authorizedFetch, getSavedSession } from '../utils/api';
+import { authorizedFetch, getSavedSession, getSovereignPin } from '../utils/api';
 
 interface DocumentVaultProps {
   documents: DocumentMetadata[];
@@ -108,9 +108,9 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
       const session = getSavedSession();
       const token = session?.token || '';
 
-      // Use raw fetch for blob downloading, but manually add x-sov-pin if available
       // authorizedFetch currently assumes JSON response
-      const sovPin = localStorage.getItem('nomosdesk_pin') || (window as any)._SOVEREIGN_PIN_ || '';
+      // Use raw fetch for blob downloading, but manually add x-sov-pin if available
+      const sovPin = getSovereignPin();
 
       const response = await fetch(`/api/export/${id}/export`, {
         method: 'POST',

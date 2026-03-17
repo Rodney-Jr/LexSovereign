@@ -4,20 +4,31 @@ import { GeminiProvider } from "./GeminiProvider";
 import { OpenAIProvider } from "./OpenAIProvider";
 import { AnthropicProvider } from "./AnthropicProvider";
 import { OpenRouterProvider } from "./OpenRouterProvider";
+import { SovereignEnclaveProvider } from "./SovereignEnclaveProvider";
 
 export class AIServiceFactory {
     private static instance: AIProvider;
 
-    static getProvider(): AIProvider {
-        return this.getProvidersByPriority()[0];
+    static getProvider(tenant?: any): AIProvider {
+        return this.getProvidersByPriority(tenant)[0];
     }
 
-    static getProvidersByPriority(): AIProvider[] {
+    static getProvidersByPriority(tenant?: any): AIProvider[] {
         const primaryType = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
-
         const providers: AIProvider[] = [];
 
-        // Add primary
+        // 1. If Tenant is in "Enclave Only" mode, prioritize the local regional provider
+        if (tenant?.enclaveOnlyProcessing && tenant?.jurisdiction) {
+            providers.push(new SovereignEnclaveProvider(tenant.jurisdiction));
+            
+            // If strictly enforced, we might return only the enclave provider
+            // but usually we include others for internal fallback if permitted
+            if (process.env.STRICT_ENCLAVE_ONLY === 'true') {
+                return providers;
+            }
+        }
+
+        // 2. Add standard primary provider
         providers.push(this.createProvider(primaryType));
 
         // Add fallbacks (avoid duplicates)

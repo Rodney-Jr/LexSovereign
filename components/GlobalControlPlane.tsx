@@ -33,6 +33,7 @@ import { Region, GlobalAdminIdentity } from '../types';
 import { ProvisionTenantModal } from './ProvisionTenantModal';
 import { ProvisionAdminModal } from './ProvisionAdminModal';
 import { LegalRepositoryTab } from './LegalRepositoryTab';
+import { TenantManagementModal } from './TenantManagementModal';
 import { authorizedFetch } from '../utils/api';
 
 interface GlobalControlPlaneProps {
@@ -47,6 +48,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
    const [showAdminModal, setShowAdminModal] = useState(false);
+   const [managingTenant, setManagingTenant] = useState<{ id: string, name: string } | null>(null);
    const [stats, setStats] = useState<any>({
       tenants: 0,
       matters: 0,
@@ -182,6 +184,14 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
          {/* Render Modals */}
          {showProvisionModal && (
             <ProvisionTenantModal onClose={() => setShowProvisionModal(false)} />
+         )}
+
+         {managingTenant && (
+            <TenantManagementModal 
+               tenantId={managingTenant.id} 
+               tenantName={managingTenant.name} 
+               onClose={() => setManagingTenant(null)} 
+            />
          )}
 
          {showAdminModal && (
@@ -462,7 +472,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
             </div>
          )}
 
-         {activeTab === 'tenants' && <TenantsTab />}
+         {activeTab === 'tenants' && <TenantsTab onManage={setManagingTenant} />}
 
          {activeTab === 'leads' && <LeadsTab />}
 
@@ -475,7 +485,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
    );
 };
 
-const TenantsTab = () => {
+const TenantsTab = ({ onManage }: { onManage: (tenant: any) => void }) => {
    const [tenants, setTenants] = useState<any[]>([]);
    const [loading, setLoading] = useState(true);
 
@@ -606,6 +616,12 @@ const TenantsTab = () => {
                                  </div>
                                  {tenant.status !== 'DELETED' && (
                                     <>
+                                       <button
+                                          onClick={() => onManage(tenant)}
+                                          className="px-3 py-1.5 bg-cyan-600/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-600 hover:text-white rounded-xl text-[9px] font-bold uppercase transition-all"
+                                       >
+                                          Manage
+                                       </button>
                                        <button
                                           onClick={() => handleToggleStatus(tenant.id, tenant.status)}
                                           className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all border ${tenant.status === 'ACTIVE'

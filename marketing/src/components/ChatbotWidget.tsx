@@ -177,20 +177,35 @@ function SuccessBubble({ name, source }: { name: string, source?: string }) {
 
 // ─── Main Widget ──────────────────────────────────────────────────────────────
 
-export default function ChatbotWidget() {
+export default function ChatbotWidget({ botId }: { botId?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [showLeadForm, setShowLeadForm] = useState(false);
     const [leadFormConfig, setLeadFormConfig] = useState({ title: 'Book a Demo', source: 'CHATBOT_DEMO' });
     const [submittedName, setSubmittedName] = useState('');
     const [currentProvider, setCurrentProvider] = useState<string>('Sovereign');
+    const [tenantId, setTenantId] = useState<string | null>(null);
+    const [botName, setBotName] = useState('NomosDesk Assistant');
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: 'Hi! How can I help you learn more about NomosDesk?' }
+        { role: 'assistant', content: 'Hi! How can I help you today?' }
     ]);
     const [inputMessage, setInputMessage] = useState('');
     const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // On mount, fetch bot config if botId is provided (for firm-embedded instances)
+    useEffect(() => {
+        if (!botId) return;
+        apiFetch(`/api/chatbot/config/public/${botId}`)
+            .then(r => r.json())
+            .then(cfg => {
+                if (cfg.tenantId) setTenantId(cfg.tenantId);
+                if (cfg.botName) setBotName(cfg.botName);
+                if (cfg.welcomeMessage) setMessages([{ role: 'assistant', content: cfg.welcomeMessage }]);
+            })
+            .catch(() => console.warn('[ChatbotWidget] Could not load bot config.'));
+    }, [botId]);
 
     // Auto-scroll to latest message
     useEffect(() => {
@@ -261,7 +276,8 @@ export default function ChatbotWidget() {
                     email: data.email,
                     company: data.company,
                     phone: data.phone,
-                    source: data.source
+                    source: data.source,
+                    tenantId: tenantId || undefined // Pass firmId for tenant chatbots
                 })
             });
         } catch (err) {
@@ -291,7 +307,11 @@ export default function ChatbotWidget() {
         try {
             const response = await apiFetch('/api/chat-conversations', {
                 method: 'POST',
-                body: JSON.stringify({ sessionId, message: userMessage })
+                body: JSON.stringify({ 
+                    sessionId, 
+                    message: userMessage,
+                    tenantId: tenantId || undefined // Pass firmId for tenant chatbots
+                })
             });
             const data = await response.json();
             if (data.provider) {
@@ -344,7 +364,7 @@ export default function ChatbotWidget() {
                             <MessageCircle size={20} className="text-white" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold text-sm">NomosDesk Assistant</h3>
+                            <h3 className="text-white font-bold text-sm">{botName}</h3>
                             <p className="text-indigo-200 text-xs">We typically reply instantly</p>
                         </div>
                     </div>

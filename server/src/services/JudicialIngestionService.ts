@@ -53,7 +53,7 @@ export class JudicialIngestionService {
             let chunksCreated = 0;
 
             for (const chunk of chunks) {
-                const embedding = await this.generateEmbedding(chunk);
+                const embedding = await this.generateEmbedding(chunk, region);
 
                 await prisma.gazetteEmbedding.create({
                     data: {
@@ -80,8 +80,8 @@ export class JudicialIngestionService {
         }
     }
 
-    private static async generateEmbedding(text: string) {
-        return await EmbeddingService.generateEmbedding(text);
+    private static async generateEmbedding(text: string, region?: string) {
+        return await EmbeddingService.generateEmbedding(text, region);
     }
 
     private static chunkText(text: string, chunkSize: number = 2500): string[] {

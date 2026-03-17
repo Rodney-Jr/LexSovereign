@@ -4,9 +4,17 @@ import {
     CheckCircle2, AlertCircle, FileText, Activity,
     TrendingDown, Plus, ChevronRight, Lock, Unlock,
     DollarSign, MonitorSmartphone, Key, ShieldCheck,
-    Banknote, Loader2
+    Banknote, Loader2,
+    Fingerprint, Scale, FileSignature, Clock
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
+import { UserRole, Matter, KnowledgeArtifact } from '../types';
+import { 
+    ClientMattersView, 
+    ClientBillingView, 
+    ClientDocumentsView, 
+    KYCStatusIndicator 
+} from './ClientDossierModules';
 
 export interface StaffMember {
     id: string;
@@ -26,23 +34,25 @@ export interface StaffMember {
     bankAccount: string;
     hardware: { id: string; type: string; name: string; status: 'Active' | 'Returned' | 'Lost' }[];
     appraisals: { date: string; rating: string; reviewer: string; notes?: string }[];
-}
-
-interface SovereignStaffDossierModalProps {
-    staff: StaffMember;
-    onClose: () => void;
-    onUpdateStatus: (id: string, newStatus: 'Active' | 'Suspended') => void;
-    isSelfService?: boolean;
+    // Client-specific fields
+    kycStatus?: 'Verified' | 'Pending' | 'Rejected';
+    associatedMatters?: Matter[];
+    billingSummary?: { totalInvoiced: number; outstanding: number; trustBalance: number };
+    sharedDocuments?: KnowledgeArtifact[];
 }
 
 const TAB_OPTIONS = [
-    { id: 'profile', label: 'Identity & Access', icon: <Shield size={16} /> },
-    { id: 'leave', label: 'Leave & Absences', icon: <Calendar size={16} /> },
-    { id: 'compliance', label: 'CLE & Compliance', icon: <Award size={16} /> },
-    { id: 'performance', label: 'Performance', icon: <Activity size={16} /> },
-    { id: 'activity', label: 'Activity Heatmap', icon: <Activity size={16} /> },
-    { id: 'payroll', label: 'Payroll & Comp', icon: <Banknote size={16} /> },
-    { id: 'assets', label: 'Hardware Assets', icon: <MonitorSmartphone size={16} /> },
+    { id: 'profile', label: 'Identity & Access', icon: <Shield size={16} />, roles: ['ALL'] },
+    { id: 'leave', label: 'Leave & Absences', icon: <Calendar size={16} />, roles: ['PRACTITIONER'] },
+    { id: 'compliance', label: 'CLE & Compliance', icon: <Award size={16} />, roles: ['PRACTITIONER'] },
+    { id: 'performance', label: 'Performance', icon: <Activity size={16} />, roles: ['PRACTITIONER'] },
+    { id: 'activity', label: 'Activity Heatmap', icon: <Activity size={16} />, roles: ['PRACTITIONER'] },
+    { id: 'payroll', label: 'Payroll & Comp', icon: <Banknote size={16} />, roles: ['PRACTITIONER'] },
+    { id: 'assets', label: 'Hardware Assets', icon: <MonitorSmartphone size={16} />, roles: ['PRACTITIONER'] },
+    // Client Tabs
+    { id: 'matters', label: 'Sovereign Matters', icon: <Scale size={16} />, roles: ['CLIENT'] },
+    { id: 'client-billing', label: 'Billing & Ledger', icon: <Banknote size={16} />, roles: ['CLIENT'] },
+    { id: 'documents', label: 'Legal Vault', icon: <FileSignature size={16} />, roles: ['CLIENT'] },
 ] as const;
 
 type TabId = typeof TAB_OPTIONS[number]['id'];
@@ -673,7 +683,9 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                         <div>
                             <div className="flex items-center gap-3">
                                 <h2 className="text-xl font-black text-white">{staff.name}</h2>
-                                {staff.status === 'Suspended' ? (
+                                {staff.role === UserRole.CLIENT ? (
+                                    <KYCStatusIndicator status={staff.kycStatus || 'Pending'} />
+                                ) : staff.status === 'Suspended' ? (
                                     <span className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Suspended</span>
                                 ) : staff.status === 'On Leave' ? (
                                     <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase">On Leave</span>
@@ -699,7 +711,11 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                     {/* Sidebar Tabs */}
                     <div className="w-full md:w-64 bg-slate-900/30 border-r border-brand-border p-4 space-y-1 overflow-y-auto">
                         <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest pl-3 mb-3 mt-2">Dossier Modules</p>
-                        {TAB_OPTIONS.map(tab => (
+                        {TAB_OPTIONS.filter(tab => {
+                            if (tab.roles.includes('ALL')) return true;
+                            if (staff.role === UserRole.CLIENT) return tab.roles.includes('CLIENT');
+                            return tab.roles.includes('PRACTITIONER');
+                        }).map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as TabId)}
@@ -719,6 +735,9 @@ const SovereignStaffDossierModal: React.FC<SovereignStaffDossierModalProps> = ({
                     {/* Tab Content */}
                     <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-brand-bg">
                         {activeTab === 'profile' && renderProfile()}
+                        {activeTab === 'matters' && <ClientMattersView matters={staff.associatedMatters || []} />}
+                        {activeTab === 'client-billing' && <ClientBillingView billing={staff.billingSummary || { totalInvoiced: 0, outstanding: 0, trustBalance: 0 }} />}
+                        {activeTab === 'documents' && <ClientDocumentsView docs={staff.sharedDocuments || []} />}
                         {activeTab === 'leave' && renderLeave()}
                         {activeTab === 'compliance' && renderCompliance()}
                         {activeTab === 'performance' && renderPerformance()}

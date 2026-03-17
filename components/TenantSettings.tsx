@@ -1,11 +1,13 @@
 
 import React, { useState } from 'react';
-import { Settings, Building2, Key, GitBranch, Plug, Droplet } from 'lucide-react';
+import { Settings, Building2, Key, GitBranch, Plug, Droplet, ShieldCheck } from 'lucide-react';
 import TenantAdministration from './TenantAdministration';
 import AccessGovernance from './AccessGovernance';
 import BridgeRegistry from './BridgeRegistry';
 import OrgChart from './OrgChart';
 import BrandingSettings from './BrandingSettings';
+import ApiKeysDashboard from './ApiKeysDashboard';
+import SovereignResidencySettings from './SovereignResidencySettings';
 import { UserRole } from '../types';
 
 interface TenantSettingsProps {
@@ -13,7 +15,7 @@ interface TenantSettingsProps {
     setUserRole: (role: UserRole) => void;
 }
 
-type SettingsTab = 'organization' | 'access' | 'integrations' | 'blueprint' | 'branding';
+type SettingsTab = 'organization' | 'access' | 'integrations' | 'agent' | 'blueprint' | 'branding' | 'sovereignty';
 
 const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }) => {
     const [activeTab, setActiveTab] = useState<SettingsTab>('organization');
@@ -54,6 +56,12 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                     onClick={() => setActiveTab('integrations')}
                 />
                 <TabButton
+                    icon={<Settings className="text-indigo-400" size={16} />}
+                    label="Agent Sync"
+                    active={activeTab === 'agent'}
+                    onClick={() => setActiveTab('agent')}
+                />
+                <TabButton
                     icon={<GitBranch size={16} />}
                     label="Blueprint"
                     active={activeTab === 'blueprint'}
@@ -65,6 +73,12 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                     active={activeTab === 'branding'}
                     onClick={() => setActiveTab('branding')}
                 />
+                <TabButton
+                    icon={<ShieldCheck className="text-emerald-400" size={16} />}
+                    label="Sovereignty"
+                    active={activeTab === 'sovereignty'}
+                    onClick={() => setActiveTab('sovereignty')}
+                />
             </div>
 
             {/* Tab Content */}
@@ -72,8 +86,10 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                 {activeTab === 'organization' && <TenantAdministration />}
                 {activeTab === 'access' && <AccessGovernance userRole={userRole} setUserRole={setUserRole} />}
                 {activeTab === 'integrations' && <BridgeRegistry />}
+                {activeTab === 'agent' && <ApiKeysDashboard />}
                 {activeTab === 'blueprint' && <OrgChart />}
                 {activeTab === 'branding' && <BrandingSettings />}
+                {activeTab === 'sovereignty' && <SovereignResidencySettings />}
             </div>
         </div>
     );

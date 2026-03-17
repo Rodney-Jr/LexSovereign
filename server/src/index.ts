@@ -139,7 +139,12 @@ app.use('/api/attachments', authenticateToken, express.static(path.join(__dirnam
 // Authentication (Handshake/Login) - Higher security rate limit
 app.use('/api/auth', authRateLimiter, authRouter);
 
+import apiKeysRouter from './routes/apiKeys';
+import agentRouter from './routes/agent';
+
 // Tenant Actions (Must be above /api catchall)
+app.use('/api/agent', agentRouter);
+app.use('/api/tenant/api-keys', authenticateToken, apiKeysRouter);
 app.use('/api/tenant', authenticateToken, tenantRouter);
 app.use('/api/firm', authenticateToken, firmRouter);
 app.use('/api/document-templates', authenticateToken, documentTemplatesRouter);

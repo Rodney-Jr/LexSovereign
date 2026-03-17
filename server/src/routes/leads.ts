@@ -6,29 +6,37 @@ import { TenantService } from '../services/TenantService';
 
 const router = express.Router();
 
-// Public: Submit a new lead
-router.post('/', async (req, res) => {
+// Hybrid: Submit a new lead (public or authenticated)
+router.post('/', async (req: any, res) => {
     try {
-        const { email, name, company, phone, source } = req.body;
+        const { email, name, company, phone, source, tenantId, notes } = req.body;
+        
+        // If the request is authenticated, prefer the user's tenantId for manual logs
+        // This prevents a tenant from accidentally logging a lead to another firm
+        const authTenantId = req.user?.tenantId;
 
         if (!email || !name) {
             return res.status(400).json({ error: "Name and Email are required." });
         }
 
+        const leadData: any = {
+            email,
+            name,
+            company,
+            phone,
+            source: source || (authTenantId ? 'MANUAL_ENTRY' : 'WEB_MODAL'),
+            status: 'NEW',
+            tenantId: tenantId || authTenantId || null,
+            notes: notes || null,
+            metadata: req.body.metadata || {}
+        };
+
         const lead = await prisma.lead.create({
-            data: {
-                email,
-                name,
-                company,
-                phone,
-                source: source || 'WEB_MODAL',
-                status: 'NEW',
-                metadata: req.body.metadata || {}
-            } as any
+            data: leadData
         });
 
-        // ONLY AUTO-PROVISION FOR REGULAR WEB LEADS, NOT FOUNDING PILOTS
-        if (source !== 'FOUNDING_PILOT') {
+        // AUTO-PROVISIONING: Only for platform-level leads (no tenant context at all)
+        if (!leadData.tenantId && source !== 'FOUNDING_PILOT') {
             const tenantName = company || `${name}'s Firm`;
             TenantService.provisionTenant({
                 name: tenantName,
@@ -61,10 +69,22 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Admin: Get all leads
-router.get('/', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+
+// Admin/Tenant: Get leads (scoped)
+router.get('/', authenticateToken, async (req: any, res) => {
     try {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        const tenantId = req.user?.tenantId;
+
+        const where: any = {};
+        if (!isGlobalAdmin) {
+            // Regular tenants only see their own leads
+            if (!tenantId) return res.status(401).json({ error: "Tenant context required" });
+            where.tenantId = tenantId;
+        }
+
         const leads = await prisma.lead.findMany({
+            where,
             orderBy: { createdAt: 'desc' }
         });
         res.json(leads);
@@ -73,15 +93,28 @@ router.get('/', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, re
     }
 });
 
-// Admin: Update lead status
-router.patch('/:id/status', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+// Update lead status (scoped)
+router.patch('/:id/status', authenticateToken, async (req: any, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
+        const { status, notes } = req.body;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        const tenantId = req.user?.tenantId;
 
-        const lead = await prisma.lead.update({
+        // Verify ownership if not global admin
+        if (!isGlobalAdmin) {
+            const existing = await (prisma as any).lead.findUnique({ where: { id } });
+            if (!existing || existing.tenantId !== tenantId) {
+                return res.status(403).json({ error: "Permission denied or lead not found." });
+            }
+        }
+
+        const lead = await (prisma as any).lead.update({
             where: { id },
-            data: { status }
+            data: { 
+                status,
+                notes: notes !== undefined ? notes : undefined
+            }
         });
 
         res.json(lead);
@@ -89,5 +122,6 @@ router.patch('/:id/status', authenticateToken, requireRole(['GLOBAL_ADMIN']), as
         res.status(500).json({ error: error.message });
     }
 });
+
 
 export default router;

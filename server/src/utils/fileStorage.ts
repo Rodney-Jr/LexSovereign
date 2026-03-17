@@ -4,6 +4,8 @@ import { EncryptionContext } from '../core/ports/IStoragePort';
 import { createCipheriv } from 'crypto';
 
 const UPLOAD_ROOT = path.join(__dirname, '../../uploads');
+import { StorageRouterService } from '../services/StorageRouterService';
+import { Jurisdiction } from '../types/Geography';
 
 /**
  * Saves content to a file within the uploads directory.
@@ -15,7 +17,7 @@ const UPLOAD_ROOT = path.join(__dirname, '../../uploads');
  * @returns The relative path to the saved file
  */
 export const saveDocumentContent = async (
-    tenantId: string,
+    tenant: { id: string; jurisdiction: string; storageBucketUri?: string | null },
     matterId: string,
     fileName: string,
     content: string | Buffer,
@@ -26,7 +28,9 @@ export const saveDocumentContent = async (
     const safeMatterId = matterId.replace(/[^a-zA-Z0-9-]/g, '');
     const safeFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
 
-    const targetDir = path.join(UPLOAD_ROOT, safeTenantId, safeMatterId);
+    // Use StorageRouter to find the correct regional path
+    const regionalPath = StorageRouterService.resolveDocumentPath(tenant, '');
+    const targetDir = path.join(__dirname, '../../', regionalPath, safeMatterId);
 
     // Ensure directory exists
     if (!fs.existsSync(targetDir)) {
@@ -52,7 +56,8 @@ export const saveDocumentContent = async (
     await fs.promises.writeFile(filePath, finalData);
 
     // Return relative path for database storage (platform independent format)
-    return path.join(safeTenantId, safeMatterId, safeFileName).replace(/\\/g, '/');
+    // We return the path from the project root (excluding the absolute part)
+    return path.join(regionalPath, safeMatterId, safeFileName).replace(/\\/g, '/');
 };
 
 /**

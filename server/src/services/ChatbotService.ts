@@ -88,6 +88,7 @@ export class ChatbotService {
             // Only return safe public fields
             return {
                 id: config.id,
+                tenantId: config.tenantId,
                 botName: config.botName,
                 welcomeMessage: config.welcomeMessage,
                 channels: config.channels as any

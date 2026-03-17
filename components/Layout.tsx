@@ -93,16 +93,7 @@ const Layout: React.FC<LayoutProps> = ({
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showMyDossierModal, setShowMyDossierModal] = React.useState(false);
-  const [showAdvanced, setShowAdvanced] = React.useState(() => {
-    return localStorage.getItem('nomosdesk_advancedMode') === 'true';
-  });
 
-
-  const toggleAdvanced = () => {
-    const newState = !showAdvanced;
-    setShowAdvanced(newState);
-    localStorage.setItem('nomosdesk_advancedMode', newState.toString());
-  };
 
   React.useEffect(() => {
     const handleGlobalKey = (e: KeyboardEvent) => {
@@ -270,8 +261,7 @@ const Layout: React.FC<LayoutProps> = ({
                 />
               )}
 
-              {/* Technical Items - Moved to Advanced */}
-              {isAllowed('org-blueprint') && showAdvanced && (
+              {isAllowed('org-blueprint') && (
                 <NavItem
                   icon={<GitBranch size={18} />}
                   label="Organization Blueprint"
@@ -280,7 +270,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('integration-bridge') && showAdvanced && (
+              {isAllowed('integration-bridge') && (
                 <NavItem
                   icon={<Plug size={18} />}
                   label="Bridge Registry"
@@ -332,7 +322,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('workflow') && showAdvanced && (
+              {isAllowed('workflow') && (
                 <NavItem
                   icon={<Zap size={18} />}
                   label="Workflow Engine"
@@ -449,13 +439,13 @@ const Layout: React.FC<LayoutProps> = ({
               )}
 
               {/* Enterprise Tier Section */}
-              {(isAllowed('enclave') || (isAllowed('audit') && showAdvanced)) && (
+              {(isAllowed('enclave') || isAllowed('audit')) && (
                 <div className="pt-4 pb-2 px-4 flex items-center justify-between">
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Enterprise Tier</span>
                 </div>
               )}
 
-              {isAllowed('audit') && showAdvanced && (
+              {isAllowed('audit') && (
                 <NavItem
                   icon={<Activity size={18} />}
                   label="Forensic Traces"
@@ -486,6 +476,15 @@ const Layout: React.FC<LayoutProps> = ({
                   label="Infrastructure Plane"
                   isActive={activeTab === 'system-settings'}
                   onClick={() => setActiveTab('system-settings')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('tenant-settings') && (
+                <NavItem
+                  icon={<Settings size={18} />}
+                  label="Tenant Settings"
+                  isActive={activeTab === 'tenant-settings'}
+                  onClick={() => setActiveTab('tenant-settings')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
@@ -533,15 +532,13 @@ const Layout: React.FC<LayoutProps> = ({
             </div>
           )}
 
-          <div className="flex items-center justify-between p-2 bg-brand-bg/50 rounded-lg border border-brand-border cursor-pointer hover:bg-brand-bg/80 transition-all" onClick={toggleAdvanced}>
-            <div className="flex items-center gap-2">
-              <Fingerprint size={16} className={showAdvanced ? "text-brand-primary" : "text-brand-muted"} />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-muted">Advanced Mode</span>
-            </div>
-            <div className={`w-8 h-4 rounded-full relative transition-colors ${showAdvanced ? 'bg-brand-primary/40' : 'bg-brand-muted/20'}`}>
-              <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${showAdvanced ? 'left-5 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'left-1'}`} />
-            </div>
-          </div>
+              <div className="flex items-center justify-between p-2 bg-brand-bg/50 rounded-lg border border-brand-border cursor-pointer hover:bg-brand-bg/80 transition-all font-mono" onClick={() => setActiveTab('audit')}>
+                <div className="flex items-center gap-2">
+                  <Fingerprint size={16} className="text-brand-muted" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand-muted">System Integrity Scan</span>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+              </div>
 
           {killSwitchActive && (
             <div className="flex items-center gap-2 p-2 bg-red-500/10 text-red-400 rounded-lg animate-pulse border border-red-500/20">

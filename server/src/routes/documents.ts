@@ -119,7 +119,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
 
         // Save Binary Content
         const relativePath = await saveDocumentContent(
-            tenantId,
+            matter.tenant as any,
             matterId,
             file.originalname,
             file.buffer,
@@ -140,9 +140,11 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
             data: {
                 name: file.originalname,
                 uri,
-                jurisdiction: region || matter.tenant.primaryRegion || 'GH_ACC_1',
+                jurisdiction: region || matter.tenant.jurisdiction || 'GH_ACC_1',
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
+                residencyStatus: 'LOCAL_PINNED',
+                physicalRegion: matter.tenant.jurisdiction || 'GH_ACC_1',
                 tenantId,
                 matterId,
                 isEncrypted,
@@ -271,8 +273,8 @@ router.post('/', authenticateToken, async (req, res) => {
             const { saveDocumentContent } = await import('../utils/fileStorage');
             // Note: fileStorage needs to pass encryptionContext to LocalStorageAdapter
             const relativePath = await saveDocumentContent(
-                tenantId,
-                matterId,
+                matter.tenant as any,
+                actualMatterId,
                 `${name}.md`,
                 req.body.content,
                 isEncrypted ? { keyId: encryptionKeyId!, algorithm: 'AES-256-GCM', iv: encryptionIV! } : undefined
@@ -294,9 +296,11 @@ router.post('/', authenticateToken, async (req, res) => {
             data: {
                 name,
                 uri,
-                jurisdiction: region || 'GH_ACC_1',
+                jurisdiction: region || matter.tenant.jurisdiction || 'GH_ACC_1',
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
+                residencyStatus: 'LOCAL_PINNED',
+                physicalRegion: matter.tenant.jurisdiction || 'GH_ACC_1',
                 matterId: actualMatterId,
                 tenantId,
                 isEncrypted,

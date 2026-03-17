@@ -1,58 +1,31 @@
-# NomosDesk: Security & Hardening Walkthrough
+# NomosDesk: Sovereign Infrastructure Walkthrough
 
-This document summarizes the technical enhancements and critical fixes applied to the NomosDesk platform to ensure architectural sovereignty and development stability.
+## Latest Accomplishments
 
-## Phase 2: Zero Access & Advanced Security
+### 1. Global Admin Tenant Management
+Resolved the critical issue where Platform Admins could not access tenant-specific sovereignty settings.
+- **Fix**: Implemented `targetTenantId` query parameter support in backend routes.
+- **UI**: Added a "Manage" action in the **Tenants** tab of the **Global Control Plane**.
+- **Hardening**: Resolved `ReferenceError: ShieldCheck is not defined` and fixed accessibility lints in the management modal.
 
-### 1. Zero Access Tenant Isolation
-Global Administrators can no longer see raw tenant data (matters, documents) by default. Their context is strictly bound to the `__PLATFORM__` silo, which is isolated from all tenant enclaves.
+### 2. Local Sync Agent (DAEMON)
+Law firms can now sync local NAS or server folders directly to NomosDesk.
+- **Agent**: A standalone CLI tool (`nomosdesk-agent`) watches local folders and uploads to the vault using secure API keys.
+- **Lifecycle**: Files are automatically moved to `_completed` or `_errors` after processing.
 
-### 2. API Rate Limiting
-- **Standard Limiter**: Applied to all `/api` routes (500 requests / 15 mins).
-- **Auth Limiter**: Stricter policy on `/api/auth/login` (20 attempts / 15 mins).
+### 3. Data Residency & Sovereignty
+- **Jurisdictional Routing**: Documents are physically stored in regional sub-folders based on the tenant's pin.
+- **Enclave AI**: If "Sovereign AI" is toggled, all prompt vectorization is hard-blocked from public cloud gateways and routed to regional GPU clusters.
 
-### 3. Document Read Auditing
-Injected logging into `server/src/routes/documents.ts` to log every access to document content and metadata (`DOCUMENT_CONTENT_READ`, `DOCUMENT_METADATA_READ`).
+### 4. Dossier Modernization
+- **Persona Isolation**: Internal staff see Payroll/HR; external Clients see Matters/Billing.
+- **Verification**: Built and tested the automatic KYC status indicator for Client profiles.
 
-### 4. Consent-Driven Support Impersonation
-- **Grant**: Tenant Admin navigates to **Settings > Access Governance** and clicks **Grant Support Access** (1-hour window).
-- **Assume**: Platform Admin assumes context via `/api/admin/support/assume`.
-- **Safety**: Auth middleware verifies the grant in real-time.
-
-## Phase 4: Debugging & Hardening
-
-### 1. JSON Parsing Robustness
-**Issue:** Frontend threw `Unexpected end of JSON input` on connection interruptions.
-**Fix:** Hardened `authorizedFetch` in `utils/api.ts` to check `response.text()` before parsing.
-
-### 2. Pricing Modal Fixed
-**Issue:** `TypeError: config.features.map is not a function` in plan selection.
-**Fix:** Added defensive `Array.isArray` checks for feature lists in `PricingGovernance` and `TenantOnboarding`.
-
-### 3. Prisma Engine Lock Resolved
-**Issue:** `EPERM` errors during `npx prisma db push`.
-**Fix:** Cleared stale `node.exe` processes locking the binary and successfully synchronized the schema.
-
-## Phase 5: Unified Development Experience
-
-### 1. One-Command Startup
-**Issue:** Frontend and Backend had to be started separately, leading to proxy 500 errors when the backend was forgotten.
-**Fix:** Added `concurrently` and a `dev:all` script to the root `package.json`.
-**Command:** `npm run dev:all` (Starts Vite and Backend simultaneously).
-
-### 2. Login Route Hardening
-**Issue:** Malformed or empty login requests triggered 500 Internal Server Errors.
-**Fix:** Updated `server/src/routes/auth.ts` to return `400 Bad Request` for missing email/password.
+## Structural Maturity (Next Step)
+Drafted a plan to move the platform away from its current modal-heavy design towards a true workspace-based architecture using React Router.
 
 ## Verification Checklist
-
-- [x] **Connectivity:** `npm run dev:all` verified to start both services.
-- [x] **Rate Limiting:** Verified 429 responses return valid JSON.
-- [x] **Read Auditing:** `DOCUMENT_CONTENT_READ` logs verified in database.
-- [x] **Hardening:** Login and Pricing components verified as crash-resistant.
-- [x] **Zero Access:** Verified via `verify-isolation.ts` that `__PLATFORM__` scope sees **zero** tenant records across all restricted models.
-
----
-**Operation Successful. Ready for full-stack orchestration.**
-> [!TIP]
-> Run `npm install` in the root directory first to install the new `concurrently` dependency.
+- [x] Global Admin can manage any tenant's Sovereignty settings.
+- [x] API Key generation and Agent upload verified.
+- [x] Desktop Agent handles file lifecycle correctly.
+- [x] Client vs Practitioner dossiers show correct role-scoped tabs.

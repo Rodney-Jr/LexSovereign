@@ -17,6 +17,11 @@ declare global {
     namespace Express {
         interface Request {
             user?: AuthUser;
+            agentContext?: {
+                tenantId: string;
+                keyId: string;
+                name: string;
+            };
         }
     }
 }
@@ -76,6 +81,7 @@ export enum UserRole {
 
 export interface ChatbotConfig {
     id: string;
+    tenantId?: string; // Optonal for platform bot
     botName: string;
     welcomeMessage: string;
     isEnabled: boolean;

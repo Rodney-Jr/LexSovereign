@@ -7,12 +7,17 @@ export class LexAIService {
     // This class is now a facade that delegates to the active AIProvider.
     // It maintains the original method signatures for backward compatibility.
 
-    private getProviders() {
-        return AIServiceFactory.getProvidersByPriority();
-    }
+    private async executeWithFailover<T>(operation: (provider: any) => Promise<T>, options?: { enforceSovereign?: boolean, tenantId?: string }): Promise<T> {
+        let tenant: any = null;
+        if (options?.tenantId) {
+            const { prisma } = await import('../db');
+            tenant = await prisma.tenant.findUnique({
+                where: { id: options.tenantId },
+                select: { jurisdiction: true, enclaveOnlyProcessing: true } as any
+            });
+        }
 
-    private async executeWithFailover<T>(operation: (provider: any) => Promise<T>, options?: { enforceSovereign?: boolean }): Promise<T> {
-        const providers = this.getProviders();
+        const providers = AIServiceFactory.getProvidersByPriority(tenant);
         const enforced = options?.enforceSovereign || process.env.ENFORCE_SOVEREIGN_AI === 'true';
         let lastError: any;
 
@@ -67,7 +72,7 @@ export class LexAIService {
             jurisdiction,
             allowedRegion
         };
-        const result = (await this.executeWithFailover(p => p.chat(params))) as ChatResult;
+        const result = (await this.executeWithFailover(p => p.chat(params), { tenantId })) as ChatResult;
 
         // Log AI Usage for Metered Billing
         if (result.usage && tenantId) {

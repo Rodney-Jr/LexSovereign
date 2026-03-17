@@ -16,6 +16,16 @@ export interface FetchOptions extends RequestInit {
 // Declare the global constant injected by Vite
 declare const __SOVEREIGN_PIN__: string;
 
+export const getSovereignPin = () => {
+    try {
+        return localStorage.getItem('nomosdesk_pin') ||
+            (window as any)._SOVEREIGN_PIN_ ||
+            (typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '');
+    } catch (e) {
+        return '';
+    }
+};
+
 export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     const { token, silent, ...fetchOptions } = options;
 
@@ -38,9 +48,7 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
     }
 
     // Add Sovereign Pin if available (Prioritize dynamic handshake, fallback to window/global)
-    const sovPin = localStorage.getItem('nomosdesk_pin') ||
-        (window as any)._SOVEREIGN_PIN_ ||
-        (typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '');
+    const sovPin = getSovereignPin();
     if (sovPin) {
         headers.set('x-sov-pin', sovPin);
     }

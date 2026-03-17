@@ -112,6 +112,12 @@ model Tenant {
   enabledModules       String[]           @default(["CORE"])
   attributes           Json?              @default("{}")
   lastStorageSyncedAt  DateTime?
+  
+  // Data Residency & Sovereignty
+  jurisdiction         String             @default("GH_ACC_1")
+  storageBucketUri     String?            // e.g. s3://sov-acc-01-vault
+  enclaveOnlyProcessing Boolean           @default(false)
+  
   aiUsages             AIUsage[]
   brandingProfiles     BrandingProfile[]
   bridges              Bridge[]
@@ -138,6 +144,11 @@ model Tenant {
   bankTransactions     BankTransaction[]
   externalMappings     ExternalMapping[]
   syncLogs             SyncLog[]
+  leads                Lead[]
+  chatConversations    ChatConversation[] @relation("TenantChatConversations")
+  cloudIntegrations    CloudIntegration[]
+  folderSyncs          PlatformFolderSync[]
+  apiKeys              ApiKey[]
 }
 
 model ChatbotConfig {
@@ -400,6 +411,11 @@ model Document {
   status          String            @default("AI_DRAFTED")
   description     String?
   fileSize        BigInt            @default(0)
+  
+  // Data Residency Metadata
+  residencyStatus String            @default("LOCAL_PINNED") // LOCAL_PINNED, CLOUD_REPLICATED, TRANSIENT
+  physicalRegion  String            @default("GH_ACC_1")
+  
   matter          Matter            @relation(fields: [matterId], references: [id])
   versions        DocumentVersion[]
   evidenceLinks   EvidenceLink[]
@@ -587,6 +603,9 @@ model Lead {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   phone     String?
+  notes     String?
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
 }
 
 model GazetteEmbedding {
@@ -627,6 +646,8 @@ model ChatConversation {
   intentScore  Float    @default(0.0)
   isLead       Boolean  @default(false)
   metadata     Json?
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], name: "TenantChatConversations")
 
   @@index([sessionId])
   @@index([createdAt])
@@ -927,4 +948,50 @@ model SupportAccessGrant {
   expiresAt       DateTime
   createdAt       DateTime @default(now())
   isActive        Boolean  @default(true)
+}
+
+model CloudIntegration {
+  id           String   @id @default(uuid())
+  tenantId     String
+  provider     String   // e.g., "GOOGLE_DRIVE", "MICROSOFT_ONEDRIVE"
+  accessToken  String
+  refreshToken String?
+  uid          String?  // External user/account ID
+  email        String?  // External email
+  expiresAt    DateTime?
+  status       String   @default("ACTIVE") // ACTIVE, EXPIRED, REVOKED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model PlatformFolderSync {
+  id             String   @id @default(uuid())
+  tenantId       String
+  integrationId  String?  // If cloud-based
+  folderId       String   // External folder ID or local path mapping
+  folderName     String?  
+  provider       String   // e.g., "GOOGLE_DRIVE", "MICROSOFT_ONEDRIVE", "LOCAL_AGENT"
+  targetMatterId String?  // Default matter for ingested docs
+  webhookId      String?  // Provider webhook subscription ID
+  status         String   @default("ACTIVE") // ACTIVE, PAUSED, ERROR
+  lastSyncAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model ApiKey {
+  id        String    @id @default(uuid())
+  keyHash   String    @unique
+  name      String
+  tenantId  String
+  prefix    String
+  createdAt DateTime  @default(now())
+  lastUsed  DateTime?
+  isActive  Boolean   @default(true)
+  
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
 }

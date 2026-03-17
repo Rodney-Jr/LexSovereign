@@ -184,13 +184,36 @@ function findBestFAQ(userMessage: string): FAQ | null {
     return highestScore >= THRESHOLD ? bestMatch : null;
 }
 
-// Public: Submit a chat message and get AI response
+// Submit a chat message and get AI response
 router.post('/', async (req, res) => {
     try {
-        const { sessionId, message, visitorEmail, visitorName } = req.body;
+        const { sessionId, message, visitorEmail, visitorName, tenantId } = req.body;
 
         if (!sessionId || !message) {
             return res.status(400).json({ error: "Session ID and message are required." });
+        }
+
+        // Get Chatbot Config: Default to marketing config or fetch tenant-specific one
+        let chatbotConfig = MARKETING_CHATBOT_CONFIG;
+        if (tenantId) {
+            const dbConfig = await prisma.chatbotConfig.findUnique({
+                where: { tenantId }
+            });
+            if (dbConfig) {
+                chatbotConfig = {
+                    id: dbConfig.id,
+                    botName: dbConfig.botName,
+                    welcomeMessage: dbConfig.welcomeMessage,
+                    isEnabled: dbConfig.isEnabled,
+                    channels: dbConfig.channels as any,
+                    knowledgeBaseIds: dbConfig.knowledgeBaseIds as any,
+                    systemInstruction: dbConfig.systemInstruction
+                };
+            }
+        }
+
+        if (!chatbotConfig.isEnabled) {
+            return res.status(403).json({ error: "Chatbot is currently disabled." });
         }
 
         // Find or create conversation
@@ -207,12 +230,14 @@ router.post('/', async (req, res) => {
         // Get conversation history for context
         const conversationHistory = conversation?.messages as any[] || [];
 
-        // Simple RAG: Search Knowledge Base for relevant artifacts
+        // Simple RAG: Search Knowledge Base for relevant artifacts (Tenant-scoped if tenantId is present)
         const keywords = extractKeywords(message);
         let relevantKnowledge: KnowledgeArtifact[] = [];
 
         if (keywords.length > 0) {
             try {
+                // If tenantId is present, we could filter knowledge artifacts here if we had tenantId on them
+                // For now, knowledge artifacts are global in the database schema found
                 relevantKnowledge = await prisma.knowledgeArtifact.findMany({
                     where: {
                         OR: keywords.map(kw => ({
@@ -236,7 +261,7 @@ router.post('/', async (req, res) => {
         try {
             aiResult = await lexAI.publicChat(
                 message,
-                MARKETING_CHATBOT_CONFIG,
+                chatbotConfig,
                 relevantKnowledge,
                 conversationHistory
             );
@@ -244,15 +269,13 @@ router.post('/', async (req, res) => {
         } catch (error: any) {
             console.error('AI Service Error:', error);
 
-            // Try FAQ fallback
+            // Try FAQ fallback (Global FAQs only for now)
             const faqMatch = findBestFAQ(message);
             if (faqMatch) {
                 aiResponseText = faqMatch.answer;
                 faqHit = faqMatch.id;
-                console.log(`FAQ Fallback used: ${faqMatch.id} `);
             } else {
-                // Generic fallback if no FAQ matches
-                aiResponseText = "I'm sorry, I'm having trouble connecting to my brain right now. Please try again or contact our support if the issue persists.";
+                aiResponseText = "I'm sorry, I'm having trouble connecting to my brain right now. Please try again or contact our team.";
             }
         }
 
@@ -279,68 +302,78 @@ router.post('/', async (req, res) => {
             const messages = conversation.messages as any[];
             messages.push(userMessage, aiResponse);
 
-            conversation = await prisma.chatConversation.update({
-                where: { id: conversation.id },
+            conversation = await (prisma as any).chatConversation.update({
+                where: { id: (conversation as any).id },
                 data: {
                     messages,
-                    visitorEmail: visitorEmail || conversation.visitorEmail,
-                    visitorName: visitorName || conversation.visitorName,
+                    visitorEmail: visitorEmail || (conversation as any).visitorEmail,
+                    visitorName: visitorName || (conversation as any).visitorName,
                     intentScore,
                     isLead,
-                    metadata
+                    metadata,
+                    tenantId: tenantId || (conversation as any).tenantId
                 }
             });
         } else {
             // Create new conversation
-            conversation = await prisma.chatConversation.create({
+            conversation = await (prisma as any).chatConversation.create({
                 data: {
                     sessionId,
                     visitorEmail,
                     visitorName,
                     messages: [userMessage, aiResponse],
-                    source: 'MARKETING_WIDGET',
+                    source: tenantId ? 'FIRM_WIDGET' : 'MARKETING_WIDGET',
                     status: 'ACTIVE',
                     intentScore,
                     isLead,
-                    metadata
+                    metadata,
+                    tenantId: tenantId || null
                 }
             });
         }
 
-        // If it's a lead and we have contact info, also create/sync with Lead model
+        // If it's a lead and we have contact info, create/sync with Lead model
         if (isLead && (visitorEmail || visitorName)) {
             try {
-                const existingLead = visitorEmail
-                    ? await prisma.lead.findFirst({ where: { email: visitorEmail } })
-                    : null;
+                // Scoping: Lead is unique per email per tenant (or global)
+                const existingLead = await (prisma as any).lead.findFirst({ 
+                    where: { 
+                        email: visitorEmail || 'anonymous',
+                        tenantId: tenantId || null
+                    } 
+                });
 
                 if (!existingLead) {
-                    await prisma.lead.create({
+                    await (prisma as any).lead.create({
                         data: {
-                            email: visitorEmail || 'anonymous@chatbot.nomosdesk.com',
+                            email: visitorEmail || `anonymous-${sessionId}@chatbot.nomosdesk.com`,
                             name: visitorName || 'Chatbot Visitor',
-                            source: 'CHATBOT',
-                            status: 'NEW'
+                            source: tenantId ? 'FIRM_CHATBOT' : 'MARKETING_CHATBOT',
+                            status: 'NEW',
+                            tenantId: tenantId || null,
+                            notes: `Automatically captured from chat conversation ${(conversation as any).id}. Latest intent: "${message}"`
                         }
                     });
-                    console.log(`New lead created from chatbot: ${visitorEmail || visitorName} `);
+                    console.log(`New lead created from chatbot: ${visitorEmail || visitorName} for tenant ${tenantId || 'GLOBAL'}`);
                 }
             } catch (leadError) {
                 console.error("Failed to sync lead record:", leadError);
             }
         }
 
+        const safeConvo = conversation!;
         res.status(200).json({
             response: aiResponse.content,
-            conversationId: conversation.id,
-            isLead: conversation.isLead,
-            provider: (aiResult as any).provider || 'openrouter'
+            conversationId: safeConvo.id,
+            isLead: (safeConvo as any).isLead,
+            provider: (aiResult as any)?.provider || 'openrouter'
         });
     } catch (error: any) {
         console.error("Chat conversation error:", error);
         res.status(500).json({ error: "Failed to process message." });
     }
 });
+
 
 // Admin: Get all conversations
 router.get('/', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {

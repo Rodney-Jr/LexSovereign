@@ -45,7 +45,13 @@ router.get('/admin-stats', authenticateToken, requirePermission('manage_tenant')
 // Returns aggregated firm load and readiness metrics
 router.get('/capacity-stats', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        let tenantId = req.user?.tenantId;
+
+        if (!tenantId && isGlobalAdmin) {
+            tenantId = req.query.targetTenantId as string;
+        }
+
         if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
 
         const [users, matters] = await Promise.all([
@@ -85,7 +91,13 @@ router.get('/capacity-stats', authenticateToken, requirePermission('manage_tenan
 // Returns operational insights for the dashboard
 router.get('/insights', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        let tenantId = req.user?.tenantId;
+
+        if (!tenantId && isGlobalAdmin) {
+            tenantId = req.query.targetTenantId as string;
+        }
+
         if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
 
         const insights = [];
@@ -296,22 +308,88 @@ router.get('/billing', authenticateToken, requirePermission('manage_tenant'), as
 router.get('/settings', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-        if (!isGlobalAdmin && !req.user?.tenantId) {
+        let tenantId = req.user?.tenantId;
+
+        if (!tenantId && isGlobalAdmin) {
+            tenantId = req.query.targetTenantId as string;
+        }
+
+        if (!tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
             return;
         }
 
         const tenant = await prisma.tenant.findUnique({
-            where: { id: req.user?.tenantId },
-            select: { separationMode: true }
+            where: { id: tenantId },
+            select: { 
+                separationMode: true,
+                jurisdiction: true,
+                storageBucketUri: true,
+                enclaveOnlyProcessing: true,
+                encryptionMode: true,
+                primaryRegion: true
+            } as any
         });
 
         res.json({
             matterPrefix: 'MAT-SOV-',
             numberingPadding: 4,
             requiredFields: ['Jurisdiction Pin', 'Client Reference'],
-            separationMode: tenant?.separationMode || 'OPEN'
+            separationMode: (tenant as any)?.separationMode || 'OPEN',
+            jurisdiction: (tenant as any)?.jurisdiction || 'GH_ACC_1',
+            storageBucketUri: (tenant as any)?.storageBucketUri || '',
+            enclaveOnlyProcessing: (tenant as any)?.enclaveOnlyProcessing || false,
+            encryptionMode: (tenant as any)?.encryptionMode || 'SYSTEM_MANAGED',
+            primaryRegion: (tenant as any)?.primaryRegion || 'GHANA'
         });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// PATCH /api/tenant/settings
+// Bulk update organization settings
+router.patch('/settings', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+    try {
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        let tenantId = req.user?.tenantId;
+
+        if (isGlobalAdmin && req.body.targetTenantId) {
+            tenantId = req.body.targetTenantId;
+        }
+
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
+
+        const { 
+            separationMode, 
+            encryptionMode, 
+            jurisdiction, 
+            storageBucketUri, 
+            enclaveOnlyProcessing 
+        } = req.body;
+
+        const updated = await prisma.tenant.update({
+            where: { id: tenantId },
+            data: {
+                ...(separationMode && { separationMode }),
+                ...(encryptionMode && { encryptionMode }),
+                ...(jurisdiction && { jurisdiction }),
+                ...(storageBucketUri !== undefined && { storageBucketUri }),
+                ...(enclaveOnlyProcessing !== undefined && { enclaveOnlyProcessing })
+            }
+        });
+
+        await prisma.auditLog.create({
+            data: {
+                action: 'TENANT_SETTINGS_UPDATED',
+                userId: req.user?.id,
+                tenantId: tenantId,
+                details: `Residency & Sovereignty profile updated. Enclave-only: ${(updated as any).enclaveOnlyProcessing}`,
+                metadata: req.body
+            } as any
+        });
+
+        res.json(updated);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

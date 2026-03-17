@@ -1,0 +1,10 @@
+# CONFIDENTIALITY AGREEMENT
+
+This Agreement is entered into on March 17, 2026, by and between:
+1. LexSovereign Global LLC ("Disclosing Party")
+2. Jane Doe Consulting ("Receiving Party")
+
+The Receiving Party agrees to hold all confidential information in strict confidence and shall not disclose it to any third party without prior written consent.
+
+Signed,
+[Jane Doe]

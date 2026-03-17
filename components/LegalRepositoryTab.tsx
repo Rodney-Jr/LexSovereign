@@ -14,7 +14,7 @@ import {
     Scale,
     Landmark
 } from 'lucide-react';
-import { authorizedFetch } from '../utils/api';
+import { authorizedFetch, getSovereignPin } from '../utils/api';
 
 export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
     const [documents, setDocuments] = useState<any[]>([]);
@@ -70,7 +70,7 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'x-sov-pin': (window as any)._SOVEREIGN_PIN_
+                    'x-sov-pin': getSovereignPin()
                 },
                 body: formData
             });
