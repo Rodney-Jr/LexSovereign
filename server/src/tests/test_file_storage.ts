@@ -12,9 +12,10 @@ async function runStorageTest() {
     console.log("🧪 Testing FileStorage Utility...");
 
     try {
+        const mockTenant = { id: TEST_TENANT, jurisdiction: 'GH-ACC-1', storageBucketUri: 'test-bucket' };
         // 1. Test Writing
         console.log(`\n📝 Writing file: ${TEST_FILE}`);
-        const savedPath = await saveDocumentContent(TEST_TENANT, TEST_MATTER, TEST_FILE, TEST_CONTENT);
+        const savedPath = await saveDocumentContent(mockTenant, TEST_MATTER, TEST_FILE, TEST_CONTENT);
         console.log(`✅ File saved at relative path: ${savedPath}`);
 
         // Verify file exists on disk
@@ -41,7 +42,7 @@ async function runStorageTest() {
 
         // 3. Test Directory Traversal Protection (Write)
         console.log(`\n🛡️ Testing Directory Traversal Protection (Write)`);
-        const hackPath = await saveDocumentContent(TEST_TENANT, TEST_MATTER, '../../hack.txt', 'hacked');
+        const hackPath = await saveDocumentContent(mockTenant, TEST_MATTER, '../../hack.txt', 'hacked');
         console.log(`Output Path for traversal attempt: ${hackPath}`);
         if (!hackPath.includes('..')) {
             console.log("✅ Traversal characters sanitized from filename.");

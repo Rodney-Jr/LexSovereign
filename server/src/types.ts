@@ -5,9 +5,18 @@ export interface AuthUser {
     email: string;
     name: string; // Added for UI display
     role: string;
-    tenantId: string;
+    tenantId: string | null;
     permissions: string[];
-    department?: string;
+    department?: any;
+    tenant?: {
+        id: string;
+        jurisdiction: string;
+        storageBucketUri?: string | null;
+        enabledModules?: string[];
+        status?: string;
+        isTrial?: boolean;
+        trialExpiresAt?: Date | string | null;
+    };
     attributes?: Record<string, any>;
     isImpersonating?: boolean;
     impersonatorId?: string;

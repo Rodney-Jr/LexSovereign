@@ -15,7 +15,7 @@ router.get('/', authenticateToken, async (req, res) => {
         if (!isGlobalAdmin && !tenantId) return res.status(401).json({ error: 'Tenant context missing' });
 
         const profiles = await prisma.brandingProfile.findMany({
-            where: isGlobalAdmin ? {} : { tenantId: req.user!.tenantId },
+            where: isGlobalAdmin ? {} : { tenantId: req.user!.tenantId as string },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -47,7 +47,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 footerText,
                 coverPageEnabled,
                 watermarkText,
-                tenantId
+                tenantId: tenantId as string
             }
         });
 
@@ -73,7 +73,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 
         // Verify ownership
         const existing = await prisma.brandingProfile.findUnique({ where: { id } });
-        if (!existing || (!isGlobalAdmin && existing.tenantId !== tenantId)) {
+        if (!existing || (!isGlobalAdmin && existing.tenantId !== (tenantId as string))) {
             return res.status(404).json({ error: 'Profile not found' });
         }
 

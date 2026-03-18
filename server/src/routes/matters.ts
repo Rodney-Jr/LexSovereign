@@ -19,10 +19,10 @@ router.get('/', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'User context invalid' });
         }
 
-        // 1. Fetch Tenant Mode & User Department
+        // Fetch tenant attributes for configurable heuristics
         const tenant = await prisma.tenant.findUnique({
-            where: { id: user.tenantId },
-            select: { separationMode: true }
+            where: { id: user.tenantId as string }, // Changed user.tenantId to user.tenantId as string
+            select: { separationMode: true } // Kept original select, assuming the instruction's select was a copy-paste error from another context
         });
 
         const separationMode = tenant?.separationMode || 'OPEN';
@@ -281,7 +281,7 @@ router.patch('/:id/assign', authenticateToken, async (req, res) => {
         });
 
         const updated = await prisma.matter.update({
-            where: { id, tenantId: user.tenantId },
+            where: { id, tenantId: user.tenantId as string },
             data: {
                 internalCounselId: targetCounselId,
                 departmentId: counsel?.departmentId || undefined
@@ -346,7 +346,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 'MATTER',
                 { ...currentMatter, riskLevel },
                 'UPDATE_HIGH_RISK',
-                user.tenantId
+                user.tenantId as string
             );
 
             if (!policyResult.allowed) {
@@ -364,7 +364,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 'MATTER',
                 currentMatter,
                 'CLOSE_MATTER',
-                user.tenantId
+                user.tenantId as string
             );
             if (!closePolicy.allowed) {
                 return res.status(403).json({ error: 'Closure denied. Requires Partner/GC approval.' });
@@ -529,10 +529,10 @@ router.post('/:id/notes', authenticateToken, upload.single('file'), async (req, 
         let attachmentUrl = null;
         let attachmentName = null;
 
-        if (req.file) {
+        if (req.file && req.user?.tenant) {
             attachmentName = req.file.originalname;
             const relativePath = await saveDocumentContent(
-                tenantId,
+                req.user.tenant,
                 id, // Use matterId for folder structure
                 `chat_${Date.now()}_${attachmentName}`,
                 req.file.buffer
@@ -575,7 +575,7 @@ router.post('/:id/time-entries', authenticateToken, async (req, res) => {
                 startTime: new Date(startTime),
                 isBillable: isBillable ?? true,
                 matterId: id,
-                tenantId: req.user!.tenantId,
+                tenantId: req.user!.tenantId as string,
                 userId
             }
         });

@@ -228,7 +228,7 @@ router.post('/join-silo', async (req, res) => {
         });
 
         if (preCheckInvite) {
-            await checkTenantUserLimit(preCheckInvite.tenantId);
+            await checkTenantUserLimit(preCheckInvite.tenantId as string);
         }
 
         const result = await prisma.$transaction(async (tx) => {
@@ -259,7 +259,7 @@ router.post('/join-silo', async (req, res) => {
             console.log(`[Join] Found invitation for ${invitation.email}, tenant: ${invitation.tenant.name}`);
 
             let role = await tx.role.findFirst({
-                where: { name: invitation.roleName, tenantId: invitation.tenantId }
+                where: { name: invitation.roleName, tenantId: invitation.tenantId as string }
             });
 
             if (!role) {
@@ -285,7 +285,7 @@ router.post('/join-silo', async (req, res) => {
                     passwordHash: hashedPassword,
                     roleId: role.id,
                     roleString: role.name,
-                    tenantId: invitation.tenantId,
+                    tenantId: invitation.tenantId as string,
                     region: invitation.tenant.primaryRegion
                 },
                 include: { role: { include: { permissions: true } }, tenant: true }
@@ -359,7 +359,7 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             return;
         }
 
-        const tenantId = req.user.tenantId;
+        const tenantId = req.user.tenantId as string;
 
         if (!tenantId) {
             res.status(400).json({ error: 'Tenant context missing' });
@@ -424,13 +424,13 @@ router.post('/register', async (req, res) => {
         const { email, password, name, roleName, region, tenantId } = req.body;
 
         if (tenantId) {
-            await checkTenantUserLimit(tenantId);
+            await checkTenantUserLimit(tenantId as string);
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const role = await prisma.role.findFirst({
-            where: { name: roleName || 'INTERNAL_COUNSEL', tenantId: tenantId || null }
+            where: { name: roleName || 'INTERNAL_COUNSEL', tenantId: tenantId ? (tenantId as string) : null }
         });
 
         if (!role) {
@@ -446,7 +446,7 @@ router.post('/register', async (req, res) => {
                 roleId: role.id,
                 roleString: role.name,
                 region: region || 'GH_ACC_1',
-                tenantId: tenantId || null
+                tenantId: tenantId ? (tenantId as string) : null
             },
             include: {
                 role: { include: { permissions: true } },
@@ -633,7 +633,7 @@ router.post('/google-login', async (req, res) => {
             if (invitation) {
                 // Provision user based on invitation
                 const role = await prisma.role.findFirst({
-                    where: { name: invitation.roleName, tenantId: invitation.tenantId }
+                    where: { name: invitation.roleName, tenantId: invitation.tenantId as string }
                 });
 
                 if (role) {
@@ -644,7 +644,7 @@ router.post('/google-login', async (req, res) => {
                             passwordHash: 'EXTERNAL_OIDC', // Flag for no local password
                             roleId: role.id,
                             roleString: role.name,
-                            tenantId: invitation.tenantId,
+                            tenantId: invitation.tenantId as string,
                             region: invitation.tenant.primaryRegion,
                             provider: 'GOOGLE',
                             providerId: payload.sub
@@ -781,7 +781,7 @@ router.get('/invites', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
 
         const invites = await prisma.invitation.findMany({
             where: {
-                ...(isGlobalAdmin ? {} : { tenantId: req.user!.tenantId }),
+                ...(isGlobalAdmin ? {} : { tenantId: req.user!.tenantId as string }),
                 isUsed: false,
                 expiresAt: { gt: new Date() }
             },
@@ -807,7 +807,7 @@ router.delete('/invites/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'G
         }
 
         const invite = await prisma.invitation.findFirst({
-            where: isGlobalAdmin ? { id: inviteId } : { id: inviteId, tenantId: req.user!.tenantId }
+            where: isGlobalAdmin ? { id: inviteId } : { id: inviteId, tenantId: req.user!.tenantId as string }
         });
 
         if (!invite) {

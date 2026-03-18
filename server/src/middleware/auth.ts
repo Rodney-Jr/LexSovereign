@@ -42,7 +42,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
                 (prisma as any).user.findUnique({
                     where: { id: user.id },
                     include: {
-                        tenant: { select: { status: true, enabledModules: true, isTrial: true, trialExpiresAt: true } },
+                        tenant: { select: { id: true, status: true, enabledModules: true, isTrial: true, trialExpiresAt: true, jurisdiction: true, storageBucketUri: true } },
                         role: { include: { permissions: true } },
                         department: true
                     }

@@ -9,7 +9,7 @@ import { Jurisdiction } from '../types/Geography';
 
 /**
  * Saves content to a file within the uploads directory.
- * @param tenantId The tenant ID (used for folder structure)
+ * @param tenant The tenant object containing id, jurisdiction, and optional storageBucketUri
  * @param matterId The matter ID (used for folder structure)
  * @param fileName The name of the file
  * @param content The content to write
@@ -24,7 +24,7 @@ export const saveDocumentContent = async (
     encryptionContext?: EncryptionContext
 ): Promise<string> => {
     // Sanitize inputs to prevent directory traversal
-    const safeTenantId = tenantId.replace(/[^a-zA-Z0-9-]/g, '');
+    const safeTenantId = tenant.id.replace(/[^a-zA-Z0-9-]/g, '');
     const safeMatterId = matterId.replace(/[^a-zA-Z0-9-]/g, '');
     const safeFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
 

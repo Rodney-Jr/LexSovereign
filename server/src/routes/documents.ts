@@ -18,7 +18,7 @@ router.get('/', authenticateToken, async (req, res) => {
         const documents = await prisma.document.findMany({
             where: {
                 matter: {
-                    tenantId: req.user.tenantId
+                    tenantId: req.user.tenantId as string
                 }
             },
             include: {
@@ -64,7 +64,7 @@ router.get('/matter/:matterId', authenticateToken, async (req, res) => {
             where: {
                 matterId,
                 matter: {
-                    tenantId: req.user.tenantId
+                    tenantId: req.user.tenantId as string
                 }
             },
             orderBy: {
@@ -101,7 +101,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
             include: { tenant: true }
         });
 
-        if (!matter || matter.tenantId !== tenantId) {
+        if (!matter || matter.tenantId !== (tenantId as string)) {
             return res.status(403).json({ error: 'Matter access denied' });
         }
 
@@ -119,7 +119,11 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
 
         // Save Binary Content
         const relativePath = await saveDocumentContent(
-            matter.tenant as any,
+            {
+                id: matter.tenant.id,
+                jurisdiction: (matter.tenant as any).jurisdiction || 'GH_ACC_1',
+                storageBucketUri: (matter.tenant as any).storageBucketUri
+            },
             matterId,
             file.originalname,
             file.buffer,
@@ -134,18 +138,14 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
             file.originalname, 
             file.mimetype, 
             region || matter.tenant.primaryRegion || 'GHANA'
-        );
-
-        const doc = await prisma.document.create({
+        );        const doc = await prisma.document.create({
             data: {
                 name: file.originalname,
                 uri,
-                jurisdiction: region || matter.tenant.jurisdiction || 'GH_ACC_1',
+                jurisdiction: region || (matter.tenant as any).jurisdiction || 'GH_ACC_1',
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
-                residencyStatus: 'LOCAL_PINNED',
-                physicalRegion: matter.tenant.jurisdiction || 'GH_ACC_1',
-                tenantId,
+                tenantId: tenantId as string,
                 matterId,
                 isEncrypted,
                 encryptionIV,
@@ -186,7 +186,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
             uploadedAt: doc.createdAt.toISOString(),
             region: doc.jurisdiction,
             matterId: doc.matterId,
-            matterName: doc.matter.name
+            matterName: (doc as any).matter.name
         });
 
     } catch (error: any) {
@@ -236,7 +236,7 @@ router.post('/', authenticateToken, async (req, res) => {
             include: { tenant: true }
         });
 
-        if (!matter || matter.tenantId !== tenantId) {
+        if (!matter || matter.tenantId !== (tenantId as string)) {
             res.status(403).json({ error: 'Invalid Matter ID' });
             return;
         }
@@ -273,7 +273,11 @@ router.post('/', authenticateToken, async (req, res) => {
             const { saveDocumentContent } = await import('../utils/fileStorage');
             // Note: fileStorage needs to pass encryptionContext to LocalStorageAdapter
             const relativePath = await saveDocumentContent(
-                matter.tenant as any,
+                {
+                    id: matter.tenant.id,
+                    jurisdiction: (matter.tenant as any).jurisdiction || 'GH_ACC_1',
+                    storageBucketUri: (matter.tenant as any).storageBucketUri
+                },
                 actualMatterId,
                 `${name}.md`,
                 req.body.content,
@@ -296,13 +300,11 @@ router.post('/', authenticateToken, async (req, res) => {
             data: {
                 name,
                 uri,
-                jurisdiction: region || matter.tenant.jurisdiction || 'GH_ACC_1',
+                jurisdiction: region || (matter.tenant as any).jurisdiction || 'GH_ACC_1',
                 classification: classification || 'Confidential',
                 privilege: privilege || 'INTERNAL',
-                residencyStatus: 'LOCAL_PINNED',
-                physicalRegion: matter.tenant.jurisdiction || 'GH_ACC_1',
                 matterId: actualMatterId,
-                tenantId,
+                tenantId: tenantId as string,
                 isEncrypted,
                 encryptionIV,
                 encryptionKeyId,
@@ -327,7 +329,7 @@ router.post('/', authenticateToken, async (req, res) => {
         const version = await prisma.documentVersion.create({
             data: {
                 documentId: doc.id,
-                tenantId,
+                tenantId: tenantId as string,
                 versionNumber: 1,
                 uri: doc.uri,
                 authorId: req.user?.id,
@@ -340,7 +342,7 @@ router.post('/', authenticateToken, async (req, res) => {
         await prisma.auditLog.create({
             data: {
                 action: 'DOCUMENT_VERSION_CREATED',
-                tenantId,
+                tenantId: tenantId as string,
                 userId: req.user?.id,
                 matterId: doc.matterId,
                 resourceId: doc.id,
@@ -359,7 +361,7 @@ router.post('/', authenticateToken, async (req, res) => {
             region: doc.jurisdiction,
             classification: doc.classification,
             matterId: doc.matterId,
-            matterName: doc.matter.name,
+            matterName: (doc as any).matter.name,
             privilege: doc.privilege,
             encryption: isEncrypted ? 'BYOK' : 'SYSTEM'
         });
@@ -381,7 +383,7 @@ router.get('/review-needed', authenticateToken, async (req, res) => {
         const documents = await prisma.document.findMany({
             where: {
                 matter: {
-                    tenantId: req.user.tenantId
+                    tenantId: req.user.tenantId as string
                 },
                 status: { not: 'APPROVED' }
             },
@@ -496,7 +498,7 @@ router.get('/client-audit', authenticateToken, async (req, res) => {
 
         // 1. Fetch matters for this tenant
         const matters = await prisma.matter.findMany({
-            where: { tenantId: req.user.tenantId },
+            where: { tenantId: req.user.tenantId as string },
             select: { id: true }
         });
 
@@ -725,7 +727,7 @@ router.patch('/bulk-update', authenticateToken, async (req, res) => {
         const count = await prisma.document.count({
             where: {
                 id: { in: ids },
-                matter: { tenantId }
+                matter: { tenantId: tenantId as string }
             }
         });
 
@@ -762,7 +764,7 @@ router.post('/bulk-delete', authenticateToken, async (req, res) => {
         const count = await prisma.document.count({
             where: {
                 id: { in: ids },
-                matter: { tenantId }
+                matter: { tenantId: tenantId as string }
             }
         });
 

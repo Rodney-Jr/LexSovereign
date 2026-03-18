@@ -13,14 +13,14 @@ router.get('/metrics', authenticateToken, async (req, res) => {
         const tenantId = req.user?.tenantId;
 
         const [mattersCount, docsCount, rulesCount] = await Promise.all([
-            prisma.matter.count({ where: { tenantId } }),
-            prisma.document.count({ where: { matter: { tenantId } } }),
+            prisma.matter.count({ where: { tenantId: tenantId as string } }),
+            prisma.document.count({ where: { matter: { tenantId: tenantId as string } } }),
             prisma.regulatoryRule.count()
         ]);
 
         // Fetch tenant attributes for configurable heuristics
         const tenant = await prisma.tenant.findUnique({
-            where: { id: tenantId },
+            where: { id: tenantId as string },
             select: { attributes: true }
         });
 
@@ -41,19 +41,19 @@ router.get('/metrics', authenticateToken, async (req, res) => {
 
         // staffCount: Pull from users in tenant
         const staffCount = await prisma.user.count({
-            where: { tenantId }
+            where: { tenantId: tenantId as string }
         });
 
         // AI Validation Score: Calculate from AuditLog successes
         const successfulValidations = await prisma.auditLog.count({
             where: {
-                userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) },
+                userId: { in: (await prisma.user.findMany({ where: { tenantId: tenantId as string }, select: { id: true } })).map(u => u.id) },
                 action: 'AI_VALIDATION_PASS'
             }
         });
         const totalValidations = await prisma.auditLog.count({
             where: {
-                userId: { in: (await prisma.user.findMany({ where: { tenantId }, select: { id: true } })).map(u => u.id) },
+                userId: { in: (await prisma.user.findMany({ where: { tenantId: tenantId as string }, select: { id: true } })).map(u => u.id) },
                 action: { in: ['AI_VALIDATION_PASS', 'AI_VALIDATION_FAIL'] }
             }
         });
@@ -92,7 +92,7 @@ router.get('/history', authenticateToken, async (req, res) => {
 
         const matters = await prisma.matter.findMany({
             where: {
-                tenantId,
+                tenantId: tenantId as string,
                 createdAt: { gte: sixMonthsAgo }
             },
             select: { createdAt: true }
@@ -136,18 +136,18 @@ router.get('/clm/stats', authenticateToken, async (req, res) => {
 
         const [activeContractsCount, closedMatters, riskAnalyses] = await Promise.all([
             prisma.contractMetadata.count({
-                where: { matter: { tenantId } }
+                where: { matter: { tenantId: tenantId as string } }
             }),
             prisma.matter.findMany({
                 where: {
-                    tenantId,
+                    tenantId: tenantId as string,
                     status: 'CLOSED',
                     updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
                 },
                 select: { createdAt: true, updatedAt: true }
             }),
             prisma.predictiveRisk.findMany({
-                where: { matter: { tenantId } },
+                where: { matter: { tenantId: tenantId as string } },
                 select: { type: true }
             })
         ]);
@@ -188,11 +188,11 @@ router.get('/case-center', authenticateToken, async (req, res) => {
 
         const [matters, deadlines] = await Promise.all([
             prisma.matter.findMany({
-                where: { tenantId },
+                where: { tenantId: tenantId as string },
                 select: { status: true, id: true }
             }),
             prisma.deadline.findMany({
-                where: { matter: { tenantId } }
+                where: { matter: { tenantId: tenantId as string } }
             })
         ]);
 

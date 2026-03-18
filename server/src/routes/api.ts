@@ -19,7 +19,7 @@ router.post('/chat', authenticateToken, async (req: Request, res) => {
         let allowedRegion: string | undefined;
         if (req.user?.tenantId) {
             const tenant = await prisma.tenant.findUnique({
-                where: { id: req.user.tenantId },
+                where: { id: req.user.tenantId as string },
                 select: { primaryRegion: true }
             });
             allowedRegion = tenant?.primaryRegion;
@@ -34,7 +34,7 @@ router.post('/chat', authenticateToken, async (req: Request, res) => {
             useGlobalSearch,
             jurisdiction || 'GH',
             allowedRegion,
-            req.user?.tenantId
+            req.user?.tenantId as string
         );
         res.json(result);
     } catch (error: any) {

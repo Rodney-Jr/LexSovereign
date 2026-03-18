@@ -18,12 +18,12 @@ router.get('/admin-stats', authenticateToken, requirePermission('manage_tenant')
         }
 
         const [userCount, matterCount, docCount, failCount] = await Promise.all([
-            prisma.user.count({ where: isGlobalAdmin ? {} : { tenantId } }),
-            prisma.matter.count({ where: isGlobalAdmin ? {} : { tenantId } }),
-            prisma.document.count({ where: isGlobalAdmin ? {} : { matter: { tenantId } } }),
+            prisma.user.count({ where: isGlobalAdmin ? {} : { tenantId: tenantId as string } }),
+            prisma.matter.count({ where: isGlobalAdmin ? {} : { tenantId: tenantId as string } }),
+            prisma.document.count({ where: isGlobalAdmin ? {} : { matter: { tenantId: tenantId as string } } }),
             prisma.auditLog.count({
                 where: {
-                    ...(isGlobalAdmin ? {} : { user: { tenantId } }),
+                    ...(isGlobalAdmin ? {} : { user: { tenantId: tenantId as string } }),
                     action: { contains: 'FAIL' }
                 }
             })
@@ -55,8 +55,8 @@ router.get('/capacity-stats', authenticateToken, requirePermission('manage_tenan
         if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
 
         const [users, matters] = await Promise.all([
-            prisma.user.findMany({ where: { tenantId }, select: { id: true, maxWeeklyHours: true } }),
-            prisma.matter.findMany({ where: { tenantId }, select: { riskLevel: true } })
+            prisma.user.findMany({ where: { tenantId: tenantId as string }, select: { id: true, maxWeeklyHours: true } }),
+            prisma.matter.findMany({ where: { tenantId: tenantId as string }, select: { riskLevel: true } })
         ]);
 
         const totalCapacity = users.reduce((acc, u) => acc + (u.maxWeeklyHours || 40), 0);
@@ -67,12 +67,12 @@ router.get('/capacity-stats', authenticateToken, requirePermission('manage_tenan
 
         const highRiskCount = matters.filter(m => m.riskLevel === 'HIGH').length;
         const activeOverrides = await prisma.auditLog.count({
-            where: { user: { tenantId }, action: 'AI_OVERRIDE' }
+            where: { user: { tenantId: tenantId as string }, action: 'AI_OVERRIDE' }
         });
 
         // Heuristic for compliance readiness
         const unreviewedDocs = await prisma.document.count({
-            where: { matter: { tenantId }, attributes: { equals: {} } }
+            where: { matter: { tenantId: tenantId as string }, attributes: { equals: {} } }
         });
         const complianceReadiness = Math.max(0, 100 - (unreviewedDocs * 2));
 
@@ -105,7 +105,7 @@ router.get('/insights', authenticateToken, requirePermission('manage_tenant'), a
         // 1. Regional Storage / Silo Load
         const regionStats = await (prisma.document.groupBy({
             by: ['jurisdiction'],
-            where: { matter: { tenantId } },
+            where: { matter: { tenantId: tenantId as string } },
             _count: { id: true }
         }) as any);
 
@@ -135,7 +135,7 @@ router.get('/insights', authenticateToken, requirePermission('manage_tenant'), a
 
         // 3. High Risk Matters
         const highRiskMatters = await prisma.matter.findMany({
-            where: { tenantId, riskLevel: 'HIGH', status: 'OPEN' },
+            where: { tenantId: tenantId as string, riskLevel: 'HIGH', status: 'OPEN' },
             take: 1
         });
 
@@ -213,9 +213,9 @@ router.get('/billing', authenticateToken, requirePermission('manage_tenant'), as
         });
 
         // Calculate usage (simulated for some metrics, real for others)
-        const matterCount = await prisma.matter.count({ where: { tenantId } });
-        const userCount = await prisma.user.count({ where: { tenantId } });
-        const docCount = await prisma.document.count({ where: { matter: { tenantId } } });
+        const matterCount = await prisma.matter.count({ where: { tenantId: tenantId as string } });
+        const userCount = await prisma.user.count({ where: { tenantId: tenantId as string } });
+        const docCount = await prisma.document.count({ where: { matter: { tenantId: tenantId as string } } });
 
         // Precise AI Credit calculation: sum of costCredits in AIUsage
         const aiAgg = await prisma.aIUsage.aggregate({
@@ -434,7 +434,7 @@ router.post('/users/:userId/department', authenticateToken, requirePermission('m
         if (!tenantId) return res.status(400).json({ error: 'Tenant context missing' });
 
         const updated = await prisma.user.update({
-            where: { id: userId, tenantId }, // Ensure user belongs to same tenant
+            where: { id: userId, tenantId: tenantId as string }, // Ensure user belongs to same tenant
             data: { departmentId: departmentId } as any
         });
 
