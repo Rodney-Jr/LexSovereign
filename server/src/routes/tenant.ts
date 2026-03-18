@@ -506,4 +506,64 @@ router.post('/support/grant', authenticateToken, requireRole(['TENANT_ADMIN']), 
     }
 });
 
+// GET /api/tenant/ui-config
+router.get('/ui-config', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        
+        // If Global Admin and no tenant context, return empty/default
+        if (!tenantId) {
+            if (req.user?.role === 'GLOBAL_ADMIN') {
+                return res.json({});
+            }
+            return res.status(400).json({ error: 'Tenant context missing' });
+        }
+
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { uiVisibilityConfig: true }
+        });
+
+        res.json(tenant?.uiVisibilityConfig || {});
+    } catch (error: any) {
+        console.error('[Tenant API] Failed to fetch UI config:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// PATCH /api/tenant/ui-config
+router.patch('/ui-config', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId;
+        const { config } = req.body;
+
+        if (!tenantId) {
+            if (req.user?.role === 'GLOBAL_ADMIN') {
+                return res.json({ success: true, message: 'Global config simulation' });
+            }
+            return res.status(400).json({ error: 'Tenant context missing' });
+        }
+
+        const updated = await prisma.tenant.update({
+            where: { id: tenantId },
+            data: { uiVisibilityConfig: config }
+        });
+
+        await prisma.auditLog.create({
+            data: {
+                action: 'TENANT_UI_VISIBILITY_UPDATED',
+                userId: req.user?.id,
+                tenantId: tenantId,
+                details: 'UI visibility configuration updated by administrator.',
+                metadata: config
+            } as any
+        });
+
+        res.json(updated.uiVisibilityConfig);
+    } catch (error: any) {
+        console.error('[Tenant API] Failed to save UI config:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

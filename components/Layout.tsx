@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Briefcase,
   Gavel,
@@ -55,12 +55,17 @@ import {
 import { AppMode, UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
 import { TAB_REQUIRED_PERMISSIONS } from '../constants';
+import { useSovereign } from '../contexts/SovereignContext';
 
 
 
 import CommandPalette from './CommandPalette';
 import SovereignStaffDossierModal from './SovereignStaffDossierModal';
 import ResizablePanel from './ResizablePanel';
+import Breadcrumbs from './Breadcrumbs';
+import MatterCreationModal from './MatterCreationModal';
+import LeaveApplicationModal from './LeaveApplicationModal';
+import TrialExpirationModal from './TrialExpirationModal';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -74,6 +79,14 @@ interface LayoutProps {
   theme: 'midnight' | 'gold' | 'cyber' | 'light';
   setTheme: (theme: 'midnight' | 'gold' | 'cyber' | 'light') => void;
   userId?: string | null;
+  // Global Modal Props
+  showMatterModal?: boolean;
+  setShowMatterModal?: (show: boolean) => void;
+  showLeaveModal?: boolean;
+  setShowLeaveModal?: (show: boolean) => void;
+  trialExpiredData?: { expiresAt?: string } | null;
+  setTrialExpiredData?: (data: { expiresAt?: string } | null) => void;
+  onMatterCreated?: (matter: any) => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -87,9 +100,17 @@ const Layout: React.FC<LayoutProps> = ({
   userName,
   theme,
   setTheme,
-  userId
+  userId,
+  showMatterModal = false,
+  setShowMatterModal = () => { },
+  showLeaveModal = false,
+  setShowLeaveModal = () => { },
+  trialExpiredData = null,
+  setTrialExpiredData = () => { },
+  onMatterCreated = () => { }
 }) => {
   const { hasAnyPermission, role, canAccessTab } = usePermissions();
+  const { session } = useSovereign();
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showMyDossierModal, setShowMyDossierModal] = React.useState(false);
@@ -106,7 +127,17 @@ const Layout: React.FC<LayoutProps> = ({
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, []);
 
-  const isAllowed = (tab: string) => canAccessTab(tab);
+  const isAllowed = (tab: string) => {
+    const baseAllowed = canAccessTab(tab);
+    if (!baseAllowed) return false;
+    
+    // UI Visibility Override
+    if (session?.allowedNavItems !== null && session?.allowedNavItems !== undefined) {
+      return session.allowedNavItems.includes(tab);
+    }
+    
+    return true;
+  };
   return (
     <div 
       className={`flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500 theme-${theme}`}
@@ -221,15 +252,6 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('tenant-admin') && (
-                <NavItem
-                  icon={<UserPlus size={18} />}
-                  label="Firm Directory"
-                  isActive={activeTab === 'tenant-admin'}
-                  onClick={() => setActiveTab('tenant-admin')}
-                  setIsSidebarOpen={setIsSidebarOpen}
-                />
-              )}
               {isAllowed('hr-workbench') && (
                 <NavItem
                   icon={<Users size={18} className="text-blue-400" />}
@@ -267,15 +289,6 @@ const Layout: React.FC<LayoutProps> = ({
                   label="Organization Blueprint"
                   isActive={activeTab === 'org-blueprint'}
                   onClick={() => setActiveTab('org-blueprint')}
-                  setIsSidebarOpen={setIsSidebarOpen}
-                />
-              )}
-              {isAllowed('integration-bridge') && (
-                <NavItem
-                  icon={<Plug size={18} />}
-                  label="Bridge Registry"
-                  isActive={activeTab === 'integration-bridge'}
-                  onClick={() => setActiveTab('integration-bridge')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
@@ -413,7 +426,7 @@ const Layout: React.FC<LayoutProps> = ({
               {isAllowed('billing') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
                 <NavItem
                   icon={<Coins size={18} className="text-emerald-400" />}
-                  label="Billing & Finance"
+                  label="Sovereign Billing"
                   isActive={activeTab === 'billing'}
                   onClick={() => setActiveTab('billing')}
                   setIsSidebarOpen={setIsSidebarOpen}
@@ -489,6 +502,14 @@ const Layout: React.FC<LayoutProps> = ({
                 />
               )}
 
+              <div className="h-[1px] bg-brand-border/50 mx-4 my-2 opacity-30" />
+              <NavItem
+                icon={<Fingerprint size={18} />}
+                label="Sovereign Profile"
+                isActive={activeTab === 'dossier'}
+                onClick={() => setActiveTab('dossier')}
+                setIsSidebarOpen={setIsSidebarOpen}
+              />
 
             </>
           )}
@@ -560,9 +581,20 @@ const Layout: React.FC<LayoutProps> = ({
             >
               <Menu size={24} />
             </button>
-            <h2 className="text-sm lg:text-lg font-semibold text-brand-text capitalize truncate">{activeTab.replace('-', ' ')}</h2>
+            <div className="flex flex-col gap-0.5 max-w-[150px] sm:max-w-[300px] lg:max-w-none">
+              <Breadcrumbs />
+            </div>
           </div>
           <div className="flex items-center gap-3 lg:gap-4">
+            <button
+               onClick={() => setIsPaletteOpen(true)}
+               className="hidden sm:flex items-center gap-2 p-2 px-3 bg-brand-sidebar border border-transparent hover:border-brand-primary/40 hover:bg-brand-primary/5 rounded-xl text-brand-muted hover:text-brand-primary transition-all group"
+               title="Global Sovereign Search (Ctrl+K)"
+            >
+               <Search size={16} className="group-hover:scale-110 transition-transform" />
+               <span className="text-[10px] font-bold uppercase tracking-widest hidden lg:inline">Search</span>
+               <kbd className="text-[10px] bg-brand-bg px-1 rounded border border-brand-border/50 opacity-40 group-hover:opacity-100 transition-opacity">⌘K</kbd>
+            </button>
             {userName && (
               <div
                 onClick={() => setShowMyDossierModal(true)}
@@ -626,6 +658,28 @@ const Layout: React.FC<LayoutProps> = ({
           }}
           onClose={() => setShowMyDossierModal(false)}
           onUpdateStatus={() => { }} // Not used in self-service
+        />
+      )}
+      {showMatterModal && session && (
+        <MatterCreationModal
+          mode={session.mode || AppMode.LAW_FIRM}
+          userId={session.userId || ''}
+          tenantId={session.tenantId || ''}
+          onClose={() => setShowMatterModal(false)}
+          onCreated={(matter) => {
+            if (onMatterCreated) onMatterCreated(matter);
+            setShowMatterModal(false);
+          }}
+        />
+      )}
+
+      {showLeaveModal && (
+        <LeaveApplicationModal isOpen={showLeaveModal} onClose={() => setShowLeaveModal(false)} />
+      )}
+
+      {!!trialExpiredData && (
+        <TrialExpirationModal
+          expiresAt={trialExpiredData?.expiresAt}
         />
       )}
     </div>

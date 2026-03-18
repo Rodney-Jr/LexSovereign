@@ -3,6 +3,7 @@ import { AppMode, UserRole, SessionData } from '../types';
 import Layout from './Layout';
 import AuthFlow from './AuthFlow';
 import PlatformGateway from './PlatformGateway';
+import ScrollToTop from './ScrollToTop';
 import { ThemeMode } from '../hooks/useTheme';
 
 const TenantOnboarding = React.lazy(() => import('./TenantOnboarding'));
@@ -34,6 +35,14 @@ interface AppRouterProps {
     isResettingPassword?: boolean;
     resetToken?: string;
     setIsResettingPassword?: (active: boolean) => void;
+    // Global Modal States
+    showMatterModal: boolean;
+    setShowMatterModal: (show: boolean) => void;
+    showLeaveModal: boolean;
+    setShowLeaveModal: (show: boolean) => void;
+    trialExpiredData: { expiresAt?: string } | null;
+    setTrialExpiredData: (data: { expiresAt?: string } | null) => void;
+    onMatterCreated: (matter: any) => void;
     children: React.ReactNode;
 }
 
@@ -63,6 +72,13 @@ const AppRouter: React.FC<AppRouterProps> = ({
     isResettingPassword,
     resetToken,
     setIsResettingPassword,
+    showMatterModal,
+    setShowMatterModal,
+    showLeaveModal,
+    setShowLeaveModal,
+    trialExpiredData,
+    setTrialExpiredData,
+    onMatterCreated,
     children
 }) => {
     if (isOnboarding) {
@@ -164,7 +180,15 @@ const AppRouter: React.FC<AppRouterProps> = ({
             userId={userId}
             theme={theme}
             setTheme={setTheme}
+            showMatterModal={showMatterModal}
+            setShowMatterModal={setShowMatterModal}
+            showLeaveModal={showLeaveModal}
+            setShowLeaveModal={setShowLeaveModal}
+            trialExpiredData={trialExpiredData}
+            setTrialExpiredData={setTrialExpiredData}
+            onMatterCreated={onMatterCreated}
         >
+            <ScrollToTop />
             {children}
         </Layout>
     );

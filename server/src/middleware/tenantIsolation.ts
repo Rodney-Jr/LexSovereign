@@ -26,9 +26,18 @@ export function tenantIsolationMiddleware(currentTenantIdProvider: () => string 
                     ? { OR: [{ tenantId: tenantId }, { isSystem: true }] }
                     : { tenantId: tenantId };
 
+                // [SECURITY FIX] findUnique does not support AND/OR clauses in 'where'. 
+                // We convert findUnique to findFirst to allow safe multi-tenant filtering.
+                if (params.action === 'findUnique') {
+                    params.action = 'findFirst';
+                }
+
+                // Safely merge filters using AND to prevent overwriting existing OR/AND clauses
                 params.args.where = {
-                    ...(params.args.where || {}),
-                    ...isolationFilter
+                    AND: [
+                        params.args.where || {},
+                        isolationFilter
+                    ]
                 };
             }
 

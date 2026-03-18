@@ -71,10 +71,16 @@ const TenantAdministration: React.FC = () => {
       try {
          setIsLoadingRoles(true);
          const data = await authorizedFetch('/api/roles', { token: session.token });
-         setAvailableRoles(data);
-         const filtered = data.filter((r: any) => !r.isSystem || r.name !== 'GLOBAL_ADMIN');
-         if (filtered.length > 0 && !filtered.find((r: any) => r.name === inviteForm.roleName)) {
-            setInviteForm(prev => ({ ...prev, roleName: filtered[0].name }));
+         
+         if (Array.isArray(data)) {
+            setAvailableRoles(data);
+            const filtered = data.filter((r: any) => !r.isSystem || r.name !== 'GLOBAL_ADMIN');
+            if (filtered.length > 0 && !filtered.find((r: any) => r.name === inviteForm.roleName)) {
+               setInviteForm(prev => ({ ...prev, roleName: filtered[0].name }));
+            }
+         } else {
+            console.error("[TenantAdmin] Unexpected role data format:", data);
+            setAvailableRoles([]);
          }
       } catch (e) {
          console.error("[TenantAdmin] Role discovery failed:", e);
@@ -371,12 +377,20 @@ const TenantAdministration: React.FC = () => {
                                  />
                               </div>
                               <button
-                                 onClick={() => { setShowInviteModal(true); setGeneratedLink(''); setCopySuccess(false); setIsEmailing(false); setEmailError(''); }}
-                                 className="bg-purple-600 hover:bg-purple-500 text-white px-4 lg:px-5 py-2.5 rounded-xl lg:rounded-2xl font-bold text-[10px] lg:text-xs flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20 whitespace-nowrap"
-                                 aria-label="Invite new practitioner"
-                              >
-                                 <UserPlus size={16} /> <span className="hidden sm:inline">Invite Practitioner</span><span className="sm:hidden">Invite</span>
-                              </button>
+                                  onClick={() => { 
+                                     setShowInviteModal(true); 
+                                     setGeneratedLink(''); 
+                                     setCopySuccess(false); 
+                                     setIsEmailing(false); 
+                                     setEmailError('');
+                                     // Re-fetch roles if empty to ensure dropdown is populated
+                                     if (availableRoles.length === 0) fetchData();
+                                  }}
+                                  className="bg-purple-600 hover:bg-purple-500 text-white px-4 lg:px-5 py-2.5 rounded-xl lg:rounded-2xl font-bold text-[10px] lg:text-xs flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20 whitespace-nowrap"
+                                  aria-label="Invite new practitioner"
+                               >
+                                  <UserPlus size={16} /> <span className="hidden sm:inline">Invite Practitioner</span><span className="sm:hidden">Invite</span>
+                               </button>
                            </div>
                            <div className="overflow-x-auto">
                               <table className="w-full text-left">

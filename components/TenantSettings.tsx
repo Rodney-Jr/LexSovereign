@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Settings, Building2, Key, GitBranch, Plug, Droplet, ShieldCheck } from 'lucide-react';
+import { Settings, Building2, Key, GitBranch, Plug, Droplet, ShieldCheck, Eye } from 'lucide-react';
 import TenantAdministration from './TenantAdministration';
 import AccessGovernance from './AccessGovernance';
 import BridgeRegistry from './BridgeRegistry';
@@ -8,6 +8,7 @@ import OrgChart from './OrgChart';
 import BrandingSettings from './BrandingSettings';
 import ApiKeysDashboard from './ApiKeysDashboard';
 import SovereignResidencySettings from './SovereignResidencySettings';
+import UiVisibilityPanel from './UiVisibilityPanel';
 import { UserRole } from '../types';
 
 interface TenantSettingsProps {
@@ -15,7 +16,7 @@ interface TenantSettingsProps {
     setUserRole: (role: UserRole) => void;
 }
 
-type SettingsTab = 'organization' | 'access' | 'integrations' | 'agent' | 'blueprint' | 'branding' | 'sovereignty';
+type SettingsTab = 'organization' | 'access' | 'integrations' | 'agent' | 'blueprint' | 'branding' | 'sovereignty' | 'ui-visibility';
 
 const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }) => {
     const [activeTab, setActiveTab] = useState<SettingsTab>('organization');
@@ -79,6 +80,12 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                     active={activeTab === 'sovereignty'}
                     onClick={() => setActiveTab('sovereignty')}
                 />
+                <TabButton
+                    icon={<Eye className="text-blue-400" size={16} />}
+                    label="UI Visibility"
+                    active={activeTab === 'ui-visibility'}
+                    onClick={() => setActiveTab('ui-visibility')}
+                />
             </div>
 
             {/* Tab Content */}
@@ -90,6 +97,7 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                 {activeTab === 'blueprint' && <OrgChart />}
                 {activeTab === 'branding' && <BrandingSettings />}
                 {activeTab === 'sovereignty' && <SovereignResidencySettings />}
+                {activeTab === 'ui-visibility' && <UiVisibilityPanel />}
             </div>
         </div>
     );

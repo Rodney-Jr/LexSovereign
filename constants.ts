@@ -109,3 +109,25 @@ export const INITIAL_MATTERS: Matter[] = [
     createdAt: '2024-05-01'
   }
 ];
+
+export const ALL_QUICK_ACTIONS = [
+  { id: 'quick_draft', label: 'Quick Draft', icon: 'Sparkles' },
+  { id: 'incept_matter', label: 'Incept Matter', icon: 'Briefcase' },
+  { id: 'request_leave', label: 'Request Leave', icon: 'Calendar' },
+];
+
+export const ALL_NAV_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+  { id: 'vault', label: 'Document Vault', icon: 'FileLock' },
+  { id: 'drafting', label: 'Drafting Studio', icon: 'PenTool' },
+  { id: 'conflict-check', label: 'Conflict Search', icon: 'ShieldCheck' },
+  { id: 'case-center', label: 'Case Center', icon: 'Gavel' },
+  { id: 'clm-center', label: 'CLM Center', icon: 'FileSignature' },
+  { id: 'accounting-hub', label: 'Accounting Hub', icon: 'Banknote' },
+  { id: 'hr-workbench', label: 'HR Workbench', icon: 'Users' },
+  { id: 'analytics', label: 'Analytics', icon: 'Activity' },
+  { id: 'tenant-settings', label: 'Tenant Settings', icon: 'Settings' },
+  { id: 'identity', label: 'Access Governance', icon: 'UserPlus' },
+  { id: 'audit', label: 'Audit Logs', icon: 'Fingerprint' },
+  { id: 'dossier', label: 'Sovereign Profile', icon: 'User' },
+];

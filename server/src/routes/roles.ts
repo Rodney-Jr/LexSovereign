@@ -14,12 +14,15 @@ router.get('/', authenticateToken, async (req, res) => {
 
         const tenantId = req.user.tenantId;
 
+        console.log(`[Roles] Fetching roles for Tenant: ${tenantId || 'GLOBAL'} (User: ${req.user.email})`);
+
         // Fetch all potential roles
+        // The middleware will now safely merge this with the tenant isolation filter
         const allRoles = await prisma.role.findMany({
             where: {
                 OR: [
                     { tenantId: null, isSystem: true }, // Global System Roles
-                    { tenantId } // Tenant specific roles (system or custom)
+                    { tenantId: tenantId }              // Tenant specific roles
                 ]
             },
             include: {
@@ -27,21 +30,27 @@ router.get('/', authenticateToken, async (req, res) => {
             }
         });
 
+        console.log(`[Roles] Database returned ${allRoles.length} raw roles`);
+
         // Deduplicate by name, prioritizing tenant-specific roles
         const roleMap = new Map<string, typeof allRoles[0]>();
 
         // Process global roles first
-        allRoles.filter(r => r.tenantId === null).forEach(r => {
+        allRoles.filter(r => !r.tenantId).forEach(r => {
             roleMap.set(r.name, r);
         });
 
         // Overwrite with tenant-specific roles
-        allRoles.filter(r => r.tenantId !== null).forEach(r => {
+        allRoles.filter(r => !!r.tenantId).forEach(r => {
             roleMap.set(r.name, r);
         });
 
-        res.json(Array.from(roleMap.values()));
+        const finalRoles = Array.from(roleMap.values());
+        console.log(`[Roles] Returning ${finalRoles.length} deduplicated roles`);
+        
+        res.json(finalRoles);
     } catch (error: any) {
+        console.error(`[Roles] Critical Fetch Failure: ${error.message}`);
         res.status(500).json({ error: error.message });
     }
 });

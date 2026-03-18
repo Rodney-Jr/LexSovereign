@@ -86,6 +86,8 @@ export interface SessionData {
   token?: string;
   mfaEnabled?: boolean;
   enabledModules?: string[];
+  allowedNavItems?: string[];
+  allowedQuickActions?: string[];
 }
 
 export interface ChatbotConfig {

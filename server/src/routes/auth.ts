@@ -107,14 +107,21 @@ router.post('/onboard-silo', async (req, res) => {
             return { user, tenant };
         });
 
-        const permissions = result.user.role?.permissions.map(p => p.id) || [];
+        const permissions = result.user.role?.permissions?.map((p: any) => p.id) || [];
+        const userRoleName = result.user.role?.name || 'UNKNOWN';
+        const uiVisibility = (result.tenant as any).uiVisibilityConfig?.[userRoleName];
+        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
+        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
+
         const token = jwt.sign({
             id: result.user.id,
             email: result.user.email,
-            role: result.user.role?.name,
+            role: userRoleName,
             permissions,
             tenantId: result.user.tenantId,
-            appMode: result.tenant.appMode
+            appMode: result.tenant.appMode,
+            allowedNavItems,
+            allowedQuickActions
         }, JWT_SECRET, { expiresIn: '8h' });
 
         // After successful onboarding, sync seat count
@@ -139,10 +146,12 @@ router.post('/onboard-silo', async (req, res) => {
                 id: result.user.id,
                 email: result.user.email,
                 name: result.user.name,
-                role: result.user.role?.name,
+                role: userRoleName,
                 tenantId: result.user.tenantId,
                 permissions,
-                mode: result.tenant.appMode
+                mode: result.tenant.appMode,
+                allowedNavItems,
+                allowedQuickActions
             }
         });
 
@@ -302,13 +311,20 @@ router.post('/join-silo', async (req, res) => {
         }
 
         const permissions = result.user.role?.permissions.map(p => p.id) || [];
+        const roleName = result.user.role?.name || 'UNKNOWN';
+        const uiVisibility = (result.tenant as any).uiVisibilityConfig?.[roleName];
+        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
+        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
+
         const jwtToken = jwt.sign({
             id: result.user.id,
             email: result.user.email,
-            role: result.user.role?.name,
+            role: roleName,
             permissions,
             tenantId: result.user.tenantId,
-            appMode: result.tenant.appMode
+            appMode: result.tenant.appMode,
+            allowedNavItems,
+            allowedQuickActions
         }, JWT_SECRET, { expiresIn: '8h' });
 
         console.log(`[Join] SUCCESS: User joined successfully`);
@@ -318,10 +334,12 @@ router.post('/join-silo', async (req, res) => {
                 id: result.user.id,
                 email: result.user.email,
                 name: result.user.name,
-                role: result.user.role?.name,
+                role: roleName,
                 tenantId: result.user.tenantId,
                 permissions,
-                mode: result.tenant.appMode
+                mode: result.tenant.appMode,
+                allowedNavItems,
+                allowedQuickActions
             }
         });
 
@@ -436,16 +454,22 @@ router.post('/register', async (req, res) => {
             }
         });
 
-        const permissions = user.role?.permissions.map((p: any) => p.id) || [];
+        const permissions = user.role?.permissions?.map((p: any) => p.id) || [];
         const appMode = user.tenant?.appMode || 'LAW_FIRM';
+        const userRoleName = user.role?.name || 'UNKNOWN';
+        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
+        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
+        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
 
         const token = jwt.sign({
             id: user.id,
             email: user.email,
-            role: user.role?.name,
+            role: userRoleName,
             permissions,
             tenantId: user.tenantId,
-            appMode
+            appMode,
+            allowedNavItems,
+            allowedQuickActions
         }, JWT_SECRET, { expiresIn: '8h' });
 
         res.json({
@@ -454,10 +478,12 @@ router.post('/register', async (req, res) => {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: user.role?.name,
+                role: userRoleName,
                 tenantId: user.tenantId,
                 permissions,
-                mode: appMode
+                mode: appMode,
+                allowedNavItems,
+                allowedQuickActions
             }
         });
     } catch (error: any) {
@@ -507,8 +533,12 @@ router.post('/login', async (req, res) => {
 
         console.log(`[AuthFlow] Login Success for user: ${email} (Role: ${user.role?.name || 'UNKNOWN'})`);
 
-        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const permissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+        const userRoleName = (user as any)?.role?.name || 'UNKNOWN';
+        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
+        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
+        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
 
         // MFA Integration - Two-Step Flow
         if (user.mfaEnabled) {
@@ -527,10 +557,12 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign({
             id: user.id,
             email: user.email,
-            role: (user as any)?.role?.name || 'UNKNOWN',
+            role: userRoleName,
             permissions,
             tenantId: user.tenantId || (user.roleString === 'GLOBAL_ADMIN' ? '__PLATFORM__' : null),
-            appMode
+            appMode,
+            allowedNavItems,
+            allowedQuickActions
         }, JWT_SECRET, { expiresIn: '8h' });
 
         // Set HttpOnly Secure cookie (primary hardened mechanism)
@@ -550,10 +582,12 @@ router.post('/login', async (req, res) => {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: user.role?.name,
+                role: userRoleName,
                 tenantId: user.tenantId,
                 permissions,
-                mode: appMode
+                mode: appMode,
+                allowedNavItems,
+                allowedQuickActions
             }
         });
     } catch (error: any) {
@@ -634,8 +668,12 @@ router.post('/google-login', async (req, res) => {
             });
         }
 
-        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const permissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+        const userRoleName = (user as any)?.role?.name || 'UNKNOWN';
+        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
+        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
+        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
 
         // MFA Integration - Two-Step Flow for Google (Optional policy)
         if (user.mfaEnabled) {
@@ -654,10 +692,12 @@ router.post('/google-login', async (req, res) => {
         const token = jwt.sign({
             id: user.id,
             email: user.email,
-            role: (user as any)?.role?.name || 'UNKNOWN',
+            role: userRoleName,
             permissions,
             tenantId: user.tenantId,
-            appMode
+            appMode,
+            allowedNavItems,
+            allowedQuickActions
         }, JWT_SECRET, { expiresIn: '8h' });
 
         return res.json({
@@ -666,10 +706,12 @@ router.post('/google-login', async (req, res) => {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: user.role?.name,
+                role: userRoleName,
                 tenantId: user.tenantId,
                 permissions,
-                mode: appMode
+                mode: appMode,
+                allowedNavItems,
+                allowedQuickActions
             }
         });
 
@@ -698,17 +740,23 @@ router.get('/me', async (req, res) => {
 
         if (!user) { res.sendStatus(404); return; }
 
-        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const permissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
+        const userRoleName = (user as any).role?.name || 'UNKNOWN';
+        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
+        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
+        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
 
         res.json({
             id: user.id,
             email: user.email,
             name: user.name,
-            role: (user as any).role?.name,
+            role: userRoleName,
             tenantId: user.tenantId,
             permissions,
-            mode: appMode
+            mode: appMode,
+            allowedNavItems,
+            allowedQuickActions
         });
 
     } catch (e) {

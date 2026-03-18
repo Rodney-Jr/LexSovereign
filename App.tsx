@@ -25,7 +25,6 @@ import TenantAdministration from './components/TenantAdministration';
 import MatterWorkflow from './components/MatterWorkflow';
 import ReviewHub from './components/ReviewHub';
 import AccessGovernance from './components/AccessGovernance';
-import MatterCreationModal from './components/MatterCreationModal';
 import GlobalControlPlane from './components/GlobalControlPlane';
 import OrgChart from './components/OrgChart';
 import BridgeRegistry from './components/BridgeRegistry';
@@ -52,25 +51,25 @@ import AdminControlPlane from './components/AdminControlPlane';
 import SovereignExpenseTracker from './components/SovereignExpenseTracker';
 import SovereignHRWorkbench from './components/HRWorkbench';
 import SovereignAssetManager from './components/SovereignAssetManager';
-import LeaveApplicationModal from './components/LeaveApplicationModal';
+import DossierWorkspace from './components/DossierWorkspace';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import { useSovereignData } from './hooks/useSovereignData';
-import TrialExpirationModal from './components/TrialExpirationModal';
 import { NotificationProvider, useNotification } from './components/NotificationProvider';
 
-const AppContent: React.FC = () => {
-  // Persist Active Tab
-  const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('nomosdesk_activeTab') || 'dashboard';
-  });
+import { Routes, Route, Navigate, useNavigate, Link, useParams, useLocation } from 'react-router-dom';
+import { useSovereign } from './contexts/SovereignContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
-  useEffect(() => {
-    localStorage.setItem('nomosdesk_activeTab', activeTab);
-  }, [activeTab]);
+const AppContent: React.FC = () => {
+  const { session, logout, setSession } = useSovereign();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const activeTab = location.pathname.split('/')[1] || 'dashboard';
 
   const [selectedMatter, setSelectedMatter] = useState<string | null>(null);
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
@@ -103,7 +102,7 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
-  // Modularized Hooks
+  // Modularized Hooks (Keep temporarily while migrating)
   const {
     isAuthenticated,
     userId,
@@ -115,7 +114,7 @@ const AppContent: React.FC = () => {
     handleAuthenticated,
     handleLogout,
     recoverWork
-  } = useAuth(activeTab, selectedMatter);
+  } = useAuth('dashboard', selectedMatter); 
 
   const { theme, setTheme } = useTheme();
   const {
@@ -128,69 +127,52 @@ const AppContent: React.FC = () => {
     createDocument,
     updateDocument,
     getDocumentContent
-  } = useSovereignData(isAuthenticated);
+  } = useSovereignData(!!session);
 
-  const { hasPermission, hasAnyPermission, checkVisibility, canAccessTab } = usePermissions();
+  const { hasPermission, checkVisibility, canAccessTab } = usePermissions();
 
   const [killSwitchActive, setKillSwitchActive] = useState(false);
   const [trialExpiredData, setTrialExpiredData] = useState<{ expiresAt?: string } | null>(null);
 
-    const { notify } = useNotification();
+  const { notify } = useNotification();
 
-    // API Sentinel
-    useEffect(() => {
-        const handleAuthFailure = () => {
-            console.warn("[App] Session revoked via API signal. Forced logout.");
-            handleLogout();
-        };
-        const handleTrialExpired = (e: any) => {
-            console.warn("[App] Sovereign Trial Matured. Locking UI.");
-            setTrialExpiredData(e.detail);
-        };
-        const handleApiError = (e: any) => {
-            notify('error', e.detail.message || 'API Error', e.detail.description);
-        };
-        const handleApiSuccess = (e: any) => {
-            notify('success', e.detail.message || 'Action Completed');
-        };
+  // API Sentinel
+  useEffect(() => {
+    const handleAuthFailure = () => {
+      console.warn("[App] Session revoked via API signal. Forced logout.");
+      handleLogout();
+    };
+    const handleTrialExpired = (e: any) => {
+      console.warn("[App] Sovereign Trial Matured. Locking UI.");
+      setTrialExpiredData(e.detail);
+    };
+    const handleApiError = (e: any) => {
+      notify('error', e.detail.message || 'API Error', e.detail.description);
+    };
+    const handleApiSuccess = (e: any) => {
+      notify('success', e.detail.message || 'Action Completed');
+    };
 
-        window.addEventListener('nomosdesk-auth-failed', handleAuthFailure);
-        window.addEventListener('nomosdesk-trial-expired', handleTrialExpired);
-        window.addEventListener('nomosdesk-api-error', handleApiError);
-        window.addEventListener('nomosdesk-api-success', handleApiSuccess);
+    window.addEventListener('nomosdesk-auth-failed', handleAuthFailure);
+    window.addEventListener('nomosdesk-trial-expired', handleTrialExpired);
+    window.addEventListener('nomosdesk-api-error', handleApiError);
+    window.addEventListener('nomosdesk-api-success', handleApiSuccess);
 
-        return () => {
-            window.removeEventListener('nomosdesk-auth-failed', handleAuthFailure);
-            window.removeEventListener('nomosdesk-trial-expired', handleTrialExpired);
-            window.removeEventListener('nomosdesk-api-error', handleApiError);
-            window.removeEventListener('nomosdesk-api-success', handleApiSuccess);
-        };
-    }, [handleLogout, notify]);
+    return () => {
+      window.removeEventListener('nomosdesk-auth-failed', handleAuthFailure);
+      window.removeEventListener('nomosdesk-trial-expired', handleTrialExpired);
+      window.removeEventListener('nomosdesk-api-error', handleApiError);
+      window.removeEventListener('nomosdesk-api-success', handleApiSuccess);
+    };
+  }, [handleLogout, notify]);
 
   // Security Policy: Hardened 30-minute inactivity logout
-  // This helps prevent session hijacking on public or shared terminals.
-  useInactivityLogout(handleLogout, 1800000, isAuthenticated && !isOnboarding);
-
-  // RBAC Sentinel — uses authoritative canAccessTab from usePermissions hook
-  useEffect(() => {
-    if (isAuthenticated && !isOnboarding) {
-      if (!canAccessTab(activeTab)) {
-        setActiveTab('dashboard');
-      }
-    }
-  }, [activeTab, canAccessTab, isAuthenticated, isOnboarding]);
-
-  // Client Portal Redirection
-  useEffect(() => {
-    if (isAuthenticated && contextRole === 'CLIENT' && activeTab !== 'client-portal') {
-      setActiveTab('client-portal');
-    }
-  }, [isAuthenticated, contextRole, activeTab]);
+  useInactivityLogout(handleLogout, 1800000, !!session && !isOnboarding);
 
   const handleInceptionComplete = async (selectedMode: AppMode) => {
     const pending = (window as any)._pendingSession;
     if (pending) {
-      await handleAuthenticated({
+      const sessionData = {
         role: pending.user.role,
         token: pending.token,
         userId: pending.user.id,
@@ -199,7 +181,9 @@ const AppContent: React.FC = () => {
         permissions: pending.user.permissions || [],
         enabledModules: pending.user.tenant?.enabledModules || ["CORE"],
         mode: selectedMode
-      });
+      };
+      await handleAuthenticated(sessionData);
+      setSession(sessionData);
       delete (window as any)._pendingSession;
     }
     setMode(selectedMode);
@@ -208,23 +192,23 @@ const AppContent: React.FC = () => {
 
   return (
     <AppRouter
-      isAuthenticated={isAuthenticated}
+      isAuthenticated={!!session}
       isOnboarding={isOnboarding}
       isUserInvitation={isUserInvitation}
       isPlatformMode={isPlatformMode}
       mode={mode}
-      userId={userId}
-      userName={userName}
-      tenantId={tenantId}
+      userId={session?.userId || null}
+      userName={session?.userName}
+      tenantId={session?.tenantId || null}
       activeTab={activeTab}
-      setActiveTab={setActiveTab}
+      setActiveTab={(t) => navigate(`/${t === 'dashboard' ? '' : t}`)}
       setMode={setMode}
-      contextRole={contextRole || ''}
+      contextRole={session?.role || ''}
       theme={theme}
       setTheme={setTheme}
       killSwitchActive={killSwitchActive}
       setKillSwitchActive={setKillSwitchActive}
-      handleAuthenticated={handleAuthenticated}
+      handleAuthenticated={(s) => { handleAuthenticated(s); setSession(s); }}
       handleInceptionComplete={handleInceptionComplete}
       setIsPlatformMode={setIsPlatformMode}
       setIsOnboarding={setIsOnboarding}
@@ -233,172 +217,209 @@ const AppContent: React.FC = () => {
       isResettingPassword={isResettingPassword}
       resetToken={resetToken}
       setIsResettingPassword={setIsResettingPassword}
+      showMatterModal={showMatterModal}
+      setShowMatterModal={setShowMatterModal}
+      showLeaveModal={showLeaveModal}
+      setShowLeaveModal={setShowLeaveModal}
+      trialExpiredData={trialExpiredData}
+      setTrialExpiredData={setTrialExpiredData}
+      onMatterCreated={(m) => {
+        addMatter(m);
+      }}
     >
       <div className="animate-fade-in-up">
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] flex-1 flex items-center justify-between shadow-lg shadow-brand-primary/5">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-brand-primary/20 rounded-2xl animate-float"><Rocket className="text-brand-primary" /></div>
-                  <div>
-                    <h4 className="font-bold text-brand-text tracking-tight">{userName ? `Welcome, ${userName}` : 'System Operational Pulse'}</h4>
-                    <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{contextRole}</span> • SOV-PRIMARY-1</p>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          <Route path="/dashboard" element={
+            <div className="space-y-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] flex-1 flex items-center justify-between shadow-lg shadow-brand-primary/5">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-brand-primary/20 rounded-2xl animate-float"><Rocket className="text-brand-primary" /></div>
+                    <div>
+                      <h4 className="font-bold text-brand-text tracking-tight">{session?.userName ? `Welcome, ${session.userName}` : 'System Operational Pulse'}</h4>
+                      <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{session?.role}</span> • SOV-PRIMARY-1</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={handleLogout} title="Logout" className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
+                      <LogOut size={18} />
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <button onClick={handleLogout} title="Logout" className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20">
-                    <LogOut size={18} />
-                  </button>
-                </div>
-              </div>
-              {/* Quick Actions - Visible for everyone except Global Admin (who has platform-ops) */}
-              {contextRole !== 'GLOBAL_ADMIN' && (
-                <>
-                  <div onClick={() => setActiveTab('drafting')} className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-primary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-primary/5">
-                    <div className="p-3 bg-brand-primary/20 rounded-2xl animate-pulse"><Sparkles className="text-brand-primary" size={24} /></div>
-                    <div>
-                      <h4 className="font-bold text-brand-text">Quick Draft</h4>
-                      <p className="text-xs text-brand-muted">New Legal Artifact</p>
-                    </div>
-                  </div>
+                {session?.role !== 'GLOBAL_ADMIN' && (
+                  <>
+                    {(session?.allowedQuickActions === null || session?.allowedQuickActions === undefined || session.allowedQuickActions.includes('quick_draft')) && (
+                      <Link to="/drafting" className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-primary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-primary/5">
+                        <div className="p-3 bg-brand-primary/20 rounded-2xl animate-pulse"><Sparkles className="text-brand-primary" size={24} /></div>
+                        <div>
+                          <h4 className="font-bold text-brand-text">Quick Draft</h4>
+                          <p className="text-xs text-brand-muted">New Legal Artifact</p>
+                        </div>
+                      </Link>
+                    )}
 
-                  <div onClick={() => setShowMatterModal(true)} className="bg-brand-secondary/10 border border-brand-secondary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-secondary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-secondary/5">
-                    <div className="p-3 bg-brand-secondary/20 rounded-2xl"><Briefcase className="text-brand-secondary" /></div>
-                    <div>
-                      <h4 className="font-bold text-brand-text">Incept Matter</h4>
-                      <p className="text-xs text-brand-muted">New Global Instance</p>
-                    </div>
-                  </div>
-
-                  <div onClick={() => setShowLeaveModal(true)} className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-amber-500/20 transition-all flex items-center gap-4 shadow-lg shadow-amber-500/5">
-                    <div className="p-3 bg-amber-500/20 rounded-2xl"><Calendar className="text-amber-500" /></div>
-                    <div>
-                      <h4 className="font-bold text-brand-text">Request Leave</h4>
-                      <p className="text-xs text-brand-muted">Submit Application</p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <Dashboard
-              mode={mode}
-              userName={userName || 'User'}
-              mattersCount={matters.length}
-              docsCount={documents.length}
-              rulesCount={rules.length}
-            />
-          </div>
-        )}
-
-        {activeTab === 'platform-ops' && <GlobalControlPlane userName={userName || 'Administrator'} userRole={contextRole as any} onNavigate={setActiveTab} />}
-        {activeTab === 'global-governance' && <TenantGovernance />}
-        {activeTab === 'tenant-governance' && <AdminControlPlane />}
-        {activeTab === 'org-blueprint' && <OrgChart />}
-        {activeTab === 'integration-bridge' && <BridgeRegistry />}
-        {activeTab === 'identity' && <AccessGovernance userRole={contextRole as any} setUserRole={() => { }} />}
-        {activeTab === 'reviews' && <ReviewHub userRole={contextRole as any} />}
-        {activeTab === 'tenant-admin' && <TenantAdministration />}
-        {activeTab === 'capacity' && <CapacityDashboard />}
-        {activeTab === 'predictive' && <PredictiveOps mode={mode} />}
-        {activeTab === 'workflow' && <MatterWorkflow />}
-        {activeTab === 'conflict-check' && <ZkConflictSearch />}
-        {activeTab === 'growth' && <GrowthDashboard />}
-        {activeTab === 'sentinel' && <SovereignReviewScreen />}
-        {activeTab === 'sentinel-demo' && <SovereignReviewScreen />}
-        {activeTab === 'pricing-calib' && import.meta.env.VITE_SHOW_PRICING === 'true' && <PricingGovernance />}
-        {activeTab === 'audit' && <DecisionTraceLedger />}
-        {activeTab === 'backlog' && <EngineeringBacklog />}
-        {activeTab === 'drafting' && (
-          <LegalDrafting
-            onAddDocument={createDocument}
-            onUpdateDocument={updateDocument}
-            getDocumentContent={getDocumentContent}
-            documents={documents}
-            matterId={selectedMatter}
-            initialEditingDocId={editingDocId}
-            onClearInitialDoc={() => setEditingDocId(null)}
-          />
-        )}
-        {activeTab === 'analysis' && <CaseAnalysisModal isOpen={true} onClose={() => setActiveTab('dashboard')} />}
-        {activeTab === 'clm-center' && <CLMCenter />}
-        {activeTab === 'case-center' && <CaseCenter />}
-        {activeTab === 'billing' && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <SovereignBilling />}
-        {activeTab === 'marketplace' && <SovereignMarketplace onAddDocument={createDocument} userRole={contextRole as any} />}
-        {activeTab === 'analytics' && <EnterpriseDashboard />}
-        {activeTab === 'hr-workbench' && <SovereignHRWorkbench userRole={contextRole as any} />}
-        {activeTab === 'expense-tracker' && <SovereignExpenseTracker />}
-        {activeTab === 'asset-tracker' && <SovereignAssetManager />}
-        {activeTab === 'accounting-hub' && <AccountingDashboard />}
-
-        {activeTab === 'vault' && (
-          selectedMatter ? (
-            <MatterIntelligence
-              matterId={selectedMatter}
-              mode={mode}
-              onBack={() => setSelectedMatter(null)}
-              documents={documents.filter(d => checkVisibility(d))}
-              onDocumentDoubleClick={(id) => {
-                setEditingDocId(id);
-                setActiveTab('drafting');
-              }}
-            />
-          ) : (
-            <div className="space-y-8">
-              <DocumentVault
-                documents={documents.filter(d => checkVisibility(d))}
-                onAddDocument={createDocument}
-                onUpdateDocument={updateDocument}
-                getDocumentContent={getDocumentContent}
-                onRemoveDocument={removeDocument}
-              />
-              <div className="h-[1px] bg-brand-border w-full my-4"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {matters.filter(m => checkVisibility(m)).map(matter => (
-                  <div key={matter.id} onClick={() => setSelectedMatter(matter.id)} className="bg-brand-sidebar border border-brand-border p-6 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-brand-primary/30 transition-all hover:bg-brand-sidebar/80">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-brand-primary/10 rounded-xl group-hover:bg-brand-primary/20 transition-colors"><Scale size={20} className="text-brand-primary" /></div>
-                      <div>
-                        <h4 className="font-bold text-brand-text">{matter.name}</h4>
-                        <p className="text-[10px] text-brand-muted font-mono">{matter.id} • {matter.client}</p>
+                    {(session?.allowedQuickActions === null || session?.allowedQuickActions === undefined || session.allowedQuickActions.includes('incept_matter')) && (
+                      <div onClick={() => setShowMatterModal(true)} className="bg-brand-secondary/10 border border-brand-secondary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-secondary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-secondary/5">
+                        <div className="p-3 bg-brand-secondary/20 rounded-2xl"><Briefcase className="text-brand-secondary" /></div>
+                        <div>
+                          <h4 className="font-bold text-brand-text">Incept Matter</h4>
+                          <p className="text-xs text-brand-muted">New Global Instance</p>
+                        </div>
                       </div>
-                    </div>
-                    <ChevronRight className="text-brand-muted group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-                  </div>
-                ))}
+                    )}
+
+                    {(session?.allowedQuickActions === null || session?.allowedQuickActions === undefined || session.allowedQuickActions.includes('request_leave')) && (
+                      <div onClick={() => setShowLeaveModal(true)} className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-amber-500/20 transition-all flex items-center gap-4 shadow-lg shadow-amber-500/5">
+                        <div className="p-3 bg-amber-500/20 rounded-2xl"><Calendar className="text-amber-500" /></div>
+                        <div>
+                          <h4 className="font-bold text-brand-text">Request Leave</h4>
+                          <p className="text-xs text-brand-muted">Submit Application</p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              <Dashboard
+                mode={mode}
+                userName={session?.userName || 'User'}
+                mattersCount={matters.length}
+                docsCount={documents.length}
+                rulesCount={rules.length}
+              />
+            </div>
+          } />
+
+          <Route path="/platform-ops" element={<ProtectedRoute tab="platform-ops"><GlobalControlPlane userName={session?.userName || 'Administrator'} userRole={session?.role as any} onNavigate={(t) => navigate(`/${t}`)} /></ProtectedRoute>} />
+          <Route path="/global-governance" element={<ProtectedRoute tab="global-governance"><TenantGovernance /></ProtectedRoute>} />
+          <Route path="/tenant-governance" element={<ProtectedRoute tab="tenant-governance"><AdminControlPlane /></ProtectedRoute>} />
+          <Route path="/org-blueprint" element={<ProtectedRoute tab="org-blueprint"><OrgChart /></ProtectedRoute>} />
+          <Route path="/integration-bridge" element={<ProtectedRoute tab="integration-bridge"><BridgeRegistry /></ProtectedRoute>} />
+          <Route path="/identity" element={<ProtectedRoute tab="identity"><AccessGovernance userRole={session?.role as any} setUserRole={() => { }} /></ProtectedRoute>} />
+          <Route path="/reviews" element={<ProtectedRoute tab="reviews"><ReviewHub userRole={session?.role as any} /></ProtectedRoute>} />
+          <Route path="/tenant-admin" element={<ProtectedRoute tab="tenant-admin"><TenantAdministration /></ProtectedRoute>} />
+          <Route path="/capacity" element={<ProtectedRoute tab="capacity"><CapacityDashboard /></ProtectedRoute>} />
+          <Route path="/predictive" element={<ProtectedRoute tab="predictive"><PredictiveOps mode={mode} /></ProtectedRoute>} />
+          <Route path="/workflow" element={<ProtectedRoute tab="workflow"><MatterWorkflow /></ProtectedRoute>} />
+          <Route path="/conflict-check" element={<ProtectedRoute tab="conflict-check"><ZkConflictSearch /></ProtectedRoute>} />
+          <Route path="/growth" element={<ProtectedRoute tab="growth"><GrowthDashboard /></ProtectedRoute>} />
+          <Route path="/sentinel" element={<ProtectedRoute tab="sentinel"><SovereignReviewScreen /></ProtectedRoute>} />
+          <Route path="/sentinel-demo" element={<ProtectedRoute tab="sentinel"><SovereignReviewScreen /></ProtectedRoute>} />
+          <Route path="/pricing-calib" element={<ProtectedRoute tab="pricing-calib">{import.meta.env.VITE_SHOW_PRICING === 'true' ? <PricingGovernance /> : <Navigate to="/dashboard" />}</ProtectedRoute>} />
+          <Route path="/audit" element={<ProtectedRoute tab="audit"><DecisionTraceLedger /></ProtectedRoute>} />
+          <Route path="/backlog" element={<ProtectedRoute tab="backlog"><EngineeringBacklog /></ProtectedRoute>} />
+          <Route path="/drafting" element={<ProtectedRoute tab="drafting">
+            <LegalDrafting
+              onAddDocument={createDocument}
+              onUpdateDocument={updateDocument}
+              getDocumentContent={getDocumentContent}
+              documents={documents}
+              matterId={selectedMatter}
+              initialEditingDocId={editingDocId}
+              onClearInitialDoc={() => setEditingDocId(null)}
+            />
+          </ProtectedRoute>} />
+          <Route path="/analysis" element={<ProtectedRoute tab="analysis"><CaseAnalysisModal isOpen={true} onClose={() => navigate('/dashboard')} /></ProtectedRoute>} />
+          <Route path="/clm-center" element={<ProtectedRoute tab="clm-center"><CLMCenter /></ProtectedRoute>} />
+          <Route path="/case-center" element={<ProtectedRoute tab="case-center"><CaseCenter /></ProtectedRoute>} />
+          <Route path="/billing" element={<ProtectedRoute tab="billing">{String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' ? <SovereignBilling /> : <Navigate to="/dashboard" />}</ProtectedRoute>} />
+          <Route path="/marketplace" element={<ProtectedRoute tab="marketplace"><SovereignMarketplace onAddDocument={createDocument} userRole={session?.role as any} /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute tab="analytics"><EnterpriseDashboard /></ProtectedRoute>} />
+          <Route path="/hr-workbench" element={<ProtectedRoute tab="hr-workbench"><SovereignHRWorkbench userRole={session?.role as any} /></ProtectedRoute>} />
+          <Route path="/expense-tracker" element={<ProtectedRoute tab="expense-tracker"><SovereignExpenseTracker /></ProtectedRoute>} />
+          <Route path="/asset-tracker" element={<ProtectedRoute tab="asset-tracker"><SovereignAssetManager /></ProtectedRoute>} />
+          <Route path="/accounting-hub" element={<ProtectedRoute tab="accounting-hub"><AccountingDashboard /></ProtectedRoute>} />
+          <Route path="/vault/:matterId?" element={<ProtectedRoute tab="vault">
+            <VaultRouteWrapper 
+               documents={documents} 
+               matters={matters} 
+               mode={mode}
+               checkVisibility={checkVisibility}
+               createDocument={createDocument}
+               updateDocument={updateDocument}
+               getDocumentContent={getDocumentContent}
+               removeDocument={removeDocument}
+               setEditingDocId={setEditingDocId}
+            />
+          </ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute tab="chat"><LegalChat killSwitchActive={killSwitchActive} rules={rules} documents={documents} matters={matters} /></ProtectedRoute>} />
+          <Route path="/status" element={<ProtectedRoute tab="status"><ProjectStatus /></ProtectedRoute>} />
+          <Route path="/dossier" element={<ProtectedRoute><DossierWorkspace isSelfService /></ProtectedRoute>} />
+          <Route path="/dossier/:id" element={<ProtectedRoute tab="identity"><DossierWorkspace /></ProtectedRoute>} />
+          <Route path="/tenant-settings" element={<ProtectedRoute tab="tenant-settings"><TenantSettings userRole={session?.role as any} setUserRole={() => { }} /></ProtectedRoute>} />
+          <Route path="/system-settings" element={<ProtectedRoute tab="system-settings"><GlobalSettings /></ProtectedRoute>} />
+          <Route path="/client-portal" element={<ProtectedRoute tab="client-portal"><ClientPortal userName={session?.userName || 'Valued Client'} onLogout={handleLogout} /></ProtectedRoute>} />
+        </Routes>
+      </div>
+    </AppRouter>
+  );
+};
+
+const VaultRouteWrapper: React.FC<any> = ({ 
+  documents, 
+  matters, 
+  mode, 
+  checkVisibility, 
+  createDocument, 
+  updateDocument, 
+  getDocumentContent, 
+  removeDocument,
+  setEditingDocId
+}) => {
+  const { matterId } = useParams<{ matterId?: string }>();
+  const navigate = useNavigate();
+
+  if (matterId) {
+    return (
+      <MatterIntelligence
+        matterId={matterId}
+        mode={mode}
+        onBack={() => navigate('/vault')}
+        documents={documents.filter(checkVisibility)}
+        onDocumentDoubleClick={(id: string) => {
+          setEditingDocId(id);
+          navigate('/drafting');
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <DocumentVault
+        documents={documents.filter(checkVisibility)}
+        onAddDocument={createDocument}
+        onUpdateDocument={updateDocument}
+        getDocumentContent={getDocumentContent}
+        onRemoveDocument={removeDocument}
+      />
+      <div className="h-[1px] bg-brand-border w-full my-4"></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {matters.filter(checkVisibility).map((matter: any) => (
+          <div 
+            key={matter.id} 
+            onClick={() => navigate(`/vault/${matter.id}`)} 
+            className="bg-brand-sidebar border border-brand-border p-6 rounded-3xl flex items-center justify-between group cursor-pointer hover:border-brand-primary/30 transition-all hover:bg-brand-sidebar/80"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-brand-primary/10 rounded-xl group-hover:bg-brand-primary/20 transition-colors">
+                <Scale size={20} className="text-brand-primary" />
+              </div>
+              <div>
+                <h4 className="font-bold text-brand-text">{matter.name}</h4>
+                <p className="text-[10px] text-brand-muted font-mono">{matter.id} • {matter.client}</p>
               </div>
             </div>
-          )
-        )}
-
-        {activeTab === 'chat' && <LegalChat killSwitchActive={killSwitchActive} rules={rules} documents={documents} matters={matters} />}
-        {activeTab === 'status' && <ProjectStatus />}
-        {activeTab === 'tenant-settings' && <TenantSettings userRole={contextRole as any} setUserRole={() => { }} />}
-        {activeTab === 'system-settings' && <GlobalSettings />}
-        {activeTab === 'client-portal' && <ClientPortal userName={userName || 'Valued Client'} onLogout={handleLogout} />}
+            <div className="flex flex-col items-center gap-1 group-hover:translate-x-1 transition-all">
+              <span className="text-[8px] font-bold text-brand-primary uppercase tracking-widest bg-brand-primary/10 px-2 py-0.5 rounded">Active</span>
+              <ChevronRight className="text-brand-muted group-hover:text-brand-primary" />
+            </div>
+          </div>
+        ))}
       </div>
-
-      {showMatterModal && (
-        <MatterCreationModal
-          mode={mode}
-          userId={userId || ''}
-          tenantId={tenantId || ''}
-          onClose={() => setShowMatterModal(false)}
-          onCreated={(m) => {
-            addMatter(m);
-            setShowMatterModal(false);
-          }}
-        />
-      )}
-
-      <LeaveApplicationModal
-        isOpen={showLeaveModal}
-        onClose={() => setShowLeaveModal(false)}
-      />
-      {trialExpiredData && hasPermission('view_trial_status') && (
-        <TrialExpirationModal expiresAt={trialExpiredData.expiresAt} />
-      )}
-    </AppRouter>
+    </div>
   );
 };
 

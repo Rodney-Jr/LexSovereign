@@ -112,6 +112,7 @@ model Tenant {
   enabledModules       String[]           @default(["CORE"])
   attributes           Json?              @default("{}")
   lastStorageSyncedAt  DateTime?
+  uiVisibilityConfig   Json?              @default("{}")
   
   // Data Residency & Sovereignty
   jurisdiction         String             @default("GH_ACC_1")

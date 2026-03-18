@@ -127,16 +127,40 @@ const Dashboard: React.FC<{
             {loading ? (
               <div className="h-full flex items-center justify-center text-brand-muted"><Loader2 className="animate-spin" /></div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f1f5f9', fontSize: '12px' }}
-                    itemStyle={{ color: '#10b981' }}
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <BarChart 
+                  data={data}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#94a3b8" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tick={{ fill: '#64748b' }}
                   />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  <YAxis 
+                    stroke="#94a3b8" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tick={{ fill: '#64748b' }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                    contentStyle={{ 
+                      backgroundColor: '#0f172a', 
+                      borderColor: '#334155', 
+                      borderRadius: '12px',
+                      color: '#f1f5f9', 
+                      fontSize: '11px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                    }}
+                    itemStyle={{ color: '#10b981', fontWeight: 'bold' }}
+                  />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={32}>
                     {data.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#10b981' : '#059669'} />
                     ))}
