@@ -38,20 +38,20 @@ model User {
   activityEntries       ActivityEntry[]
   approvals             Approval[]
   auditLogs             AuditLog[]
+  cleRecords            CLERecord[]
   collaborationMessages CollaborationMessage[]
   documentVersions      DocumentVersion[]
+  firmAssets            FirmAsset[]
+  leaveRecords          LeaveRecord[]
   assignedMatters       Matter[]
+  authoredAppraisals    PerformanceAppraisal[] @relation("Reviewer")
+  appraisals            PerformanceAppraisal[] @relation("AppraisalSubject")
+  salaryRecords         SalaryRecord[]
   tasks                 Task[]
   timeEntries           TimeEntry[]
   department            Department?            @relation(fields: [departmentId], references: [id])
   role                  Role?                  @relation(fields: [roleId], references: [id])
   tenant                Tenant?                @relation(fields: [tenantId], references: [id])
-  firmAssets            FirmAsset[]
-  leaveRecords          LeaveRecord[]
-  cleRecords            CLERecord[]
-  salaryRecords         SalaryRecord[]
-  appraisals            PerformanceAppraisal[] @relation("AppraisalSubject")
-  authoredAppraisals    PerformanceAppraisal[] @relation("Reviewer")
 }
 
 model Role {
@@ -93,63 +93,60 @@ model Policy {
 }
 
 model Tenant {
-  id                   String             @id @default(uuid())
-  name                 String
-  plan                 String             @default("STANDARD")
-  primaryRegion        String             @default("GH_ACC_1")
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  appMode              String             @default("LAW_FIRM")
-  encryptionMode       String             @default("SYSTEM_MANAGED")
-  status               String             @default("ACTIVE")
-  separationMode       String             @default("OPEN")
-  stripeCustomerId     String?            @unique
-  stripeSubscriptionId String?            @unique
-  subscriptionStatus   String?
-  trialExpiresAt       DateTime?
-  aiCreditLimit        Float              @default(20.0)
-  isTrial              Boolean            @default(false)
-  enabledModules       String[]           @default(["CORE"])
-  attributes           Json?              @default("{}")
-  lastStorageSyncedAt  DateTime?
-  uiVisibilityConfig   Json?              @default("{}")
-  
-  // Data Residency & Sovereignty
-  jurisdiction         String             @default("GH_ACC_1")
-  storageBucketUri     String?            // e.g. s3://sov-acc-01-vault
-  enclaveOnlyProcessing Boolean           @default(false)
-  
-  aiUsages             AIUsage[]
-  brandingProfiles     BrandingProfile[]
-  bridges              Bridge[]
-  chatbotConfig        ChatbotConfig?
-  departments          Department[]
-  documentTemplates    DocumentTemplate[]
-  invitations          Invitation[]
-  matters              Matter[]
-  matterTypes          MatterType[]
-  policies             Policy[]
-  roles                Role[]
-  users                User[]
-  workflows            Workflow[]
-  firmAssets           FirmAsset[]
-  expenses             Expense[]
-  leaveRecords         LeaveRecord[]
-  candidates           Candidate[]
-  cleRecords           CLERecord[]
-  onboardingItems      OnboardingItem[]
-  salaryRecords        SalaryRecord[]
-  appraisals           PerformanceAppraisal[]
-  accounts             FirmAccount[]
-  ledgerTransactions   LedgerTransaction[]
-  bankTransactions     BankTransaction[]
-  externalMappings     ExternalMapping[]
-  syncLogs             SyncLog[]
-  leads                Lead[]
-  chatConversations    ChatConversation[] @relation("TenantChatConversations")
-  cloudIntegrations    CloudIntegration[]
-  folderSyncs          PlatformFolderSync[]
-  apiKeys              ApiKey[]
+  id                    String                 @id @default(uuid())
+  name                  String
+  plan                  String                 @default("STANDARD")
+  primaryRegion         String                 @default("GH_ACC_1")
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  appMode               String                 @default("LAW_FIRM")
+  encryptionMode        String                 @default("SYSTEM_MANAGED")
+  status                String                 @default("ACTIVE")
+  separationMode        String                 @default("OPEN")
+  stripeCustomerId      String?                @unique
+  stripeSubscriptionId  String?                @unique
+  subscriptionStatus    String?
+  attributes            Json?                  @default("{}")
+  enabledModules        String[]               @default(["CORE"])
+  lastStorageSyncedAt   DateTime?
+  aiCreditLimit         Float                  @default(20.0)
+  isTrial               Boolean                @default(false)
+  trialExpiresAt        DateTime?
+  enclaveOnlyProcessing Boolean                @default(false)
+  jurisdiction          String                 @default("GH_ACC_1")
+  storageBucketUri      String?
+  uiVisibilityConfig    Json?                  @default("{}")
+  aiUsages              AIUsage[]
+  apiKeys               ApiKey[]
+  bankTransactions      BankTransaction[]
+  brandingProfiles      BrandingProfile[]
+  bridges               Bridge[]
+  cleRecords            CLERecord[]
+  candidates            Candidate[]
+  chatConversations     ChatConversation[]     @relation("TenantChatConversations")
+  chatbotConfig         ChatbotConfig?
+  cloudIntegrations     CloudIntegration[]
+  departments           Department[]
+  documentTemplates     DocumentTemplate[]
+  expenses              Expense[]
+  externalMappings      ExternalMapping[]
+  accounts              FirmAccount[]
+  firmAssets            FirmAsset[]
+  invitations           Invitation[]
+  leads                 Lead[]
+  leaveRecords          LeaveRecord[]
+  ledgerTransactions    LedgerTransaction[]
+  matters               Matter[]
+  matterTypes           MatterType[]
+  onboardingItems       OnboardingItem[]
+  appraisals            PerformanceAppraisal[]
+  folderSyncs           PlatformFolderSync[]
+  policies              Policy[]
+  roles                 Role[]
+  salaryRecords         SalaryRecord[]
+  syncLogs              SyncLog[]
+  users                 User[]
+  workflows             Workflow[]
 }
 
 model ChatbotConfig {
@@ -198,7 +195,7 @@ model Matter {
   hearings              Hearing[]
   invoices              Invoice[]
   department            Department?            @relation(fields: [departmentId], references: [id])
-  internalCounsel       User?                   @relation(fields: [internalCounselId], references: [id])
+  internalCounsel       User?                  @relation(fields: [internalCounselId], references: [id])
   matterType            MatterType?            @relation(fields: [matterTypeId], references: [id])
   tenant                Tenant                 @relation(fields: [tenantId], references: [id])
   workflowState         WorkflowState?         @relation(fields: [workflowStateId], references: [id])
@@ -277,9 +274,9 @@ model Task {
   matterId        String
   workflowStateId String?
   isAutoGenerated Boolean        @default(false)
-  tenantId        String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  tenantId        String
   assignee        User?          @relation(fields: [assigneeId], references: [id])
   matter          Matter         @relation(fields: [matterId], references: [id])
   workflowState   WorkflowState? @relation(fields: [workflowStateId], references: [id])
@@ -288,7 +285,6 @@ model Task {
 model ContractMetadata {
   id               String    @id @default(uuid())
   matterId         String    @unique
-  tenantId         String
   contractValue    Float?
   currency         String    @default("USD")
   counterpartyName String?
@@ -296,25 +292,25 @@ model ContractMetadata {
   renewalDate      DateTime?
   expiryDate       DateTime?
   alertTriggered   Boolean   @default(false)
+  tenantId         String
   matter           Matter    @relation(fields: [matterId], references: [id])
 }
 
 model CaseMetadata {
   id           String    @id @default(uuid())
   matterId     String    @unique
-  tenantId     String
   jurisdiction String?
   caseNumber   String?
   courtName    String?
   judgeName    String?
   filedDate    DateTime?
+  tenantId     String
   matter       Matter    @relation(fields: [matterId], references: [id])
 }
 
 model Deadline {
   id             String   @id @default(uuid())
   matterId       String
-  tenantId       String
   title          String
   dueDate        DateTime
   description    String?
@@ -323,13 +319,13 @@ model Deadline {
   isReminderSent Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  tenantId       String
   matter         Matter   @relation(fields: [matterId], references: [id])
 }
 
 model Hearing {
   id          String   @id @default(uuid())
   matterId    String
-  tenantId    String
   hearingDate DateTime
   location    String?
   judgeName   String?
@@ -337,18 +333,19 @@ model Hearing {
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  tenantId    String
   matter      Matter   @relation(fields: [matterId], references: [id])
 }
 
 model EvidenceLink {
   id            String   @id @default(uuid())
   matterId      String
-  tenantId      String
   documentId    String
   exhibitNumber String?
   description   String?
   profferedBy   String?
   createdAt     DateTime @default(now())
+  tenantId      String
   document      Document @relation(fields: [documentId], references: [id])
   matter        Matter   @relation(fields: [matterId], references: [id])
 }
@@ -356,7 +353,6 @@ model EvidenceLink {
 model AIRiskAnalysis {
   id                String   @id @default(uuid())
   matterId          String
-  tenantId          String
   riskScore         Float    @default(0.0)
   summary           String?
   identifiedClauses Json?    @default("[]")
@@ -364,6 +360,7 @@ model AIRiskAnalysis {
   isValidated       Boolean  @default(false)
   validatorId       String?
   createdAt         DateTime @default(now())
+  tenantId          String
   matter            Matter   @relation(fields: [matterId], references: [id])
   validator         User?    @relation(fields: [validatorId], references: [id])
 }
@@ -371,12 +368,12 @@ model AIRiskAnalysis {
 model ActivityEntry {
   id        String   @id @default(uuid())
   matterId  String
-  tenantId  String
   type      String
   actorId   String?
   details   String
   metadata  Json?    @default("{}")
   createdAt DateTime @default(now())
+  tenantId  String
   actor     User?    @relation(fields: [actorId], references: [id])
   matter    Matter   @relation(fields: [matterId], references: [id])
 }
@@ -401,7 +398,6 @@ model Document {
   privilege       String            @default("INTERNAL")
   classification  String            @default("Confidential")
   matterId        String
-  tenantId        String
   lastReviewed    DateTime          @default(now())
   createdAt       DateTime          @default(now())
   attributes      Json?             @default("{}")
@@ -412,11 +408,9 @@ model Document {
   status          String            @default("AI_DRAFTED")
   description     String?
   fileSize        BigInt            @default(0)
-  
-  // Data Residency Metadata
-  residencyStatus String            @default("LOCAL_PINNED") // LOCAL_PINNED, CLOUD_REPLICATED, TRANSIENT
+  tenantId        String
   physicalRegion  String            @default("GH_ACC_1")
-  
+  residencyStatus String            @default("LOCAL_PINNED")
   matter          Matter            @relation(fields: [matterId], references: [id])
   versions        DocumentVersion[]
   evidenceLinks   EvidenceLink[]
@@ -425,13 +419,13 @@ model Document {
 model DocumentVersion {
   id            String   @id @default(uuid())
   documentId    String
-  tenantId      String
   versionNumber Int
   uri           String
   authorId      String?
   changeSummary String?
   isCurrent     Boolean  @default(false)
   createdAt     DateTime @default(now())
+  tenantId      String
   author        User?    @relation(fields: [authorId], references: [id])
   document      Document @relation(fields: [documentId], references: [id])
 }
@@ -439,12 +433,12 @@ model DocumentVersion {
 model Approval {
   id              String        @id @default(uuid())
   matterId        String
-  tenantId        String
   workflowStateId String
   userId          String
   status          String        @default("APPROVED")
   comments        String?
   createdAt       DateTime      @default(now())
+  tenantId        String
   matter          Matter        @relation(fields: [matterId], references: [id])
   user            User          @relation(fields: [userId], references: [id])
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id])
@@ -458,8 +452,8 @@ model TimeEntry {
   isBillable      Boolean  @default(true)
   status          String   @default("Draft")
   matterId        String
-  tenantId        String
   userId          String
+  tenantId        String
   matter          Matter   @relation(fields: [matterId], references: [id])
   user            User     @relation(fields: [userId], references: [id])
 }
@@ -471,10 +465,10 @@ model PredictiveRisk {
   impact         String
   description    String
   matterId       String
-  tenantId       String
   mitigationPlan String?
   riskCategory   String  @default("OPERATIONAL")
   status         String  @default("IDENTIFIED")
+  tenantId       String
   matter         Matter  @relation(fields: [matterId], references: [id])
 }
 
@@ -483,11 +477,11 @@ model CollaborationMessage {
   text           String
   authorId       String
   matterId       String
-  tenantId       String
-  attachmentUrl  String?
-  attachmentName String?
-  isRead         Boolean  @default(false)
   createdAt      DateTime @default(now())
+  attachmentName String?
+  attachmentUrl  String?
+  isRead         Boolean  @default(false)
+  tenantId       String
   author         User     @relation(fields: [authorId], references: [id])
   matter         Matter   @relation(fields: [matterId], references: [id])
 }
@@ -497,12 +491,12 @@ model AuditLog {
   action     String
   timestamp  DateTime @default(now())
   userId     String?
-  tenantId   String?
   details    String?
   ipAddress  String?
   resourceId String?
-  metadata   Json?    @default("{}")
   matterId   String?
+  metadata   Json?    @default("{}")
+  tenantId   String?
   matter     Matter?  @relation(fields: [matterId], references: [id])
   user       User?    @relation(fields: [userId], references: [id])
 }
@@ -561,19 +555,19 @@ model RegulatoryRule {
 }
 
 model PricingConfig {
-  id                   String   @id
-  basePrice            Float
-  pricePerUser         Float
-  creditsIncluded      Int      @default(0)
-  features             Json
-  updatedAt            DateTime @updatedAt
-  maxUsers             Int      @default(5)
+  id                        String   @id
+  basePrice                 Float
+  pricePerUser              Float
+  creditsIncluded           Int      @default(0)
+  features                  Json
+  updatedAt                 DateTime @updatedAt
+  maxUsers                  Int      @default(5)
   stripeBasePriceId         String?
   stripeUserPriceId         String?
-  stripeAiPriceId           String?
-  stripeStoragePriceId      String?
   stripeAccountingPriceId   String?
+  stripeAiPriceId           String?
   stripeHrEnterprisePriceId String?
+  stripeStoragePriceId      String?
 }
 
 model BrandingProfile {
@@ -648,7 +642,7 @@ model ChatConversation {
   isLead       Boolean  @default(false)
   metadata     Json?
   tenantId     String?
-  tenant       Tenant?  @relation(fields: [tenantId], references: [id], name: "TenantChatConversations")
+  tenant       Tenant?  @relation("TenantChatConversations", fields: [tenantId], references: [id])
 
   @@index([sessionId])
   @@index([createdAt])
@@ -728,36 +722,20 @@ model AIUsage {
   tenant           Tenant    @relation(fields: [tenantId], references: [id])
 }
 
-enum BillingComponentType {
-  HOURLY
-  FLAT_FEE
-  MILESTONE
-  CONTINGENCY
-}
-
-enum InvoiceStatus {
-  DRAFT
-  ISSUED
-  PAID
-  VOIDED
-  OVERDUE
-}
-
 model FirmAsset {
-  id           String    @id @default(uuid())
+  id           String   @id @default(uuid())
   tenantId     String
   name         String
-  serialNumber String    @unique
+  serialNumber String   @unique
   category     String
   status       String
   assignedToId String?
   purchaseDate DateTime
   notes        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  tenant       Tenant    @relation(fields: [tenantId], references: [id])
-  assignedTo   User?     @relation(fields: [assignedToId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  assignedTo   User?    @relation(fields: [assignedToId], references: [id])
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
 }
 
 model Expense {
@@ -769,10 +747,9 @@ model Expense {
   status      String
   expenseDate DateTime
   notes       String?
-  type        String   @default("UTILITY") // UTILITY or PETTY_CASH
+  type        String   @default("UTILITY")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
 }
 
@@ -787,9 +764,8 @@ model LeaveRecord {
   reason    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user      User     @relation(fields: [userId], references: [id])
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Candidate {
@@ -800,90 +776,83 @@ model Candidate {
   role      String
   status    String   @default("Applied")
   appliedOn DateTime @default(now())
-  
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
 }
 
 model CLERecord {
-  id        String   @id @default(uuid())
-  userId    String
-  tenantId  String
-  course    String
-  credits   Int
-  date      DateTime
-  deadline  DateTime?
-  
-  user      User     @relation(fields: [userId], references: [id])
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  id       String    @id @default(uuid())
+  userId   String
+  tenantId String
+  course   String
+  credits  Int
+  date     DateTime
+  deadline DateTime?
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
 }
 
 model OnboardingItem {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   tenantId    String
   task        String
-  isCompleted Boolean  @default(false)
+  isCompleted Boolean @default(false)
   role        String?
-  
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenant      Tenant  @relation(fields: [tenantId], references: [id])
 }
 
 model SalaryRecord {
-  id              String   @id @default(uuid())
-  userId          String
-  tenantId        String
-  baseSalary      Float
-  currency        String   @default("GHS")
-  bankAccount     String?
-  effectiveFrom   DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  user            User     @relation(fields: [userId], references: [id])
-  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  id            String   @id @default(uuid())
+  userId        String
+  tenantId      String
+  baseSalary    Float
+  currency      String   @default("GHS")
+  bankAccount   String?
+  effectiveFrom DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 model PerformanceAppraisal {
-  id          String   @id @default(uuid())
-  userId      String
-  tenantId    String
-  date        DateTime @default(now())
-  rating      String
-  reviewerId  String
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user        User     @relation("AppraisalSubject", fields: [userId], references: [id])
-  reviewer    User     @relation("Reviewer", fields: [reviewerId], references: [id])
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  id         String   @id @default(uuid())
+  userId     String
+  tenantId   String
+  date       DateTime @default(now())
+  rating     String
+  reviewerId String
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  reviewer   User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  user       User     @relation("AppraisalSubject", fields: [userId], references: [id])
 }
 
 model FirmAccount {
-  id          String        @id @default(uuid())
-  name        String
-  type        String        // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
-  category    String?       // BANK, ACCOUNTS_RECEIVABLE, TRUST, etc.
-  balance     Float         @default(0)
-  currency    String        @default("GHS")
-  tenantId    String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  entries     LedgerEntry[]
-
-  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+  id        String        @id @default(uuid())
+  name      String
+  type      String
+  category  String?
+  balance   Float         @default(0)
+  currency  String        @default("GHS")
+  tenantId  String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  tenant    Tenant        @relation(fields: [tenantId], references: [id])
+  entries   LedgerEntry[]
 }
 
 model LedgerTransaction {
   id          String        @id @default(uuid())
   date        DateTime      @default(now())
   description String
-  reference   String?       // Invoice ID, Cheque Number, etc.
-  status      String        @default("POSTED") // POSTED, VOID, PENDING
+  reference   String?
+  status      String        @default("POSTED")
   tenantId    String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   entries     LedgerEntry[]
-
   tenant      Tenant        @relation(fields: [tenantId], references: [id])
 }
 
@@ -896,9 +865,8 @@ model LedgerEntry {
   description   String?
   reconciled    Boolean           @default(false)
   createdAt     DateTime          @default(now())
-
-  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id])
   account       FirmAccount       @relation(fields: [accountId], references: [id])
+  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id])
 }
 
 model BankTransaction {
@@ -906,40 +874,37 @@ model BankTransaction {
   date        DateTime
   description String
   amount      Float
-  type        String   // DEBIT, CREDIT
+  type        String
   externalId  String?  @unique
   bankAccount String?
   tenantId    String
-  status      String   @default("PENDING") // PENDING, MATCHED, IGNORED
+  status      String   @default("PENDING")
   createdAt   DateTime @default(now())
-
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
 }
 
 model ExternalMapping {
-  id          String   @id @default(uuid())
-  tenantId    String
-  system      String   // QUICKBOOKS, LAWPAY
-  localType   String   // ACCOUNT, MATTER, USER
-  localId     String
-  externalId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  id         String   @id @default(uuid())
+  tenantId   String
+  system     String
+  localType  String
+  localId    String
+  externalId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, system, localType, localId])
 }
 
 model SyncLog {
-  id          String   @id @default(uuid())
-  tenantId    String
-  system      String
-  status      String   // SUCCESS, FAILED
-  message     String?
-  timestamp   DateTime @default(now())
-
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  id        String   @id @default(uuid())
+  tenantId  String
+  system    String
+  status    String
+  message   String?
+  timestamp DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
 }
 
 model SupportAccessGrant {
@@ -952,36 +917,34 @@ model SupportAccessGrant {
 }
 
 model CloudIntegration {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   tenantId     String
-  provider     String   // e.g., "GOOGLE_DRIVE", "MICROSOFT_ONEDRIVE"
+  provider     String
   accessToken  String
   refreshToken String?
-  uid          String?  // External user/account ID
-  email        String?  // External email
+  uid          String?
+  email        String?
   expiresAt    DateTime?
-  status       String   @default("ACTIVE") // ACTIVE, EXPIRED, REVOKED
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  status       String    @default("ACTIVE")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  tenant       Tenant    @relation(fields: [tenantId], references: [id])
 }
 
 model PlatformFolderSync {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   tenantId       String
-  integrationId  String?  // If cloud-based
-  folderId       String   // External folder ID or local path mapping
-  folderName     String?  
-  provider       String   // e.g., "GOOGLE_DRIVE", "MICROSOFT_ONEDRIVE", "LOCAL_AGENT"
-  targetMatterId String?  // Default matter for ingested docs
-  webhookId      String?  // Provider webhook subscription ID
-  status         String   @default("ACTIVE") // ACTIVE, PAUSED, ERROR
+  integrationId  String?
+  folderId       String
+  folderName     String?
+  provider       String
+  targetMatterId String?
+  webhookId      String?
+  status         String    @default("ACTIVE")
   lastSyncAt     DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  tenant         Tenant    @relation(fields: [tenantId], references: [id])
 }
 
 model ApiKey {
@@ -993,6 +956,20 @@ model ApiKey {
   createdAt DateTime  @default(now())
   lastUsed  DateTime?
   isActive  Boolean   @default(true)
-  
   tenant    Tenant    @relation(fields: [tenantId], references: [id])
+}
+
+enum BillingComponentType {
+  HOURLY
+  FLAT_FEE
+  MILESTONE
+  CONTINGENCY
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOIDED
+  OVERDUE
 }
