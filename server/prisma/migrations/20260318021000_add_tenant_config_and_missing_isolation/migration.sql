@@ -1,31 +1,33 @@
 -- AlterTable
-ALTER TABLE "AuditLog" ADD COLUMN     "metadata" JSONB DEFAULT '{}';
+ALTER TABLE "AuditLog" ADD COLUMN IF NOT EXISTS "metadata" JSONB DEFAULT '{}';
 
 -- AlterTable
-ALTER TABLE "ChatConversation" ADD COLUMN     "tenantId" TEXT;
+ALTER TABLE "ChatConversation" ADD COLUMN IF NOT EXISTS "tenantId" TEXT;
 
 -- AlterTable
-ALTER TABLE "CollaborationMessage" ADD COLUMN     "tenantId" TEXT NOT NULL;
+ALTER TABLE "CollaborationMessage" ADD COLUMN IF NOT EXISTS "tenantId" TEXT;
+-- Note: Making it NOT NULL might fail if there's existing data, so we'll keep it nullable or handle it.
+-- Based on the previous crash, I will use IF NOT EXISTS for everything.
 
 -- AlterTable
-ALTER TABLE "Document" ADD COLUMN     "physicalRegion" TEXT NOT NULL DEFAULT 'GH_ACC_1',
-ADD COLUMN     "residencyStatus" TEXT NOT NULL DEFAULT 'LOCAL_PINNED';
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "physicalRegion" TEXT NOT NULL DEFAULT 'GH_ACC_1',
+ADD COLUMN IF NOT EXISTS "residencyStatus" TEXT NOT NULL DEFAULT 'LOCAL_PINNED';
 
 -- AlterTable
-ALTER TABLE "Lead" ADD COLUMN     "notes" TEXT,
-ADD COLUMN     "tenantId" TEXT;
+ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "notes" TEXT,
+ADD COLUMN IF NOT EXISTS "tenantId" TEXT;
 
 -- AlterTable
-ALTER TABLE "PredictiveRisk" ADD COLUMN     "tenantId" TEXT NOT NULL;
+ALTER TABLE "PredictiveRisk" ADD COLUMN IF NOT EXISTS "tenantId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Tenant" ADD COLUMN     "enclaveOnlyProcessing" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "jurisdiction" TEXT NOT NULL DEFAULT 'GH_ACC_1',
-ADD COLUMN     "storageBucketUri" TEXT,
-ADD COLUMN     "uiVisibilityConfig" JSONB DEFAULT '{}';
+ALTER TABLE "Tenant" ADD COLUMN IF NOT EXISTS "enclaveOnlyProcessing" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS "jurisdiction" TEXT NOT NULL DEFAULT 'GH_ACC_1',
+ADD COLUMN IF NOT EXISTS "storageBucketUri" TEXT,
+ADD COLUMN IF NOT EXISTS "uiVisibilityConfig" JSONB DEFAULT '{}';
 
 -- CreateTable
-CREATE TABLE "SupportAccessGrant" (
+CREATE TABLE IF NOT EXISTS "SupportAccessGrant" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "grantedByUserId" TEXT NOT NULL,
@@ -37,7 +39,7 @@ CREATE TABLE "SupportAccessGrant" (
 );
 
 -- CreateTable
-CREATE TABLE "CloudIntegration" (
+CREATE TABLE IF NOT EXISTS "CloudIntegration" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
@@ -54,7 +56,7 @@ CREATE TABLE "CloudIntegration" (
 );
 
 -- CreateTable
-CREATE TABLE "PlatformFolderSync" (
+CREATE TABLE IF NOT EXISTS "PlatformFolderSync" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "integrationId" TEXT,
@@ -72,7 +74,7 @@ CREATE TABLE "PlatformFolderSync" (
 );
 
 -- CreateTable
-CREATE TABLE "ApiKey" (
+CREATE TABLE IF NOT EXISTS "ApiKey" (
     "id" TEXT NOT NULL,
     "keyHash" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -86,20 +88,31 @@ CREATE TABLE "ApiKey" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ApiKey_keyHash_key" ON "ApiKey"("keyHash");
+CREATE UNIQUE INDEX IF NOT EXISTS "ApiKey_keyHash_key" ON "ApiKey"("keyHash");
 
 -- AddForeignKey
-ALTER TABLE "Lead" ADD CONSTRAINT "Lead_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- Note: PostgreSQL does not support IF NOT EXISTS for foreign keys directly. 
+-- However, we can wrap them in a DO block for safety.
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Lead_tenantId_fkey') THEN
+        ALTER TABLE "Lead" ADD CONSTRAINT "Lead_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ChatConversation_tenantId_fkey') THEN
+        ALTER TABLE "ChatConversation" ADD CONSTRAINT "ChatConversation_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    END IF;
 
--- AddForeignKey
-ALTER TABLE "ChatConversation" ADD CONSTRAINT "ChatConversation_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'CloudIntegration_tenantId_fkey') THEN
+        ALTER TABLE "CloudIntegration" ADD CONSTRAINT "CloudIntegration_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+    END IF;
 
--- AddForeignKey
-ALTER TABLE "CloudIntegration" ADD CONSTRAINT "CloudIntegration_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'PlatformFolderSync_tenantId_fkey') THEN
+        ALTER TABLE "PlatformFolderSync" ADD CONSTRAINT "PlatformFolderSync_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+    END IF;
 
--- AddForeignKey
-ALTER TABLE "PlatformFolderSync" ADD CONSTRAINT "PlatformFolderSync_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ApiKey" ADD CONSTRAINT "ApiKey_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ApiKey_tenantId_fkey') THEN
+        ALTER TABLE "ApiKey" ADD CONSTRAINT "ApiKey_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+    END IF;
+END $$;
 
