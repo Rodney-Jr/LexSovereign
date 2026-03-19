@@ -305,7 +305,7 @@ router.get('/billing', authenticateToken, requirePermission('manage_tenant'), as
 
 // GET /api/tenant/settings
 // Returns organization-specific settings
-router.get('/settings', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.get('/settings', authenticateToken, requirePermission('VIEW_TENANT_SETTINGS'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -349,7 +349,7 @@ router.get('/settings', authenticateToken, requirePermission('manage_tenant'), a
 
 // PATCH /api/tenant/settings
 // Bulk update organization settings
-router.patch('/settings', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.patch('/settings', authenticateToken, requirePermission('MANAGE_SETTINGS'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -398,7 +398,7 @@ router.patch('/settings', authenticateToken, requirePermission('manage_tenant'),
 
 // POST /api/tenant/settings/mode
 // Update Data Separation Mode
-router.post('/settings/mode', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.post('/settings/mode', authenticateToken, requirePermission('MANAGE_SETTINGS'), async (req, res) => {
     try {
         const { mode } = req.body;
         const tenantId = req.user?.tenantId;

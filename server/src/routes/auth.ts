@@ -107,7 +107,10 @@ router.post('/onboard-silo', async (req, res) => {
             return { user, tenant };
         });
 
-        const permissions = result.user.role?.permissions?.map((p: any) => p.id) || [];
+        const rolePermissions = result.user.role?.permissions?.map((p: any) => p.id) || [];
+        const directPermissions = (result.user as any).permissions || [];
+        const permissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+        
         const userRoleName = result.user.role?.name || 'UNKNOWN';
         const uiVisibility = (result.tenant as any).uiVisibilityConfig?.[userRoleName];
         const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
@@ -310,7 +313,10 @@ router.post('/join-silo', async (req, res) => {
             );
         }
 
-        const permissions = result.user.role?.permissions.map(p => p.id) || [];
+        const rolePermissions = result.user.role?.permissions.map(p => p.id) || [];
+        const directPermissions = (result.user as any).permissions || [];
+        const permissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+        
         const roleName = result.user.role?.name || 'UNKNOWN';
         const uiVisibility = (result.tenant as any).uiVisibilityConfig?.[roleName];
         const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
@@ -454,7 +460,10 @@ router.post('/register', async (req, res) => {
             }
         });
 
-        const permissions = user.role?.permissions?.map((p: any) => p.id) || [];
+        const rolePermissions = user.role?.permissions?.map((p: any) => p.id) || [];
+        const directPermissions = (user as any).permissions || [];
+        const permissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+        
         const appMode = user.tenant?.appMode || 'LAW_FIRM';
         const userRoleName = user.role?.name || 'UNKNOWN';
         const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
@@ -533,7 +542,10 @@ router.post('/login', async (req, res) => {
 
         console.log(`[AuthFlow] Login Success for user: ${email} (Role: ${user.role?.name || 'UNKNOWN'})`);
 
-        const permissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
+        const rolePermissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
+        const directPermissions = (user as any).permissions || [];
+        const permissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+        
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
         const userRoleName = (user as any)?.role?.name || 'UNKNOWN';
         const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
@@ -668,7 +680,10 @@ router.post('/google-login', async (req, res) => {
             });
         }
 
-        const permissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
+        const rolePermissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
+        const directPermissions = (user as any).permissions || [];
+        const permissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+        
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
         const userRoleName = (user as any)?.role?.name || 'UNKNOWN';
         const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
@@ -740,7 +755,10 @@ router.get('/me', async (req, res) => {
 
         if (!user) { res.sendStatus(404); return; }
 
-        const permissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
+        const rolePermissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
+        const directPermissions = (user as any).permissions || [];
+        const permissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+        
         const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
         const userRoleName = (user as any).role?.name || 'UNKNOWN';
         const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];

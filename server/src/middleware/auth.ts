@@ -88,7 +88,11 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             }
 
             // Hydrate sensitive context from DB (Department, Permissions, Attributes, Modules)
-            const dbPermissions = dbUser.role?.permissions?.map((p: any) => p.id) || [];
+            const rolePermissions = dbUser.role?.permissions?.map((p: any) => p.id) || [];
+            const directPermissions = dbUser.permissions || [];
+            const dbPermissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+            
+            console.log(`[Auth-Diag] User ${dbUser.email} hydrated with ${dbPermissions.length} total permissions: ${dbPermissions.join(', ')}`);
             
             req.user = {
                 ...user,
@@ -150,17 +154,35 @@ export const requireRole = authorizeRole; // Alias for compatibility
 
 export const requirePermission = (permissionId: string) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        if (!req.user) {
+        const user = req.user;
+        if (!user) {
             res.sendStatus(401);
             return;
         }
 
-        if (!req.user.permissions?.includes(permissionId)) {
-            console.warn(`[RBAC] User ${req.user.email} (Role: ${req.user.role}) lacks required permission: ${permissionId}`);
-            res.status(403).json({ error: 'Insufficient permissions' });
-            return;
+        // Diagnostic Logging
+        console.log(`[RBAC-Check] User: ${user.id}, Role: ${user.role}, Permission: ${permissionId}, UserPerms: [${user.permissions?.join(', ')}]`);
+
+        // 1. GLOBAL_ADMIN Bypass (SUPER_ADMIN equivalent)
+        if (user.role === 'GLOBAL_ADMIN') {
+            return next();
         }
 
-        next();
+        // 2. TENANT_ADMIN Backward Compatibility
+        // If the user is a TENANT_ADMIN, they pass for settings-related perms even if not explicitly assigned
+        const isTenantAdmin = user.role === 'TENANT_ADMIN';
+        const isSettingsPerm = permissionId === 'VIEW_TENANT_SETTINGS' || permissionId === 'MANAGE_SETTINGS' || permissionId === 'manage_tenant';
+
+        if (isTenantAdmin && isSettingsPerm) {
+            return next();
+        }
+
+        // 3. Granular Permission Check
+        if (user.permissions?.includes(permissionId)) {
+            return next();
+        }
+
+        console.warn(`[RBAC] Access Denied: User ${user.email} (Role: ${user.role}) lacks required permission: ${permissionId}`);
+        res.status(403).json({ error: 'Insufficient permissions' });
     };
 };
