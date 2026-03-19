@@ -17,83 +17,83 @@ export const INITIAL_DOCS: DocumentMetadata[] = [
 // Replaced Role-based map with Permission-based map
 export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'dashboard': [], // Public
-  'global-governance': ['manage_platform'],
-  'platform-ops': ['manage_platform'],
-  'pricing-calib': ['manage_platform'], // Global Admin Pricing
-  'enclave': ['manage_platform'], // Restricted
-  'audit': ['read_all_audits'],
-
+  'global-governance': ['MANAGE:PLATFORM'],
+  'platform-ops': ['MANAGE:PLATFORM'],
+  'pricing-calib': ['MANAGE:PLATFORM'], // Global Admin Pricing
+  'enclave': ['MANAGE:PLATFORM'], // Restricted
+  'audit': ['VIEW_STATS:TENANT'],
+  
   // Tenant
-  'analytics': ['read_analytics'],
-  'tenant-governance': ['manage_tenant'],
-  'tenant-admin': ['manage_users', 'manage_roles'],
-  'org-blueprint': ['manage_users'],
-  'integration-bridge': ['configure_bridge'],
-  'identity': ['manage_users'],
-  'backlog': ['manage_platform'],
+  'analytics': ['VIEW_STATS:TENANT'],
+  'tenant-governance': ['MANAGE:TENANT_SETTINGS'],
+  'tenant-admin': ['MANAGE:USER', 'MANAGE:ROLE'],
+  'org-blueprint': ['MANAGE:USER'],
+  'integration-bridge': ['MANAGE:TENANT_SETTINGS'],
+  'identity': ['MANAGE:USER'],
+  'backlog': ['MANAGE:PLATFORM'],
 
   // Ops
-  'conflict-check': ['check_conflicts', 'create_matter'],
-  'reviews': ['review_work'],
-  'workflow': ['design_workflow'],
-  'vault': ['upload_document', 'read_assigned_matter'],
-  'drafting': ['upload_document', 'create_draft'],
-  'marketplace': ['read_assigned_matter'],
-  'chat': ['use_legal_chat'],
-  'clm-center': ['design_workflow', 'review_work'],
-  'case-center': ['create_matter', 'review_work'],
-  'clients': ['read_assigned_matter'],
+  'conflict-check': ['CHECK:CONFLICTS'], // Legacy ID fallback if needed
+  'reviews': ['REVIEW:WORK'],
+  'workflow': ['MANAGE:WORKFLOW'],
+  'vault': ['UPLOAD:DOCUMENT', 'VIEW:MATTER'],
+  'drafting': ['UPLOAD:DOCUMENT', 'CREATE:DRAFT'],
+  'marketplace': ['VIEW:MATTER'],
+  'chat': ['USE:CHAT'],
+  'clm-center': ['MANAGE:WORKFLOW', 'REVIEW:WORK'],
+  'case-center': ['CREATE:MATTER', 'REVIEW:WORK'],
+  'clients': ['VIEW:CLIENT'],
 
   // Finance/Growth
-  'growth': ['read_billing'],
-  'billing': ['read_billing'],
-  'accounting-hub': ['access_accounting_hub'],
-  'capacity': ['manage_users'],
-  'system-settings': ['access_infrastructure_plane'],
-  'tenant-settings': ['manage_tenant'],
-  'status': ['access_platform_roadmap'],
-  'analysis': ['create_draft', 'review_work'],
-  'client-portal': ['client_portal_access'],
-  'field-intake': ['upload_field_intake', 'read_assigned_matter'],
-  'hr-workbench': ['access_hr_workbench'],
-  'expense-tracker': ['manage_expenses'],
-  'asset-tracker': ['manage_expenses'],
-  'finance-ops': ['manage_expenses', 'read_billing'],
+  'growth': ['VIEW_BILLING:TENANT'],
+  'billing': ['VIEW_BILLING:TENANT'],
+  'accounting-hub': ['ACCESS:ACCOUNTING'],
+  'capacity': ['MANAGE:USER'],
+  'system-settings': ['ACCESS:INFRASTRUCTURE'],
+  'tenant-settings': ['VIEW:TENANT_SETTINGS'],
+  'status': ['ACCESS:ROADMAP'],
+  'analysis': ['CREATE:DRAFT', 'REVIEW:WORK'],
+  'client-portal': ['ACCESS:CLIENT_PORTAL'],
+  'field-intake': ['UPLOAD:FIELD_INTAKE', 'VIEW:MATTER'],
+  'hr-workbench': ['ACCESS:HR'],
+  'expense-tracker': ['MANAGE:EXPENSES'],
+  'asset-tracker': ['MANAGE:EXPENSES'],
+  'finance-ops': ['MANAGE:EXPENSES', 'VIEW_BILLING:TENANT'],
 };
 
 // Default Permissions for Roles (Fallback/Mock)
 // Default Permissions for Roles (Fallback/Mock)
 export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  'TENANT_ADMIN': ['manage_tenant', 'read_all_audits', 'manage_users', 'manage_roles', 'configure_bridge', 'design_workflow', 'create_draft', 'upload_document', 'access_hr_workbench', 'access_accounting_hub', 'access_platform_roadmap', 'access_infrastructure_plane', 'view_trial_status'],
-  'MANAGING_PARTNER': ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review', 'ai_chat_execute', 'use_legal_chat', 'view_confidential', 'freeze_budget', 'approve_spend', 'manage_expenses', 'access_hr_workbench', 'access_accounting_hub'],
-  'INTERNAL_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'use_legal_chat'],
-  'GLOBAL_ADMIN': ['manage_platform', 'manage_tenant', 'read_all_audits', 'use_legal_chat', 'create_draft', 'upload_document'],
-  'DEPUTY_GC': ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing', 'design_workflow', 'use_legal_chat'],
-  'EXTERNAL_COUNSEL': ['read_assigned_matter', 'upload_document', 'create_matter', 'create_draft', 'use_legal_chat'],
-  'CLIENT': ['read_assigned_matter', 'client_portal_access', 'export_final'],
-  'EXECUTIVE_BOARD': ['read_all_audits', 'read_billing', 'use_legal_chat'],
-  'COMPLIANCE': ['read_all_audits', 'manage_tenant', 'use_legal_chat'],
-  'FINANCE_BILLING': ['read_billing'],
-  'PARTNER': ['create_matter', 'read_assigned_matter', 'read_analytics', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'use_legal_chat', 'can_freeze_budget'],
-  'SENIOR_COUNSEL': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat', 'read_billing'],
-  'JUNIOR_ASSOCIATE': ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter', 'use_legal_chat'],
+  'TENANT_ADMIN': ['MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'MANAGE:USER', 'MANAGE:ROLE', 'MANAGE:TENANT_SETTINGS', 'MANAGE:WORKFLOW', 'CREATE:DRAFT', 'UPLOAD:DOCUMENT', 'ACCESS:HR', 'ACCESS:ACCOUNTING', 'ACCESS:ROADMAP', 'ACCESS:INFRASTRUCTURE', 'VIEW:TRIAL'],
+  'MANAGING_PARTNER': ['MANAGE:TENANT_SETTINGS', 'MANAGE:USER', 'MANAGE:ROLE', 'MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'VIEW_BILLING:TENANT', 'CREATE:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'VIEW:MATTER', 'MANAGE:WORKFLOW', 'CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'EXECUTE:AI', 'USE:CHAT', 'VIEW:CONFIDENTIAL', 'MANAGE:BUDGET', 'APPROVE:SPEND', 'MANAGE:EXPENSES', 'ACCESS:HR', 'ACCESS:ACCOUNTING'],
+  'INTERNAL_COUNSEL': ['CREATE:MATTER', 'VIEW:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'USE:CHAT'],
+  'GLOBAL_ADMIN': ['MANAGE:PLATFORM', 'MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'USE:CHAT', 'CREATE:DRAFT', 'UPLOAD:DOCUMENT'],
+  'DEPUTY_GC': ['MANAGE:USER', 'VIEW_STATS:TENANT', 'CREATE:MATTER', 'REVIEW:WORK', 'CHECK:CONFLICTS', 'VIEW:MATTER', 'MANAGE:ROLE', 'CREATE:DRAFT', 'APPROVE:DOCUMENT', 'VIEW_BILLING:TENANT', 'MANAGE:WORKFLOW', 'USE:CHAT'],
+  'EXTERNAL_COUNSEL': ['VIEW:MATTER', 'UPLOAD:DOCUMENT', 'CREATE:MATTER', 'CREATE:DRAFT', 'USE:CHAT'],
+  'CLIENT': ['VIEW:MATTER', 'ACCESS:CLIENT_PORTAL', 'EXPORT:DOCUMENT'],
+  'EXECUTIVE_BOARD': ['VIEW_STATS:TENANT', 'VIEW_BILLING:TENANT', 'USE:CHAT'],
+  'COMPLIANCE': ['VIEW_STATS:TENANT', 'MANAGE:TENANT_SETTINGS', 'USE:CHAT'],
+  'FINANCE_BILLING': ['VIEW_BILLING:TENANT'],
+  'PARTNER': ['CREATE:MATTER', 'VIEW:MATTER', 'VIEW_STATS:TENANT', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'APPROVE:DOCUMENT', 'EXPORT:DOCUMENT', 'VIEW_BILLING:TENANT', 'VIEW_STATS:TENANT', 'MANAGE:USER', 'MANAGE:WORKFLOW', 'USE:CHAT', 'MANAGE:BUDGET'],
+  'SENIOR_COUNSEL': ['CREATE:MATTER', 'VIEW:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'USE:CHAT', 'VIEW_BILLING:TENANT'],
+  'JUNIOR_ASSOCIATE': ['VIEW:MATTER', 'CHECK:CONFLICTS', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'CREATE:MATTER', 'USE:CHAT'],
 
 
   // Approval Workflow Permissions
-  'OWNER': ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'manage_tenant', 'manage_users', 'manage_roles', 'use_legal_chat', 'can_freeze_budget', 'access_hr_workbench', 'access_accounting_hub'],
-  'PARALEGAL': ['create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'],
-  'AUDITOR': ['read_all_audits', 'read_assigned_matter'],
-  'CLERK': ['upload_field_intake', 'use_legal_chat', 'read_assigned_matter'],
-  'ADMIN_MANAGER': ['read_billing', 'manage_tenant', 'read_analytics', 'manage_users', 'manage_roles', 'check_conflicts', 'manage_expenses', 'access_hr_workbench', 'access_accounting_hub'],
+  'OWNER': ['CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'APPROVE:DOCUMENT', 'EXPORT:DOCUMENT', 'MANAGE:PLATFORM', 'MANAGE:TENANT_SETTINGS', 'MANAGE:USER', 'MANAGE:ROLE', 'USE:CHAT', 'MANAGE:BUDGET', 'ACCESS:HR', 'ACCESS:ACCOUNTING'],
+  'PARALEGAL': ['CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'USE:CHAT'],
+  'AUDITOR': ['VIEW_STATS:TENANT', 'VIEW:MATTER'],
+  'CLERK': ['UPLOAD:FIELD_INTAKE', 'USE:CHAT', 'VIEW:MATTER'],
+  'ADMIN_MANAGER': ['VIEW_BILLING:TENANT', 'MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'MANAGE:USER', 'MANAGE:ROLE', 'CHECK:CONFLICTS', 'MANAGE:EXPENSES', 'ACCESS:HR', 'ACCESS:ACCOUNTING'],
   // Demo tenant roles - Law Firm (Apex Law Partners)
-  'FINANCE_MANAGER': ['read_billing', 'manage_expenses', 'read_analytics', 'manage_users', 'read_all_audits'],
-  'SENIOR_ASSOCIATE': ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'use_legal_chat', 'read_billing'],
+  'FINANCE_MANAGER': ['VIEW_BILLING:TENANT', 'MANAGE:EXPENSES', 'VIEW_STATS:TENANT', 'MANAGE:USER', 'VIEW_STATS:TENANT'],
+  'SENIOR_ASSOCIATE': ['CREATE:MATTER', 'VIEW:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'USE:CHAT', 'VIEW_BILLING:TENANT'],
   // Demo tenant roles - Enterprise (Global Logistics Corp)
-  'GENERAL_COUNSEL': ['manage_tenant', 'manage_users', 'manage_roles', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'approve_document', 'use_legal_chat', 'manage_expenses', 'read_analytics'],
-  'CONTRACT_MANAGER': ['create_matter', 'read_assigned_matter', 'design_workflow', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'use_legal_chat', 'read_billing', 'manage_expenses'],
+  'GENERAL_COUNSEL': ['MANAGE:TENANT_SETTINGS', 'MANAGE:USER', 'MANAGE:ROLE', 'VIEW_STATS:TENANT', 'VIEW_BILLING:TENANT', 'CREATE:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'VIEW:MATTER', 'MANAGE:WORKFLOW', 'CREATE:DRAFT', 'EDIT:DRAFT', 'APPROVE:DOCUMENT', 'USE:CHAT', 'MANAGE:EXPENSES', 'VIEW_STATS:TENANT'],
+  'CONTRACT_MANAGER': ['CREATE:MATTER', 'VIEW:MATTER', 'MANAGE:WORKFLOW', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'USE:CHAT', 'VIEW_BILLING:TENANT', 'MANAGE:EXPENSES'],
 
-  'COMPLIANCE_OFFICER': ['read_all_audits', 'manage_tenant', 'review_work', 'read_assigned_matter', 'upload_document', 'use_legal_chat'],
-  'LEGAL_OPS': ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts', 'use_legal_chat', 'manage_expenses', 'read_analytics']
+  'COMPLIANCE_OFFICER': ['VIEW_STATS:TENANT', 'MANAGE:TENANT_SETTINGS', 'REVIEW:WORK', 'VIEW:MATTER', 'UPLOAD:DOCUMENT', 'USE:CHAT'],
+  'LEGAL_OPS': ['MANAGE:USER', 'MANAGE:WORKFLOW', 'VIEW_BILLING:TENANT', 'VIEW_STATS:TENANT', 'CREATE:MATTER', 'UPLOAD:DOCUMENT', 'VIEW:MATTER', 'CREATE:DRAFT', 'CHECK:CONFLICTS', 'USE:CHAT', 'MANAGE:EXPENSES', 'VIEW_STATS:TENANT']
 };
 
 

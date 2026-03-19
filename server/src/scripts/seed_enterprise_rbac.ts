@@ -7,23 +7,51 @@ const STANDARD_PERMISSIONS = [
     { id: 'VIEW_TENANT_SETTINGS', resource: 'TENANT_SETTINGS', action: 'VIEW', description: 'Can view tenant settings.' },
     { id: 'MANAGE_TENANT_SETTINGS', resource: 'TENANT_SETTINGS', action: 'MANAGE', description: 'Can manage tenant settings.' },
     
-    // Roles
+    // Roles & Users
     { id: 'MANAGE_ROLE', resource: 'ROLE', action: 'MANAGE', description: 'Can create and modify custom roles.' },
-    
-    // Users
     { id: 'MANAGE_USER', resource: 'USER', action: 'MANAGE', description: 'Can manage internal users.' },
     
-    // Tenant Stats/Billing
+    // Tenant Stats/Billing/UI
     { id: 'VIEW_STATS_TENANT', resource: 'TENANT', action: 'VIEW_STATS', description: 'Can view tenant capacity and admin stats.' },
     { id: 'VIEW_BILLING_TENANT', resource: 'TENANT', action: 'VIEW_BILLING', description: 'Can view tenant billing stats.' },
     { id: 'MANAGE_UI_TENANT', resource: 'TENANT', action: 'MANAGE_UI', description: 'Can manage UI visibility for roles.' },
     
-    // Exports
+    // Matters & Legal Operations
+    { id: 'VIEW_MATTER', resource: 'MATTER', action: 'VIEW', description: 'Can view assigned matters.' },
+    { id: 'CREATE_MATTER', resource: 'MATTER', action: 'CREATE', description: 'Can incept new matters.' },
+    { id: 'CHECK:CONFLICTS', resource: 'CONFLICTS', action: 'CHECK', description: 'Can perform ZK conflict checks.' },
+    { id: 'REVIEW:WORK', resource: 'WORK', action: 'REVIEW', description: 'Can perform lead counsel review.' },
+    { id: 'MANAGE:WORKFLOW', resource: 'WORKFLOW', action: 'MANAGE', description: 'Can design and manage workflows.' },
+    
+    // Documents & Drafting
+    { id: 'UPLOAD:DOCUMENT', resource: 'DOCUMENT', action: 'UPLOAD', description: 'Can upload documents to the vault.' },
+    { id: 'CREATE:DRAFT', resource: 'DRAFT', action: 'CREATE', description: 'Can create drafts in the studio.' },
+    { id: 'EDIT:DRAFT', resource: 'DRAFT', action: 'EDIT', description: 'Can edit existing drafts.' },
+    { id: 'SUBMIT:REVIEW', resource: 'REVIEW', action: 'SUBMIT', description: 'Can submit work for review.' },
+    { id: 'APPROVE:DOCUMENT', resource: 'DOCUMENT', action: 'APPROVE', description: 'Can approve legal documents.' },
     { id: 'EXPORT_DOCUMENT', resource: 'DOCUMENT', action: 'EXPORT', description: 'Can export documents on final review.' },
+    
+    // AI & Intelligence
+    { id: 'EXECUTE:AI', resource: 'AI', action: 'EXECUTE', description: 'Can execute AI-driven intelligence tasks.' },
+    { id: 'USE:CHAT', resource: 'CHAT', action: 'USE', description: 'Can use the Sovereign legal chat.' },
+    { id: 'VIEW:CONFIDENTIAL', resource: 'DOCUMENT', action: 'VIEW_CONFIDENTIAL', description: 'Can view restricted/confidential docs.' },
+    
+    // Finance & HR
+    { id: 'ACCESS:ACCOUNTING', resource: 'ACCOUNTING', action: 'ACCESS', description: 'Can access the accounting hub.' },
+    { id: 'MANAGE:EXPENSES', resource: 'EXPENSES', action: 'MANAGE', description: 'Can manage and approve expenses.' },
+    { id: 'MANAGE:BUDGET', resource: 'BUDGET', action: 'MANAGE', description: 'Can manage matter budgets.' },
+    { id: 'ACCESS:HR', resource: 'HR', action: 'ACCESS', description: 'Can access the HR workbench.' },
     
     // Clients
     { id: 'VIEW_CLIENTS', resource: 'CLIENT', action: 'VIEW', description: 'Can view clients.' },
-    { id: 'CREATE_CLIENT', resource: 'CLIENT', action: 'CREATE', description: 'Can create clients.' }
+    { id: 'CREATE_CLIENT', resource: 'CLIENT', action: 'CREATE', description: 'Can create clients.' },
+    
+    // System & Portal
+    { id: 'ACCESS:CLIENT_PORTAL', resource: 'CLIENT_PORTAL', action: 'ACCESS', description: 'Can access the client portal.' },
+    { id: 'ACCESS:INFRASTRUCTURE', resource: 'INFRASTRUCTURE', action: 'ACCESS', description: 'Can view infrastructure plane.' },
+    { id: 'ACCESS:ROADMAP', resource: 'ROADMAP', action: 'ACCESS', description: 'Can view platform roadmap.' },
+    { id: 'VIEW:TRIAL', resource: 'TRIAL', action: 'VIEW', description: 'Can view platform trial status.' },
+    { id: 'MANAGE:PLATFORM', resource: 'PLATFORM', action: 'MANAGE', description: 'Global platform operations.' }
 ];
 
 async function main() {
@@ -67,7 +95,13 @@ async function main() {
                         { id: 'VIEW_TENANT_SETTINGS' },
                         { id: 'VIEW_CLIENTS' },
                         { id: 'CREATE_CLIENT' },
-                        { id: 'EXPORT_DOCUMENT' }
+                        { id: 'EXPORT_DOCUMENT' },
+                        { id: 'VIEW_MATTER' },
+                        { id: 'CREATE:DRAFT' },
+                        { id: 'EDIT:DRAFT' },
+                        { id: 'UPLOAD:DOCUMENT' },
+                        { id: 'USE:CHAT' },
+                        { id: 'EXECUTE:AI' }
                     ]
                 }
             }

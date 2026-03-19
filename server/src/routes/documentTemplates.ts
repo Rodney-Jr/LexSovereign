@@ -45,9 +45,12 @@ router.post('/', authenticateToken as any, async (req: any, res: Response) => {
         if (tenantId === '__PLATFORM__') tenantId = null;
 
         // Ensure user has permission or is Global Admin
-        const hasUploadPermission = req.user?.permissions?.includes('manage_tenant') || 
-                                   req.user?.roleString === 'GLOBAL_ADMIN' ||
-                                   req.user?.role === 'GLOBAL_ADMIN';
+        const hasUploadPermission = req.user?.permissions?.some((p: any) => 
+            p.id === 'MANAGE_TENANT_SETTINGS' || 
+            (p.action === 'MANAGE' && p.resource === 'TENANT_SETTINGS')
+        ) || 
+        req.user?.roleString === 'GLOBAL_ADMIN' ||
+        req.user?.role === 'GLOBAL_ADMIN';
 
         if (!hasUploadPermission) {
             return res.status(403).json({ error: 'Permission denied: Cannot manage blueprints' });
