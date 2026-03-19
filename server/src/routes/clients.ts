@@ -32,7 +32,7 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
-// GET a single client by ID
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
         if (!tenantId) return res.status(401).json({ error: 'Authentication required' });
