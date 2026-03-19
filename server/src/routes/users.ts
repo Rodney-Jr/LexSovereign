@@ -10,7 +10,7 @@ const router = express.Router();
  * Returns all users within the current tenant enclave.
  * Restricted to TENANT_ADMIN and GLOBAL_ADMIN.
  */
-router.get('/', authenticateToken, requirePermission('manage_users'), async (req, res) => {
+router.get('/', authenticateToken, requirePermission('MANAGE', 'USER'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         if (!isGlobalAdmin && !req.user?.tenantId) {
@@ -65,7 +65,7 @@ router.get('/', authenticateToken, requirePermission('manage_users'), async (req
  * Removes a user from the tenant.
  * Restricted to TENANT_ADMIN and GLOBAL_ADMIN.
  */
-router.delete('/:id', authenticateToken, requirePermission('manage_users'), async (req, res) => {
+router.delete('/:id', authenticateToken, requirePermission('MANAGE', 'USER'), async (req, res) => {
     try {
         const userId = req.params.id;
         const tenantId = req.user?.tenantId;

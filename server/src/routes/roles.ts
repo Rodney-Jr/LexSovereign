@@ -66,7 +66,7 @@ router.get('/permissions', authenticateToken, async (req, res) => {
 });
 
 // Create a custom role
-router.post('/', authenticateToken, requirePermission('manage_roles'), async (req, res) => {
+router.post('/', authenticateToken, requirePermission('MANAGE', 'ROLE'), async (req, res) => {
     try {
         const { name, description, permissionIds } = req.body;
 
@@ -195,7 +195,7 @@ router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 
 });
 
 // Update a role
-router.put('/:id', authenticateToken, requirePermission('manage_roles'), async (req, res) => {
+router.put('/:id', authenticateToken, requirePermission('MANAGE', 'ROLE'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, permissionIds } = req.body;
@@ -241,7 +241,7 @@ router.put('/:id', authenticateToken, requirePermission('manage_roles'), async (
 });
 
 // Delete a role
-router.delete('/:id', authenticateToken, requirePermission('manage_roles'), async (req, res) => {
+router.delete('/:id', authenticateToken, requirePermission('MANAGE', 'ROLE'), async (req, res) => {
     try {
         const { id } = req.params;
 

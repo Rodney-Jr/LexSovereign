@@ -7,7 +7,7 @@ const router = express.Router();
 
 // GET /api/tenant/admin-stats
 // Returns live counts for the current tenant
-router.get('/admin-stats', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.get('/admin-stats', authenticateToken, requirePermission('VIEW_STATS', 'TENANT'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         const tenantId = req.user?.tenantId;
@@ -43,7 +43,7 @@ router.get('/admin-stats', authenticateToken, requirePermission('manage_tenant')
 
 // GET /api/tenant/capacity-stats
 // Returns aggregated firm load and readiness metrics
-router.get('/capacity-stats', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.get('/capacity-stats', authenticateToken, requirePermission('VIEW_STATS', 'TENANT'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -89,7 +89,7 @@ router.get('/capacity-stats', authenticateToken, requirePermission('manage_tenan
 
 // GET /api/tenant/insights
 // Returns operational insights for the dashboard
-router.get('/insights', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.get('/insights', authenticateToken, requirePermission('VIEW_STATS', 'TENANT'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -174,7 +174,7 @@ router.get('/insights', authenticateToken, requirePermission('manage_tenant'), a
 
 // GET /api/tenant/billing
 // Returns plan details and usage metrics
-router.get('/billing', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.get('/billing', authenticateToken, requirePermission('VIEW_BILLING', 'TENANT'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -305,7 +305,7 @@ router.get('/billing', authenticateToken, requirePermission('manage_tenant'), as
 
 // GET /api/tenant/settings
 // Returns organization-specific settings
-router.get('/settings', authenticateToken, requirePermission('VIEW_TENANT_SETTINGS'), async (req, res) => {
+router.get('/settings', authenticateToken, requirePermission('VIEW', 'TENANT_SETTINGS'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -349,7 +349,7 @@ router.get('/settings', authenticateToken, requirePermission('VIEW_TENANT_SETTIN
 
 // PATCH /api/tenant/settings
 // Bulk update organization settings
-router.patch('/settings', authenticateToken, requirePermission('MANAGE_SETTINGS'), async (req, res) => {
+router.patch('/settings', authenticateToken, requirePermission('MANAGE', 'TENANT_SETTINGS'), async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
@@ -398,7 +398,7 @@ router.patch('/settings', authenticateToken, requirePermission('MANAGE_SETTINGS'
 
 // POST /api/tenant/settings/mode
 // Update Data Separation Mode
-router.post('/settings/mode', authenticateToken, requirePermission('MANAGE_SETTINGS'), async (req, res) => {
+router.post('/settings/mode', authenticateToken, requirePermission('MANAGE', 'TENANT_SETTINGS'), async (req, res) => {
     try {
         const { mode } = req.body;
         const tenantId = req.user?.tenantId;
@@ -425,7 +425,7 @@ router.post('/settings/mode', authenticateToken, requirePermission('MANAGE_SETTI
 
 // POST /api/tenant/users/:userId/department
 // Assign a user to a department
-router.post('/users/:userId/department', authenticateToken, requirePermission('manage_users'), async (req, res) => {
+router.post('/users/:userId/department', authenticateToken, requirePermission('MANAGE', 'USER'), async (req, res) => {
     try {
         const { userId } = req.params;
         const { departmentId } = req.body; // e.g. "uuid-here"
@@ -507,7 +507,7 @@ router.post('/support/grant', authenticateToken, requireRole(['TENANT_ADMIN']), 
 });
 
 // GET /api/tenant/ui-config
-router.get('/ui-config', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.get('/ui-config', authenticateToken, requirePermission('MANAGE_UI', 'TENANT'), async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
         
@@ -532,7 +532,7 @@ router.get('/ui-config', authenticateToken, requirePermission('manage_tenant'), 
 });
 
 // PATCH /api/tenant/ui-config
-router.patch('/ui-config', authenticateToken, requirePermission('manage_tenant'), async (req, res) => {
+router.patch('/ui-config', authenticateToken, requirePermission('MANAGE_UI', 'TENANT'), async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
         const { config } = req.body;

@@ -6,7 +6,7 @@ export interface AuthUser {
     name: string; // Added for UI display
     role: string;
     tenantId: string | null;
-    permissions: string[];
+    permissions: any[];
     department?: any;
     tenant?: {
         id: string;

@@ -11,7 +11,7 @@ const router = express.Router();
  * POST /api/documents/:id/export
  * Body: { format: 'DOCX' | 'PDF', brandingProfileId?: string }
  */
-router.post('/:id/export', authenticateToken, requirePermission('export_final'), async (req, res) => {
+router.post('/:id/export', authenticateToken, requirePermission('EXPORT', 'DOCUMENT'), async (req, res) => {
     try {
         const { id } = req.params;
         const { format, brandingProfileId } = req.body;

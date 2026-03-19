@@ -88,11 +88,9 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             }
 
             // Hydrate sensitive context from DB (Department, Permissions, Attributes, Modules)
-            const rolePermissions = dbUser.role?.permissions?.map((p: any) => p.id) || [];
-            const directPermissions = dbUser.permissions || [];
-            const dbPermissions = Array.from(new Set([...rolePermissions, ...directPermissions]));
+            const dbPermissions = dbUser.role?.permissions || [];
             
-            console.log(`[Auth-Diag] User ${dbUser.email} hydrated with ${dbPermissions.length} total permissions: ${dbPermissions.join(', ')}`);
+            console.log(`[Auth-Diag] User ${dbUser.email} hydrated with ${dbPermissions.length} total permissions.`);
             
             req.user = {
                 ...user,
@@ -152,7 +150,7 @@ export const authorizeRole = (allowedRoles: string[]) => {
 
 export const requireRole = authorizeRole; // Alias for compatibility
 
-export const requirePermission = (permissionId: string) => {
+export const requirePermission = (action: string, resource: string) => {
     return (req: Request, res: Response, next: NextFunction) => {
         const user = req.user;
         if (!user) {
@@ -161,28 +159,36 @@ export const requirePermission = (permissionId: string) => {
         }
 
         // Diagnostic Logging
-        console.log(`[RBAC-Check] User: ${user.id}, Role: ${user.role}, Permission: ${permissionId}, UserPerms: [${user.permissions?.join(', ')}]`);
+        console.log(`[RBAC-Check] User: ${user.id}, Role: ${user.role}, Checking Permission: ${action} on ${resource}`);
 
         // 1. GLOBAL_ADMIN Bypass (SUPER_ADMIN equivalent)
         if (user.role === 'GLOBAL_ADMIN') {
             return next();
         }
 
-        // 2. TENANT_ADMIN Backward Compatibility
-        // If the user is a TENANT_ADMIN, they pass for settings-related perms even if not explicitly assigned
+        // 2. TENANT_ADMIN Fallback logic for settings
         const isTenantAdmin = user.role === 'TENANT_ADMIN';
-        const isSettingsPerm = permissionId === 'VIEW_TENANT_SETTINGS' || permissionId === 'MANAGE_SETTINGS' || permissionId === 'manage_tenant';
+        const isSettingsPerm = resource === 'TENANT_SETTINGS' || resource === 'TENANT';
 
         if (isTenantAdmin && isSettingsPerm) {
             return next();
         }
 
         // 3. Granular Permission Check
-        if (user.permissions?.includes(permissionId)) {
-            return next();
+        const hasPermission = user.permissions?.some((p: any) => p.action === action && p.resource === resource);
+        if (!hasPermission) {
+            console.warn(`[RBAC] Access Denied: User ${user.email} (Role: ${user.role}) lacks required permission: ${action} on ${resource}`);
+            return res.status(403).json({ error: 'Insufficient permissions' });
         }
 
-        console.warn(`[RBAC] Access Denied: User ${user.email} (Role: ${user.role}) lacks required permission: ${permissionId}`);
-        res.status(403).json({ error: 'Insufficient permissions' });
+        // 4. Optional Policy Engine Hook (ABAC prep)
+        /*
+        if (policyEngine.evaluate(user, resource, action, req) === 'DENY') {
+            console.warn(`[ABAC] Policy Restriction for ${user.email} on ${resource}`);
+            return res.status(403).json({ error: 'Policy restriction' });
+        }
+        */
+
+        return next();
     };
 };

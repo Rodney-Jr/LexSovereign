@@ -33,7 +33,6 @@ model User {
   mfaEnabled            Boolean                @default(false)
   mfaSecret             String?
   mfaBackupCodes        Json?                  @default("[]")
-  permissions           String[]               @default([])
   departmentId          String?
   aiRiskAnalyses        AIRiskAnalysis[]
   activityEntries       ActivityEntry[]

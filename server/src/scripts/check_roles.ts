@@ -1,16 +1,22 @@
-
 import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log("Checking roles in database...");
-    const roles = await prisma.role.findMany();
-    console.log(`Found ${roles.length} roles:`);
-    roles.forEach(r => {
-        console.log(`- ${r.name} (isSystem: ${r.isSystem}, tenantId: ${r.tenantId})`);
+    const roles = await prisma.role.findMany({
+        include: {
+            permissions: true
+        }
     });
+
+    console.log('System Roles and Permissions:');
+    for (const role of roles) {
+        console.log(`\nRole: ${role.name} (${role.id})`);
+        console.log('Permissions:');
+        role.permissions.forEach(p => console.log(`- ${p.id}`));
+    }
 }
 
 main()
     .catch(e => console.error(e))
-    .finally(async () => await prisma.$disconnect());
+    .finally(() => prisma.$disconnect());
