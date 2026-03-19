@@ -33,9 +33,9 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // GET a single client by ID
-router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(401).json({ error: 'Authentication required' });
         const client = await prisma.client.findFirst({
             where: { id: req.params.id, tenantId },
             include: {
@@ -84,6 +84,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.patch('/:id', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(401).json({ error: 'Authentication required' });
         const { name, industry, contactEmail, contactPhone, billingAddress, taxId, type } = req.body;
 
         const existing = await prisma.client.findFirst({ where: { id: req.params.id, tenantId } });
@@ -105,13 +106,17 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
+        if (!tenantId) return res.status(401).json({ error: 'Authentication required' });
+
         const client = await prisma.client.findFirst({
             where: { id: req.params.id, tenantId },
             include: { _count: { select: { matters: true } } }
         });
         if (!client) return res.status(404).json({ error: 'Client not found' });
-        if (client._count.matters > 0) {
-            return res.status(409).json({ error: `Cannot delete "${client.name}" — it has ${client._count.matters} active matter(s). Reassign them first.` });
+        
+        const clientWithCount = client as any;
+        if (clientWithCount._count.matters > 0) {
+            return res.status(409).json({ error: `Cannot delete "${client.name}" — it has ${clientWithCount._count.matters} active matter(s). Reassign them first.` });
         }
 
         await prisma.client.delete({ where: { id: req.params.id } });
