@@ -73,27 +73,36 @@ export class BillingService {
         const lineItemsData: any[] = [];
 
         // Evaluate FlatFee triggers
+        // A flat fee invoice is generated whenever:
+        //   (a) a FLAT_FEE billing component exists with a fixedAmount, AND
+        //   (b) no line item has been issued against it yet (prevents double billing)
+        // depositRequired only controls the label — it does NOT block invoice generation.
         const flatFeeComponent = components.find(c => c.type === BillingComponentType.FLAT_FEE);
         if (flatFeeComponent && flatFeeComponent.fixedAmount) {
+            console.log(`[BillingService] Evaluating FlatFee for component ${flatFeeComponent.id}. Amount: ${flatFeeComponent.fixedAmount}`);
 
-            // Checking if we already invoiced this flat fee (naive check for deposit/upfront generation)
             const existingInvoices = await prisma.invoiceLineItem.count({
                 where: { billingComponentId: flatFeeComponent.id }
             });
 
-            if (existingInvoices === 0 && flatFeeComponent.depositRequired) {
-                // Rule: "Require deposit before work commencement"
-                // Assuming schedule defines deposit ratio, or we just bill the whole FlatFee if simple
+            console.log(`[BillingService] Found ${existingInvoices} existing invoice items for component ${flatFeeComponent.id}`);
+
+            if (existingInvoices === 0) {
                 const schedule: any = flatFeeComponent.paymentSchedule || {};
                 const depositPercentage = schedule.depositPercentage || 100; // default 100% upfront
 
                 const amountToBill = (flatFeeComponent.fixedAmount * depositPercentage) / 100;
 
+                const description = flatFeeComponent.depositRequired
+                    ? `Flat Fee: Initial Deposit (${depositPercentage}% upfront)`
+                    : `Flat Fee: Full Payment — ${flatFeeComponent.fixedAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`;
+
+                console.log(`[BillingService] Triggering invoice line item: ${description} | Amount: ${amountToBill}`);
                 totalInvoiceAmount += amountToBill;
                 lineItemsData.push({
                     billingComponentId: flatFeeComponent.id,
                     amount: amountToBill,
-                    description: `Flat Fee: Initial Deposit / Upfront Payment (${depositPercentage}%)`
+                    description
                 });
             }
         }
@@ -153,8 +162,38 @@ export class BillingService {
         }
         // --- END Disbursements ---
 
+        // --- NEW: Time Entries Inclusion ---
+        // Fetch unbilled Time Entries for this matter
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { attributes: true }
+        });
+        const attributes = (tenant?.attributes as any) || {};
+        const globalHourlyRate = attributes.hourlyRate || 250; 
+
+        const unbilledTimeEntries = await prisma.timeEntry.findMany({
+            where: { matterId, isBillable: true, status: 'Draft' }
+        });
+
+        if (unbilledTimeEntries.length > 0) {
+            for (const entry of unbilledTimeEntries) {
+                const amount = (entry.durationMinutes / 60) * globalHourlyRate;
+                if (amount > 0) {
+                    totalInvoiceAmount += amount;
+                    lineItemsData.push({
+                        amount: amount,
+                        description: `Time Entry (${entry.durationMinutes} mins): ${entry.description}`,
+                        // we pass a reference to update it later, stripping it before Prisma create
+                        _timeEntryId: entry.id 
+                    });
+                }
+            }
+        }
+        // --- END Time Entries ---
+
         // Generate Invoice if there are actionable items
         if (lineItemsData.length > 0) {
+            // Because lineItemsData may include _timeEntryId, we need to map them slightly
             const invoice = await prisma.invoice.create({
                 data: {
                     matterId,
@@ -163,11 +202,28 @@ export class BillingService {
                     totalAmount: totalInvoiceAmount,
                     dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Default Net 14
                     lineItems: {
-                        create: lineItemsData
+                        create: lineItemsData.map(li => ({
+                            amount: li.amount,
+                            description: li.description,
+                            billingComponentId: li.billingComponentId
+                        }))
                     }
                 },
                 include: { lineItems: true }
             });
+
+            console.log(`[BillingService] Created DRAFT invoice ${invoice.id} for matter ${matterId}. Amount: ${totalInvoiceAmount}`);
+
+            // Mark Time Entries as invoiced
+            if (unbilledTimeEntries.length > 0) {
+                const timeEntryIds = lineItemsData.filter(li => li._timeEntryId).map(li => li._timeEntryId);
+                if (timeEntryIds.length > 0) {
+                    await prisma.timeEntry.updateMany({
+                        where: { id: { in: timeEntryIds } },
+                        data: { status: 'Invoiced' }
+                    });
+                }
+            }
 
             // Mark AI records as invoiced
             if (uninvoicedAi.length > 0) {
@@ -186,6 +242,8 @@ export class BillingService {
             });
 
             return invoice;
+        } else {
+            console.log(`[BillingService] No actionable billing items for matter ${matterId}. Skip invoice.`);
         }
 
         return null; // Nothing triggered
@@ -321,15 +379,23 @@ export class BillingService {
      * NEW: Fetches all matter-level invoices for a tenant.
      */
     static async getTenantInvoices(tenantId: string) {
-        return await prisma.invoice.findMany({
+        const invoices = await prisma.invoice.findMany({
             where: { tenantId },
             include: {
                 matter: {
-                    select: { name: true, client: true }
+                    select: { name: true, clientRef: true }
                 }
             },
             orderBy: { createdAt: 'desc' }
         });
+
+        return (invoices as any[]).map((i: any) => ({
+            ...i,
+            matter: {
+                ...i.matter,
+                client: i.matter.clientRef?.name || 'Unknown Client'
+            }
+        }));
     }
 
     /**
@@ -339,7 +405,7 @@ export class BillingService {
         const invoice = await prisma.invoice.findFirst({
             where: { id: invoiceId, tenantId },
             include: {
-                matter: true,
+                matter: { include: { clientRef: true } },
                 lineItems: {
                     include: {
                         billingComponent: true
@@ -348,7 +414,12 @@ export class BillingService {
             }
         });
 
-        if (!invoice) throw new Error("Invoice not found or access denied");
+        if (invoice) {
+            (invoice.matter as any).client = invoice.matter.clientRef?.name || 'Unknown Client';
+        } else {
+            throw new Error("Invoice not found or access denied");
+        }
+
         return invoice;
     }
 
@@ -437,7 +508,7 @@ export class BillingService {
         const usage = await this.getMatterUsage(matterId, tenantId);
         const matter = await prisma.matter.findUnique({
             where: { id: matterId },
-            select: { name: true, client: true }
+            select: { name: true, clientRef: true }
         });
 
         if (!matter) throw new Error("Matter not found");

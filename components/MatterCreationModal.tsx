@@ -461,7 +461,10 @@ const MatterCreationModal: React.FC<MatterCreationModalProps> = ({ mode, userId,
 
                 {formData.billing.type === 'FLAT_FEE' && (
                   <div className="pt-2">
-                    <label className="flex items-center gap-3 cursor-pointer">
+                    <label
+                      className="flex items-center gap-3 cursor-pointer"
+                      onClick={() => setFormData({ ...formData, billing: { ...formData.billing, depositRequired: !formData.billing.depositRequired } })}
+                    >
                       <div className={`w-8 h-4 rounded-full transition-colors relative ${formData.billing.depositRequired ? 'bg-emerald-500' : 'bg-slate-800'}`}>
                         <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${formData.billing.depositRequired ? 'left-[18px]' : 'left-1'}`} />
                       </div>

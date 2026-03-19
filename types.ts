@@ -268,6 +268,24 @@ export interface LegalProfessional {
   avatar?: string;
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  industry?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  billingAddress?: string;
+  taxId?: string;
+  type: 'CORPORATE' | 'INDIVIDUAL';
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
+  matters?: Matter[];
+  _count?: {
+    matters: number;
+  };
+}
+
 export interface Matter {
   id: string;
   name: string;

@@ -26,7 +26,10 @@ import SovereignFinanceOps from './SovereignFinanceOps';
 const SovereignBilling: React.FC = () => {
    const [isSyncing, setIsSyncing] = useState(false);
    const [billingData, setBillingData] = useState<any>(null);
-   const [activeTab, setActiveTab] = useState<'PLATFORM' | 'CLIENT' | 'FINANCE_OPS'>('PLATFORM');
+   const showPlatformBilling = import.meta.env.VITE_SHOW_PRICING === 'true';
+   const [activeTab, setActiveTab] = useState<'PLATFORM' | 'CLIENT' | 'FINANCE_OPS'>(
+      showPlatformBilling ? 'PLATFORM' : 'CLIENT'
+   );
 
    const fetchBilling = async () => {
       const session = getSavedSession();
@@ -72,12 +75,14 @@ const SovereignBilling: React.FC = () => {
       <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
          {/* Sub-Navigation Tabs */}
          <div className="flex items-center gap-2 p-1.5 bg-slate-900/50 border border-slate-800 rounded-3xl w-fit">
-            <button
-               onClick={() => setActiveTab('PLATFORM')}
-               className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'PLATFORM' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-            >
-               SaaS Platform Billing
-            </button>
+            {showPlatformBilling && (
+               <button
+                  onClick={() => setActiveTab('PLATFORM')}
+                  className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'PLATFORM' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+               >
+                  SaaS Platform Billing
+               </button>
+            )}
             <button
                onClick={() => setActiveTab('CLIENT')}
                className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'CLIENT' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}

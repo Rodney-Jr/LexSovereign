@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppMode, DocumentMetadata } from '../types';
+import { AppMode, DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import {
   Clock,
   History,
@@ -18,9 +18,13 @@ import {
   Sparkles,
   FileSignature,
   AlertTriangle,
-  Users
+  Users,
+  Edit3,
+  Trash
 } from 'lucide-react';
 import { LexGeminiService } from '../services/geminiService';
+import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
+import DraftingStudio from './DraftingStudio';
 
 interface MatterIntelligenceProps {
   matterId: string;
@@ -28,6 +32,7 @@ interface MatterIntelligenceProps {
   onBack: () => void;
   documents: DocumentMetadata[];
   onDocumentDoubleClick?: (docId: string) => void;
+  onCreateDocument?: (docData: Partial<DocumentMetadata>) => Promise<any> | void;
 }
 
 interface TeamMember {
@@ -51,14 +56,18 @@ interface LiveTimeEntry {
   description: string;
   status: string;
   user?: { name: string };
+  startTime?: string;
 }
 
 const gemini = new LexGeminiService();
 
-const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode, onBack, documents, onDocumentDoubleClick }) => {
+const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode, onBack, documents, onDocumentDoubleClick, onCreateDocument }) => {
   const isFirm = mode === AppMode.LAW_FIRM;
 
   // ---------- State ----------
+  const [showMarketplace, setShowMarketplace] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,6 +78,10 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
   const [isAssigning, setIsAssigning] = useState(false);
 
   const [team, setTeam] = useState<TeamMember[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [isAddingMember, setIsAddingMember] = useState(false);
+
   const [timeEntries, setTimeEntries] = useState<LiveTimeEntry[]>([]);
   const [totalHours, setTotalHours] = useState(0);
   const [docCycleMs, setDocCycleMs] = useState(0);
@@ -107,6 +120,9 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
       setTimeEntries(data.matter.timeEntries || []);
       setTotalHours(data.metrics.totalHours);
       setDocCycleMs(data.metrics.docCycleTime);
+
+      const available = await gemini.getAvailableTeamMembers(matterId);
+      setAvailableUsers(available);
     } catch (e: any) {
       setError('Unable to load matter intelligence. Check server connection.');
     } finally {
@@ -231,6 +247,31 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
     }
   };
 
+  const handleAddTeamMember = async () => {
+    if (!matterId || !selectedUserId) return;
+    setIsAddingMember(true);
+    try {
+      await gemini.addMatterTeamMember(matterId, selectedUserId);
+      setSelectedUserId('');
+      await fetchIntelligence();
+    } catch (e: any) {
+      console.error('Failed to add team member', e);
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
+
+  const handleRemoveTeamMember = async (userId: string) => {
+    if (!matterId) return;
+    if (!window.confirm("Are you sure you want to remove this member?")) return;
+    try {
+      await gemini.removeMatterTeamMember(matterId, userId);
+      await fetchIntelligence();
+    } catch (e: any) {
+      console.error('Failed to remove team member', e);
+    }
+  };
+
   const handleSubmitToSilo = async () => {
     setIsSubmittingSilo(true);
     try {
@@ -317,6 +358,13 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
         </div>
         <div className="flex gap-3">
           <button
+            onClick={() => setShowMarketplace(true)}
+            className="bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/30 text-brand-primary px-6 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-xl shadow-brand-primary/10"
+          >
+            <Edit3 size={14} />
+            Drafting Studio
+          </button>
+          <button
             onClick={handleGenerateBrief}
             disabled={isBriefing}
             className="bg-brand-secondary/10 hover:bg-brand-secondary/20 border border-brand-secondary/30 text-brand-secondary px-6 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-xl shadow-brand-secondary/10"
@@ -337,6 +385,42 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
           </button>
         </div>
       </div>
+
+      <DocumentTemplateMarketplace
+          isOpen={showMarketplace}
+          onClose={() => setShowMarketplace(false)}
+          onSelect={(id) => {
+              setSelectedTemplateId(id);
+              setShowMarketplace(false);
+          }}
+      />
+
+      {selectedTemplateId && (
+          <DraftingStudio
+              templateId={selectedTemplateId}
+              matterId={matterId}
+              onClose={() => setSelectedTemplateId(null)}
+              onSave={(name, content) => {
+                  if (onCreateDocument) {
+                      onCreateDocument({
+                          id: `DOC-GEN-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+                          name,
+                          type: 'Draft',
+                          size: `${(new Blob([content]).size / 1024).toFixed(1)} KB`,
+                          uploadedBy: 'Sovereign AI',
+                          uploadedAt: new Date().toLocaleString(),
+                          region: Region.PRIMARY,
+                          matterId: matterId,
+                          privilege: PrivilegeStatus.PRIVILEGED,
+                          classification: 'Confidential',
+                          encryption: 'DAS',
+                          content: content
+                      });
+                  }
+                  setSelectedTemplateId(null);
+              }}
+          />
+      )}
 
       {/* Executive Briefing */}
       {briefingText && (
@@ -395,7 +479,7 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                 {team.map(member => (
                   <div key={member.id} className="flex items-center gap-3 p-3 bg-brand-bg/30 rounded-2xl border border-brand-border/50 hover:border-brand-secondary/30 transition-all">
                     <div className="w-8 h-8 rounded-full bg-brand-sidebar flex items-center justify-center text-[11px] font-bold text-brand-text border border-brand-border">
-                      {member.name.split(' ').map(n => n[0]).join('')}
+                      {member.name.split(' ').map((n: string) => n[0]).join('')}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -411,11 +495,40 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-brand-secondary uppercase tracking-tighter">{member.roleString.replace(/_/g, ' ')}</p>
+                      <p className="text-[10px] text-brand-secondary uppercase tracking-tighter">{(member.roleString||'').replace(/_/g, ' ')}</p>
                     </div>
-                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${member.isOnLeave ? 'bg-slate-600' : 'bg-emerald-400'}`} title={member.isOnLeave ? 'Out of Office' : 'Active'} />
+                    {member.id !== internalCounselId && (
+                      <button title="Remove Member" onClick={() => handleRemoveTeamMember(member.id)} className="text-brand-muted hover:text-red-400 p-1 transition-colors">
+                        <Trash size={12} />
+                      </button>
+                    )}
                   </div>
                 ))}
+
+                {/* Add Member Dropdown */}
+                <div className="mt-4 pt-4 border-t border-brand-border space-y-2">
+                  <div className="flex gap-2">
+                    <select
+                      title="Select new user to add"
+                      value={selectedUserId}
+                      onChange={(e) => setSelectedUserId(e.target.value)}
+                      className="flex-1 bg-brand-bg border border-brand-border rounded-xl text-xs px-2 py-1.5 text-brand-text outline-none focus:border-brand-primary"
+                    >
+                      <option value="">Select new member...</option>
+                      {availableUsers.filter(u => !team.some(t => t.id === u.id)).map(u => (
+                        <option key={u.id} value={u.id}>{u.name} ({u.roleString})</option>
+                      ))}
+                    </select>
+                    <button
+                      title="Add Team Member"
+                      onClick={handleAddTeamMember}
+                      disabled={!selectedUserId || isAddingMember}
+                      className="bg-brand-secondary/10 hover:bg-brand-secondary/20 text-brand-secondary px-3 py-1.5 rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      {isAddingMember ? <RefreshCw size={14} className="animate-spin" /> : <PlusCircle size={14} />}
+                    </button>
+                  </div>
+                </div>
 
                 {!internalCounselId && (
                   <button

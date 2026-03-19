@@ -52,6 +52,7 @@ import SovereignExpenseTracker from './components/SovereignExpenseTracker';
 import SovereignHRWorkbench from './components/HRWorkbench';
 import SovereignAssetManager from './components/SovereignAssetManager';
 import DossierWorkspace from './components/DossierWorkspace';
+import ClientDirectory from './components/ClientDirectory';
 
 import { PermissionProvider, usePermissions } from './hooks/usePermissions';
 import { useInactivityLogout } from './hooks/useInactivityLogout';
@@ -351,6 +352,7 @@ const AppContent: React.FC = () => {
           <Route path="/tenant-settings" element={<ProtectedRoute tab="tenant-settings"><TenantSettings userRole={session?.role as any} setUserRole={() => { }} /></ProtectedRoute>} />
           <Route path="/system-settings" element={<ProtectedRoute tab="system-settings"><GlobalSettings /></ProtectedRoute>} />
           <Route path="/client-portal" element={<ProtectedRoute tab="client-portal"><ClientPortal userName={session?.userName || 'Valued Client'} onLogout={handleLogout} /></ProtectedRoute>} />
+          <Route path="/clients" element={<ProtectedRoute tab="clients"><ClientDirectory /></ProtectedRoute>} />
         </Routes>
       </div>
     </AppRouter>
@@ -378,6 +380,7 @@ const VaultRouteWrapper: React.FC<any> = ({
         mode={mode}
         onBack={() => navigate('/vault')}
         documents={documents.filter(checkVisibility)}
+        onCreateDocument={createDocument}
         onDocumentDoubleClick={(id: string) => {
           setEditingDocId(id);
           navigate('/drafting');

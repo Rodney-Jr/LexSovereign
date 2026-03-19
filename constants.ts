@@ -42,6 +42,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'chat': ['use_legal_chat'],
   'clm-center': ['design_workflow', 'review_work'],
   'case-center': ['create_matter', 'review_work'],
+  'clients': ['read_assigned_matter'],
 
   // Finance/Growth
   'growth': ['read_billing'],
@@ -127,6 +128,7 @@ export const ALL_NAV_ITEMS = [
   { id: 'hr-workbench', label: 'HR Workbench', icon: 'Users' },
   { id: 'analytics', label: 'Analytics', icon: 'Activity' },
   { id: 'tenant-settings', label: 'Tenant Settings', icon: 'Settings' },
+  { id: 'clients', label: 'Client Directory', icon: 'Users' },
   { id: 'identity', label: 'Access Governance', icon: 'UserPlus' },
   { id: 'audit', label: 'Audit Logs', icon: 'Fingerprint' },
   { id: 'dossier', label: 'Sovereign Profile', icon: 'User' },

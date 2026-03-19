@@ -25,13 +25,14 @@ async function main() {
     }
 
     const matters = await prisma.matter.findMany({
-        where: { tenantId: user.tenantId }
+        where: { tenantId: user.tenantId },
+        include: { clientRef: true }
     });
 
     console.log(`\nTotal Matters in Tenant: ${matters.length}`);
     for (const m of matters) {
         console.log(`- Matter: ${m.name} (ID: ${m.id})`);
-        console.log(`  Client String: ${m.client}`);
+        console.log(`  Client String: ${m.clientRef?.name || 'Unknown'}`);
         console.log(`  Internal Counsel ID: ${m.internalCounselId}`);
     }
 

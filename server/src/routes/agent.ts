@@ -75,10 +75,19 @@ router.post('/upload', authenticateAgentKey, upload.single('document'), async (r
 
             if (!generalMatter) {
                 console.log(`[AgentSync] Provisioning missing General Enclave for agent sync on tenant: ${tenantId}`);
+                let internalClient = await prisma.client.findFirst({
+                    where: { name: 'Firm Internal', tenantId: tenantId }
+                });
+                if (!internalClient) {
+                    internalClient = await prisma.client.create({
+                        data: { name: 'Firm Internal', tenantId: tenantId }
+                    });
+                }
+
                 generalMatter = await prisma.matter.create({
                     data: {
                         name: 'General Enclave Matters',
-                        client: 'Firm Internal',
+                        clientId: internalClient.id,
                         type: 'ADMIN',
                         status: 'OPEN',
                         riskLevel: 'LOW',

@@ -49,6 +49,7 @@ model User {
   salaryRecords         SalaryRecord[]
   tasks                 Task[]
   timeEntries           TimeEntry[]
+  matterTeams           MatterTeamMember[]
   department            Department?            @relation(fields: [departmentId], references: [id])
   role                  Role?                  @relation(fields: [roleId], references: [id])
   tenant                Tenant?                @relation(fields: [tenantId], references: [id])
@@ -134,6 +135,7 @@ model Tenant {
   firmAssets            FirmAsset[]
   invitations           Invitation[]
   leads                 Lead[]
+  clients               Client[]
   leaveRecords          LeaveRecord[]
   ledgerTransactions    LedgerTransaction[]
   matters               Matter[]
@@ -166,7 +168,7 @@ model ChatbotConfig {
 model Matter {
   id                    String                 @id @default(uuid())
   name                  String
-  client                String
+  clientId              String?
   type                  String
   status                String                 @default("OPEN")
   riskLevel             String                 @default("LOW")
@@ -196,12 +198,44 @@ model Matter {
   invoices              Invoice[]
   department            Department?            @relation(fields: [departmentId], references: [id])
   internalCounsel       User?                  @relation(fields: [internalCounselId], references: [id])
+  clientRef             Client?                @relation(fields: [clientId], references: [id])
   matterType            MatterType?            @relation(fields: [matterTypeId], references: [id])
   tenant                Tenant                 @relation(fields: [tenantId], references: [id])
   workflowState         WorkflowState?         @relation(fields: [workflowStateId], references: [id])
   risks                 PredictiveRisk[]
   tasks                 Task[]
   timeEntries           TimeEntry[]
+  teamMembers           MatterTeamMember[]
+}
+
+model Client {
+  id              String      @id @default(uuid())
+  name            String
+  industry        String?
+  contactEmail    String?
+  contactPhone    String?
+  billingAddress  String?
+  taxId           String?
+  type            String      @default("CORPORATE")
+  tenantId        String
+  tenant          Tenant      @relation(fields: [tenantId], references: [id])
+  matters         Matter[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  attributes      Json?       @default("{}")
+}
+
+model MatterTeamMember {
+  id        String   @id @default(uuid())
+  matterId  String
+  userId    String
+  role      String   @default("COLLABORATOR") // e.g. LEAD_COUNSEL, PARALEGAL, REVIEWER
+  addedAt   DateTime @default(now())
+
+  matter    Matter   @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matterId, userId])
 }
 
 model MatterType {

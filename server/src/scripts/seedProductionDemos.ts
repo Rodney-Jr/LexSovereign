@@ -69,10 +69,14 @@ async function main() {
   ];
 
   for (const m of lfMatters) {
+    let clientR = await prisma.client.findFirst({ where: { name: m.client, tenantId: lawFirm.id }});
+    if (!clientR) {
+        clientR = await prisma.client.create({ data: { name: m.client, tenantId: lawFirm.id } });
+    }
     await prisma.matter.upsert({
       where: { id: m.id },
-      create: { id: m.id, name: m.name, client: m.client, type: m.type, tenantId: lawFirm.id, internalCounselId: kwame.id },
-      update: { name: m.name, client: m.client }
+      create: { id: m.id, name: m.name, clientId: clientR.id, type: m.type, tenantId: lawFirm.id, internalCounselId: kwame.id },
+      update: { name: m.name, clientId: clientR.id }
     });
     
     // Simplistic document creation (tied to matter but uses fixed IDs for idempotency)
@@ -137,10 +141,14 @@ async function main() {
   ];
 
   for (const m of entMatters) {
+    let clientR = await prisma.client.findFirst({ where: { name: m.client, tenantId: enterprise.id }});
+    if (!clientR) {
+        clientR = await prisma.client.create({ data: { name: m.client, tenantId: enterprise.id } });
+    }
     await prisma.matter.upsert({
       where: { id: m.id },
-      create: { id: m.id, name: m.name, client: m.client, type: m.type, tenantId: enterprise.id, internalCounselId: emily.id },
-      update: { name: m.name, client: m.client }
+      create: { id: m.id, name: m.name, clientId: clientR.id, type: m.type, tenantId: enterprise.id, internalCounselId: emily.id },
+      update: { name: m.name, clientId: clientR.id }
     });
 
     const docId = `doc-${m.id}`;

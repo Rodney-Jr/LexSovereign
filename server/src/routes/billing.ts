@@ -1,7 +1,48 @@
 import { Router } from 'express';
 import { BillingService } from '../services/BillingService';
+import { prisma } from '../db';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
+router.use(authenticateToken);
+
+// Backfill Existing Matters (Force Invoice Generation)
+router.post('/backfill', async (req, res) => {
+    try {
+        const tenantId = (req as any).user?.tenant?.id || (req as any).user?.tenantId;
+        if (!tenantId) {
+            return res.status(401).json({ error: "Tenant context required for backfill" });
+        }
+
+        const mattersWithBilling = await prisma.matter.findMany({
+            where: {
+                tenantId,
+                billingComponents: {
+                    some: { isActive: true }
+                }
+            },
+            select: { id: true, tenantId: true }
+        });
+
+        let invoiced = 0;
+        let skipped = 0;
+
+        for (const matter of mattersWithBilling) {
+            try {
+                const result = await BillingService.evaluateInvoicingTriggers(matter.id, matter.tenantId);
+                if (result) invoiced++;
+                else skipped++;
+            } catch (err: any) {
+                console.error(`Backfill failed for matter ${matter.id}:`, err);
+            }
+        }
+
+        res.json({ success: true, message: `Backfill complete. Auto-generated ${invoiced} new invoices. Skipped ${skipped} matters (already billed/nothing owed).` });
+    } catch (error: any) {
+        console.error("Backfill failed:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Create a new Billing Component (e.g. Flat Fee)
 router.post('/components', async (req, res) => {
@@ -18,6 +59,7 @@ router.post('/components', async (req, res) => {
         // This normally runs on a cron, but good to check on creation if deposit required
         // We need tenantId for invoices. Pull from req.user if available.
         const tenantId = (req as any).user?.tenant?.id || (req as any).user?.tenantId;
+        console.log(`[Billing-Route] Creating component for matter ${matterId} in tenant ${tenantId}`);
         if (tenantId) {
             await BillingService.evaluateInvoicingTriggers(matterId, tenantId);
         }

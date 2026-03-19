@@ -118,6 +118,37 @@
             letter-spacing: 1px;
             background: #020617;
         }
+
+        .ls-lead-form {
+            position: absolute;
+            inset: 0;
+            background: #0f172a;
+            padding: 24px;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 10;
+        }
+        .ls-lead-form.open { display: flex; }
+        .ls-lead-form h3 { font-size: 16px; color: white; margin: 0; }
+        .ls-lead-form p { font-size: 12px; color: #94a3b8; margin: 0; }
+        .ls-lead-form input, .ls-lead-form textarea {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-size: 13px;
+        }
+        .ls-lead-form button {
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
     `;
     document.head.appendChild(style);
 
@@ -133,10 +164,25 @@
     container.className = 'ls-widget-container';
     container.innerHTML = `
         <div class="ls-header">
-            <span id="ls-bot-name">...</span>
-            <button style="background:none; border:none; color:#94a3b8; cursor:pointer;" onclick="this.closest('.ls-widget-container').classList.remove('open')">✕</button>
+            <div style="display:flex; flex-direction:column;">
+                <span id="ls-bot-name" style="font-weight:bold;">...</span>
+                <span style="font-size:9px; color:#059669;">● Online</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button id="ls-show-lead" style="background:#059669; border:none; color:white; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">INQUIRY</button>
+                <button style="background:none; border:none; color:#94a3b8; cursor:pointer;" onclick="this.closest('.ls-widget-container').classList.remove('open')">✕</button>
+            </div>
         </div>
         <div class="ls-messages" id="ls-messages"></div>
+        <div id="ls-lead-form" class="ls-lead-form">
+            <h3>Start Inquiry</h3>
+            <p>Please provide your details and we'll get back to you shortly.</p>
+            <input type="text" id="ls-lead-name" placeholder="Your Name" required />
+            <input type="email" id="ls-lead-email" placeholder="Email Address" required />
+            <textarea id="ls-lead-notes" placeholder="How can we help?" rows="3"></textarea>
+            <button id="ls-submit-lead">Submit Inquiry</button>
+            <button style="background:none; color:#94a3b8;" id="ls-cancel-lead">Back to Chat</button>
+        </div>
         <div class="ls-input-area">
             <input type="text" class="ls-input" id="ls-input" placeholder="Type a message..." />
             <button class="ls-send-btn" id="ls-send">Send</button>
@@ -199,7 +245,16 @@
                 })
             });
             const data = await res.json();
-            addMessage('bot', data.text);
+            let botResponse = data.text;
+
+            if (botResponse.includes('[LEAD_PROMPT]')) {
+                botResponse = botResponse.replace('[LEAD_PROMPT]', '').trim();
+                setTimeout(() => {
+                    leadForm.classList.add('open');
+                }, 1000);
+            }
+
+            addMessage('bot', botResponse);
         } catch (e) {
             addMessage('bot', "Connection error.");
         }
@@ -208,6 +263,59 @@
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
+    });
+
+    // Lead Form Handlers
+    const leadForm = container.querySelector('#ls-lead-form');
+    const showLeadBtn = container.querySelector('#ls-show-lead');
+    const submitLeadBtn = container.querySelector('#ls-submit-lead');
+    const cancelLeadBtn = container.querySelector('#ls-cancel-lead');
+
+    showLeadBtn.addEventListener('click', () => leadForm.classList.add('open'));
+    cancelLeadBtn.addEventListener('click', () => leadForm.classList.remove('open'));
+
+    submitLeadBtn.addEventListener('click', async () => {
+        const name = container.querySelector('#ls-lead-name').value.trim();
+        const email = container.querySelector('#ls-lead-email').value.trim();
+        const notes = container.querySelector('#ls-lead-notes').value.trim();
+
+        if (!name || !email) {
+            alert("Name and Email are required.");
+            return;
+        }
+
+        submitLeadBtn.disabled = true;
+        submitLeadBtn.textContent = 'Submitting...';
+
+        try {
+            const res = await fetch(`${baseUrl}/api/leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    notes,
+                    source: 'FIRM_CHATBOT',
+                    tenantId: config.tenantId // The public config should include tenantId
+                })
+            });
+
+            if (res.ok) {
+                leadForm.innerHTML = `<div style="text-align:center; padding-top:40px;">
+                    <svg viewBox="0 0 24 24" width="48" height="48" stroke="#059669" stroke-width="2" fill="none" style="margin-bottom:16px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <h3 style="color:white;">Thank You!</h3>
+                    <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Your inquiry has been received. Our team will contact you shortly.</p>
+                    <button style="margin-top:24px; background:#059669; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;" onclick="this.closest('.ls-lead-form').classList.remove('open')">Close</button>
+                </div>`;
+                addMessage('bot', "Inquiry submitted! I've notified the team.");
+            } else {
+                throw new Error("Failed to submit inquiry.");
+            }
+        } catch (e) {
+            alert("Submission failed. Please try again later.");
+            submitLeadBtn.disabled = false;
+            submitLeadBtn.textContent = 'Submit Inquiry';
+        }
     });
 
 })();

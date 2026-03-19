@@ -216,10 +216,19 @@ router.post('/', authenticateToken, async (req, res) => {
             if (!generalMatter) {
                 // Provision a general matter for this tenant on the fly if missing
                 console.log(`[Backend] Provisioning missing General Enclave for tenant: ${tenantId}`);
+                let internalClient = await prisma.client.findFirst({
+                    where: { name: 'Firm Internal', tenantId: tenantId }
+                });
+                if (!internalClient) {
+                    internalClient = await prisma.client.create({
+                        data: { name: 'Firm Internal', tenantId: tenantId }
+                    });
+                }
+
                 generalMatter = await prisma.matter.create({
                     data: {
                         name: 'General Enclave Matters',
-                        client: 'Firm Internal',
+                        clientId: internalClient.id,
                         type: 'ADMIN',
                         status: 'OPEN',
                         riskLevel: 'LOW',
@@ -349,6 +358,17 @@ router.post('/', authenticateToken, async (req, res) => {
                 details: `Vault Version 1 committed for artifact: ${doc.name}`,
                 // metadata is not in schema or needs (prisma as any)
             } as any
+        });
+
+        // --- NEW: Forensic Activity Log (Phase 2) ---
+        await prisma.activityEntry.create({
+            data: {
+                matterId: actualMatterId,
+                tenantId: tenantId as string,
+                type: 'DOCUMENT_CREATED',
+                actorId: req.user?.id || null,
+                details: `Artifact "${doc.name}" created/uploaded to the Matter Vault.`
+            }
         });
 
         res.json({
@@ -633,10 +653,19 @@ router.patch('/:id', authenticateToken, async (req, res) => {
             });
 
             if (!generalMatter) {
+                let internalClient = await prisma.client.findFirst({
+                    where: { name: 'Firm Internal', tenantId: tenantId }
+                });
+                if (!internalClient) {
+                    internalClient = await prisma.client.create({
+                        data: { name: 'Firm Internal', tenantId: tenantId }
+                    });
+                }
+
                 generalMatter = await prisma.matter.create({
                     data: {
                         name: 'General Enclave Matters',
-                        client: 'Firm Internal',
+                        clientId: internalClient.id,
                         type: 'ADMIN',
                         status: 'OPEN',
                         riskLevel: 'LOW',

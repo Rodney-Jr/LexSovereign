@@ -198,6 +198,30 @@ export class LexGeminiService {
     });
   }
 
+  async addMatterTeamMember(matterId: string, userId: string, role?: string): Promise<any> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${matterId}/team`, {
+      method: 'POST',
+      token: session?.token,
+      body: JSON.stringify({ userId, role })
+    });
+  }
+
+  async removeMatterTeamMember(matterId: string, userId: string): Promise<any> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${matterId}/team/${userId}`, {
+      method: 'DELETE',
+      token: session?.token
+    });
+  }
+
+  async getAvailableTeamMembers(matterId: string): Promise<any[]> {
+    const session = getSavedSession();
+    return authorizedFetch(`${this.baseUrl}/matters/${matterId}/available-team`, {
+      token: session?.token
+    });
+  }
+
   async analyzeDocument(content: string | File, type: 'CASE' | 'CONTRACT'): Promise<string> {
     const session = getSavedSession();
 

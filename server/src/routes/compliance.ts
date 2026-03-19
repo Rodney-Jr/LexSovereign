@@ -64,14 +64,20 @@ router.get('/organization-risks', authenticateToken as any, ensureComplianceAcce
                 matter: {
                     select: {
                         name: true,
-                        client: true,
+                        clientRef: true,
                         internalCounsel: true
                     }
                 }
             },
             orderBy: { probability: 'desc' }
         });
-        res.json(risks);
+        res.json(risks.map(r => ({
+            ...r,
+            matter: {
+                ...r.matter,
+                client: (r.matter as any).clientRef?.name || 'Unknown'
+            }
+        })));
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }

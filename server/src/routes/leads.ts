@@ -3,8 +3,15 @@ import { prisma } from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { sendDemoProvisionedEmail } from '../services/EmailService';
 import { TenantService } from '../services/TenantService';
+import cors from 'cors';
 
 const router = express.Router();
+ 
+// Allow lead submissions from any origin (including local file:// for testing)
+router.use(cors({ 
+    origin: (origin, callback) => callback(null, true), 
+    credentials: false 
+}));
 
 // Hybrid: Submit a new lead (public or authenticated)
 router.post('/', async (req: any, res) => {

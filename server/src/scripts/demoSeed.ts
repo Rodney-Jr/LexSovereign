@@ -199,11 +199,15 @@ async function main() {
 
         // 6. Create Showcase Matter
         console.log('Creating Matter...');
+        const clientRecord = await prisma.client.create({
+            data: { name: 'Acme Corp', tenantId: tenantId }
+        });
+
         const matter = await prisma.matter.create({
             data: {
                 id: 'ENT-DEMO-001',
                 name: 'M&A: Project Phoenix Acquisition',
-                client: 'Acme Corp',
+                clientId: clientRecord.id,
                 type: 'M&A',
                 status: 'OPEN',
                 riskLevel: 'HIGH',

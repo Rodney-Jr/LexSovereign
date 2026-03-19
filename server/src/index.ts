@@ -44,6 +44,7 @@ import billingRouter from './routes/billing';
 import firmRouter from './routes/firm';
 import accountingRouter from './routes/accounting';
 import productivityRouter from './routes/productivity';
+import clientsRouter from './routes/clients';
 import { errorHandler } from './middleware/errorHandler';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
@@ -161,7 +162,8 @@ app.use('/api/bridges', authenticateToken, bridgesRouter);
 app.use('/api/roles', authenticateToken, rolesRouter);
 app.use('/api/webhooks', authenticateToken, webhooksRouter);
 app.use('/api/workflows', authenticateToken, workflowsRouter);
-app.use('/api/chatbot', sovereignGuard, authenticateToken, chatbotRouter);
+app.use('/api/clients', authenticateToken, clientsRouter);
+app.use('/api/chatbot', chatbotRouter);
 
 // Sovereign-guarded routes (require x-sov-pin header)
 app.use('/api/platform', sovereignGuard, platformRouter);

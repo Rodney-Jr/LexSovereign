@@ -280,9 +280,7 @@ const TenantAdministration: React.FC = () => {
                <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
                <TabButton label="Templates" active={activeTab === 'templates'} icon={<FileText size={16} />} onClick={() => setActiveTab('templates')} />
                <TabButton label="Compliance & Risk" active={activeTab === 'compliance'} icon={<ShieldCheck size={16} />} onClick={() => setActiveTab('compliance')} />
-               {import.meta.env.VITE_SHOW_PRICING === 'true' && (
-                  <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
-               )}
+               <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />
             </div>
          </div>
 
@@ -635,7 +633,7 @@ const TenantAdministration: React.FC = () => {
 
                {activeTab === 'compliance' && <ComplianceRiskCenter />}
 
-               {activeTab === 'billing' && import.meta.env.VITE_SHOW_PRICING === 'true' && <SovereignBilling />}
+               {activeTab === 'billing' && <SovereignBilling />}
             </div>
          </div>
 

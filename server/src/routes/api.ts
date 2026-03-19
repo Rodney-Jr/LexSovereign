@@ -202,9 +202,22 @@ router.post('/document-templates/:id/hydrate', authenticateToken, async (req: Re
         }
 
         const result = await geminiService.hydrateTemplate(template, matter);
+
+        // --- NEW: Forensic Activity Log (Phase 2) ---
+        await prisma.activityEntry.create({
+            data: {
+                matterId: matterId,
+                tenantId: req.user?.tenantId as string,
+                type: 'AI_HYDRATE',
+                actorId: req.user?.id || null,
+                details: `AI Auto-Hydrated template "${template.name}" using context from Sovereign Registry.`
+            }
+        });
+
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
+
     }
 });
 

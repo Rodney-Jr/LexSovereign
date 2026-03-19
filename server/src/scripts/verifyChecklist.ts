@@ -8,11 +8,16 @@ async function verifyChecklist() {
         const tenant = await prisma.tenant.findFirst({ where: { name: 'Nomos Law Practice' } });
         if (!tenant) throw new Error('Tenant not found');
 
+        let clientRecord = await prisma.client.findFirst({ where: { name: 'Oaks & Partners Ltd.', tenantId: tenant.id } });
+        if (!clientRecord) {
+            clientRecord = await prisma.client.create({ data: { name: 'Oaks & Partners Ltd.', tenantId: tenant.id } });
+        }
+
         // Create a test matter
         const matter = await prisma.matter.create({
             data: {
                 name: 'TEST - Conveyancing',
-                client: 'Oaks & Partners Ltd.',
+                clientId: clientRecord.id,
                 type: 'Property/Commercial',
                 tenantId: tenant.id,
                 status: 'OPEN'

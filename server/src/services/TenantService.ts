@@ -140,13 +140,35 @@ export class TenantService {
 
                 // 6. Create Default General Matter
                 console.log(`[Provisioning] Step 7: Creating Default General Matter`);
+                let internalClient = await tx.client.findFirst({
+                    where: { name: 'Firm Internal', tenantId: tenant.id }
+                });
+                
+                if (!internalClient) {
+                    internalClient = await tx.client.create({
+                        data: { name: 'Firm Internal', tenantId: tenant.id }
+                    });
+                }
+
                 await tx.matter.create({
                     data: {
                         name: 'General Enclave Matters',
-                        client: 'Firm Internal',
+                        clientId: internalClient.id,
                         type: 'ADMIN',
                         status: 'OPEN',
                         riskLevel: 'LOW',
+                        tenantId: tenant.id
+                    }
+                });
+
+                // 7. Create Default FirmAccount (Internal Operational Ledger)
+                console.log(`[Provisioning] Step 8: Creating Default FirmAccount`);
+                await tx.firmAccount.create({
+                    data: {
+                        name: 'General Operating Account',
+                        type: 'OPERATING',
+                        currency: 'USD',
+                        balance: 0,
                         tenantId: tenant.id
                     }
                 });

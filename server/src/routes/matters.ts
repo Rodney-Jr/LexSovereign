@@ -38,8 +38,8 @@ router.get('/', authenticateToken, async (req, res) => {
             whereClause = {
                 ...whereClause,
                 OR: [
-                    { client: { contains: user.name, mode: 'insensitive' } },
-                    { client: { contains: user.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } }
+                    { clientRef: { name: { contains: user.name, mode: 'insensitive' } } },
+                    { clientRef: { name: { contains: user.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } } }
                 ]
             };
         } else if (!isAdmin) {
@@ -74,13 +74,17 @@ router.get('/', authenticateToken, async (req, res) => {
             where: whereClause,
             include: {
                 tenant: true,
-                internalCounsel: true
+                internalCounsel: true,
+                clientRef: true
             },
             orderBy: {
                 updatedAt: 'desc'
             }
         });
-        res.json(matters);
+        res.json(matters.map(m => ({
+            ...m,
+            client: m.clientRef?.name || 'Unknown Client'
+        })));
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -123,13 +127,13 @@ router.post('/conflict-check', authenticateToken, async (req, res) => {
             where: {
                 OR: [
                     { name: { contains: searchTerm, mode: 'insensitive' } },
-                    { client: { contains: searchTerm, mode: 'insensitive' } }
+                    { clientRef: { name: { contains: searchTerm, mode: 'insensitive' } } }
                 ]
             },
             select: {
                 id: true,
                 name: true,
-                client: true,
+                clientRef: { select: { name: true } },
                 status: true
             },
             take: 5
@@ -138,7 +142,7 @@ router.post('/conflict-check', authenticateToken, async (req, res) => {
         if (collisions.length > 0) {
             res.json({
                 result: 'COLLISION',
-                collisions: collisions.map(c => `${c.name} (${c.client}) - Status: ${c.status}`)
+                collisions: collisions.map(c => `${c.name} (${c.clientRef?.name || 'Unknown'}) - Status: ${c.status}`)
             });
         } else {
             res.json({ result: 'CLEAN' });
@@ -196,10 +200,24 @@ router.post('/', authenticateToken, async (req, res) => {
             departmentId = counsel?.departmentId || undefined;
         }
 
+        // Resolve or create Client record
+        let clientRecord = await prisma.client.findFirst({
+            where: { name: client, tenantId: tenantId }
+        });
+
+        if (!clientRecord) {
+            clientRecord = await prisma.client.create({
+                data: {
+                    name: client,
+                    tenantId: tenantId
+                }
+            });
+        }
+
         const matter = await prisma.matter.create({
             data: {
                 name,
-                client,
+                clientId: clientRecord.id,
                 type,
                 status: 'OPEN',
                 riskLevel: 'LOW',
@@ -234,7 +252,22 @@ router.post('/', authenticateToken, async (req, res) => {
             });
         }
 
-        res.json(matter);
+        // --- NEW: Forensic Activity Log (Phase 1) ---
+        await prisma.activityEntry.create({
+            data: {
+                matterId: matter.id,
+                tenantId: tenantId,
+                type: 'INCEPTION',
+                actorId: req.user?.id || null,
+                details: `Matter "${name}" formally incepted into the Sovereign Registry.`,
+                metadata: {
+                    type,
+                    client: clientRecord.name
+                }
+            }
+        });
+
+        res.json({ ...matter, client: clientRecord.name });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -308,7 +341,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         }
 
         // 1. Fetch current matter state
-        const currentMatter = await prisma.matter.findUnique({ where: { id } });
+        const currentMatter = await prisma.matter.findUnique({ where: { id }, include: { clientRef: true } });
         if (!currentMatter) {
             return res.status(404).json({ error: 'Matter not found' });
         }
@@ -371,21 +404,37 @@ router.put('/:id', authenticateToken, async (req, res) => {
             }
         }
 
+        // 5. Client Handling
+        let clientId = currentMatter.clientId;
+        if (client && client !== currentMatter.clientRef?.name) {
+            let clientRecord = await prisma.client.findFirst({
+                where: { name: client, tenantId: user.tenantId as string }
+            });
+
+            if (!clientRecord) {
+                clientRecord = await prisma.client.create({
+                    data: { name: client, tenantId: user.tenantId as string }
+                });
+            }
+            clientId = clientRecord.id;
+        }
+
         const updated = await prisma.matter.update({
             where: { id },
             data: {
                 name,
-                client,
+                clientId,
                 type,
                 internalCounselId: internalCounsel,
                 status,
                 riskLevel,
                 complexityWeight,
                 description
-            }
+            },
+            include: { clientRef: true }
         });
 
-        return res.json(updated);
+        return res.json({ ...updated, client: updated.clientRef?.name });
     } catch (error: any) {
         return res.status(500).json({ error: error.message });
     }
@@ -405,6 +454,7 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
             where: { id },
             include: {
                 internalCounsel: true,
+                clientRef: true,
                 timeEntries: {
                     include: { user: true },
                     orderBy: { startTime: 'desc' }
@@ -433,28 +483,104 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
             avgCycleTime = cycleTimes.reduce((a, b) => a + b, 0) / cycleTimes.length;
         }
 
-        // Fetch Legal Team peers (everyone in the same department/tenant)
-        const teamPeers = await prisma.user.findMany({
-            where: {
-                tenantId,
-                departmentId: matter.departmentId
-            },
-            select: {
-                id: true,
-                name: true,
-                roleString: true
-            },
-            take: 5
+        // Fetch Legal Team peers (everyone mapped via MatterTeamMember)
+        const teamMappings = await prisma.matterTeamMember.findMany({
+            where: { matterId: id, matter: { tenantId } },
+            include: { user: true }
         });
 
+        const teamPeersMap = new Map();
+        if (matter.internalCounsel) {
+            teamPeersMap.set(matter.internalCounsel.id, {
+                id: matter.internalCounsel.id,
+                name: matter.internalCounsel.name,
+                roleString: 'LEAD_COUNSEL'
+            });
+        }
+
+        teamMappings.forEach(mapping => {
+            if (!teamPeersMap.has(mapping.user.id)) {
+                teamPeersMap.set(mapping.user.id, {
+                    id: mapping.user.id,
+                    name: mapping.user.name,
+                    roleString: mapping.role
+                });
+            }
+        });
+
+        const teamPeers = Array.from(teamPeersMap.values());
+
         res.json({
-            matter,
+            matter: { ...matter, client: matter.clientRef?.name },
             metrics: {
                 docCycleTime: avgCycleTime, // in ms
                 totalHours: matter.timeEntries.reduce((acc, te) => acc + te.durationMinutes, 0) / 60
             },
             team: teamPeers
         });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST add team member
+router.post('/:id/team', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenantId;
+        const { userId, role } = req.body;
+
+        const matter = await prisma.matter.findUnique({ where: { id }, include: { clientRef: true } });
+        if (!matter || matter.tenantId !== tenantId) return res.status(404).json({ error: 'Matter not found' });
+
+        const newMember = await prisma.matterTeamMember.create({
+            data: {
+                matterId: id,
+                userId,
+                role: role || 'COLLABORATOR'
+            }
+        });
+
+        res.json(newMember);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET available team members (users in the tenant)
+router.get('/:id/available-team', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        const matter = await prisma.matter.findUnique({ where: { id }, include: { clientRef: true } });
+        if (!matter || matter.tenantId !== tenantId) return res.status(404).json({ error: 'Matter not found' });
+
+        const users = await prisma.user.findMany({
+            where: { tenantId },
+            select: { id: true, name: true, roleString: true }
+        });
+
+        res.json(users);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE remove team member
+router.delete('/:id/team/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { id, userId } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        const matter = await prisma.matter.findUnique({ where: { id } });
+        if (!matter || matter.tenantId !== tenantId) return res.status(404).json({ error: 'Matter not found' });
+
+        await prisma.matterTeamMember.deleteMany({
+            where: { matterId: id, userId: userId }
+        });
+
+        res.json({ success: true });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

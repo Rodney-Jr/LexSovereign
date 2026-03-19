@@ -18,7 +18,8 @@ import {
     Zap,
     Plus,
     X,
-    Cpu
+    Cpu,
+    RefreshCw
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 import InvoicePreviewModal from './InvoicePreviewModal';
@@ -52,6 +53,7 @@ const ClientInvoicesRecord: React.FC = () => {
     const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
     const [isAILoading, setIsAILoading] = useState(false);
     const [aiSyncing, setAiSyncing] = useState(false);
+    const [isBackfilling, setIsBackfilling] = useState(false);
 
     const fetchInvoices = async () => {
         const session = getSavedSession();
@@ -170,6 +172,25 @@ const ClientInvoicesRecord: React.FC = () => {
 
     const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
+    const handleBackfill = async () => {
+        const session = getSavedSession();
+        if (!session?.token) return;
+        try {
+            setIsBackfilling(true);
+            const res = await authorizedFetch('/api/billing/backfill', {
+                method: 'POST',
+                token: session.token
+            });
+            alert(res.message || "Backfill complete.");
+            fetchInvoices();
+        } catch (e: any) {
+            console.error('[Invoicing] Backfill failed:', e);
+            alert(`Backfill failed: ${e.message}`);
+        } finally {
+            setIsBackfilling(false);
+        }
+    };
+
     const handleBulkProcess = async () => {
         const draftInvoices = filteredInvoices.filter(i => i.status === 'DRAFT');
         if (draftInvoices.length === 0) {
@@ -245,6 +266,13 @@ const ClientInvoicesRecord: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleBackfill}
+                        disabled={isBackfilling}
+                        className="flex items-center gap-2 px-6 py-3 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/20 rounded-2xl text-xs font-bold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+                        {isBackfilling ? <RefreshCw size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                        Sync Missing
+                    </button>
                     <button
                         onClick={handleExportCSV}
                         disabled={filteredInvoices.length === 0}

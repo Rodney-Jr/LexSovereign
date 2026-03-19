@@ -243,6 +243,16 @@ const Layout: React.FC<LayoutProps> = ({
                 />
               )}
 
+              {isAllowed('clients') && (
+                <NavItem
+                  icon={<Users size={18} className="text-brand-primary" />}
+                  label="Client Directory"
+                  isActive={activeTab === 'clients'}
+                  onClick={() => setActiveTab('clients')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+
               {isAllowed('identity') && (
                 <NavItem
                   icon={<Fingerprint size={18} />}
@@ -423,7 +433,7 @@ const Layout: React.FC<LayoutProps> = ({
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Financial Management</span>
                 </div>
               )}
-              {isAllowed('billing') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
+              {isAllowed('billing') && (
                 <NavItem
                   icon={<Coins size={18} className="text-emerald-400" />}
                   label="Sovereign Billing"
@@ -432,7 +442,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('accounting-hub') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
+              {isAllowed('accounting-hub') && (
                 <NavItem
                   icon={<Banknote size={18} className="text-blue-400" />}
                   label="Sovereign Accounting"
@@ -441,7 +451,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
-              {isAllowed('growth') && String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && (
+              {isAllowed('growth') && (
                 <NavItem
                   icon={<TrendingUp size={18} className="text-brand-secondary" />}
                   label="Business Growth"

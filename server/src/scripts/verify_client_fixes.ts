@@ -35,14 +35,15 @@ async function verify() {
             where: {
                 tenantId: clientUser.tenantId!,
                 OR: [
-                    { client: { contains: clientUser.name, mode: 'insensitive' } },
-                    { client: { contains: clientUser.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } }
+                    { clientRef: { name: { contains: clientUser.name, mode: 'insensitive' } } },
+                    { clientRef: { name: { contains: clientUser.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } } }
                 ]
-            }
+            },
+            include: { clientRef: true }
         });
 
         console.log(`Found ${matters.length} matters for client.`);
-        matters.forEach(m => console.log(` - ${m.name} (Client: ${m.client})`));
+        matters.forEach(m => console.log(` - ${m.name} (Client: ${m.clientRef?.name || 'Unknown'})`));
         
         if (matters.length > 0) {
             console.log('✅ Client matter visibility verified (via query simulation)');
@@ -53,7 +54,7 @@ async function verify() {
 
     // 3. Verify Document URI schemes (should exist and be accessible by path manipulation)
     const docs = await prisma.document.findMany({
-        where: { matter: { client: 'Acme Corp' } }
+        where: { matter: { clientRef: { name: 'Acme Corp' } } }
     });
 
     console.log(`Found ${docs.length} documents for Acme Corp matters.`);

@@ -257,7 +257,7 @@ export class GeminiProvider implements AIProvider {
 
         const model = ai.getGenerativeModel({
             model: this.defaultModel,
-            systemInstruction: config.systemInstruction
+            systemInstruction: `${config.systemInstruction}\n\nLEAD_DETECTION_PROTOCOL: If the user expresses interest in hiring the firm, asks about pricing, or wants to speak to a human, append "[LEAD_PROMPT]" to the end of your response to trigger the inquiry form.`
         });
 
         const result = await model.generateContent({
