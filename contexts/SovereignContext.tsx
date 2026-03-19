@@ -41,9 +41,16 @@ export const SovereignProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const can = (permission: string) => {
         if (!session) return false;
-        // Global Admins have all permissions by default in this architectural stage
         if (session.role === UserRole.GLOBAL_ADMIN) return true;
-        return session.permissions?.includes(permission) || false;
+        
+        // Handle both legacy ID check and action:resource check
+        return session.permissions?.some(p => {
+            if (permission.includes(':')) {
+                const [action, resource] = permission.split(':');
+                return p.action === action && p.resource === resource;
+            }
+            return p.id === permission;
+        }) || false;
     };
 
     return (

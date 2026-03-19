@@ -1,16 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Department } from '../types';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { Department, Permission } from '../types';
 import { TAB_REQUIRED_PERMISSIONS } from '../constants';
 
 // Define the shape of our context
 interface PermissionContextType {
-    permissions: string[];
+    permissions: Permission[];
     role: string | null;
     userId: string | null;
     department?: Department;
     separationMode: 'OPEN' | 'DEPARTMENTAL' | 'STRICT';
     enabledModules: string[];
-    setPermissions: (perms: string[]) => void;
+    setPermissions: (perms: Permission[]) => void;
     setRole: (role: string) => void;
     setDepartment: (dept: Department) => void;
     setSeparationMode: (mode: 'OPEN' | 'DEPARTMENTAL' | 'STRICT') => void;
@@ -27,12 +27,29 @@ const PermissionContext = createContext<PermissionContextType | undefined>(undef
 
 // Provider Component
 export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [permissions, setPermissions] = useState<string[]>([]);
+    const [permissions, setPermissions] = useState<Permission[]>([]);
     const [role, setRole] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [department, setDepartment] = useState<Department | undefined>(undefined);
     const [separationMode, setSeparationMode] = useState<'OPEN' | 'DEPARTMENTAL' | 'STRICT'>('OPEN');
     const [enabledModules, setEnabledModules] = useState<string[]>(["CORE", "ACCOUNTING_HUB", "HR_ENTERPRISE"]);
+
+    const normalizePermissions = useCallback((perms: (string | Permission)[]): Permission[] => {
+        return perms.map(p => {
+            if (typeof p === 'string') {
+                if (p.includes(':')) {
+                    const [action, resource] = p.split(':');
+                    return { 
+                        id: p, 
+                        action: action || 'UNKNOWN', 
+                        resource: resource || 'UNKNOWN' 
+                    };
+                }
+                return { id: p, action: 'LEGACY', resource: 'LEGACY' };
+            }
+            return p;
+        });
+    }, []);
 
     // Load from local storage on mount if available (for persistence across refreshes)
     useEffect(() => {
@@ -40,7 +57,9 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                if (parsed.permissions) setPermissions(parsed.permissions);
+                if (parsed.permissions) {
+                    setPermissions(normalizePermissions(parsed.permissions));
+                }
                 if (parsed.role) setRole(parsed.role);
                 if (parsed.userId) setUserId(parsed.userId);
                 if (parsed.department) setDepartment(parsed.department);
@@ -57,17 +76,24 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
                 // invalid session
             }
         }
-    }, []);
+    }, [normalizePermissions]);
 
     const hasPermission = React.useCallback((permissionId: string): boolean => {
         if (role === 'GLOBAL_ADMIN') return true;
-        return permissions.includes(permissionId);
+        
+        return permissions.some(p => {
+            if (permissionId.includes(':')) {
+                const [action, resource] = permissionId.split(':');
+                return p.action === action && p.resource === resource;
+            }
+            return p.id === permissionId;
+        });
     }, [role, permissions]);
 
     const hasAnyPermission = React.useCallback((permissionIds: string[]): boolean => {
         if (role === 'GLOBAL_ADMIN') return true;
-        return permissionIds.some(id => permissions.includes(id));
-    }, [role, permissions]);
+        return permissionIds.some(id => hasPermission(id));
+    }, [role, hasPermission]);
 
     const hasModule = React.useCallback((moduleId: string): boolean => {
         // HR and Accounting are now free for everyone
@@ -129,12 +155,13 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         return false;
     }, [role, hasAnyPermission]);
 
-    const updatePermissions = React.useCallback((perms: string[]) => {
+    const updatePermissions = React.useCallback((perms: (string | Permission)[]) => {
         setPermissions(prev => {
-            if (JSON.stringify(prev) === JSON.stringify(perms)) return prev;
-            return perms;
+            const normalized = normalizePermissions(perms);
+            if (JSON.stringify(prev) === JSON.stringify(normalized)) return prev;
+            return normalized;
         });
-    }, []);
+    }, [normalizePermissions]);
 
     const updateRole = React.useCallback((newRole: string | null) => {
         setRole(prev => (prev === newRole ? prev : newRole));
@@ -147,7 +174,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         department,
         separationMode,
         enabledModules,
-        setPermissions: updatePermissions,
+        setPermissions: updatePermissions as any,
         setRole: updateRole,
         setDepartment,
         setSeparationMode,

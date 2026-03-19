@@ -11,6 +11,13 @@ export interface Policy {
   priority: number;
 }
 
+export interface Permission {
+  id: string;
+  action: string;
+  resource: string;
+  description?: string;
+}
+
 export enum IntegrationStatus {
   NOMINAL = 'Nominal',
   SYNCING = 'Syncing',
@@ -81,7 +88,7 @@ export interface SessionData {
   userName?: string;
   tenantId: string;
   department?: TenantDepartment;
-  permissions: string[];
+  permissions: Permission[];
   mode?: AppMode;
   token?: string;
   mfaEnabled?: boolean;
