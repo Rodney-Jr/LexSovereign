@@ -29,7 +29,6 @@ import { useDraggableWindow } from './studio/hooks/useDraggableWindow';
 
 export const DraftingStudio: React.FC<DraftingStudioProps> = ({ 
   initialData, 
-  templateId,
   onSave, 
   onClose 
 }) => {
@@ -75,36 +74,6 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
   useEffect(() => {
     console.log(`[STUDIO] Initialized for Matter: ${metadata.matterId}`);
   }, [metadata.matterId]);
-
-  // --- Helix 4: Template Hydration Logic ---
-  useEffect(() => {
-    if (templateId) {
-      const fetchTemplate = async () => {
-        setTemplateLoading(true);
-        try {
-          const { authorizedFetch, getSavedSession } = await import('../utils/api');
-          const session = getSavedSession();
-          if (!session?.token) return;
-
-          const data = await authorizedFetch(`/api/document-templates/${templateId}`, {
-            token: session.token
-          });
-          
-          if (data && data.content) {
-            // We use actions.updateContent to hydrate the state machine
-            actions.updateContent(data.content);
-            addToast(`Hydrated with template: ${data.name}`, 'success');
-          }
-        } catch (error) {
-          console.error('[STUDIO] Template hydration failed:', error);
-          addToast('Failed to hydrate template from vault', 'error');
-        } finally {
-          setTemplateLoading(false);
-        }
-      };
-      fetchTemplate();
-    }
-  }, [templateId, addToast]);
 
   // --- Window Geometry ---
   const windowStyle: React.CSSProperties = win.isMaximized
@@ -279,24 +248,8 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
             </main>
 
             {/* 💾 Overlays */}
-            <SavingOverlay isSaving={isCommitLoading || templateLoading} />
+            <SavingOverlay isSaving={isCommitLoading} />
             <StudioToasts toasts={toasts} onRemove={removeToast} />
-            
-            {/* Template Hydration Loader Overlay */}
-            {templateLoading && (
-              <div className="absolute inset-0 z-[1001] bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-300">
-                <div className="relative">
-                  <div className="w-20 h-20 border-4 border-brand-primary/10 border-t-brand-primary rounded-full animate-spin" />
-                  <div className="absolute inset-0 flex items-center justify-center text-brand-primary">
-                    <Sparkles size={32} />
-                  </div>
-                </div>
-                <div className="text-center space-y-2">
-                  <h3 className="text-lg font-bold text-white tracking-widest uppercase">Incepting Artifact</h3>
-                  <p className="text-xs text-slate-500 font-mono">Scanning Sovereign Repository for Template ID: {templateId}</p>
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>

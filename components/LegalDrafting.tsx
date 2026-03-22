@@ -129,17 +129,36 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
             <DocumentTemplateMarketplace
                 isOpen={showMarketplace}
                 onClose={() => setShowMarketplace(false)}
-                onSelect={(id) => {
-                    setSelectedTemplateId(id);
+                onSelect={async (id) => {
                     setShowMarketplace(false);
+                    // Pre-fetch the template content for reliable hydration
+                    try {
+                        const { authorizedFetch, getSavedSession } = await import('../utils/api');
+                        const session = getSavedSession();
+                        if (session?.token) {
+                            const data = await authorizedFetch(`/api/document-templates/${id}`, {
+                                token: session.token
+                            });
+                            setEditingDoc({ id: `TMPL-${id}`, name: data.name, content: data.content });
+                            setSelectedTemplateId(id);
+                        }
+                    } catch (err) {
+                        console.error("[LegalDrafting] Template fetch failed:", err);
+                    }
                 }}
             />
 
             {selectedTemplateId && (
                 <DraftingStudio
-                    templateId={selectedTemplateId}
-                    initialData={{ matterId: matterId || null }}
-                    onClose={() => setSelectedTemplateId(null)}
+                    initialData={{ 
+                        content: editingDoc?.content, 
+                        name: editingDoc?.name,
+                        matterId: matterId || null 
+                    }}
+                    onClose={() => {
+                        setSelectedTemplateId(null);
+                        setEditingDoc(null);
+                    }}
                     onSave={(name, content) => {
                         onAddDocument({
                             id: `DOC-GEN-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
