@@ -464,23 +464,35 @@ Signed:
                     ]
                 },
                 content: `
-# SERVICE AGREEMENT
+# MASTER SERVICE AGREEMENT
 
-This Service Agreement is made between **{{provider_name}}** ("Provider") and **{{client_name}}** ("Client") as of **{{start_date}}**.
+**THIS SERVICE AGREEMENT** (the "Agreement") is made between **{{provider_name}}** (the "Provider") and **{{client_name}}** (the "Client") as of **{{start_date}}**.
 
 ### 1. Services Provided
-Provider agrees to render the following services to Client: **{{service_description}}**.
+Provider agrees to render the following professional services to Client: **{{service_description}}**. All services shall be performed with reasonable care and skill.
 
-### 2. Payment Terms
-Client agrees to pay Provider according to the following schedule: **{{payment_terms}}**.
+### 2. Payment & Fees
+Client agrees to pay Provider according to the following schedule: **{{payment_terms}}**. Late payments shall accrue interest at a rate of 1.5% per month or the maximum rate permitted by law.
 
-### 3. Independent Contractor
-Provider enters this Agreement as an independent contractor and not as an employee of Client.
+### 3. Intellectual Property
+Upon full payment of all fees, the Provider hereby assigns to the Client all rights, title, and interest in and to the deliverables created under this Agreement. Any pre-existing intellectual property owned by the Provider shall remain the exclusive property of the Provider.
+
+### 4. Confidentiality
+Both parties agree to treat all business information, technical data, and trade secrets disclosed during the performance of this Agreement as confidential. This obligation shall survive for a period of three (3) years following termination.
+
+### 5. Independent Contractor
+Provider enters this Agreement as an independent contractor. Nothing in this Agreement creates a partnership, joint venture, or employer-employee relationship.
 
 {{#if include_indemnification}}
-### 4. Indemnification
-Provider agrees to indemnify and hold harmless Client from any claims arising out of Provider's negligence or misconduct.
+### 6. Indemnification
+Provider agrees to indemnify, defend, and hold harmless Client from any third-party claims arising out of Provider's gross negligence or willful misconduct in the performance of the services.
 {{/if}}
+
+### 7. Limitation of Liability
+In no event shall either party's total liability under this Agreement exceed the total fees paid by the Client to the Provider during the twelve (12) months preceding the claim.
+
+### 8. Governing Law
+This Agreement shall be governed by and construed in accordance with the laws of the jurisdiction of **GLOBAL MARITIME STANDARDS**.
 
 ---
 `
@@ -505,26 +517,35 @@ Provider agrees to indemnify and hold harmless Client from any claims arising ou
                     ]
                 },
                 content: `
-# EMPLOYMENT CONTRACT
+# EXECUTIVE EMPLOYMENT AGREEMENT
 
 **THIS AGREEMENT** is made on **{{start_date}}** BETWEEN **{{company_name}}** (the "Employer") AND **{{employee_name}}** (the "Employee").
 
-### 1. Position
-The Employer employs the Employee in the position of **{{position_title}}**.
+### 1. Position & Duties
+The Employer employs the Employee in the position of **{{position_title}}**. The Employee shall perform such duties as are standard for this role and as assigned by the board.
 
-### 2. Remuneration
-The Employee will receive a gross annual salary of **{{salary_amount}}**, payable in monthly installments.
+### 2. Remuneration & Benefits
+The Employee will receive a gross annual salary of **{{salary_amount}}**, payable in monthly installments. The Employee shall also be eligible for the Company's standard benefit package.
 
 ### 3. Probation Period
-The first **{{probation_period_months}}** months of employment shall be a probationary period.
+The first **{{probation_period_months}}** months of employment shall be a probationary period. During this time, either party may terminate this agreement with seven (7) days' notice.
 
-### 4. Duties
-The Employee agrees to devote their full working time and attention to the business of the Employer.
+### 4. Confidentiality & Non-Disclosure
+The Employee agrees that during and after their employment, they will not disclose, use, or disseminate any trade secrets or confidential information belonging to the Employer.
 
 {{#if include_ip_assignment}}
-### 5. Intellectual Property
-Any intellectual property created by the Employee during the course of employment shall belong exclusively to the Employer.
+### 5. Intellectual Property Alignment
+All work product, inventions, and logic created by the Employee during the course of employment shall be "work for hire" and belong exclusively to the Employer.
 {{/if}}
+
+### 6. Termination of Employment
+Following the probation period, either party may terminate this agreement by providing thirty (30) days' written notice. The Employer may terminate this agreement immediately for "Cause."
+
+### 7. Non-Competition
+For a period of twelve (12) months following termination, the Employee shall not work for any direct competitor of the Employer within the agreed geographic region.
+
+### 8. Entire Agreement
+This document constitutes the entire agreement between the parties and supersedes all prior discussions or representations.
 
 ---
 `
@@ -589,16 +610,22 @@ Hiring Manager
 
 This Memorandum of Understanding (MoU) is made on **{{signing_date}}** between **{{party_a}}** and **{{party_b}}**.
 
-### 1. Objective
-The parties share the common goal of **{{mutual_goal}}**. This MoU outlines the framework for cooperation to achieve this objective.
+### 1. Objective & Scope
+The parties share the common goal of **{{mutual_goal}}**. This MoU outlines the framework for cooperation to achieve this objective through shared resources and expertise.
 
-### 2. Non-Binding
-This MoU is not intended to create legal or binding obligations between the Parties.
+### 2. Non-Binding Nature
+Except for the provisions regarding Confidentiality and Governing Law, this MoU is not intended to create legal or binding obligations between the Parties.
 
 {{#if include_confidentiality}}
-### 3. Confidentiality
-Both parties agree to keep the discussions regarding this MoU confidential.
+### 3. Confidential Information
+Both parties agree to use reasonable care to protect any proprietary information shared during the collaborative phase. No public announcements shall be made without mutual consent.
 {{/if}}
+
+### 4. Term and Termination
+This MoU shall remain in effect for a period of twelve (12) months unless terminated earlier by either party with thirty (30) days' written notice.
+
+### 5. Expenses
+Each party shall bear its own costs and expenses incurred in connection with the activities contemplated by this MoU.
 
 ---
 `
@@ -620,7 +647,7 @@ Both parties agree to keep the discussions regarding this MoU confidential.
                     sections: []
                 },
                 content: `
-# CEASE AND DESIST / DEMAND LETTER
+# FORMAL DEMAND & NOTICE OF DISPUTE
 
 **DATE:** {{deadline_date}}
 
@@ -628,13 +655,20 @@ Both parties agree to keep the discussions regarding this MoU confidential.
 
 **FROM:** {{sender_name}}
 
-**RE:** Demand for Payment / Cease and Desist
+**RE: FORMAL DEMAND FOR PAYMENT / NOTICE OF BREACH**
 
 Dear Sir/Madam,
 
-This letter serves as a formal demand regarding **{{breach_details}}**.
+This letter serves as a formal demand regarding **{{breach_details}}**. We have identified a significant failure to perform under the agreed terms, causing material damage to our operations.
 
-You are hereby required to pay the outstanding amount of **{{amount_due}}** by **{{deadline_date}}**. Failure to comply will result in immediate legal action.
+### 1. Statement of Claim
+Our records indicate that the outstanding amount of **{{amount_due}}** remains unpaid despite previous informal requests. This constitutes a material breach of the underlying agreement.
+
+### 2. Proposed Resolution
+You are hereby required to cure this breach by paying the total outstanding amount of **{{amount_due}}** no later than **{{deadline_date}}**. 
+
+### 3. Reservation of Rights
+Failure to comply with this demand by the stated deadline will result in the immediate commencement of legal proceedings without further notice. We reserve all rights to seek damages, interest, and legal costs to the fullest extent permitted by law.
 
 Governed yourself accordingly.
 
@@ -695,21 +729,30 @@ The undersigned certify that the foregoing resolution was duly adopted by the Bo
                 content: `
 # RESIDENTIAL LEASE AGREEMENT
 
-This Lease Agreement is made between **{{landlord_name}}** ("Landlord") and **{{tenant_name}}** ("Tenant").
+**THIS LEASE AGREEMENT** (the "Lease") is made between **{{landlord_name}}** (the "Landlord") and **{{tenant_name}}** (the "Tenant") as of the date of final signature.
 
-### 1. Property
-Landlord agrees to lease to Tenant the premises located at: **{{property_address}}**.
+### 1. Demised Property
+The Landlord hereby leases to the Tenant the property located at: **{{property_address}}** (the "Property"), for use as a private residence only.
 
-### 2. Term
-The term of this lease shall be for **{{lease_term_months}}** months.
+### 2. Term & Possession
+The term of this lease shall be for **{{lease_term_months}}** months, commencing on the date of execution. Possession shall be delivered to the Tenant upon receipt of the first month's rent and security deposit.
 
-### 3. Rent
-Tenant agrees to pay **{{monthly_rent}}** per month on the 1st day of each month.
+### 3. Rent & Payments
+The monthly rent is **{{monthly_rent}}**, payable in advance on the first day of each calendar month. Late payments received after the 5th day of the month shall be subject to a late fee of 5% of the monthly rent.
+
+### 4. Security Deposit
+The Tenant shall provide a security deposit equivalent to one month's rent. This deposit shall be held by the Landlord as security for the faithful performance of the lease terms and shall be returned, less any lawful deductions, within 30 days of termination.
+
+### 5. Maintenance and Repair
+The Tenant shall keep the Property in a clean and sanitary condition. The Landlord remains responsible for major structural repairs, plumbing, electrical, and the maintenance of essential services. The Tenant is responsible for minor repairs and any damage caused by negligence.
 
 {{#if include_pets_clause}}
-### 4. Pets
-Tenant is permitted to keep up to two (2) domestic pets on the premises, subject to a pet deposit.
+### 6. Pet Provision
+The Landlord consents to the Tenant keeping domestic pets on the Property, subject to a non-refundable pet cleaning fee of $250. The Tenant remains strictly liable for any damage caused by such pets.
 {{/if}}
+
+### 7. Quiet Enjoyment
+The Landlord covenants that the Tenant, upon paying the rent and performing the covenants, shall peacefully and quietly have, hold, and enjoy the Property during the term of this Lease.
 
 ---
 `

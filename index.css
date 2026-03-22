@@ -316,3 +316,44 @@
     color: #666 !important;
   }
 }
+
+/* --- Structured Clause Stylings --- */
+.editor-surface {
+  counter-reset: clause;
+}
+
+.clause-node {
+  counter-increment: clause;
+  position: relative;
+  margin-left: 12px;
+}
+
+.clause-node::before {
+  content: counter(clause) ". ";
+  position: absolute;
+  left: -42px;
+  top: 0px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #64748b; /* slate-500 */
+  opacity: 0.6;
+}
+
+/* AI Inline Suggestions (Ghost Text) */
+.ai-suggestion {
+  color: #94a3b8 !important; /* slate-400 */
+  font-style: italic !important;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ai-suggestion::after {
+  content: ' (Tab to Accept)';
+  font-size: 10px;
+  font-weight: 900;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.4;
+  margin-left: 8px;
+}
