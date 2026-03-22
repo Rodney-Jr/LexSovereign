@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, ChevronUp, Bot, BrainCircuit } from 'lucide-react';
+import { ChevronDown, ChevronUp, Bot, BrainCircuit, Sparkles } from 'lucide-react';
 import { ContextInsight } from './ContextInsight';
 import { RiskAlerts } from './RiskAlerts';
 import { AISuggestions } from './AISuggestions';
@@ -17,12 +17,15 @@ import { ROIStrategyPanel } from './ROIStrategyPanel';
 interface IntelligencePanelProps {
   editor: Editor | null;
   rawContent: string;
+  onSmartFill?: () => Promise<void>;
 }
 
 export const IntelligencePanel: React.FC<IntelligencePanelProps> = ({ 
   editor, 
-  rawContent 
+  rawContent,
+  onSmartFill
 }) => {
+  const [isSmartFilling, setIsSmartFilling] = useState(false);
   const [context, setContext] = useState<AIContext | null>(null);
   const [risks, setRisks] = useState<AIRisk[]>([]);
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
@@ -136,7 +139,27 @@ export const IntelligencePanel: React.FC<IntelligencePanelProps> = ({
             {expandedSections.context ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
           {expandedSections.context && context && (
-             <ContextInsight {...context} />
+             <div className="space-y-4">
+               <ContextInsight {...context} />
+               {onSmartFill && (
+                 <button
+                    onClick={async () => {
+                      setIsSmartFilling(true);
+                      await onSmartFill();
+                      setIsSmartFilling(false);
+                    }}
+                    disabled={isSmartFilling}
+                    className="w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 group"
+                 >
+                   {isSmartFilling ? (
+                     <div className="w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                   ) : (
+                     <Sparkles className="w-3 h-3 group-hover:scale-125 transition-transform" />
+                   )}
+                   {isSmartFilling ? 'Hydrating Enclave...' : '✨ Smart Fill Placeholder'}
+                 </button>
+               )}
+             </div>
           )}
         </section>
 

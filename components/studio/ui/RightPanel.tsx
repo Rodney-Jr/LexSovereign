@@ -13,6 +13,7 @@ export interface RightPanelProps {
   isSearching: boolean;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
+  onSmartFill?: () => Promise<void>;
   onToggle: () => void;
   style?: React.CSSProperties;
 }
@@ -25,6 +26,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   isSearching, 
   onAccept, 
   onReject, 
+  onSmartFill,
   onToggle,
   style 
 }) => {
@@ -47,6 +49,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         <IntelligencePanel 
           editor={editor} 
           rawContent={rawContent} 
+          onSmartFill={onSmartFill}
         />
       )}
     </aside>

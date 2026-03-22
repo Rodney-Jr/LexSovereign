@@ -282,4 +282,50 @@ export class AIService {
             message: "I've analyzed your request. I recommend adding a standardized Governing Law provision to ensure enforceability in Ghana." 
         };
     }
+
+    /**
+     * Smart Fill: Hydrate template placeholders with matter context
+     */
+    static async hydrateTemplate(tenantId: string, matterId: string, content: string): Promise<string> {
+        // 1. Fetch Matter context with high-fidelity relations
+        const matter = await prisma.matter.findUnique({
+            where: { id: matterId },
+            include: {
+                clientRef: true,
+                tenant: true
+            }
+        });
+
+        if (!matter || matter.tenantId !== tenantId) {
+            console.warn(`[SmartFill] Matter ${matterId} not found or tenant mismatch.`);
+            return content;
+        }
+
+        // 2. Build the expansion map
+        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const expansionMap: Record<string, string> = {
+            'company_name': matter.clientRef?.name || '________________',
+            'client_name': matter.clientRef?.name || '________________',
+            'matter_name': matter.name,
+            'matter_id': matter.id,
+            'agreement_date': today,
+            'effective_date': today,
+            'start_date': today,
+            'current_date': today,
+            'jurisdiction': matter.tenant?.primaryRegion || 'Ghana',
+            'governing_law': `the laws of ${matter.tenant?.primaryRegion || 'the Republic of Ghana'}`
+        };
+
+        // 3. Batch Replacement Logic (Regex Case-Insensitive)
+        let hydratedContent = content;
+        for (const [key, value] of Object.entries(expansionMap)) {
+            const regex = new RegExp(`{{${key}}}`, 'gi');
+            hydratedContent = hydratedContent.replace(regex, value);
+        }
+
+        // 4. Log AI use for hydration
+        await this.logUsage(tenantId, matterId, 0.5);
+
+        return hydratedContent;
+    }
 }

@@ -71,6 +71,20 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
     window.print();
   }, [addToast]);
 
+  const handleSmartFill = useCallback(async () => {
+    const matterId = initialData?.matterId;
+    if (!matterId) {
+      addToast('No matter context found for Smart Fill. Please associate a matter first.', 'warning');
+      return;
+    }
+    const success = await actions.performSmartFill(matterId);
+    if (success) {
+      addToast('Drafting Enclave: Smart Fill Completed Successfully.', 'success');
+    } else {
+      addToast('Drafting Enclave: Smart Fill Failed. Check your AI credits.', 'error');
+    }
+  }, [initialData?.matterId, actions, addToast]);
+
   useEffect(() => {
     console.log(`[STUDIO] Initialized for Matter: ${metadata.matterId}`);
   }, [metadata.matterId]);
@@ -240,6 +254,7 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
                     isSearching={isSearching}
                     onAccept={(id) => actions.acceptChange(id)}
                     onReject={(id) => actions.rejectChange(id)}
+                    onSmartFill={handleSmartFill}
                     onToggle={() => studioActions.togglePanel('right')}
                     style={{ width: rightWidth, flexShrink: 0 }}
                   />

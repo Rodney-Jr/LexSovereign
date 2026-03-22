@@ -69,6 +69,38 @@ export const useDocumentState = (initialContent: any = "") => {
     setMetadata(prev => ({ ...prev, isDirty: true }));
   };
 
+  /**
+   * AI-Assisted Smart Fill: Hydrate placeholders via backend logic
+   */
+  const performSmartFill = async (matterId: string) => {
+    try {
+      const { authorizedFetch, getSavedSession } = await import('../utils/api');
+      const session = getSavedSession();
+      if (!session?.token) return;
+
+      // We send the current TEXT content for AI to see placeholders
+      // In a real TipTap scenario, we might want to send the JSON and let the server return JSON.
+      // But for our string-based placeholders, we can just send the flattened text.
+      
+      const flatText = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
+
+      const response = await authorizedFetch('/api/ai/smart-fill', {
+        method: 'POST',
+        token: session.token,
+        body: JSON.stringify({ matterId, content: flatText })
+      });
+
+      if (response && response.content) {
+        // Hydrate the newly expanded text back into the editor
+        updateContent(response.content);
+        return true;
+      }
+    } catch (error) {
+      console.error("[STUDIO-STATE] Smart Fill Failed:", error);
+    }
+    return false;
+  };
+
   const acceptChange = (diffId: string) => {
     setDiffs(prev => prev.map(d => d.id === diffId ? { ...d, status: 'accepted' } : d));
     // Implementation Note: In Phase 3, accepted changes will be merged into rawContent
@@ -85,6 +117,7 @@ export const useDocumentState = (initialContent: any = "") => {
     metadata,
     actions: {
       updateContent,
+      performSmartFill,
       acceptChange,
       rejectChange,
       setMetadata

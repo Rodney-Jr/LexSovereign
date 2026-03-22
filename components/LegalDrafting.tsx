@@ -150,6 +150,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
 
             {selectedTemplateId && (
                 <DraftingStudio
+                    key={`TEMPLATE-${selectedTemplateId}`}
                     initialData={{ 
                         content: editingDoc?.content, 
                         name: editingDoc?.name,
@@ -181,6 +182,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
 
             {showBlankEditor && (
                 <DraftingStudio
+                    key={editingDoc?.id || 'BLANK-NEW'}
                     initialData={{
                         id: editingDoc?.id,
                         name: editingDoc?.name,

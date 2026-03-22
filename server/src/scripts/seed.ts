@@ -905,6 +905,14 @@ Title: **{{receiving_party_signer_title}}**
             for (const file of files) {
                 const filePath = path.join(templatesDir, file);
                 const templateData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                
+                // Synthesize content from clauses if missing (for structured templates)
+                let synthesizedContent = templateData.content || '';
+                if (!synthesizedContent && templateData.clauses) {
+                    synthesizedContent = templateData.clauses.map((c: any) => {
+                        return `### ${c.clause_title || c.title || 'Clause'}\n${c.clause_text || c.text || ''}`;
+                    }).join('\n\n');
+                }
 
                 await prisma.documentTemplate.upsert({
                     where: { id: file.replace('.json', '') },
@@ -913,7 +921,7 @@ Title: **{{receiving_party_signer_title}}**
                         description: templateData.description || `${templateData.category || 'Standard'} Template`,
                         category: templateData.category || 'GENERAL',
                         jurisdiction: templateData.jurisdiction || 'GLOBAL',
-                        content: templateData.content || '',
+                        content: synthesizedContent,
                         structure: templateData.clauses || templateData.structure || { fields: [], sections: [] },
                         version: templateData.version || '1.0.0'
                     },
@@ -923,7 +931,7 @@ Title: **{{receiving_party_signer_title}}**
                         description: templateData.description || `${templateData.category || 'Standard'} Template`,
                         category: templateData.category || 'GENERAL',
                         jurisdiction: templateData.jurisdiction || 'GLOBAL',
-                        content: templateData.content || '',
+                        content: synthesizedContent,
                         structure: templateData.clauses || templateData.structure || { fields: [], sections: [] },
                         version: templateData.version || '1.0.0'
                     }

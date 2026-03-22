@@ -95,4 +95,17 @@ router.post('/command', authenticateToken, async (req: any, res) => {
     }
 });
 
+/**
+ * AI Copilot: Smart Fill
+ */
+router.post('/smart-fill', authenticateToken, async (req: any, res) => {
+    try {
+        const { matterId, content } = req.body;
+        const hydrated = await AIService.hydrateTemplate(req.user.tenantId, matterId, content);
+        res.json({ content: hydrated });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
