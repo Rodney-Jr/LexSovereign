@@ -385,7 +385,28 @@ async function main() {
             { id: 'REG-SOV-001', name: 'Data Protection Act (Section A)', description: 'Mandates registration of data controllers and protects personal data.', region: 'GH_ACC_1', isActive: true, authority: 'Ghana Data Protection Commission', triggerKeywords: ['digital address', 'ghana card', 'voters id'], blockThreshold: 0.8 },
             { id: 'REG-SOV-002', name: 'POPIA Compliance Sentinel', description: 'Enforces Protection of Personal Information Act for South African subjects.', region: 'ZA_JNB_1', isActive: true, authority: 'Information Regulator (South Africa)', triggerKeywords: ['id number', 'biometric', 'account number', 'political persuasion'], blockThreshold: 0.85 },
             { id: 'REG-SOV-003', name: 'NDPR Data Privacy Framework', description: 'Nigeria Data Protection Regulation compliance layer.', region: 'NG_LOS_1', isActive: true, authority: 'NITDA', triggerKeywords: ['national identity number', 'nin', 'health data', 'bvnt'], blockThreshold: 0.8 },
-            { id: 'REG-SOV-004', name: 'AML/CFT Africa Cluster', description: 'Anti-Money Laundering monitoring for regional suspicious transactions.', region: 'PRIMARY', isActive: true, authority: 'Financial Intelligence Centre', triggerKeywords: ['laundering', 'structuring', 'suspicious deposit', 'terrorist financing'], blockThreshold: 0.9 }
+            { id: 'REG-SOV-004', name: 'AML/CFT Africa Cluster', description: 'Anti-Money Laundering monitoring for regional suspicious transactions.', region: 'PRIMARY', isActive: true, authority: 'Financial Intelligence Centre', triggerKeywords: ['laundering', 'structuring', 'suspicious deposit', 'terrorist financing'], blockThreshold: 0.9 },
+            // Industrial Specific Rules (Banking & Real Estate)
+            { 
+              id: 'REG-IND-BANK-001', 
+              name: 'BOG Banking Act (Act 930)', 
+              description: 'Enforces compliance with the Banks and Specialised Deposit-Taking Institutions Act, 2016 (Act 930) and BOG directives.', 
+              region: 'GH_ACC_1', 
+              isActive: true, 
+              authority: 'Bank of Ghana', 
+              triggerKeywords: ['deposit-taking', 'tier 1 capital', 'liquidity ratio', 'bog directive', 'exposure limit', 'act 930'], 
+              blockThreshold: 0.85 
+            },
+            { 
+              id: 'REG-IND-LAND-001', 
+              name: 'Land Act 2020 (Act 1035)', 
+              description: 'Mandates registration of land interests and governs allodial, usufructuary, and leasehold titles in Ghana.', 
+              region: 'GH_ACC_1', 
+              isActive: true, 
+              authority: 'Lands Commission', 
+              triggerKeywords: ['land act 2020', 'act 1035', 'stool land', 'skin land', 'customary memory', 'conveyance', 'allodial'], 
+              blockThreshold: 0.8 
+            }
         ];
 
         console.log('🌱 Seeding Regulatory Rules...');
