@@ -132,6 +132,20 @@ export const LegalEditor: React.FC<LegalEditorProps> = ({
     };
   }, [editor, setStoreEditor]);
 
+  // --- External Content Sync (Hydration) ---
+  useEffect(() => {
+    if (editor && content && !collabRoom) {
+      // Only set content if it's meaningfully different to avoid cursor jumps during active typing
+      // Note: for JSON content, a deep check or stringify is needed
+      const currentContent = JSON.stringify(editor.getJSON());
+      const incomingContent = JSON.stringify(content);
+      
+      if (currentContent !== incomingContent) {
+        editor.commands.setContent(content);
+      }
+    }
+  }, [editor, content, collabRoom]);
+
   if (!editor) {
     return (
       <div className="flex items-center justify-center p-20 text-slate-500 animate-pulse">
