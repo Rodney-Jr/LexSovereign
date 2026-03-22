@@ -9,6 +9,7 @@ interface SEOProps {
     type?: string;
     schema?: Record<string, any> | Record<string, any>[];
     ogImage?: string;
+    keywords?: string;
 }
 
 const SITE_URL = 'https://nomosdesk.com';
@@ -21,6 +22,7 @@ export default function SEO({
     type = 'website',
     schema,
     ogImage,
+    keywords,
 }: SEOProps) {
     const location = useLocation();
     const fullTitle = `${title} | NomosDesk`;
@@ -40,6 +42,7 @@ export default function SEO({
             {/* Core */}
             <title>{fullTitle}</title>
             <meta name="description" content={description} />
+            {keywords && <meta name="keywords" content={keywords} />}
             <link rel="canonical" href={canonicalUrl} />
 
             {/* Open Graph */}

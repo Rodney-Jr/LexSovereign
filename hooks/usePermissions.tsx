@@ -35,19 +35,53 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     const [enabledModules, setEnabledModules] = useState<string[]>(["CORE", "ACCOUNTING_HUB", "HR_ENTERPRISE"]);
 
     const normalizePermissions = useCallback((perms: (string | Permission)[]): Permission[] => {
+        const legacyMap: Record<string, string> = {
+            'manage_tenant': 'MANAGE:TENANT_SETTINGS',
+            'manage_users': 'MANAGE:USER',
+            'manage_roles': 'MANAGE:ROLE',
+            'read_billing': 'VIEW_BILLING:TENANT',
+            'read_all_audits': 'VIEW_STATS:TENANT',
+            'create_matter': 'CREATE:MATTER',
+            'read_assigned_matter': 'VIEW:MATTER',
+            'check_conflicts': 'CHECK:CONFLICTS',
+            'review_work': 'REVIEW:WORK',
+            'upload_document': 'UPLOAD:DOCUMENT',
+            'create_draft': 'CREATE:DRAFT',
+            'edit_draft': 'EDIT:DRAFT',
+            'submit_review': 'SUBMIT:REVIEW',
+            'approve_document': 'APPROVE:DOCUMENT',
+            'export_final': 'EXPORT:DOCUMENT',
+            'ai_chat_execute': 'EXECUTE:AI',
+            'use_legal_chat': 'USE:CHAT',
+            'view_confidential': 'VIEW:CONFIDENTIAL',
+            'access_hr_workbench': 'ACCESS:HR',
+            'access_accounting_hub': 'ACCESS:ACCOUNTING',
+            'access_platform_roadmap': 'ACCESS:ROADMAP',
+            'view_trial_status': 'VIEW:TRIAL',
+            'view_clients': 'VIEW:CLIENT',
+            'create_client': 'CREATE:CLIENT'
+        };
+
         return perms.map(p => {
-            if (typeof p === 'string') {
-                if (p.includes(':')) {
-                    const [action, resource] = p.split(':');
-                    return { 
-                        id: p, 
-                        action: action || 'UNKNOWN', 
-                        resource: resource || 'UNKNOWN' 
-                    };
-                }
-                return { id: p, action: 'LEGACY', resource: 'LEGACY' };
+            let id = typeof p === 'string' ? p : p.id;
+            
+            // Apply legacy mapping if exists
+            if (legacyMap[id]) {
+                id = legacyMap[id]!;
             }
-            return p;
+
+            if (id.includes(':')) {
+                const [action, resource] = id.split(':');
+                return { 
+                    id, 
+                    action: action || 'UNKNOWN', 
+                    resource: resource || 'UNKNOWN' 
+                };
+            }
+            
+            // Fallback for untranslated strings
+            if (typeof p === 'object') return p;
+            return { id: p, action: 'LEGACY', resource: 'LEGACY' };
         });
     }, []);
 

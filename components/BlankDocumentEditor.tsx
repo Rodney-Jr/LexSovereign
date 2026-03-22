@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     X, Save, FileText, Sparkles, Download, Copy, Loader2, Edit3, Eye,
     Bold, Italic, Underline, Strikethrough, Heading1, Heading2,
-    List, ListOrdered, Quote, Link, Minus, AlignCenter, AlignLeft, AlignRight
+    List, ListOrdered, Quote, Link, Minus, AlignCenter, AlignLeft, AlignRight,
+    ZoomIn, ZoomOut, Maximize2, Minimize2, ArrowLeft, ShieldCheck, MessageSquare,
+    Library, BrainCircuit, Wand2, Info, History as HistoryIcon, Search, Highlighter, Type, Calendar, DollarSign, BookOpen
 } from 'lucide-react';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
@@ -32,6 +34,17 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({
     const [lineSpacing, setLineSpacing] = useState(1.5);
     const [fontSerif, setFontSerif] = useState(true);
     const [showSymbols, setShowSymbols] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [editorMode, setEditorMode] = useState<'draft' | 'review' | 'compare' | 'ai'>('draft');
+    const [panels, setPanels] = useState({ left: true, right: true });
+    const [chatInput, setChatInput] = useState('');
+    const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([
+        { role: 'ai', content: "I'm your Legal Copilot. How can I help you draft or review this document today?" }
+    ]);
+    const [selectedText, setSelectedText] = useState('');
+    const [riskLevel, setRiskLevel] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
+    const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+    const [isClauseLibraryOpen, setIsClauseLibraryOpen] = useState(false);
 
     const editorRef = useRef<HTMLTextAreaElement>(null);
 
@@ -77,6 +90,13 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({
             );
         }, 0);
     };
+
+    useEffect(() => {
+        if (editorRef.current) {
+            editorRef.current.style.height = 'auto';
+            editorRef.current.style.height = `${editorRef.current.scrollHeight}px`;
+        }
+    }, [content]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -148,6 +168,33 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({
     const wordCount = content.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
     const charCount = content.length;
 
+    const handleChatSend = () => {
+        if (!chatInput.trim()) return;
+        setAiMessages(prev => [...prev, { role: 'user', content: chatInput }]);
+        const input = chatInput;
+        setChatInput('');
+
+        // Simulate AI response
+        setTimeout(() => {
+            setAiMessages(prev => [...prev, { 
+                role: 'ai', 
+                content: `Analyzing your draft of "${documentName}"... I've detected that the dispute resolution section could be strengthened by specifying the seat of arbitration as Accra to ensure local jurisdictional alignment.` 
+            }]);
+            if (riskLevel === 'LOW') setRiskLevel('MEDIUM');
+        }, 1000);
+    };
+
+    const getOutline = () => {
+        const text = content || '';
+        const lines = text.split('\n');
+        const headers = lines
+            .filter(l => l.startsWith('#'))
+            .map(l => l.replace(/#/g, '').trim())
+            .slice(0, 10);
+        
+        return headers.length > 0 ? headers : ["Introduction", "Parties", "Clauses", "Execution"];
+    };
+
     const renderPreviewContent = (text: string) => {
         if (!text) return null;
 
@@ -172,259 +219,354 @@ const BlankDocumentEditor: React.FC<BlankDocumentEditorProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[120] bg-slate-950 flex flex-col animate-in slide-in-from-bottom-6 duration-500">
+        <div className="fixed inset-0 z-[120] bg-[#0A0C10] flex flex-col animate-in slide-in-from-bottom-6 duration-500 text-slate-200">
             {/* Top Bar */}
-            <header className="h-16 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-8">
+            <header className="h-16 border-b border-brand-border bg-[#0E1117]/50 flex items-center justify-between px-8 shrink-0">
                 <div className="flex items-center gap-6">
-                    <button onClick={onClose} title="Close" className="p-2 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
-                        <X size={20} />
+                    <button onClick={onClose} title="Back to Dashboard" className="p-2 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
+                        <ArrowLeft size={20} />
                     </button>
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                        <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
                             <FileText className="text-emerald-400" size={20} />
                         </div>
                         <div>
-                            <input
-                                type="text"
-                                value={documentName}
-                                onChange={(e) => setDocumentName(e.target.value)}
-                                className="text-xl font-bold text-white tracking-tight bg-transparent border-none outline-none focus:outline-none w-[400px]"
-                                placeholder="Document Name"
-                            />
-                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Freeform Drafting</p>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="text"
+                                    value={documentName}
+                                    onChange={(e) => setDocumentName(e.target.value)}
+                                    className="text-xl font-bold text-white tracking-tight bg-transparent border-none outline-none focus:outline-none w-[300px]"
+                                    placeholder="Document Name"
+                                />
+                                <div className={`px-2.5 py-0.5 rounded-lg border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all shadow-lg ${
+                                    riskLevel === 'LOW' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-emerald-500/5' :
+                                    riskLevel === 'MEDIUM' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 shadow-amber-500/5' :
+                                    'bg-red-500/10 border-red-500/20 text-red-500 shadow-red-500/5'
+                                }`}>
+                                    <ShieldCheck size={11} />
+                                    {riskLevel} RISK
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Sovereign Workspace v3.0 • {wordCount} words</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* Layout Controls */}
-                    <div className="flex items-center gap-1 p-1 bg-slate-800/50 rounded-2xl border border-slate-700 mr-2">
-                        <button
-                            onClick={() => setLayout('editor')}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'editor' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                    {/* Primary Mode Switcher */}
+                    <div className="flex items-center gap-1 p-1 bg-slate-800/80 rounded-2xl border border-slate-700 mr-2 backdrop-blur-md">
+                        {[
+                            { id: 'draft', label: 'Draft', icon: <Edit3 size={14} />, title: "Switch to Draft Mode" },
+                            { id: 'review', label: 'Review', icon: <MessageSquare size={14} />, title: "Switch to Review Mode" },
+                            { id: 'compare', label: 'Compare', icon: <Copy size={14} />, title: "Switch to Compare Mode" },
+                            { id: 'ai', label: 'AI Studio', icon: <Sparkles size={14} />, title: "Switch to AI Studio" }
+                        ].map(mode => (
+                            <button
+                                key={mode.id}
+                                onClick={() => setEditorMode(mode.id as any)}
+                                title={mode.title}
+                                className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${editorMode === mode.id ? 'bg-[#5B21B6] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                {mode.icon}
+                                <span className={editorMode === mode.id ? 'block' : 'hidden'}>{mode.label}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="h-6 w-px bg-slate-800 mx-2" />
+
+                    <div className="flex items-center gap-2">
+                         <button 
+                            onClick={() => setPanels(p => ({ ...p, left: !p.left }))}
+                            title="Toggle Navigator" 
+                            className={`p-2.5 rounded-xl transition-all ${panels.left ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800/50 text-slate-500 border border-slate-700 hover:text-white'}`}
                         >
-                            <Edit3 size={14} className="inline mr-1" /> Editor
+                            <Library size={16} />
                         </button>
-                        <button
-                            onClick={() => setLayout('split')}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'split' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        <button 
+                            onClick={() => setPanels(p => ({ ...p, right: !p.right }))}
+                            title="Toggle Intelligence"
+                            className={`p-2.5 rounded-xl transition-all ${panels.right ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-slate-800/50 text-slate-500 border border-slate-700 hover:text-white'}`}
                         >
-                            Split
-                        </button>
-                        <button
-                            onClick={() => setLayout('preview')}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'preview' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                        >
-                            <Eye size={14} className="inline mr-1" /> Preview
+                            <BrainCircuit size={16} />
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-4 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700">
-                        <div className="text-[10px] text-slate-500 font-mono">
-                            <span className="font-bold text-slate-400">{wordCount}</span> words
-                        </div>
-                        <div className="w-px h-4 bg-slate-700"></div>
-                        <div className="text-[10px] text-slate-500 font-mono">
-                            <span className="font-bold text-slate-400">{charCount}</span> chars
-                        </div>
-                    </div>
-                    <button
-                        onClick={handleCopyToClipboard}
-                        disabled={!content.trim()}
-                        className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all disabled:opacity-40"
-                    >
-                        <Copy size={14} />
-                        Copy
-                    </button>
-                    <button
-                        onClick={() => window.print()}
-                        className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-2xl flex items-center gap-2 transition-all shadow-lg"
-                        title="Print / Export to PDF"
-                    >
-                        <Download size={16} />
-                    </button>
+                    <div className="h-6 w-px bg-slate-800" />
+
                     <button
                         onClick={handleSave}
-                        disabled={isSaving || !documentName.trim() || !content.trim()}
-                        className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-emerald-900/20 active:scale-95 transition-all disabled:opacity-40"
+                        disabled={isSaving || !documentName.trim()}
+                        className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-emerald-900/20 active:scale-95 transition-all disabled:opacity-40"
                     >
                         {isSaving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
-                        {isSaving ? 'Saving...' : 'Save to Vault'}
+                        {isSaving ? 'Synching...' : 'Commit to Vault'}
                     </button>
                 </div>
             </header>
 
-            {/* Main Editor */}
+            {/* Three-Panel Professional Workspace */}
             <div className="flex-1 flex overflow-hidden">
-                {/* Editor Pane */}
-                {(layout === 'split' || layout === 'editor') && (
-                    <div
-                        className={`flex flex-col bg-slate-900/30 transition-all duration-500 ${layout === 'editor' ? 'w-full overflow-y-auto' : ''}`}
-                        style={{ width: layout === 'split' ? `${editorWidth}%` : '100%' }}
-                    >
-                        <div className="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Sparkles size={14} className="text-emerald-400" />
-                                Markdown Editor
-                            </h4>
-                            <div className="flex items-center gap-1 bg-slate-800/50 p-1 rounded-xl border border-slate-700">
-                                <ToolbarButton icon={<Bold size={14} />} onClick={() => handleFormatting('**', '**')} title="Bold (Ctrl+B)" />
-                                <ToolbarButton icon={<Italic size={14} />} onClick={() => handleFormatting('*', '*')} title="Italic (Ctrl+I)" />
-                                <ToolbarButton icon={<Underline size={14} />} onClick={() => handleFormatting('<u>', '</u>')} title="Underline" />
-                                <ToolbarButton icon={<Strikethrough size={14} />} onClick={() => handleFormatting('~~', '~~')} title="Strikethrough" />
-                                <div className="w-px h-4 bg-slate-700 mx-1" />
-                                <ToolbarButton icon={<Heading1 size={14} />} onClick={() => handleFormatting('# ', '')} title="Heading 1" />
-                                <ToolbarButton icon={<Heading2 size={14} />} onClick={() => handleFormatting('## ', '')} title="Heading 2" />
-                                <div className="w-px h-4 bg-slate-700 mx-1" />
-                                <ToolbarButton icon={<List size={14} />} onClick={() => handleFormatting('- ', '')} title="Bullet List" />
-                                <ToolbarButton icon={<ListOrdered size={14} />} onClick={() => handleFormatting('1. ', '')} title="Numbered List" />
-                                <div className="w-px h-4 bg-slate-700 mx-1" />
-
-                                {/* Advanced Legal Tools */}
-                                <div className="flex items-center gap-2 px-2 border-x border-slate-700 mx-1">
-                                    <select
-                                        value={fontSize}
-                                        onChange={(e) => setFontSize(Number(e.target.value))}
-                                        className="bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white px-1 py-0.5 focus:outline-none"
-                                        title="Font Size"
-                                    >
-                                        {[10, 11, 12, 13, 14, 15, 16, 18, 20, 24].map(size => (
-                                            <option key={size} value={size}>{size}px</option>
-                                        ))}
-                                    </select>
-
-                                    <button
-                                        onClick={() => setFontSerif(!fontSerif)}
-                                        className={`p-1.5 rounded-lg text-[10px] font-bold transition-all ${fontSerif ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-400 hover:text-white'}`}
-                                        title="Toggle Serif/Sans"
-                                    >
-                                        {fontSerif ? 'Serif' : 'Sans'}
-                                    </button>
-
-                                    <button
-                                        onClick={() => setShowSymbols(!showSymbols)}
-                                        className={`p-1.5 rounded-lg transition-all relative ${showSymbols ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                        title="Legal Symbols"
-                                    >
-                                        <span className="font-bold text-sm">§</span>
-                                        {showSymbols && (
-                                            <div className="absolute top-full mt-2 left-0 bg-slate-900 border border-slate-700 p-2 rounded-xl shadow-2xl flex gap-2 z-50">
-                                                {['§', '¶', '©', '®', '™', '†', '‡', '•'].map(sym => (
-                                                    <button
-                                                        key={sym}
-                                                        onClick={(e) => { e.stopPropagation(); insertAtCursor(sym); setShowSymbols(false); }}
-                                                        className="w-8 h-8 flex items-center justify-center hover:bg-slate-800 rounded-lg text-white font-bold text-sm border border-slate-800 transition-colors"
-                                                    >
-                                                        {sym}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </button>
-
-                                    <select
-                                        value={lineSpacing}
-                                        onChange={(e) => setLineSpacing(Number(e.target.value))}
-                                        className="bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white px-1 py-0.5 focus:outline-none ml-1"
-                                        title="Line Spacing"
-                                    >
-                                        <option value={1}>Single</option>
-                                        <option value={1.15}>1.15</option>
-                                        <option value={1.5}>1.5</option>
-                                        <option value={2}>Double</option>
-                                    </select>
+                {/* 1. Navigator Panel (Left - 20%) */}
+                {panels.left && (
+                    <aside className="w-[20%] border-r border-slate-800/50 bg-[#0E1117]/30 flex flex-col animate-in slide-in-from-left duration-300 shrink-0">
+                        <div className="p-4 border-b border-slate-800/50 bg-[#0A0C10]/50 flex items-center justify-between">
+                            <h3 className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <Library size={14} />
+                                Navigator
+                            </h3>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
+                            {/* Formatting Tools (Now in Sidebar for Blank Editor) */}
+                            <div>
+                                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Formatting</h4>
+                                <div className="grid grid-cols-4 gap-1 p-1 bg-slate-800/40 rounded-xl border border-slate-700">
+                                    <ToolbarButton icon={<Bold size={12} />} onClick={() => handleFormatting('**', '**')} title="Bold" />
+                                    <ToolbarButton icon={<Italic size={12} />} onClick={() => handleFormatting('*', '*')} title="Italic" />
+                                    <ToolbarButton icon={<Underline size={12} />} onClick={() => handleFormatting('<u>', '</u>')} title="Underline" />
+                                    <ToolbarButton icon={<Heading1 size={12} />} onClick={() => handleFormatting('# ', '')} title="H1" />
+                                    <ToolbarButton icon={<List size={12} />} onClick={() => handleFormatting('- ', '')} title="List" />
+                                    <ToolbarButton icon={<Quote size={12} />} onClick={() => handleFormatting('> ', '')} title="Quote" />
+                                    <ToolbarButton icon={<Link size={12} />} onClick={() => handleFormatting('[', '](url)')} title="Link" />
+                                    <ToolbarButton icon={<span className="font-bold text-[10px]">§</span>} onClick={() => insertAtCursor('§')} title="Legal Symbol" />
                                 </div>
+                            </div>
 
-                                <ToolbarButton icon={<AlignLeft size={14} />} onClick={() => handleFormatting('<div align="left">\n', '\n</div>')} title="Align Left" />
-                                <ToolbarButton icon={<AlignCenter size={14} />} onClick={() => handleFormatting('<div align="center">\n', '\n</div>')} title="Align Center" />
-                                <ToolbarButton icon={<AlignRight size={14} />} onClick={() => handleFormatting('<div align="right">\n', '\n</div>')} title="Align Right" />
-                                <div className="w-px h-4 bg-slate-700 mx-1" />
-                                <ToolbarButton icon={<Quote size={14} />} onClick={() => handleFormatting('> ', '')} title="Quote" />
-                                <ToolbarButton icon={<Link size={14} />} onClick={() => handleFormatting('[', '](url)')} title="Link" />
-                                <ToolbarButton icon={<Minus size={14} />} onClick={() => handleFormatting('\n---\n', '')} title="Horizontal Rule" />
+                            {/* Document Outline */}
+                            <div>
+                                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Outline</h4>
+                                <div className="space-y-1">
+                                    {getOutline().map((header, i) => (
+                                        <div key={i} className="flex items-center gap-3 p-2 hover:bg-slate-800 rounded-lg cursor-pointer transition-all group">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-emerald-500 border border-slate-600 transition-all" />
+                                            <span className="text-[10px] font-bold text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">{header}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                )}
+
+                {/* 2. Primary Editor (Center - 60%) */}
+                <main className="flex-1 flex flex-col min-w-0 bg-[#0A0C10]/5">
+                    {/* Secondary Context Toolbar */}
+                    <div className="h-12 border-b border-slate-800/50 bg-[#0E1117]/80 backdrop-blur-sm flex items-center justify-between px-6 z-20 shrink-0">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+                                <button className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 transition-all" title="Insert Clause" onClick={() => setIsClauseLibraryOpen(true)}>
+                                    <BookOpen size={14} />
+                                </button>
+                                <button className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 transition-all font-serif font-bold text-[10px]" onClick={() => setFontSerif(!fontSerif)} title="Toggle Serif Font">
+                                    {fontSerif ? 'Ser' : 'Sans'}
+                                </button>
+                                <button className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 transition-all" title="Add Highlight">
+                                    <Highlighter size={14} />
+                                </button>
+                                <button className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 transition-all" title="View Version History" onClick={() => setIsVersionHistoryOpen(true)}>
+                                    <HistoryIcon size={14} />
+                                </button>
+                            </div>
+                            <div className="h-4 w-px bg-slate-800" />
+                            <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest px-2">
+                                {editorMode.toUpperCase()} MODE
                             </div>
                         </div>
 
-                        <div className={`flex-1 flex justify-center py-12 overflow-y-auto scrollbar-hide ${layout === 'editor' ? 'bg-slate-950 px-8' : 'bg-slate-900/50'}`}>
-                            {/* Improved A4 Page Area */}
-                            <div
-                                className={`w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-sm p-[25mm] mb-20 relative mx-auto transition-all duration-300 transform origin-top`}
-                                style={{
-                                    fontFamily: fontSerif ? 'Georgia, "Times New Roman", serif' : 'Inter, system-ui, sans-serif',
-                                    lineHeight: lineSpacing
-                                }}
-                            >
+                        <div className="flex items-center gap-2">
+                             <div className="flex items-center gap-1 bg-slate-800/50 p-0.5 rounded-lg border border-slate-700">
+                                <button
+                                    onClick={() => setZoom(Math.max(0.4, zoom - 0.1))}
+                                    title="Zoom Out"
+                                    className="p-1 text-slate-400 hover:text-white"
+                                >
+                                    <ZoomOut size={12} />
+                                </button>
+                                <span className="text-[9px] font-mono text-slate-500 w-10 text-center">{Math.round(zoom * 100)}%</span>
+                                <button
+                                    onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
+                                    title="Zoom In"
+                                    className="p-1 text-slate-400 hover:text-white"
+                                >
+                                    <ZoomIn size={12} />
+                                </button>
+                            </div>
+                            <button className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 transition-all ml-2" title="Print Document" onClick={() => window.print()}>
+                                <Download size={14} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 paper-workspace p-12 overflow-y-auto scrollbar-hide bg-[#0A0C10]/20 flex flex-col items-center">
+                        <div className="relative mx-auto transition-transform duration-500 ease-in-out origin-top" style={{ width: '210mm', transform: `scale(${zoom})` }}>
+                            {/* 1. The Physical Sheet Stack (Real Borders) */}
+                            <div className="flex flex-col gap-10 relative z-0">
+                                {[...Array(Math.max(1, Math.ceil(content.length / 3000) + 1))].map((_, i) => (
+                                    <div 
+                                        key={i} 
+                                        className="bg-white shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-sm pointer-events-none" 
+                                        style={{ width: '210mm', height: '297mm' }}
+                                    >
+                                        <div className="absolute bottom-6 right-10 text-[9px] font-black text-slate-300 uppercase tracking-widest">
+                                            Page {i + 1}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* 2. Seamless Text Canvas (Floating on top) */}
+                            <div className="absolute top-0 left-0 w-full h-full z-10 p-[25mm]">
                                 <textarea
                                     ref={editorRef}
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
-                                    placeholder="Start drafting your legal document here..."
-                                    className="w-full h-full min-h-[247mm] bg-transparent text-slate-900 focus:outline-none placeholder:text-slate-300 resize-none"
-                                    style={{
+                                    className="w-full h-full bg-transparent text-slate-900 focus:outline-none placeholder:text-slate-300 resize-none leading-relaxed selection:bg-emerald-100"
+                                    style={{ 
+                                        fontFamily: fontSerif ? 'Georgia, "Times New Roman", serif' : 'Inter, system-ui, sans-serif',
                                         fontSize: `${fontSize}px`,
-                                        lineHeight: lineSpacing
+                                        lineHeight: lineSpacing,
+                                    }}
+                                    placeholder="Start drafting your legal document..."
+                                    onMouseUp={() => {
+                                        const sel = window.getSelection()?.toString();
+                                        if (sel) setSelectedText(sel);
+                                        else setSelectedText('');
                                     }}
                                 />
-
-                                {/* A4 Footer Indicator */}
-                                <div className="absolute bottom-8 left-[25mm] right-[25mm] border-t border-slate-100 pt-4 flex justify-between items-center opacity-30 select-none">
-                                    <span className="text-[10px] uppercase tracking-widest font-bold">Nomosdesk Sovereign Drafting</span>
-                                    <span className="text-[10px] font-mono">Page 1 of 1</span>
-                                </div>
                             </div>
+
+                            {/* Selection Floating Actions */}
+                            {selectedText && (
+                                <div className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#0E1117] border border-slate-700 px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-4 z-[200] animate-in fade-in slide-in-from-bottom-4">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-800 pr-4">AI Copilot</span>
+                                    <button onClick={() => setChatInput(`Rewrite this: ${selectedText}`)} title="AI Rewrite" className="flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-all">
+                                        <Wand2 size={14} /> Rewrite
+                                    </button>
+                                    <button onClick={() => setChatInput(`Simplify this: ${selectedText}`)} title="AI Simplify" className="flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-all">
+                                        <Info size={14} /> Simplify
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
-                )}
+                </main>
 
-                {/* Resize Handle */}
-                {layout === 'split' && (
-                    <div
-                        onMouseDown={() => setIsResizing(true)}
-                        className={`w-1.5 h-full cursor-col-resize hover:bg-emerald-500/40 transition-colors z-20 flex-shrink-0 -ml-[3px] ${isResizing ? 'bg-emerald-500/60' : 'bg-slate-800'}`}
-                    />
-                )}
-
-                {/* Live Preview Pane */}
-                {(layout === 'split' || layout === 'preview') && (
-                    <div
-                        className={`bg-slate-950 border-l border-slate-800 flex flex-col transition-all duration-500 ${layout === 'preview' ? 'w-full border-l-0' : ''}`}
-                        style={{ width: layout === 'split' ? `${100 - editorWidth}%` : '100%' }}
-                    >
-                        <div className="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <FileText size={14} className="text-blue-400" />
-                                Live Preview
-                            </h4>
+                {/* 3. Intelligence Panel (Right - 20%) */}
+                {panels.right && (
+                    <aside className="w-[20%] border-l border-slate-800/50 bg-[#0E1117]/30 flex flex-col animate-in slide-in-from-right duration-300 shrink-0">
+                        <div className="p-4 border-b border-slate-800/50 bg-[#0A0C10]/50 flex items-center justify-between">
+                            <h3 className="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <BrainCircuit size={14} />
+                                Intelligence
+                            </h3>
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-tighter">Connected</span>
+                            </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-12 scrollbar-hide flex justify-center bg-slate-950">
-                            <div
-                                className="w-[210mm] min-h-[297mm] bg-white text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-sm p-[25mm] mb-20 relative mx-auto"
-                                style={{
-                                    fontFamily: fontSerif ? 'Georgia, "Times New Roman", serif' : 'Inter, system-ui, sans-serif',
-                                    fontSize: `${fontSize}px`,
-                                    lineHeight: lineSpacing
-                                }}
-                            >
-                                {/* Watermark */}
-                                <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-45 select-none text-9xl font-black">
-                                    Nomosdesk
-                                </div>
 
-                                <div className="relative z-10">
-                                    {content ? renderPreviewContent(content) : (
-                                        <div className="flex flex-col items-center justify-center py-40 gap-4 opacity-30">
-                                            <FileText size={48} />
-                                            <p className="italic text-center">
-                                                Your document preview will appear here as you type...
-                                            </p>
+                        <div className="flex-1 flex flex-col overflow-hidden">
+                            {/* Intelligence Tabs */}
+                            <div className="flex border-b border-slate-800 h-10 shrink-0">
+                                <button className="flex-1 text-[9px] font-bold uppercase tracking-widest border-b-2 border-[#8B5CF6] text-white">Copilot</button>
+                                <button className="flex-1 text-[9px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300">Insights</button>
+                                <button className="flex-1 text-[9px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300">Risks</button>
+                            </div>
+
+                            {/* Chat View */}
+                            <div className="flex-1 flex flex-col overflow-hidden">
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+                                    {aiMessages.map((msg, i) => (
+                                        <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                            <div className={`max-w-[90%] p-3 rounded-2xl text-[11px] leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-[#5B21B6] text-white rounded-tr-none' : 'bg-slate-800/80 text-slate-300 rounded-tl-none border border-slate-700/50'}`}>
+                                                {msg.content}
+                                            </div>
+                                            <span className="text-[8px] text-slate-600 mt-1 uppercase font-black tracking-widest">{msg.role === 'user' ? 'Counsel' : 'Sovereign AI'}</span>
                                         </div>
-                                    )}
+                                    ))}
+                                </div>
+
+                                <div className="p-4 border-t border-slate-800 bg-[#0A0C10]/50">
+                                    <div className="relative group">
+                                        <textarea
+                                            value={chatInput}
+                                            onChange={(e) => setChatInput(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleChatSend())}
+                                            placeholder="Ask Copilot..."
+                                            className="w-full bg-[#0E1117]/70 border border-slate-700/50 rounded-xl px-4 py-3 text-[11px] text-white focus:outline-none focus:ring-1 focus:ring-purple-500/30 placeholder:text-slate-700 resize-none transition-all"
+                                            rows={2}
+                                        />
+                                        <button 
+                                            onClick={handleChatSend}
+                                            title="Send Message"
+                                            disabled={!chatInput.trim()}
+                                            className="absolute right-3 bottom-3 p-1.5 bg-[#8B5CF6] text-white rounded-lg hover:bg-[#7C3AED] transition-all shadow-lg disabled:opacity-40"
+                                        >
+                                            <Wand2 size={12} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </aside>
                 )}
             </div>
+
+            {/* Modals & Overlays (Mirroring DraftingStudio) */}
+            {isClauseLibraryOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-8 backdrop-blur-xl bg-black/40 animate-in fade-in duration-300">
+                    <div className="bg-[#0E1117] border border-brand-border w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 h-[600px]">
+                        <div className="p-8 border-b border-brand-border flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-500/20 rounded-2xl"><Library className="text-emerald-400" size={24} /></div>
+                                <h3 className="text-xl font-bold text-white">Clause Library</h3>
+                            </div>
+                            <button onClick={() => setIsClauseLibraryOpen(false)} title="Close" className="text-slate-500 hover:text-white p-2 hover:bg-slate-800 rounded-full transition-all"><X size={24} /></button>
+                        </div>
+                        <div className="p-8 flex-1 overflow-y-auto space-y-4 scrollbar-hide">
+                            <div className="relative mb-6">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                                <input type="text" placeholder="Search clauses..." className="w-full bg-[#0A0C10]/50 border border-slate-700 rounded-2xl pl-12 pr-6 py-3 text-sm text-white focus:outline-none" />
+                            </div>
+                            {["Indemnification (Standard)", "Force Majeure (International)", "Governing Law (Ghana)", "Confidentiality (Strict)"].map((c, i) => (
+                                <div key={i} className="p-4 bg-[#0A0C10]/40 border border-slate-700 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-emerald-500/30 transition-all">
+                                    <span className="text-sm text-slate-300 group-hover:text-emerald-400 transition-colors">{c}</span>
+                                    <button 
+                                        onClick={() => { insertAtCursor(`\n\n### ${c}\n[Clause Text for ${c} goes here...]\n`); setIsClauseLibraryOpen(false); }}
+                                        className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold uppercase transition-all hover:bg-emerald-500 hover:text-white"
+                                    >
+                                        Insert
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isVersionHistoryOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-8 backdrop-blur-xl bg-black/40 animate-in fade-in duration-300">
+                    <div className="bg-[#0E1117] border border-brand-border w-full max-w-md rounded-[3rem] shadow-2xl p-8 animate-in slide-in-from-bottom-8 duration-300">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                <HistoryIcon size={24} className="text-blue-400" /> Timeline
+                            </h3>
+                            <button onClick={() => setIsVersionHistoryOpen(false)} title="Close" className="text-slate-500 hover:text-white p-2 hover:bg-slate-800 rounded-full transition-all"><X size={24} /></button>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl">
+                                <p className="text-xs font-bold text-white">v1.0.1 (Current)</p>
+                                <p className="text-[10px] text-slate-400">Edited by you • Just now</p>
+                            </div>
+                            <div className="p-4 bg-slate-800/40 border border-slate-700 rounded-2xl opacity-50">
+                                <p className="text-xs font-bold text-white">v1.0.0</p>
+                                <p className="text-[10px] text-slate-400">Initialized • 1h ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,646 +1,259 @@
-import React, { useState, useEffect } from 'react';
-import {
-    X,
-    FileText,
-    Save,
-    Sparkles,
-    CheckCircle2,
-    AlertTriangle,
-    ArrowLeft,
-    Loader2,
-    Copy,
-    Download,
-    Terminal,
-    Eraser,
-    ToggleLeft,
-    ToggleRight,
-    Calendar,
-    DollarSign,
-    Type,
-    Eye
-} from 'lucide-react';
-import { BrandingProfile } from '../types';
-import { authorizedFetch, getSavedSession } from '../utils/api';
+/**
+ * @file DraftingStudio.tsx
+ * @module NomosDesk/Studio
+ * @description Enterprise-grade floating legal drafting studio.
+ * Features: Draggable window, resizable panels, TipTap engine.
+ */
 
-interface FormField {
-    key: string;
-    label: string;
-    type: 'text' | 'date' | 'number' | 'currency';
-    placeholder?: string;
-    multiline?: boolean;
-    required?: boolean;
-    default?: any;
-    currency?: string;
-}
+import React, { useEffect, useCallback, useState } from 'react';
+import { Maximize2, Minimize2, Minus, Move, X } from 'lucide-react';
+import { useDocumentState } from '../hooks/useDocumentState';
+import { DraftingStudioProps } from './studio/domain/documentTypes';
 
-interface Clause {
-    clause_key: string;
-    clause_title: string;
-    clause_text: string;
-    clause_type: 'locked' | 'variable' | 'optional';
-}
+// --- Modular UI Architecture ---
+import { ModeSwitcher } from './studio/ui/ModeSwitcher';
+import { LeftNavigator } from './studio/ui/LeftNavigator';
+import { CanvasArea } from './studio/ui/CanvasArea';
+import { RightPanel } from './studio/ui/RightPanel';
+import { TopToolbar } from './studio/ui/TopToolbar';
+import { SavingOverlay } from './studio/ui/SavingOverlay';
+import { StudioToasts } from './studio/ui/StudioToasts';
+import { ResizableDivider } from './studio/ui/ResizableDivider';
 
-interface FormSection {
-    key: string;
-    label: string;
-    default: boolean;
-}
+// --- Enterprise Logic Hooks ---
+import { useStudioState } from './studio/hooks/useStudioState';
+import { useDocumentMetrics } from './studio/hooks/useDocumentMetrics';
+import { useVaultCommit } from './studio/hooks/useVaultCommit';
+import { useStudioToasts } from './studio/hooks/useStudioToasts';
+import { useDraggableWindow } from './studio/hooks/useDraggableWindow';
 
-interface TemplateStructure {
-    fields?: FormField[];
-    sections?: FormSection[];
-    clauses?: Clause[];
-}
+export const DraftingStudio: React.FC<DraftingStudioProps> = ({ 
+  initialData, 
+  onSave, 
+  onClose 
+}) => {
+  // --- Helix 1: Canonical State Machine ---
+  const { rawContent, diffs, metadata, actions } = useDocumentState(initialData?.content || "");
+  
+  // --- Helix 2: Workspace Logic Architecture ---
+  const { activeMode, panels, zoom, isSaving, isSearching, actions: studioActions } = useStudioState();
+  const metrics = useDocumentMetrics(rawContent);
+  const { toasts, addToast, removeToast } = useStudioToasts();
+  const { commitToVault, isCommitLoading } = useVaultCommit(onSave);
 
-interface Template {
-    id: string;
-    name: string;
-    content: string;
-    structure: TemplateStructure | Clause[]; // Can be object or direct array
-    placeholders?: string[];
-}
+  // --- Helix 3: Window & Panel Geometry ---
+  const { win, onDragStart, onResizeStart, maximize, minimize } = useDraggableWindow();
+  const [leftWidth, setLeftWidth] = useState(240);
+  const [rightWidth, setRightWidth] = useState(320);
 
-interface DraftingStudioProps {
-    templateId: string;
-    matterId: string | null;
-    onClose: () => void;
-    onSave: (name: string, content: string) => void;
-}
+  const handleResizeLeft = useCallback((delta: number) => {
+    setLeftWidth(prev => Math.max(160, Math.min(400, prev + delta)));
+  }, []);
 
-const DraftingStudio: React.FC<DraftingStudioProps> = ({ templateId, matterId, onClose, onSave }) => {
-    const [template, setTemplate] = useState<Template | null>(null);
-    const [branding, setBranding] = useState<Partial<BrandingProfile>>({
-        watermarkText: 'Nomosdesk',
-        primaryFont: 'serif',
-        headerText: '',
-        footerText: ''
-    });
+  const handleResizeRight = useCallback((delta: number) => {
+    setRightWidth(prev => Math.max(200, Math.min(480, prev - delta)));
+  }, []);
 
-    // State for Variable Fields
-    const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
-    // State for Optional Sections (Toggles)
-    const [sectionValues, setSectionValues] = useState<Record<string, boolean>>({});
-
-    const [isLoading, setIsLoading] = useState(true);
-    const [loadError, setLoadError] = useState<string | null>(null);
-    const [isHydrating, setIsHydrating] = useState(false);
-    const [isAssembling, setIsAssembling] = useState(false);
-    const [previewContent, setPreviewContent] = useState('');
-    const [validationErrors, setValidationErrors] = useState<string[]>([]);
-    const [sidebarWidth, setSidebarWidth] = useState(400);
-    const [isResizing, setIsResizing] = useState(false);
-    const [layout, setLayout] = useState<'split' | 'editor' | 'preview'>('split');
-
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isResizing) return;
-            const newWidth = e.clientX;
-            if (newWidth >= 300 && newWidth <= 800) {
-                setSidebarWidth(newWidth);
-            }
-        };
-
-        const handleMouseUp = () => {
-            setIsResizing(false);
-            document.body.style.cursor = 'default';
-        };
-
-        if (isResizing) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-            document.body.style.cursor = 'col-resize';
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isResizing]);
-
-    useEffect(() => {
-        fetchTemplate();
-        fetchBranding();
-    }, [templateId]);
-
-    const fetchBranding = async () => {
-        const session = getSavedSession();
-        if (!session?.token) return;
-        try {
-            const profiles = await authorizedFetch('/api/branding-profiles', { token: session.token });
-            if (Array.isArray(profiles) && profiles.length > 0) {
-                const profile = profiles[0];
-                setBranding({
-                    watermarkText: profile.watermarkText || profile.name?.toUpperCase() || 'Nomosdesk',
-                    primaryFont: profile.primaryFont || 'serif',
-                    headerText: profile.headerText || '',
-                    footerText: profile.footerText || ''
-                });
-            }
-        } catch (e) {
-            console.error("Failed to load branding", e);
-        }
-    };
-
-    const fetchTemplate = async () => {
-        try {
-            setIsLoading(true);
-            const session = getSavedSession();
-            if (!session?.token) return;
-
-            const data = await authorizedFetch(`/api/document-templates/${templateId}`, {
-                token: session.token
-            });
-            if (data?.error) {
-                setLoadError(data.error);
-                return;
-            }
-            setTemplate(data);
-
-            // Initialize State
-            const initialFields: Record<string, string> = {};
-            const initialSections: Record<string, boolean> = {};
-
-            if (data.structure) {
-                const structure = data.structure;
-
-                // Case 1: Array of Clauses (New Granular Model)
-                if (Array.isArray(structure)) {
-                    structure.forEach((c: Clause) => {
-                        // Extract variables: {{variable_name}}
-                        const vars = c.clause_text.match(/{{\s*(\w+)\s*}}/g);
-                        if (vars) {
-                            vars.forEach((v: string) => {
-                                const key = v.replace(/{{\s*|\s*}}/g, '');
-                                initialFields[key] = ''; // No default for extracted vars
-                            });
-                        }
-                        if (c.clause_type === 'optional') {
-                            initialSections[c.clause_key] = false;
-                        }
-                    });
-
-                    // Synthesize content if missing
-                    if (!data.content) {
-                        data.content = structure.map(c => {
-                            if (c.clause_type === 'optional') {
-                                return `{{#if ${c.clause_key}}}\n### ${c.clause_title}\n${c.clause_text}\n{{/if}}`;
-                            }
-                            return `### ${c.clause_title}\n${c.clause_text}`;
-                        }).join('\n\n');
-                    }
-                }
-                // Case 2: Structured Object (Hybrid Model)
-                else {
-                    if (structure.fields) {
-                        structure.fields.forEach((f: FormField) => {
-                            initialFields[f.key] = f.default || '';
-                        });
-                    }
-                    if (structure.sections) {
-                        structure.sections.forEach((s: FormSection) => {
-                            initialSections[s.key] = s.default ?? false;
-                        });
-                    }
-                    // Handle hybrid clauses within object
-                    if (structure.clauses) {
-                        structure.clauses.forEach((c: Clause) => {
-                            // Extract variables if not already defined in fields
-                            const vars = c.clause_text.match(/{{\s*(\w+)\s*}}/g);
-                            if (vars) {
-                                vars.forEach((v: string) => {
-                                    const key = v.replace(/{{\s*|\s*}}/g, '');
-                                    if (!(key in initialFields)) {
-                                        initialFields[key] = '';
-                                    }
-                                });
-                            }
-                            if (c.clause_type === 'optional') {
-                                if (!(c.clause_key in initialSections)) {
-                                    initialSections[c.clause_key] = false;
-                                }
-                            }
-                        });
-
-                        // Synthesize content if missing
-                        if (!data.content) {
-                            data.content = structure.clauses.map((c: Clause) => {
-                                if (c.clause_type === 'optional') {
-                                    return `{{#if ${c.clause_key}}}\n### ${c.clause_title}\n${c.clause_text}\n{{/if}}`;
-                                }
-                                return `### ${c.clause_title}\n${c.clause_text}`;
-                            }).join('\n\n');
-                        }
-                    }
-                }
-            } else if (data.placeholders) {
-                // Legacy Fallback
-                data.placeholders.forEach((p: string) => initialFields[p] = '');
-            }
-
-            setFieldValues(initialFields);
-            setSectionValues(initialSections);
-
-            // Initial Compile
-            setPreviewContent(compileTemplate(data.content, initialFields, initialSections));
-            setValidationErrors([]);
-
-        } catch (e: any) {
-            console.error(e);
-            setLoadError(e.message || "Failed to load template");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Mini-Template Engine
-    const compileTemplate = (content: string, fields: Record<string, string>, sections: Record<string, boolean>) => {
-        let output = content;
-
-        // 1. Handle Sections (Conditional Blocks)
-        // Matches {{#if key}} ... {{/if}} (non-nested for simplicity)
-        output = output.replace(/{{\s*#if\s+(\w+)\s*}}([\s\S]*?){{\s*\/if\s*}}/g, (match, key, innerContent) => {
-            const isVisible = sections[key];
-            return isVisible ? innerContent : '';
-        });
-
-        // 2. Handle Variables
-        // Matches {{key}}
-        output = output.replace(/{{\s*(\w+)\s*}}/g, (match, key) => {
-            return fields[key] || `[${key.toUpperCase().replace(/_/g, ' ')}]`;
-        });
-
-        return output;
-    };
-
-    const handleAIHydrate = async () => {
-        if (!matterId) return;
-        try {
-            setIsHydrating(true);
-            const session = getSavedSession();
-            if (!session?.token) return;
-
-            const data = await authorizedFetch(`/api/document-templates/${templateId}/hydrate`, {
-                method: 'POST',
-                token: session.token,
-                body: JSON.stringify({ matterId })
-            });
-
-            if (data.error) throw new Error(data.error);
-            const aiFields = data;
-
-            const newFields = { ...fieldValues, ...aiFields };
-            setFieldValues(newFields);
-            setPreviewContent(compileTemplate(template?.content || '', newFields, sectionValues));
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsHydrating(false);
-        }
-    };
-
-    const handleFieldChange = (key: string, val: string) => {
-        const updated = { ...fieldValues, [key]: val };
-        setFieldValues(updated);
-        setPreviewContent(compileTemplate(template?.content || '', updated, sectionValues));
-    };
-
-    const handleSectionToggle = (key: string) => {
-        const updated = { ...sectionValues, [key]: !sectionValues[key] };
-        setSectionValues(updated);
-        setPreviewContent(compileTemplate(template?.content || '', fieldValues, updated));
-    };
-
-    const handleAssembleAndSave = async () => {
-        try {
-            setIsAssembling(true);
-            setValidationErrors([]);
-            const session = getSavedSession();
-            if (!session?.token) return;
-
-            // Prepare metadata
-            const metadata = {
-                firm_name: 'Nomosdesk Firm', // Should ideally come from context
-                draft_id: `DRFT-${Math.random().toString(16).slice(2, 8).toUpperCase()}`,
-                generation_date: new Date().toLocaleDateString()
-            };
-
-            const selectedOptionalKeys = Object.keys(sectionValues).filter(k => sectionValues[k]);
-
-            const result = await authorizedFetch('/api/documents/assemble', {
-                method: 'POST',
-                token: session.token,
-                body: JSON.stringify({
-                    template: {
-                        template_name: template?.name,
-                        version: (template as any).version || '1.0.0',
-                        clauses: Array.isArray(template?.structure) ? template?.structure : []
-                    },
-                    variables: fieldValues,
-                    selectedOptionalKeys,
-                    metadata
-                })
-            });
-
-            if (result.status === 'FAIL') {
-                setValidationErrors(result.validation_errors);
-                return;
-            }
-
-            // If PASS, call onSave with the fully assembled document
-            onSave(`${template?.name} - Finalized`, result.assembled_document);
-        } catch (e: any) {
-            console.error(e);
-            setValidationErrors([e.message]);
-        } finally {
-            setIsAssembling(false);
-        }
-    };
-
-    if (isLoading) return (
-        <div className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md flex items-center justify-center">
-            <Loader2 className="animate-spin text-emerald-500" size={48} />
-        </div>
+  // --- Handlers ---
+  const handleCommit = useCallback(async () => {
+    await commitToVault(
+      initialData?.name || "UNTITLED", 
+      rawContent, 
+      diffs, 
+      addToast, 
+      initialData?.id
     );
+  }, [commitToVault, initialData?.name, initialData?.id, rawContent, diffs, addToast]);
 
-    if (!template) return null;
+  const handlePrint = useCallback(() => {
+    addToast('Initializing physical rendering engine...', 'info');
+    window.print();
+  }, [addToast]);
 
-    // Helper to get Icon for field type
-    const getFieldIcon = (type: string) => {
-        switch (type) {
-            case 'date': return <Calendar size={12} />;
-            case 'currency': return <DollarSign size={12} />;
-            case 'number': return <Terminal size={12} />;
-            default: return <Type size={12} />;
-        }
-    };
+  useEffect(() => {
+    console.log(`[STUDIO] Initialized for Matter: ${metadata.matterId}`);
+  }, [metadata.matterId]);
 
-    return (
-        <div className="fixed inset-0 z-[120] bg-brand-bg flex flex-col animate-in slide-in-from-bottom-6 duration-500">
-            {/* Top Bar */}
-            <header className="h-16 border-b border-brand-border bg-brand-sidebar/50 flex items-center justify-between px-8">
-                <div className="flex items-center gap-6">
-                    <button onClick={onClose} title="Back" className="p-2 hover:bg-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h3 className="text-xl font-bold text-white tracking-tight">{template.name}</h3>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Structured Drafting</p>
-                    </div>
-                </div>
+  // --- Window Geometry ---
+  const windowStyle: React.CSSProperties = win.isMaximized
+    ? { position: 'fixed', inset: 0, zIndex: 1000, borderRadius: 0 }
+    : win.isMinimized
+    ? { 
+        position: 'fixed', 
+        bottom: 24, 
+        right: 24, 
+        width: 320, 
+        height: 48, 
+        zIndex: 1000,
+        overflow: 'hidden'
+      }
+    : {
+        position: 'fixed',
+        left: win.x,
+        top: win.y,
+        width: win.width,
+        height: win.height,
+        zIndex: 1000,
+      };
 
-                <div className="flex items-center gap-4">
-                    {/* Layout Controls */}
-                    <div className="flex items-center gap-1 p-1 bg-slate-800/50 rounded-2xl border border-slate-700 mr-2">
-                        <button
-                            onClick={() => setLayout('editor')}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'editor' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                        >
-                            <Terminal size={14} className="inline mr-1" /> Editor
-                        </button>
-                        <button
-                            onClick={() => setLayout('split')}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'split' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                        >
-                            Split
-                        </button>
-                        <button
-                            onClick={() => setLayout('preview')}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${layout === 'preview' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                        >
-                            <Eye size={14} className="inline mr-1" /> Preview
-                        </button>
-                    </div>
+  return (
+    <>
+      {/* Backdrop blur overlay */}
+      <div 
+        className="fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm"
+        onClick={(e) => e.stopPropagation()}
+      />
 
-                    <button
-                        onClick={handleAIHydrate}
-                        disabled={!matterId || isHydrating}
-                        title={!matterId ? "Select a matter in the Vault to enable AI hydration" : "Automatically fill variables using AI"}
-                        className="px-6 py-2.5 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/30 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all disabled:opacity-40"
-                    >
-                        {isHydrating ? <Loader2 className="animate-spin" size={14} /> : <Sparkles size={14} />}
-                        AI Auto-Hydrate
-                    </button>
-                    <button
-                        onClick={handleAssembleAndSave}
-                        disabled={isAssembling}
-                        className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-emerald-900/20 active:scale-95 transition-all disabled:opacity-40"
-                    >
-                        {isAssembling ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
-                        {isAssembling ? 'Validating...' : 'Commit to Vault'}
-                    </button>
-                </div>
-            </header>
+      {/* Floating Window */}
+      <div
+        style={windowStyle}
+        className="flex flex-col bg-[#07090C] text-slate-100 font-sans shadow-[0_32px_128px_rgba(0,0,0,0.8)] border border-slate-700/60 rounded-2xl overflow-hidden transition-[border-radius] duration-300"
+      >
+        {/* === Resize Handles (outer edges) === */}
+        {!win.isMaximized && !win.isMinimized && (
+          <>
+            {/* Right edge */}
+            <div onMouseDown={(e) => onResizeStart(e, 'e')} className="absolute right-0 top-4 bottom-4 w-1.5 cursor-e-resize z-20 hover:bg-brand-primary/40 rounded transition-colors" />
+            {/* Left edge */}
+            <div onMouseDown={(e) => onResizeStart(e, 'w')} className="absolute left-0 top-4 bottom-4 w-1.5 cursor-w-resize z-20 hover:bg-brand-primary/40 rounded transition-colors" />
+            {/* Bottom edge */}
+            <div onMouseDown={(e) => onResizeStart(e, 's')} className="absolute bottom-0 left-4 right-4 h-1.5 cursor-s-resize z-20 hover:bg-brand-primary/40 rounded transition-colors" />
+            {/* Top edge */}
+            <div onMouseDown={(e) => onResizeStart(e, 'n')} className="absolute top-0 left-4 right-4 h-1.5 cursor-n-resize z-20 hover:bg-brand-primary/40 rounded transition-colors" />
+            {/* Corners */}
+            <div onMouseDown={(e) => onResizeStart(e, 'se')} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-20" />
+            <div onMouseDown={(e) => onResizeStart(e, 'sw')} className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-20" />
+            <div onMouseDown={(e) => onResizeStart(e, 'ne')} className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-20" />
+            <div onMouseDown={(e) => onResizeStart(e, 'nw')} className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-20" />
+          </>
+        )}
 
-            {/* Main Workspace */}
-            <div className="flex-1 flex overflow-hidden relative">
-                {/* Left: Input Sidebar */}
-                {(layout === 'split' || layout === 'editor') && (
-                    <aside
-                        className={`border-r border-brand-border bg-brand-sidebar/30 overflow-y-auto p-6 scrollbar-hide shrink-0 transition-all duration-500 ${layout === 'editor' ? 'flex-1' : ''}`}
-                        style={{ width: layout === 'editor' ? '100%' : `${sidebarWidth}px` }}
-                    >
-                        {/* Sections (Toggles) */}
-                        {((template.structure as any).sections?.length > 0 || (Array.isArray(template.structure) && template.structure.some(c => c.clause_type === 'optional'))) && (
-                            <div className="mb-8 space-y-4">
-                                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
-                                    <ToggleLeft size={14} /> Optional Clauses
-                                </h5>
-                                {Array.isArray(template.structure) ? (
-                                    template.structure.filter(c => c.clause_type === 'optional').map(clause => (
-                                        <div
-                                            key={clause.clause_key}
-                                            onClick={() => handleSectionToggle(clause.clause_key)}
-                                            className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[clause.clause_key]
-                                                ? 'bg-brand-primary/10 border-brand-primary/30'
-                                                : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
-                                                }`}
-                                        >
-                                            <span className={`text-xs font-bold transition-colors ${sectionValues[clause.clause_key] ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                                {clause.clause_title}
-                                            </span>
-                                            {sectionValues[clause.clause_key] ? (
-                                                <ToggleRight size={24} className="text-emerald-500" />
-                                            ) : (
-                                                <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
-                                            )}
-                                        </div>
-                                    ))
-                                ) : (
-                                    (template.structure as any).sections.map((section: any) => (
-                                        <div
-                                            key={section.key}
-                                            onClick={() => handleSectionToggle(section.key)}
-                                            className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between group ${sectionValues[section.key]
-                                                ? 'bg-brand-primary/10 border-brand-primary/30'
-                                                : 'bg-brand-bg border-brand-border hover:border-brand-primary/20'
-                                                }`}
-                                        >
-                                            <span className={`text-xs font-bold transition-colors ${sectionValues[section.key] ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                                {section.label}
-                                            </span>
-                                            {sectionValues[section.key] ? (
-                                                <ToggleRight size={24} className="text-emerald-500" />
-                                            ) : (
-                                                <ToggleLeft size={24} className="text-slate-600 group-hover:text-slate-500" />
-                                            )}
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
+        {/* === Window Chrome (Draggable Title Bar) === */}
+        <div
+          onMouseDown={onDragStart}
+          className="h-10 flex-shrink-0 flex items-center justify-between px-4 bg-slate-950/70 border-b border-slate-800/60 cursor-grab active:cursor-grabbing select-none backdrop-blur-sm"
+        >
+          <div className="flex items-center gap-2.5">
+            <Move size={12} className="text-slate-600" />
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+              Sovereign Legal Studio
+            </span>
+            <span className="text-[9px] font-mono text-brand-primary/60 bg-brand-primary/10 px-2 py-0.5 rounded-full border border-brand-primary/20">
+              v2.0
+            </span>
+            {metadata.isDirty && (
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-lg shadow-amber-400/40" />
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={minimize}
+              title={win.isMinimized ? 'Restore' : 'Minimize'}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800 transition-all active:scale-90"
+            >
+              <Minus size={13} />
+            </button>
+            <button
+              onClick={maximize}
+              title={win.isMaximized ? 'Restore' : 'Maximize'}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800 transition-all active:scale-90"
+            >
+              {win.isMaximized ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            </button>
+            <button
+              onClick={onClose}
+              title="Close Studio"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-red-900/60 hover:border-red-700/40 border border-transparent transition-all active:scale-90"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        </div>
 
-                        {/* Fields (Inputs) */}
-                        <div className={`space-y-8 ${layout === 'editor' ? 'max-w-[1200px] mx-auto p-8' : ''}`}>
-                            <div className="flex items-center justify-between">
-                                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                    <Terminal size={14} /> Variables
-                                </h5>
-                                <button
-                                    onClick={() => {
-                                        const reset = { ...fieldValues };
-                                        Object.keys(reset).forEach(k => reset[k] = '');
-                                        setFieldValues(reset);
-                                        setPreviewContent(compileTemplate(template?.content || '', reset, sectionValues));
-                                    }}
-                                    className="text-[9px] text-brand-muted hover:text-red-400 uppercase font-bold transition-colors flex items-center gap-1"
-                                >
-                                    <Eraser size={10} /> Clear
-                                </button>
-                            </div>
-
-                            <div className={`grid gap-5 ${layout === 'editor' ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                                {Array.isArray(template.structure) ? (
-                                    Object.keys(fieldValues).map(key => (
-                                        <div key={key} className="space-y-2 group">
-                                            <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5 text-ellipsis overflow-hidden">
-                                                {getFieldIcon(key.includes('date') ? 'date' : key.includes('currency') || key.includes('amount') ? 'currency' : 'text')}
-                                                {key.replace(/_/g, ' ')}
-                                            </label>
-                                            <input
-                                                type={key.includes('date') ? 'date' : 'text'}
-                                                className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
-                                                placeholder={`Enter ${key.replace(/_/g, ' ')}...`}
-                                                value={fieldValues[key]}
-                                                onChange={e => handleFieldChange(key, e.target.value)}
-                                            />
-                                        </div>
-                                    ))
-                                ) : template.structure?.fields ? (
-                                    template.structure.fields.map(field => (
-                                        <div key={field.key} className={`space-y-2 group ${field.multiline && layout === 'editor' ? 'col-span-2' : ''}`}>
-                                            <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1 group-focus-within:text-brand-primary transition-colors flex items-center gap-1.5">
-                                                {getFieldIcon(field.type)}
-                                                {field.label}
-                                            </label>
-
-                                            {field.multiline ? (
-                                                <textarea
-                                                    className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20 min-h-[80px]"
-                                                    placeholder={field.placeholder || `Enter ${field.label}...`}
-                                                    value={fieldValues[field.key]}
-                                                    onChange={e => handleFieldChange(field.key, e.target.value)}
-                                                />
-                                            ) : (
-                                                <div className="relative">
-                                                    <input
-                                                        type={field.type === 'date' ? 'date' : 'text'}
-                                                        className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-brand-muted/20"
-                                                        placeholder={field.placeholder || `Enter ${field.label}...`}
-                                                        value={fieldValues[field.key]}
-                                                        onChange={e => handleFieldChange(field.key, e.target.value)}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))
-                                ) : (
-                                    // Legacy Fallback
-                                    template.placeholders?.map(key => (
-                                        <div key={key} className="space-y-2 group">
-                                            <label className="text-[10px] font-bold text-brand-muted uppercase tracking-widest ml-1">
-                                                {key.replace('_', ' ')}
-                                            </label>
-                                            <input
-                                                aria-label={key}
-                                                className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text"
-                                                value={fieldValues[key]}
-                                                onChange={e => handleFieldChange(key, e.target.value)}
-                                            />
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Validation Errors Overlay */}
-                        {validationErrors.length > 0 && (
-                            <div className={`mt-8 p-6 bg-red-500/10 border border-red-500/30 rounded-[2rem] space-y-3 animate-in fade-in slide-in-from-top-4 duration-300 ${layout === 'editor' ? 'max-w-6xl mx-auto bg-slate-900 shadow-2xl' : ''}`}>
-                                <div className="flex items-center gap-2 text-red-400">
-                                    <AlertTriangle size={16} />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">Validation Blocked</span>
-                                </div>
-                                <ul className="space-y-1.5">
-                                    {validationErrors.map((err, idx) => (
-                                        <li key={idx} className="text-[11px] text-red-300/80 flex items-start gap-2">
-                                            <span className="shrink-0 mt-1 w-1 h-1 bg-red-400 rounded-full" />
-                                            {err}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-
-                        <div className={`p-6 bg-brand-bg border border-brand-border rounded-[2rem] space-y-4 shadow-inner mt-8 ${layout === 'editor' ? 'max-w-6xl mx-auto' : ''}`}>
-                            <div className="flex items-center gap-2 text-amber-500">
-                                <AlertTriangle size={14} />
-                                <span className="text-[10px] font-bold uppercase">Compliance Lock</span>
-                            </div>
-                            <p className="text-[10px] text-brand-muted leading-relaxed italic">
-                                Core clauses in this template are locked. Only the variables and optional sections above can be modified to ensure compliance.
-                            </p>
-                        </div>
-                    </aside>
-                )}
-
-                {/* Resize Handle */}
-                {layout === 'split' && (
-                    <div
-                        className={`w-1.5 h-full cursor-col-resize hover:bg-brand-primary/40 transition-colors z-20 flex-shrink-0 -ml-[3px] ${isResizing ? 'bg-brand-primary/60' : ''}`}
-                        onMouseDown={() => setIsResizing(true)}
-                    />
-                )}
-
-                {/* Right: Live Preview */}
-                {(layout === 'split' || layout === 'preview') && (
-                    <main className={`flex-1 bg-brand-bg p-8 overflow-y-auto scrollbar-hide flex justify-center transition-all duration-500 ${layout === 'preview' ? 'w-full' : ''}`}>
-                        <div className="w-full max-w-[950px] bg-white text-slate-900 shadow-2xl rounded-sm p-20 relative animate-in fade-in zoom-in-95 duration-700 origin-top flex flex-col min-h-[1200px]">
-                            {/* Header Branding */}
-                            <div className="absolute top-8 right-8 text-slate-300 text-[10px] font-mono uppercase text-right leading-tight">
-                                {branding.headerText}
-                            </div>
-
-                            {/* Watermark */}
-                            <div className="absolute inset-0 pointer-events-none opacity-[0.04] flex items-center justify-center rotate-45 select-none text-6xl md:text-[10rem] font-black whitespace-nowrap overflow-hidden z-0 pointer-events-none">
-                                {branding.watermarkText}
-                            </div>
-
-                            <div
-                                className="relative z-10 whitespace-pre-wrap flex-1 text-[15px] leading-relaxed"
-                                style={{ fontFamily: branding.primaryFont }}
-                            >
-                                {previewContent}
-                            </div>
-
-                            {/* Footer Branding */}
-                            <div className="mt-20 pt-8 border-t border-slate-100 text-center text-slate-300 text-[10px] font-mono uppercase tracking-[0.2em]">
-                                {branding.footerText}
-                            </div>
-                        </div>
-                    </main>
-                )}
+        {/* Hide content when minimized */}
+        {!win.isMinimized && (
+          <>
+            {/* 🚀 Mode Governance */}
+            <div className="h-12 bg-slate-950 flex items-center justify-center border-b border-slate-800 px-6 flex-shrink-0">
+              <ModeSwitcher 
+                activeMode={activeMode} 
+                onModeChange={studioActions.setMode} 
+              />
             </div>
-        </div>
-    );
+
+            {/* === Main 3-Panel Layout === */}
+            <main className="flex-1 flex overflow-hidden min-h-0">
+              
+              {/* 🧭 Left Navigator (Resizable) */}
+              {panels.left && (
+                <>
+                  <LeftNavigator 
+                    isVisible={panels.left}
+                    style={{ width: leftWidth, flexShrink: 0 }}
+                    onToggle={() => studioActions.togglePanel('left')} 
+                  />
+                  <ResizableDivider onResize={handleResizeLeft} />
+                </>
+              )}
+
+              {/* 📝 Canvas Area */}
+              <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
+                <TopToolbar 
+                  onToggleLeft={() => studioActions.togglePanel('left')}
+                  onToggleRight={() => studioActions.togglePanel('right')}
+                  onPrint={handlePrint}
+                  onCommit={handleCommit}
+                />
+                <CanvasArea 
+                  activeMode={activeMode}
+                  rawContent={rawContent}
+                  diffs={diffs}
+                  zoom={zoom}
+                  onUpdate={actions.updateContent}
+                />
+                <footer className="h-8 flex-shrink-0 border-t border-slate-800/60 bg-slate-950/80 flex items-center justify-between px-5">
+                  <div className="flex items-center gap-5">
+                    <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono tracking-tighter">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/10" />
+                      Words: <span className="text-white font-bold">{metrics.wordCount}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-mono tracking-tighter">
+                      Read: <span className="text-white font-bold">{metrics.readingTime}m</span>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-slate-700 font-bold uppercase tracking-widest">
+                    DAS-256 <span className="text-emerald-500/50">●</span>
+                  </div>
+                </footer>
+              </div>
+
+              {/* 🧠 Right Intelligence Panel (Resizable) */}
+              {panels.right && (
+                <>
+                  <ResizableDivider onResize={handleResizeRight} />
+                  <RightPanel 
+                    isVisible={panels.right}
+                    activeMode={activeMode}
+                    diffs={diffs}
+                    rawContent={rawContent}
+                    isSearching={isSearching}
+                    onAccept={(id) => actions.acceptChange(id)}
+                    onReject={(id) => actions.rejectChange(id)}
+                    onToggle={() => studioActions.togglePanel('right')}
+                    style={{ width: rightWidth, flexShrink: 0 }}
+                  />
+                </>
+              )}
+            </main>
+
+            {/* 💾 Overlays */}
+            <SavingOverlay isSaving={isCommitLoading} />
+            <StudioToasts toasts={toasts} onRemove={removeToast} />
+          </>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default DraftingStudio;

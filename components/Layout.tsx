@@ -226,7 +226,7 @@ const Layout: React.FC<LayoutProps> = ({
 
 
               {/* Firm Management Section */}
-              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity') || isAllowed('tenant-governance') || isAllowed('hr-workbench') || isAllowed('expense-tracker') || isAllowed('asset-tracker')) && (
+              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity') || isAllowed('tenant-governance') || isAllowed('hr-workbench') || isAllowed('expense-tracker') || isAllowed('asset-tracker') || isAllowed('clients')) && (
                 <div className="pt-4 pb-2 px-4">
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Firm Management</span>
                 </div>

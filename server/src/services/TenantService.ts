@@ -72,8 +72,11 @@ export class TenantService {
                         tenantId: tenant.id,
                         permissions: {
                             connect: [
-                                { id: 'manage_tenant' }, { id: 'manage_users' }, { id: 'manage_roles' },
-                                { id: 'read_billing' }, { id: 'read_all_audits' }, { id: 'create_matter' }
+                                { id: 'MANAGE:TENANT_SETTINGS' }, { id: 'MANAGE:USER' }, { id: 'MANAGE:ROLE' },
+                                { id: 'VIEW_BILLING:TENANT' }, { id: 'VIEW_STATS:TENANT' }, { id: 'CREATE:MATTER' },
+                                { id: 'VIEW:CLIENT' }, { id: 'CREATE:CLIENT' }, { id: 'UPLOAD:DOCUMENT' },
+                                { id: 'CREATE:DRAFT' }, { id: 'EDIT:DRAFT' }, { id: 'USE:CHAT' },
+                                { id: 'EXECUTE:AI' }, { id: 'ACCESS:HR' }, { id: 'ACCESS:ACCOUNTING' }
                             ]
                         }
                     }
@@ -88,8 +91,8 @@ export class TenantService {
                         tenantId: tenant.id,
                         permissions: {
                             connect: [
-                                { id: 'create_matter' }, { id: 'read_assigned_matter' },
-                                { id: 'create_draft' }, { id: 'edit_draft' }
+                                { id: 'CREATE:MATTER' }, { id: 'VIEW:MATTER' }, { id: 'CHECK:CONFLICTS' },
+                                { id: 'CREATE:DRAFT' }, { id: 'EDIT:DRAFT' }, { id: 'VIEW:CLIENT' }
                             ]
                         }
                     }

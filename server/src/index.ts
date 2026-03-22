@@ -45,6 +45,8 @@ import firmRouter from './routes/firm';
 import accountingRouter from './routes/accounting';
 import productivityRouter from './routes/productivity';
 import clientsRouter from './routes/clients';
+import clausesRouter from './routes/clauses';
+import complianceRouter from './routes/compliance';
 import { errorHandler } from './middleware/errorHandler';
 import { sovereignGuard } from './middleware/sovereignGuard';
 import { authenticateToken } from './middleware/auth';
@@ -164,6 +166,8 @@ app.use('/api/webhooks', authenticateToken, webhooksRouter);
 app.use('/api/workflows', authenticateToken, workflowsRouter);
 app.use('/api/clients', authenticateToken, clientsRouter);
 app.use('/api/chatbot', chatbotRouter);
+app.use('/api/clauses', authenticateToken, clausesRouter);
+app.use('/api/compliance', authenticateToken, complianceRouter);
 
 // Sovereign-guarded routes (require x-sov-pin header)
 app.use('/api/platform', sovereignGuard, platformRouter);
@@ -245,10 +249,15 @@ app.get('*', (req, res) => {
     }
 });
 
+import { CollabService } from './services/CollabService';
+
 // Start server
-app.listen(Number(port), '0.0.0.0', () => {
+const server = app.listen(Number(port), '0.0.0.0', () => {
     console.log(`[Sovereign Proxy] Server running on port ${port}`);
     console.log(`[Sovereign Proxy] Environment: ${process.env.NODE_ENV}`);
+
+    // Initialize Y.js Collaboration Enclave
+    CollabService.init(server);
 
     // Verify Database Connection on startup
     verifyConnection().then(success => {

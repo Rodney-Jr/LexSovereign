@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Sparkles, FileText, ChevronRight, Search, Edit3, Shield, Scale } from 'lucide-react';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
-import BlankDocumentEditor from './BlankDocumentEditor';
 import DocumentSelectorModal from './DocumentSelectorModal';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 
@@ -139,7 +138,7 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
             {selectedTemplateId && (
                 <DraftingStudio
                     templateId={selectedTemplateId}
-                    matterId={matterId || null}
+                    initialData={{ matterId: matterId || null }}
                     onClose={() => setSelectedTemplateId(null)}
                     onSave={(name, content) => {
                         onAddDocument({
@@ -162,14 +161,17 @@ const LegalDrafting: React.FC<LegalDraftingProps> = ({
             )}
 
             {showBlankEditor && (
-                <BlankDocumentEditor
+                <DraftingStudio
+                    initialData={{
+                        id: editingDoc?.id,
+                        name: editingDoc?.name,
+                        content: editingDoc?.content,
+                        matterId: matterId || null,
+                    }}
                     onClose={() => {
                         setShowBlankEditor(false);
                         setEditingDoc(null);
                     }}
-                    initialId={editingDoc?.id}
-                    initialName={editingDoc?.name}
-                    initialContent={editingDoc?.content}
                     onSave={async (name, content, id) => {
                         if (id) {
                             await onUpdateDocument(id, { name, content });

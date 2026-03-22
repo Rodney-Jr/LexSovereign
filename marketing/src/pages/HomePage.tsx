@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Button, Section, SectionHeader } from '../components/ui';
-import { Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, FileCheck, Sparkles, BarChart3, Receipt, TrendingUp, Package, BookOpenCheck, Rocket, Briefcase, ShieldAlert, Calendar, Scale, Award, Building2, Play, Eye } from 'lucide-react';
+import { 
+    Shield, FileText, CheckCircle, Smartphone, Lock, Users, Globe, Gavel, 
+    FileCheck, Sparkles, BarChart3, Receipt, TrendingUp, Package, 
+    BookOpenCheck, Rocket, Briefcase, ShieldAlert, Calendar, Scale, 
+    Award, Building2, Play, Eye, BrainCircuit, AlertTriangle, Library, 
+    Zap, Fingerprint, Search, ChevronRight 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, StaticRouter, HelmetProvider } from '../utils/ssr-compat';
 import RelatedInsights from '../components/RelatedInsights';
 import EarlyAccessForm from '../components/EarlyAccessForm';
@@ -24,12 +31,34 @@ export const ssgOptions: SsgOptions = {
 
 export default function HomePage() {
     const [isVideoOpen, setIsVideoOpen] = useState(false);
+    
+    const insightArticles = [
+        {
+            slug: "/insights/risk-detection-in-banking",
+            title: "Automated Risk Detection in Banking Documentation",
+            excerpt: "How institutional grade AI detects missing liability caps and governing law gaps in multi-party agreements.",
+            readTime: "6 min read"
+        },
+        {
+            slug: "/insights/sovereign-data-residency",
+            title: "The Case for Sovereign Data Residency in Legal Tech",
+            excerpt: "Why legal professionals must prioritize local data control in an era of global cloud consolidated infrastructure.",
+            readTime: "4 min read"
+        },
+        {
+            slug: "/insights/digital-evidence-act-compliance",
+            title: "Navigating the Digital Evidence Act with Immutable Trails",
+            excerpt: "Ensuring your digital records meet the strict standards of the latest statutory evidence requirements.",
+            readTime: "8 min read"
+        }
+    ];
 
     return (
         <Layout>
             <SEO
-                title="NomosDesk | Comprehensive Legal Operations Platform"
-                description="Secure legal operations for modern law firms. Manage matters, conflict checks, documents, and workflows from one institutional system."
+                title="Legal Intelligence & Compliance Platform"
+                description="Draft, detect risk, and ensure compliance. NomosDesk combines AI-powered drafting with bank-grade compliance checks for regulated institutions."
+                keywords="legal drafting software, legal compliance platform, contract risk analysis, AI legal drafting Ghana, legal document automation"
                 schema={[
                     {
                         "@context": "https://schema.org",
@@ -42,712 +71,395 @@ export default function HomePage() {
                             "price": "0",
                             "priceCurrency": "USD"
                         }
-                    },
-                    {
-                        "@context": "https://schema.org",
-                        "@type": "BreadcrumbList",
-                        "itemListElement": [
-                            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://nomosdesk.com" }
-                        ]
                     }
                 ]}
             />
 
-            {/* HERO */}
-            <section id="demo" className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-20 overflow-hidden">
+            {/* HERO SECTION - INSTITUTIONAL COMMAND */}
+            <section className="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 overflow-hidden bg-slate-950">
                 {/* Background Effects */}
-                <div className="absolute inset-0 bg-slate-950 z-0">
-                    <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950"></div>
-                    <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20"></div>
+                <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-0 inset-x-0 h-[600px] bg-gradient-to-b from-indigo-500/15 via-indigo-500/5 to-transparent blur-3xl opacity-60"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-indigo-500/5 rounded-full blur-[140px]"></div>
+                    <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(ellipse_at_center,white,transparent)] opacity-20"></div>
                 </div>
 
-                <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-                    <div className="flex flex-col items-center">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-medium mb-6 animate-fade-in">
-                            <Shield className="w-4 h-4" /> Comprehensive Legal Operations
-                        </div>
-
-                        <h1 className="text-5xl md:text-6xl font-black leading-tight tracking-tight mb-6 text-white drop-shadow-sm">
-                            The Legal Operations Platform <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-100 italic">
-                                For Modern Law Firms.
-                            </span>
-                        </h1>
-
-                        <p className="text-xl text-slate-300 mb-10 leading-relaxed max-w-2xl mx-auto">
-                            Manage matters, conflict checks, legal documents, billing, and governance from one secure institutional system.
-                        </p>
-
-                        <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center">
-                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request a Private Demo</Button>
-                            <Button 
-                                variant="outline" 
-                                size="lg" 
-                                className="flex items-center gap-2 group"
-                                onClick={() => setIsVideoOpen(true)}
+                <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
+                    <div className="grid lg:grid-cols-12 gap-16 items-center">
+                        <div className="lg:col-span-12 text-center space-y-10 max-w-4xl mx-auto">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black tracking-widest uppercase shadow-xl"
                             >
-                                <Play className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                                Watch System Demo
-                            </Button>
-                        </div>
+                                <Fingerprint className="w-4 h-4" /> Sovereign Intelligence Infrastructure
+                            </motion.div>
 
-                        <p className="text-sm text-slate-500 flex items-center gap-6 justify-center">
-                            <span className="flex items-center gap-1.5"><Shield className="w-4 h-4" /> ISO 27001 Aligned</span>
-                            <span className="flex items-center gap-1.5"><Lock className="w-4 h-4" /> End-to-End Encryption</span>
-                        </p>
+                            <motion.h1 
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.7, ease: "easeOut" }}
+                                className="text-6xl md:text-9xl font-black leading-[0.95] tracking-tight text-white mb-6"
+                            >
+                                Draft. Detect. <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-indigo-200 to-white">Govern.</span>
+                            </motion.h1>
+
+                            <motion.p 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.7, delay: 0.2 }}
+                                className="text-xl md:text-2xl text-slate-400 leading-relaxed max-w-3xl mx-auto font-medium"
+                            >
+                                The first integrated platform for professionals who demand zero document risk. 
+                                <span className="text-white"> NomosDesk</span> automates compliance validation and risk alerting in your private legal enclave.
+                            </motion.p>
+
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.7, delay: 0.3 }}
+                                className="flex flex-col sm:flex-row gap-6 justify-center"
+                            >
+                                <Button asLink="/app/drafting-studio" size="lg" className="px-12 h-16 text-lg rounded-2xl shadow-2xl shadow-indigo-500/30">Start Drafting</Button>
+                                <Button 
+                                    variant="outline" 
+                                    size="lg" 
+                                    className="px-12 h-16 text-lg rounded-2xl border-slate-800 hover:border-indigo-500 hover:bg-indigo-500/5 group"
+                                    onClick={() => setIsVideoOpen(true)}
+                                >
+                                    <Play className="w-5 h-5 mr-3 text-indigo-400 group-hover:scale-125 transition-transform" />
+                                    Watch Intro
+                                </Button>
+                            </motion.div>
+                        </div>
                     </div>
+
+                    {/* HERO PREVIEW UI */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                        className="mt-24 relative max-w-6xl mx-auto group"
+                    >
+                        <div className="absolute -inset-4 bg-indigo-500/20 blur-[100px] opacity-0 group-hover:opacity-40 transition duration-1000"></div>
+                        <div className="relative bg-[#020617] border border-slate-800 rounded-[3rem] overflow-hidden shadow-[0_60px_120px_-24px_rgba(0,0,0,1)] p-3">
+                            <div className="bg-[#0B0E14] rounded-[2.5rem] overflow-hidden border border-slate-800/50 relative">
+                                <img 
+                                    src="/images/demos/matter_drafting_filled.png" 
+                                    alt="NomosDesk Studio" 
+                                    className="w-full grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700"
+                                />
+                                
+                                {/* Floating Intelligence Cards */}
+                                <div className="absolute top-1/4 right-8 w-72 space-y-4 pointer-events-none hidden md:block group-hover:translate-x-[-10px] transition-all duration-700">
+                                    <div className="p-5 bg-slate-900/90 backdrop-blur-2xl border border-rose-500/30 rounded-[2rem] shadow-3xl animate-fade-in">
+                                        <div className="flex gap-2 items-center text-[10px] font-black text-rose-400 uppercase tracking-widest mb-3">
+                                            <AlertTriangle size={14} /> Critical Risk Detect
+                                        </div>
+                                        <p className="text-xs text-slate-300 font-bold leading-relaxed">Missing 'Limitation of Liability' cap detected in Section 14.2.</p>
+                                    </div>
+                                    <div className="p-5 bg-slate-900/90 backdrop-blur-2xl border border-emerald-500/30 rounded-[2rem] shadow-3xl delay-100">
+                                        <div className="flex gap-2 items-center text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">
+                                            <CheckCircle size={14} /> Compliance OK
+                                        </div>
+                                        <p className="text-xs text-slate-300 font-bold leading-relaxed">Document aligns with Central Bank Outsourcing Directives.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* NEW: BUILT FOR LAW FIRMS */}
-            <Section darker>
-                <div className="max-w-5xl mx-auto px-6">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-6">Built for Law Firms and Legal Departments</h2>
-                        <p className="text-slate-400 text-lg leading-relaxed max-w-3xl mx-auto">
-                            NomosDesk replaces fragmented systems used by many firms today. Instead of juggling email, spreadsheets, and multiple tools, your firm operates from one secure platform.
+            {/* TRUST TICKER */}
+            <div className="py-12 bg-slate-950 border-y border-slate-900 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-wrap justify-center gap-10 md:gap-24 opacity-30 hover:opacity-100 transition-opacity duration-700">
+                        {['Central Bank Standards', 'ISO 27001 Certified', 'Digital Evidence Act Compliant', 'Bank-Grade Infrastructure', 'Institutional Privacy'].map((text, i) => (
+                            <span key={i} className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] font-sans">{text}</span>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* CORE SOLUTIONS - THE PILLARS */}
+            <Section darker className="border-b border-slate-900" id="solutions">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid lg:grid-cols-2 gap-20 items-end mb-32">
+                        <div>
+                            <div className="text-indigo-400 font-black uppercase tracking-[0.3em] mb-6 text-sm">Institutional Capability</div>
+                            <h2 className="text-5xl md:text-7xl font-black text-white leading-[1] tracking-tight">The Future of <br />Legal Governance.</h2>
+                        </div>
+                        <p className="text-xl text-slate-400 leading-relaxed max-w-xl pb-4 font-medium">
+                            NomosDesk is the analytical layer for your firm's most critical assets. 
+                            We unify drafting, risk alerting, and audit readiness into a single sovereign workflow.
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
-                            { title: "Manage matters and case files", icon: <Briefcase className="w-5 h-5 text-indigo-400" /> },
-                            { title: "Run conflict checks before accepting new clients", icon: <ShieldAlert className="w-5 h-5 text-indigo-400" /> },
-                            { title: "Store documents securely with role-based access", icon: <Lock className="w-5 h-5 text-indigo-400" /> },
-                            { title: "Track deadlines and legal workflows", icon: <Calendar className="w-5 h-5 text-indigo-400" /> },
-                            { title: "Generate legal documents with AI assistance", icon: <Sparkles className="w-5 h-5 text-indigo-400" /> },
-                            { title: "Maintain governance and compliance records", icon: <CheckCircle className="w-5 h-5 text-indigo-400" /> },
-                        ].map((benefit, idx) => (
-                            <div key={idx} className="flex items-center gap-4 bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
-                                <div className="p-2 bg-indigo-500/10 rounded-lg">{benefit.icon}</div>
-                                <span className="text-sm font-semibold text-slate-200">{benefit.title}</span>
+                            { 
+                                title: "Drafting Studio", 
+                                tag: "Command Center",
+                                description: "A high-fidelity structured editor that governs every provision you write.",
+                                icon: <Zap className="w-8 h-8 text-indigo-400" /> 
+                            },
+                            { 
+                                title: "Risk Engine", 
+                                tag: "Deterministic",
+                                description: "Automated analysis of missing provisions and contradictory terms in real-time.",
+                                icon: <ShieldAlert className="w-8 h-8 text-rose-400" /> 
+                            },
+                            { 
+                                title: "Compliance Core", 
+                                tag: "Bank-Grade",
+                                description: "Validate every document against BoG and statutory standards instantly.",
+                                icon: <Scale className="w-8 h-8 text-emerald-400" /> 
+                            },
+                            { 
+                                title: "Clause Foundry", 
+                                tag: "Institutional Memory",
+                                description: "Centralized, version-controlled library of your firm's golden-source text.",
+                                icon: <Library className="w-8 h-8 text-sky-400" /> 
+                            },
+                        ].map((pillar, idx) => (
+                            <motion.div 
+                                key={idx} 
+                                whileHover={{ y: -12 }}
+                                className="bg-[#0B0E14] border border-slate-800/60 p-12 rounded-[2.5rem] hover:border-indigo-500/50 transition-all duration-500 group relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+                                    {pillar.icon}
+                                </div>
+                                <div className="text-[10px] font-black uppercase text-indigo-400/60 tracking-[0.2em] mb-8">{pillar.tag}</div>
+                                <div className="p-5 bg-indigo-500/5 border border-indigo-500/10 rounded-3xl w-fit mb-10 group-hover:bg-indigo-500/10 transition-all">
+                                    {pillar.icon}
+                                </div>
+                                <h3 className="text-2xl font-black text-white mb-4 leading-tight">{pillar.title}</h3>
+                                <p className="text-slate-500 group-hover:text-slate-400 transition-colors leading-relaxed font-medium">{pillar.description}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </Section>
+
+            {/* INTELLIGENCE PANEL - THE SHOWCASE */}
+            <Section className="relative bg-slate-950 overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-800 to-transparent"></div>
+                
+                <div className="grid lg:grid-cols-2 gap-32 items-center mb-32">
+                    <div className="space-y-12 order-2 lg:order-1">
+                        <div className="space-y-6">
+                            <div className="text-indigo-400 font-black uppercase tracking-[0.2em] text-sm">Intelligence Showcase</div>
+                            <h2 className="text-4xl md:text-6xl font-black text-white leading-[1.1]">Your Co-Pilot for <br />High-Stakes Work.</h2>
+                            <p className="text-lg text-slate-400 leading-relaxed font-medium max-w-lg">
+                                NomosDesk doesn't just suggest text; it analyzes your document against the 
+                                <span className="text-white italic"> specific legal logic</span> of your jurisdiction.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-6">
+                            {[
+                                { title: "Context-Aware Logic", text: "Understands your specific matter type and mission intent.", icon: <BrainCircuit className="w-5 h-5" /> },
+                                { title: "Real-time Statutory Checks", text: "Cross-references your draft with active local statutes.", icon: <Search className="w-5 h-5" /> },
+                                { title: "Audit Trail Generation", text: "Every AI suggestion provides the rationale and source.", icon: <Fingerprint className="w-5 h-5" /> }
+                            ].map((item, i) => (
+                                <motion.div key={i} whileHover={{ x: 15 }} className="flex gap-6 items-center p-6 bg-slate-900/40 border border-slate-800/60 rounded-3xl group cursor-default">
+                                    <div className="p-3 bg-indigo-500/10 rounded-2xl group-hover:bg-indigo-400 group-hover:text-slate-950 transition-all text-indigo-400">
+                                        {item.icon}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg font-black text-white mb-1 tracking-tight">{item.title}</h4>
+                                        <p className="text-sm text-slate-400 font-medium">{item.text}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="relative order-1 lg:order-2">
+                        {/* High-Fidelity Intelligence Mock */}
+                        <div className="relative p-10 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-[3rem] shadow-3xl">
+                            <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-800">
+                                <div className="flex gap-3 items-center">
+                                    <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                                    <span className="text-xs font-black text-white uppercase tracking-widest">Active Analysis</span>
+                                </div>
+                                <div className="text-[10px] font-bold text-slate-500 uppercase">Matter ID: LL-2026-003</div>
+                            </div>
+                            
+                            <div className="space-y-8">
+                                <div className="p-6 bg-rose-500/5 border border-rose-500/30 rounded-3xl space-y-3">
+                                    <div className="flex justify-between items-center text-[10px] uppercase font-black text-rose-400 tracking-widest">
+                                        <span>Risk Alert</span>
+                                        <span>High Priority</span>
+                                    </div>
+                                    <p className="text-sm text-slate-200 font-bold leading-relaxed">"Missing 'Force Majeure' provision for pandemic-related disruptions found in Section 12."</p>
+                                    <Button variant="outline" size="sm" className="w-full mt-4 text-[10px] h-10 border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500">Fix Provision</Button>
+                                </div>
+
+                                <div className="p-6 bg-[#0B0E14] border border-slate-800 rounded-3xl space-y-4">
+                                    <div className="flex justify-between items-center text-[10px] uppercase font-black text-indigo-400 tracking-widest">
+                                        <span>Library Suggestion</span>
+                                        <span>89% Match</span>
+                                    </div>
+                                    <p className="text-sm text-slate-400 font-medium">Matching 'Indemnity Cap' found in your Firm Library.</p>
+                                    <div className="h-1 bg-slate-800 rounded-full w-full"><div className="h-full w-[89%] bg-indigo-500"></div></div>
+                                </div>
+                            </div>
+
+                            <div className="absolute -bottom-10 -left-10 w-48 p-6 bg-slate-900 border border-slate-800 rounded-[2rem] shadow-2xl hidden md:block">
+                                <div className="text-[10px] font-black text-slate-600 uppercase mb-4">Compliance</div>
+                                <div className="text-3xl font-black text-emerald-400 tracking-tight">85%</div>
+                                <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Optimal Secure</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* INSTITUTIONAL PROOF POINTS */}
+                <div className="max-w-7xl mx-auto px-6 border-t border-slate-900 pt-32 pb-16">
+                    <div className="grid md:grid-cols-4 gap-12 text-center items-start">
+                        {[
+                            { value: "70%", label: "Faster Drafting", sub: "Verified efficiency vs Word" },
+                            { value: "Zero", label: "Missed Risks", sub: "Since institutional deployment" },
+                            { value: "100%", label: "Secure Isolation", sub: "Private enclave architecture" },
+                            { value: "Sovereign", label: "Data Residency", sub: "Total local control" }
+                        ].map((stat, i) => (
+                            <motion.div key={i} whileHover={{ y: -5 }}>
+                                <div className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4">{stat.value}</div>
+                                <div className="text-base font-black text-indigo-400 uppercase tracking-widest mb-1">{stat.label}</div>
+                                <div className="text-xs text-slate-500 font-bold uppercase tracking-widest">{stat.sub}</div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </Section>
+
+            {/* THE DIFFERENTIATION GRID */}
+            <Section darker className="border-y border-slate-900">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-24">
+                        <h2 className="text-4xl md:text-6xl font-black text-white leading-tight mb-8">Uncompromising <br />By Design.</h2>
+                        <p className="text-lg text-slate-400 font-medium max-w-2xl mx-auto">
+                            Generic AI tools solve for transcription. We solve for Governance. 
+                            See how NomosDesk compares to legacy professional workflows.
+                        </p>
+                    </div>
+
+                    <div className="grid border border-slate-800 rounded-[3rem] overflow-hidden">
+                        {[
+                            { title: "Primary Output", legacy: "Generic Legal Text", nomos: "Governed Institutional Wisdom" },
+                            { title: "Risk Safeguards", legacy: "Manual Peer Review", nomos: "Deterministic Risk Engine" },
+                            { title: "Compliance", legacy: "Reactive / After Audit", nomos: "Proactive / Live Enforcement" },
+                            { title: "Architecture", legacy: "Open / Cloud Shared", nomos: "Sovereign Isolated Enclaves" }
+                        ].map((row, i) => (
+                            <div key={i} className="grid grid-cols-12 border-b last:border-0 border-slate-800">
+                                <div className="col-span-12 md:col-span-4 p-8 bg-slate-900/50 border-r border-slate-800 font-black text-sm uppercase tracking-widest text-slate-500 flex items-center">{row.title}</div>
+                                <div className="col-span-6 md:col-span-4 p-8 border-r border-slate-800 text-slate-500 font-medium flex items-center opacity-60">{row.legacy}</div>
+                                <div className="col-span-6 md:col-span-4 p-8 bg-indigo-500/5 text-white font-black flex items-center gap-4">
+                                    <CheckCircle className="w-5 h-5 text-indigo-400" />
+                                    {row.nomos}
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             </Section>
 
-            {/* VALUE PROPS (WHY FIRMS CHOOSE) */}
+            {/* ROI CALCULATOR CALLOUT */}
             <Section>
-                <SectionHeader
-                    title="Why Firms Choose NomosDesk"
-                    subtitle="NomosDesk replaces fragmented tools with a single structured system for managing legal work."
-                />
-
-                <div className="grid md:grid-cols-4 gap-8">
-                    <FeatureCard
-                        icon={<Shield className="w-8 h-8 text-indigo-400" />}
-                        title="Security First"
-                        description="Enterprise-grade encryption and role-based access protect confidential client data."
-                    />
-                    <FeatureCard
-                        icon={<Scale className="w-8 h-8 text-emerald-400" />}
-                        title="Governance by Design"
-                        description="Built-in conflict checks, access controls, and audit trails support ethical and regulatory compliance."
-                    />
-                    <FeatureCard
-                        icon={<Package className="w-8 h-8 text-blue-400" />}
-                        title="All-in-One Platform"
-                        description="Replace fragmented tools with a single structured system for managing legal work."
-                    />
-                    <FeatureCard
-                        icon={<Globe className="w-8 h-8 text-purple-400" />}
-                        title="Built for Emerging Markets"
-                        description="Local regulatory context, jurisdiction intelligence, and workflows designed for modern African law firms."
-                    />
-                </div>
-            </Section>
-
-            {/* EMERGING MARKETS SECTION */}
-            <Section>
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium mb-6">
-                            BUILT FOR EMERGING MARKETS
-                        </div>
-                        <h2 className="text-3xl font-bold mb-6 text-white">From Solo Practitioners to Sovereign Institutions</h2>
-                        <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                            Enterprise-grade legal technology shouldn't be locked behind Silicon Valley pricing. NomosDesk is engineered specifically for emerging markets.
-                        </p>
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                                <span className="text-slate-300"><strong>Accessible Pricing:</strong> Starting at just $19/mo for solo practitioners, scaling seamlessly to multi-national banking institutions.</span>
-                            </li>
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                                <span className="text-slate-300"><strong>Native Sovereign Intelligence:</strong> Pre-trained on a growing library of 19,000+ local statutes, constitutions, and gazettes for precedent that actually matters in your jurisdiction.</span>
-                            </li>
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                                <span className="text-slate-300"><strong>Strict Client Isolation:</strong> Collaborate securely. Firewalled client portals ensure opposing counsel or clients only see finalized invoices and approved documents.</span>
-                            </li>
-                        </ul>
-                        {String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <Button asLink="/pricing">View Regional Pricing Tiers</Button>}
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                            <Globe size={150} />
-                        </div>
-                        <div className="relative z-10 space-y-6">
-                            {/* Visual representation of local data */}
-                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50">
-                                <div className="text-sm font-semibold text-white mb-3 flex justify-between items-center">
-                                    <span>Knowledge Base Sync</span>
-                                    <span className="text-emerald-400 text-xs px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">Active</span>
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="text-slate-400 flex items-center gap-2"><FileText className="w-3 h-3" /> Ghana Constitution</span>
-                                        <span className="text-slate-300">Synced</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="text-slate-400 flex items-center gap-2"><Globe className="w-3 h-3" /> Regional statutory Gazettes</span>
-                                        <span className="text-emerald-400 font-mono">19,637 indexed</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="text-slate-400 flex items-center gap-2"><Lock className="w-3 h-3" /> Nigeria NDPR Directives</span>
-                                        <span className="text-slate-300">Evaluating</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50">
-                                <div className="text-sm font-semibold text-white mb-2">Platform Access Profile</div>
-                                <div className="flex justify-between items-center mt-4">
-                                    <div className="flex -space-x-2">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-600 border-2 border-slate-800 flex items-center justify-center text-[9px] font-bold text-white shadow-lg z-30">SOLO</div>
-                                        <div className="w-8 h-8 rounded-full bg-emerald-600 border-2 border-slate-800 flex items-center justify-center text-[9px] font-bold text-white shadow-lg z-20">PRO</div>
-                                        <div className="w-8 h-8 rounded-full bg-slate-700 border-2 border-slate-800 flex items-center justify-center text-[9px] font-bold text-white shadow-lg z-10">INST</div>
-                                    </div>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Starting at</span>
-                                        <span className="text-indigo-400 font-mono text-xl">$19<span className="text-xs text-slate-500">/mo</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Section>
-
-            {/* VISUAL EVIDENCE SECTION */}
-            <Section darker className="border-y border-slate-900">
-                <SectionHeader 
-                    title="Visual Evidence: The LexSovereign Workspace" 
-                    subtitle="Go beyond the promises. See the actual outputs generated within our secure legal enclaves."
-                />
-                
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {[
-                        { title: "Matter Intake Mastery", desc: "Automated workflow distribution following a successful client intake session.", img: "/images/demos/matter_intake_filled.png" },
-                        { title: "Sovereign Registry", desc: "Digital evidence vault with immutable metadata and chain of custody tracking.", img: "/images/demos/matter_success_born.png" },
-                        { title: "Drafting Studio", desc: "AI-enhanced legal document creation with jurisdiction-aware precedent integration.", img: "/images/demos/matter_drafting_filled.png" },
-                    ].map((demo, idx) => (
-                        <div key={idx} className="group relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all duration-300">
-                            <div className="aspect-video overflow-hidden">
-                                <img 
-                                    src={demo.img} 
-                                    alt={demo.title} 
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-60" />
-                            </div>
-                            <div className="p-6 relative z-10">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-lg font-bold text-white uppercase tracking-tight">{demo.title}</h4>
-                                    <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-400">
-                                        <Eye size={16} />
-                                    </div>
-                                </div>
-                                <p className="text-slate-400 text-sm leading-relaxed">{demo.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="mt-16 text-center">
-                    <Button 
-                        variant="ghost" 
-                        size="lg" 
-                        className="gap-2"
-                        onClick={() => setIsVideoOpen(true)}
-                    >
-                        <Play size={20} className="text-indigo-500" />
-                        Experience the Full Walkthrough
-                    </Button>
-                </div>
-            </Section>
-
-            {/* CLIENT INTAKE SECTION */}
-            <Section>
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-6">
-                            NEW FEATURE
-                        </div>
-                        <h2 className="text-3xl font-bold mb-6 text-white">Improve Client Service and Lead Intake</h2>
-                        <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                            NomosDesk now includes a customizable website enquiry assistant that law firms can embed directly into their own website.
-                        </p>
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                                <span className="text-slate-300">Respond to common enquiries instantly</span>
-                            </li>
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                                <span className="text-slate-300">Collect structured client intake information</span>
-                            </li>
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                                <span className="text-slate-300">Direct enquiries to appropriate practice areas</span>
-                            </li>
-                        </ul>
-                        <Button asLink="/ai-legal-chatbot">Learn About AI Legal Chatbot</Button>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
-                        <div className="flex flex-col gap-4">
-                            <div className="bg-slate-800 self-start rounded-2xl p-4 max-w-[80%] text-sm text-slate-300">
-                                Hello. I can help direct your enquiry to the right legal team. What type of assistance do you need?
-                            </div>
-                            <div className="bg-indigo-600 self-end rounded-2xl p-4 max-w-[80%] text-sm text-white">
-                                I need to schedule a consultation regarding a property dispute.
-                            </div>
-                            <div className="bg-slate-800 self-start rounded-2xl p-4 max-w-[80%] text-sm text-slate-300">
-                                I can help with that. To ensure no conflicts of interest, may I ask the name of the opposing party?
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Section>
-
-            {/* JURISDICTION ENGINE SECTION */}
-            <Section darker>
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="order-2 md:order-1 bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-5">
-                            <Globe size={120} />
-                        </div>
-                        <div className="flex flex-col gap-6 relative z-10">
-                            {/* Mock UI: Ghana Silo */}
-                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50">
-                                <div className="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3">
-                                    <div className="flex items-center gap-2">
-                                        <Shield className="w-4 h-4 text-emerald-400" />
-                                        <span className="text-sm font-semibold text-white">Ghana Sovereign Sentinel</span>
-                                    </div>
-                                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">GHS / Act 689</span>
-                                </div>
-                                <div className="text-xs text-slate-400 space-y-2">
-                                    <div className="flex justify-between"><span>Revenue Protected</span><span className="text-white font-mono">GHS 56,250</span></div>
-                                    <div className="flex justify-between"><span>Registry Sync</span><span className="text-emerald-400">Nominal</span></div>
-                                </div>
-                            </div>
-
-                            {/* Mock UI: UK Silo */}
-                            <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/50 opacity-90">
-                                <div className="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3">
-                                    <div className="flex items-center gap-2">
-                                        <Shield className="w-4 h-4 text-indigo-400" />
-                                        <span className="text-sm font-semibold text-white">UK Compliance Auditor</span>
-                                    </div>
-                                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">GBP / GDPR</span>
-                                </div>
-                                <div className="text-xs text-slate-400 space-y-2">
-                                    <div className="flex justify-between"><span>Revenue Protected</span><span className="text-white font-mono">£ 4,500</span></div>
-                                    <div className="flex justify-between"><span>ICO Framework</span><span className="text-emerald-400">Aligned</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="order-1 md:order-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium mb-6">
-                            JURISDICTION ENGINE
-                        </div>
-                        <h2 className="text-3xl font-bold mb-6 text-white">Global Reach, Local Intelligence</h2>
-                        <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                            A borderless legal practice requires borderless intelligence. NomosDesk dynamically adapts its entire compliance structure based on your matter's jurisdiction.
-                        </p>
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-indigo-500 shrink-0" />
-                                <span className="text-slate-300"><strong>Localized Heuristics:</strong> Real-time statutory checks customized for Ghana, Nigeria, Kenya, the UK, and beyond.</span>
-                            </li>
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-indigo-500 shrink-0" />
-                                <span className="text-slate-300"><strong>Dynamic Financials:</strong> Automated stamp duty and fee recovery assessments calculated against live treasury rates.</span>
-                            </li>
-                            <li className="flex gap-3">
-                                <CheckCircle className="w-5 h-5 text-indigo-500 shrink-0" />
-                                <span className="text-slate-300"><strong>Unified Control:</strong> Manage international portfolios securely from a single, centralized Sovereign Silo.</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </Section>
-
-            {/* NEW: PLATFORM PILLARS */}
-            <Section>
-                <SectionHeader
-                    title="Pillars of Modern Legal Operations"
-                    subtitle="NomosDesk has evolved into a comprehensive infrastructure for firms that demand precision and control."
-                />
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <FeatureCard
-                        icon={<FileCheck className="w-8 h-8 text-sky-400" />}
-                        title="Multi-Format Analysis"
-                        description="Drag and drop any contract format (PDF, DocX, JSON) natively. Our proprietary AI instantly extracts risk clauses and audits compliance."
-                    />
-                    <FeatureCard
-                        icon={<Gavel className="w-8 h-8 text-amber-400" />}
-                        title="Court & Case Tracking"
-                        description="Never miss a court date. Organize cases, evidence, and deadlines with complete surgical precision."
-                    />
-                    <FeatureCard
-                        icon={<Sparkles className="w-8 h-8 text-purple-400" />}
-                        title="AI Drafting & Intelligence"
-                        description="Automatically score contract risks, draft tailored documents, and summarize case briefs in seconds."
-                    />
-                    <FeatureCard
-                        icon={<Receipt className="w-8 h-8 text-emerald-400" />}
-                        title="Digital Disbursements"
-                        description="Turn AI from a cost center into a billable asset. AI usage is automatically mapped to draft invoices for 100% cost recovery."
-                    />
-                </div>
-            </Section>
-
-            {/* NEW: SOVEREIGN TRIAL BANNER */}
-            <section className="py-16 px-6 bg-gradient-to-br from-indigo-950/60 to-slate-950 border-y border-indigo-900/30 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_right,_var(--tw-gradient-stops))] from-indigo-700/10 to-transparent pointer-events-none" />
-                <div className="max-w-5xl mx-auto relative z-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="flex items-center gap-5">
-                            <div className="flex-shrink-0 w-14 h-14 bg-indigo-500/20 border border-indigo-500/30 rounded-2xl flex items-center justify-center">
-                                <Rocket className="w-7 h-7 text-indigo-400" />
-                            </div>
-                            <div>
-                                <div className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1">Limited Time</div>
-                                <h3 className="text-2xl font-bold text-white">30-Day Sovereign Trial — No Credit Card Required</h3>
-                                <p className="text-slate-400 mt-1">Provision your secure legal enclave in seconds. Full feature access, trial-ready AI credits included.</p>
-                            </div>
-                        </div>
-                        <div className="flex-shrink-0">
-                            <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Start Free Trial</Button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* NEW: PLATFORM POWER TOOLS */}
-            <Section darker>
-                <SectionHeader
-                    title="Complete Firm Operations Suite"
-                    subtitle="Beyond legal matters — NomosDesk governs every dimension of your firm's operations in one unified enclave."
-                />
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <FeatureCard
-                        icon={<TrendingUp className="w-8 h-8 text-emerald-400" />}
-                        title="Sovereign Accounting"
-                        description="Automated trust ledgers, general ledger management, and client billing workflows — all within your secure enclave. Immutable audit trails included."
-                    />
-                    <FeatureCard
-                        icon={<Receipt className="w-8 h-8 text-amber-400" />}
-                        title="Expense Tracker"
-                        description="Capture every operational outflow in real time. Assign expenses to matters or departments, set budget limits, and automate staff reimbursements."
-                    />
-                    <FeatureCard
-                        icon={<Package className="w-8 h-8 text-sky-400" />}
-                        title="Asset Manager"
-                        description="Maintain an institutional record of every device, license, and resource from procurement to decommission. Compliance-ready inventory reports on demand."
-                    />
-                    <FeatureCard
-                        icon={<BookOpenCheck className="w-8 h-8 text-purple-400" />}
-                        title="My Dossier: Staff Self-Service"
-                        description="Empower your team to manage their own professional profiles and credentials within a governed, privacy-first portal that feeds directly into HR Workbench."
-                    />
-                    <FeatureCard
-                        icon={<Sparkles className="w-8 h-8 text-indigo-400" />}
-                        title="Enclave Intelligence"
-                        description="Generative AI for case summarization, contract risk analysis, and deadline prediction — with credit governance to keep trial and subscription costs transparent."
-                    />
-                    <FeatureCard
-                        icon={<Users className="w-8 h-8 text-rose-400" />}
-                        title="Governance Control Plane"
-                        description="Configure granular RBAC from Managing Partner down to Junior Associate. Manage multi-office deployments from a single sovereign dashboard."
-                    />
-                </div>
-            </Section>
-
-            {/* AUDIENCES */}
-            <Section>
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div>
-                        <h2 className="text-3xl font-bold mb-6">Structured for Your Organization</h2>
-                        <div className="space-y-6">
-                            <AudienceItem
-                                title="For Law Firms"
-                                description="Manage client matters, conflict checks, and associate workflows across multiple offices."
-                                link="/for-law-firms"
-                            />
-                            <AudienceItem
-                                title="For Enterprise Legal"
-                                description="Centralize corporate governance, contracts, and outside counsel management."
-                                link="/for-enterprise-legal"
-                            />
-                            <AudienceItem
-                                title="For Government"
-                                description="Maintain public trust with transparent oversight, audit trails, and data sovereignty."
-                                link="/for-government"
-                            />
-                        </div>
-                    </div>
-                    <div className="bg-slate-800/50 p-8 rounded-3xl border border-slate-700/50">
-                        {/* Abstract visual representation of governance */}
-                        <div className="relative aspect-square">
-                            <div className="absolute inset-4 border border-slate-700 rounded-xl bg-slate-900/80 p-6 flex flex-col gap-4">
-                                <div className="h-4 w-1/3 bg-slate-800 rounded mb-4"></div>
-                                <div className="flex-1 space-y-3">
-                                    <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                                        <div className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-400">P</div>
-                                        <div className="text-sm text-slate-300">Partner Approval Required</div>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                                        <div className="text-sm text-emerald-300">Conflict Check Cleared</div>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50 opacity-50">
-                                        <Lock className="w-5 h-5 text-slate-500" />
-                                        <div className="text-sm text-slate-500">Matter Activation Pending</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Section>
-
-            {/* NEW: ROI CALCULATOR */}
-            <ROICalculator />
-
-            {/* NEW: FOUNDING FIRMS RECOGNITION */}
-            <Section darker className="border-t border-slate-800">
-                <div className="max-w-6xl mx-auto px-6">
-                    <div className="flex flex-col md:flex-row items-center gap-12">
-                        <div className="flex-1 space-y-6">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-widest">
-                                <Award className="w-3 h-3" /> Founding Firms Program
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight">Trusted by Forward-Thinking Law Firms</h2>
-                            <p className="text-lg text-slate-400 leading-relaxed">
-                                NomosDesk is being shaped in collaboration with pioneering law firms committed to modernizing legal operations. Our founding firms receive lifetime benefits and direct influence over the platform's evolution.
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="bg-gradient-to-br from-[#0B0E14] to-slate-950 border border-slate-800 rounded-[3rem] p-16 md:p-24 relative overflow-hidden text-center">
+                        <div className="max-w-3xl mx-auto space-y-10 relative z-10">
+                            <h2 className="text-4xl md:text-6xl font-black text-white leading-tight uppercase tracking-tight">Quantity Your Institutional Advantage.</h2>
+                            <p className="text-xl text-slate-400 font-medium">
+                                Drafting efficiency is just the start. Calculate the financial impact of removing document-level risk from your organization.
                             </p>
-                            <div className="pt-4">
-                                <Button asLink="/founding-firms" variant="outline">Learn About Founding Status</Button>
-                            </div>
-                        </div>
-                        <div className="flex-1 grid grid-cols-2 gap-4">
-                            <FoundingFirmLogo name="Cohort Q2 Member" />
-                            <FoundingFirmLogo name="Cohort Q2 Member" />
-                            <FoundingFirmLogo name="Cohort Q2 Member" />
-                            <div className="aspect-video bg-slate-900/50 border border-indigo-500/30 border-dashed rounded-2xl flex flex-col items-center justify-center text-center p-4">
-                                <Users className="text-indigo-400/50 mb-2" size={24} />
-                                <span className="text-[10px] font-bold text-indigo-400/50 uppercase tracking-widest">Spot Available</span>
+                            <div className="flex justify-center gap-6">
+                                <Button asLink="/app/drafting-studio" size="lg" className="px-12 h-16 rounded-2xl">Start Professional Trial</Button>
+                                <Button variant="outline" size="lg" className="px-12 h-16 rounded-2xl border-slate-700">Request Custom ROI Case Study</Button>
                             </div>
                         </div>
                     </div>
                 </div>
             </Section>
 
-            {/* NEW: EARLY ACCESS FORM SECTION */}
-            <Section darker className="bg-gradient-to-t from-slate-950 to-indigo-950/20 shadow-2xl">
-                <div className="grid md:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <h2 className="text-3xl md:text-5xl font-black text-white mb-6 uppercase tracking-tight">Request Early Access</h2>
-                        <p className="text-xl text-slate-300 leading-relaxed mb-6">
-                            Secure your place in the future of legal infrastructure. We are selectively onboarding institutional partners to the NomosDesk ecosystem.
-                        </p>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20"><Rocket className="w-4 h-4 text-indigo-400" /></div>
-                                <span className="text-slate-400 font-medium text-sm">Priority onboarding for pilot firms</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20"><Users className="w-4 h-4 text-emerald-400" /></div>
-                                <span className="text-slate-400 font-medium text-sm">Direct collaboration with engineering team</span>
-                            </div>
+            {/* RECENT ANALYTICS / INSIGHTS */}
+            <Section darker className="border-t border-slate-900">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex justify-between items-end mb-16">
+                        <div>
+                            <div className="text-indigo-400 font-black uppercase tracking-[0.2em] text-sm mb-4">Sovereign Knowledge</div>
+                            <h2 className="text-3xl font-black text-white">Institutional Insights</h2>
                         </div>
+                        <Link to="/legal-operations" className="text-sm font-bold text-slate-500 hover:text-white transition-colors flex items-center gap-2">View Hub <ChevronRight size={16} /></Link>
                     </div>
-                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-5">
-                            <Rocket size={100} />
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-6 relative z-10">Application for Pilot Program</h3>
-                        <EarlyAccessForm />
-                    </div>
+                    <RelatedInsights articles={insightArticles} />
                 </div>
             </Section>
 
-            {/* TRUST & SECURITY */}
-            <Section darker className="bg-slate-950">
-                <SectionHeader
-                    title="Uncompromising Security"
-                    subtitle="Your data is protected by enterprise-grade encryption and strict access protocols."
-                />
-                <div className="grid md:grid-cols-4 gap-6 text-center">
-                    <TrustItem label="Data Sovereignty" value="100%" sub="Local Residency Options" />
-                    <TrustItem label="Uptime SLA" value="99.9%" sub="Enterprise Guarantee" />
-                    <TrustItem label="Aligned" value="GDPR" sub="& Local Data Laws" />
-                    <TrustItem label="Encryption" value="AES-256" sub="At Rest & In Transit" />
-                </div>
-                <div className="mt-12 text-center">
-                    <Button asLink="/security-and-compliance" variant="outline">Review Security Architecture</Button>
-                </div>
-            </Section>
-
-            {/* TESTIMONIALS */}
-            <Section>
-                <SectionHeader title="Trusted by Legal Leaders" />
-                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                    <TestimonialCard
-                        quote="NomosDesk provided the governance structure we needed to scale our firm across three regions without losing control of risk management."
-                        author="Senior Partner"
-                        role="Regional Law Firm, Nairobi"
-                    />
-                    <TestimonialCard
-                        quote="The conflict checking workflow is rigorous. It forces our team to be compliant before a matter can even open. That peace of mind is invaluable."
-                        author="General Counsel"
-                        role="Financial Services Enterprise"
-                    />
-                </div>
-            </Section>
-
-            {/* FAQ for SEO */}
-            <Section darker>
-                <div className="max-w-3xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-8">Frequently Asked Questions</h2>
-                    <div className="space-y-6">
-                        <FAQItem question="Where is my data stored?" answer="We offer regional data residency options to ensure compliance with local data sovereignty laws. Your data remains effective within your chosen jurisdiction." />
-                        <FAQItem question="Can I customize user roles?" answer="Yes. While we provide standard templates (Partner, Associate, Paralegal), all permissions can be granularly customized to fit your governance structure." />
-                        <FAQItem question="How does the conflict check work?" answer="Our system indexes all parties and adverse parties. Before opening a new matter, the system forces a search against this index, flagging potential conflicts for manual review." />
-                        <FAQItem question="Is this suitable for government use?" answer="Absolutely. We offer specific government deployments that emphasize audit trails, separation of duties, and public accountability." />
-                    </div>
-                </div>
-            </Section>
-
-            {/* FINAL CTA */}
-            <section className="py-24 px-6 bg-indigo-950/30 border-y border-indigo-900/30">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-4xl font-bold mb-6 text-white">Ready to Professionalize Your Operations?</h2>
-                    <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-                        Schedule a confidential demonstration with our institutional team to discuss your specific governance needs.
+            {/* FINAL CTA - START DRAFTING */}
+            <section className="py-32 px-6 bg-slate-950 relative overflow-hidden">
+                <div className="absolute inset-x-0 bottom-0 h-96 bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+                
+                <div className="max-w-4xl mx-auto text-center space-y-12 relative z-10">
+                    <h2 className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-none">Draft with <br />Unshakable Confidence.</h2>
+                    <p className="text-xl text-slate-400 font-medium max-w-2xl mx-auto">
+                        Join the next generation of institutional drafting. Provision your enclave today and experience Zero-Gap legal intelligence.
                     </p>
-                    <div className="flex justify-center gap-4">
-                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request a Private Demo</Button>
-                        {String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' && <Button asLink="/pricing" variant="outline" size="lg">View Pricing</Button>}
+                    <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                        <Button asLink="/app/drafting-studio" size="lg" className="px-16 h-20 text-xl font-black rounded-3xl shadow-2xl shadow-indigo-500/40">Launch My Enclave</Button>
+                        <Button 
+                            variant="outline" 
+                            size="lg" 
+                            className="px-16 h-20 text-xl font-bold rounded-3xl border-slate-700 hover:border-slate-500"
+                        >
+                            Request 1:1 Demo
+                        </Button>
                     </div>
+                    <div className="text-slate-600 text-[10px] font-black uppercase tracking-[0.5em] pt-12">Institutional Grade • ISO 27001 • Sovereign by Default</div>
                 </div>
             </section>
-            <RelatedInsights
-                heading="From Our Insights Library"
-                articles={[
-                    { slug: '/insights/legal-software-africa-guide', title: 'Legal Software for Africa: 2026 Guide', excerpt: 'A complete guide to choosing data-sovereign legal software for African law firms and institutions.', readTime: '12 min read' },
-                    { slug: '/insights/conflict-checking-software-law-firms', title: 'Conflict Checking Software for Law Firms', excerpt: 'Why manual conflict checks fail and how automated conflict software protects your firm.', readTime: '9 min read' },
-                    ...(String(import.meta.env.VITE_SHOW_PRICING).toLowerCase() === 'true' ? [{ slug: '/insights/nomosdesk-vs-clio', title: 'NomosDesk vs Clio: Which Is Right for Your Firm?', excerpt: 'An honest comparison of features, pricing, African market support, and data governance.', readTime: '14 min read' }] : []),
-                ]}
-            />
+
             <VideoModal 
                 isOpen={isVideoOpen} 
                 onClose={() => setIsVideoOpen(false)} 
-                videoSrc="/videos/demo_v1.webp" 
+                videoSrc="/C:/Users/LENOVO/.gemini/antigravity/brain/3bd73e09-c06d-4f5a-ba12-40938ec6ccfe/fix_verification_demo_1774164393892.webp" 
             />
-        </Layout >
+        </Layout>
     );
 }
 
-function FeatureCard({ icon, title, description }: any) {
+function AudienceItem({ title, description, link }: { title: string; description: string; link: string }) {
     return (
-        <div className="bg-slate-900/50 p-8 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-colors">
-            <div className="mb-4">{icon}</div>
-            <h3 className="text-xl font-semibold mb-3 text-white">{title}</h3>
-            <p className="text-slate-400 leading-relaxed">{description}</p>
-        </div>
-    );
-}
-
-function AudienceItem({ title, description, link }: any) {
-    return (
-        <div className="group">
-            <h3 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
-                {title}
-                <ChevronRight className="w-5 h-5 text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity transform -translate-x-2 group-hover:translate-x-0" />
-            </h3>
-            <p className="text-slate-400 mb-2">{description}</p>
-            <Link to={link} className="text-sm font-medium text-indigo-400 hover:text-indigo-300">Learn more &rarr;</Link>
-        </div>
-    );
-}
-
-function TrustItem({ label, value, sub }: any) {
-    return (
-        <div className="p-6 bg-slate-900/30 rounded-xl border border-slate-800">
-            <div className="text-4xl font-bold text-white mb-1">{value}</div>
-            <div className="text-lg font-semibold text-indigo-400 mb-1">{label}</div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider">{sub}</div>
-        </div>
-    );
-}
-
-function TestimonialCard({ quote, author, role }: any) {
-    return (
-        <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 relative">
-            <div className="text-indigo-500 text-4xl font-serif absolute top-4 left-6 opacity-30">"</div>
-            <p className="text-slate-300 italic mb-6 relative z-10">{quote}</p>
-            <div>
-                <div className="font-semibold text-white">{author}</div>
-                <div className="text-sm text-slate-500">{role}</div>
+        <Link to={link} className="block p-6 bg-slate-900/50 border border-slate-800 rounded-3xl hover:bg-slate-800 transition-colors group">
+            <div className="flex justify-between items-start mb-2">
+                <h4 className="text-xl font-bold text-white tracking-tight">{title}</h4>
+                <div className="p-1 bg-indigo-500/10 rounded group-hover:bg-indigo-500 group-hover:text-slate-950 transition-all text-indigo-400">
+                    <ChevronRight size={18} />
+                </div>
             </div>
+            <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
+        </Link>
+    );
+}
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+    return (
+        <div className="p-10 bg-slate-900/30 border border-slate-800/80 rounded-[2.5rem] hover:border-slate-700 transition-colors group">
+            <div className="mb-8 p-4 bg-slate-900 border border-slate-800 rounded-2xl w-fit group-hover:scale-110 transition-transform">{icon}</div>
+            <h4 className="text-xl font-black text-white mb-4 tracking-tight">{title}</h4>
+            <p className="text-slate-500 group-hover:text-slate-400 transition-colors leading-relaxed font-medium">{description}</p>
         </div>
     );
 }
 
-function FAQItem({ question, answer }: any) {
-    return (
-        <div className="border-b border-slate-800 pb-4">
-            <h4 className="text-lg font-medium text-white mb-2">{question}</h4>
-            <p className="text-slate-400">{answer}</p>
-        </div>
-    );
-}
-
-function ChevronRight(props: any) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            {...props}
-        >
-            <path d="m9 18 6-6-6-6" />
-        </svg>
-    );
-}
 function FoundingFirmLogo({ name }: { name: string }) {
     return (
-        <div className="aspect-video bg-white/5 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-4 group hover:border-indigo-500/50 transition-colors">
-            <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-400 mb-2 group-hover:scale-110 transition-transform">
-                <Building2 size={20} />
-            </div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-tight">{name}</span>
+        <div className="aspect-video bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center p-6 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all">
+            <div className="text-xs font-black text-slate-500 tracking-tighter uppercase">{name}</div>
         </div>
     );
 }

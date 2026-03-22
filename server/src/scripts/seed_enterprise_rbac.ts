@@ -43,8 +43,8 @@ const STANDARD_PERMISSIONS = [
     { id: 'ACCESS:HR', resource: 'HR', action: 'ACCESS', description: 'Can access the HR workbench.' },
     
     // Clients
-    { id: 'VIEW_CLIENTS', resource: 'CLIENT', action: 'VIEW', description: 'Can view clients.' },
-    { id: 'CREATE_CLIENT', resource: 'CLIENT', action: 'CREATE', description: 'Can create clients.' },
+    { id: 'VIEW:CLIENT', resource: 'CLIENT', action: 'VIEW', description: 'Can view clients.' },
+    { id: 'CREATE:CLIENT', resource: 'CLIENT', action: 'CREATE', description: 'Can create clients.' },
     
     // System & Portal
     { id: 'ACCESS:CLIENT_PORTAL', resource: 'CLIENT_PORTAL', action: 'ACCESS', description: 'Can access the client portal.' },
@@ -93,8 +93,8 @@ async function main() {
                 permissions: {
                     connect: [
                         { id: 'VIEW_TENANT_SETTINGS' },
-                        { id: 'VIEW_CLIENTS' },
-                        { id: 'CREATE_CLIENT' },
+                        { id: 'VIEW:CLIENT' },
+                        { id: 'CREATE:CLIENT' },
                         { id: 'EXPORT_DOCUMENT' },
                         { id: 'VIEW_MATTER' },
                         { id: 'CREATE:DRAFT' },
@@ -109,6 +109,20 @@ async function main() {
         console.log(`Updated INTERNAL_COUNSEL role permissions for tenant: ${role.tenantId || 'Global'}`);
     }
     
+    // Assign to MANAGING_PARTNER
+    const managingPartners = await prisma.role.findMany({ where: { name: 'MANAGING_PARTNER' } });
+    for (const role of managingPartners) {
+        await prisma.role.update({
+            where: { id: role.id },
+            data: {
+                permissions: {
+                    connect: STANDARD_PERMISSIONS.map(p => ({ id: p.id }))
+                }
+            }
+        });
+        console.log(`Updated MANAGING_PARTNER role permissions for tenant: ${role.tenantId || 'Global'}`);
+    }
+
     // Assign to GLOBAL_ADMIN explicitly (though they have a role bypass in middleware, it helps frontend checks)
     const globalAdmins = await prisma.role.findMany({ where: { name: 'GLOBAL_ADMIN' } });
     for (const role of globalAdmins) {

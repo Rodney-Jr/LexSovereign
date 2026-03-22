@@ -149,6 +149,7 @@ model Tenant {
   syncLogs              SyncLog[]
   users                 User[]
   workflows             Workflow[]
+  clauses               Clause[]
 }
 
 model ChatbotConfig {
@@ -573,6 +574,24 @@ model DocumentTemplate {
   tenant       Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@unique([name, tenantId])
+}
+
+model Clause {
+  id           String   @id @default(uuid())
+  title        String
+  category     String
+  jurisdiction String   @default("GH_ACC_1")
+  content      Json
+  tags         String[] @default([])
+  usageCount   Int      @default(0)
+  isGlobal     Boolean  @default(false)
+  tenantId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([category])
+  @@index([tenantId])
 }
 
 model RegulatoryRule {

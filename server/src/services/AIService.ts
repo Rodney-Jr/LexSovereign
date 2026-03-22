@@ -1,4 +1,5 @@
 import { prisma } from '../db';
+import { LegalRiskEngine } from '../engines/risk/riskEngine';
 
 export interface AIAnalysisResult {
     score: number;
@@ -132,5 +133,153 @@ export class AIService {
         await this.callLLM(prompt, { tenantId, matterId: deadlineElement.matterId });
 
         return { riskLevel: 'Low', reason: 'Historical performance is stable.' };
+    }
+
+    /**
+     * AI Copilot: Identify Drafting Context
+     */
+    static async identifyDraftingContext(tenantId: string, content: any) {
+        if (!content || typeof content !== 'string') {
+            console.warn("[AIService] identifyDraftingContext received non-string content.");
+            return {
+                sectionName: "General Provisions",
+                documentType: "Legal Instrument",
+                jurisdiction: "Ghana",
+                confidenceLevel: "LOW"
+            };
+        }
+
+        const contentLower = content.toLowerCase();
+        
+        let sectionName = "General Provisions";
+        let documentType = "Legal Instrument";
+        let confidenceLevel = "MEDIUM";
+
+        if (contentLower.includes("termination")) sectionName = "Termination Clause";
+        else if (contentLower.includes("indemnity")) sectionName = "Indemnification";
+        else if (contentLower.includes("confidentiality")) sectionName = "Confidentiality";
+        else if (contentLower.includes("governing law")) sectionName = "Governing Law";
+
+        if (contentLower.includes("agreement") || contentLower.includes("contract")) documentType = "Commercial Agreement";
+        if (contentLower.includes("deed")) documentType = "Deed of Conveyance";
+        if (contentLower.includes("employment")) documentType = "Employment Contract";
+
+        if (content.length > 500) confidenceLevel = "HIGH";
+
+        return {
+            sectionName,
+            documentType,
+            jurisdiction: "Ghana",
+            confidenceLevel
+        };
+    }
+
+    /**
+     * AI Copilot: Suggest Clauses based on document context
+     */
+    static async suggestClauses(tenantId: string, content: any, jurisdiction: string = 'Ghana') {
+        const text = typeof content === 'string' ? content : "";
+        const contentLower = text.toLowerCase();
+        const detectedKeywords = ['indemnity', 'termination', 'confidentiality', 'disclosure', 'liability', 'governing law', 'force majeure', 'lease', 'employment'];
+        const matchedKeywords = detectedKeywords.filter(k => contentLower.includes(k));
+
+        const relevantClauses = await (prisma as any).clause.findMany({
+            where: {
+                OR: [
+                    { category: { in: matchedKeywords.map(k => k.toUpperCase()) } },
+                    { jurisdiction: jurisdiction },
+                    { isGlobal: true }
+                ]
+            },
+            take: 5,
+            orderBy: { usageCount: 'desc' }
+        });
+
+        return relevantClauses.map((clause: any) => ({
+            title: clause.title,
+            previewText: (clause.content as any)?.content?.[0]?.content?.[0]?.text || "Preview of clause content...",
+            reason: `Highly relevant to the ${clause.category} patterns detected in your draft.`,
+            clause
+        }));
+    }
+
+    /**
+     * AI Copilot: Detect Drafting Risks (Deterministic Rule-Based)
+     */
+    static async detectDraftingRisks(tenantId: string, content: any) {
+        const text = typeof content === 'string' ? content : "";
+        // High fidelity, jurisdiction-aware risk detection
+        const risks = await LegalRiskEngine.evaluate(text);
+        
+        return risks.map(risk => ({
+            id: risk.id,
+            severity: risk.severity.toUpperCase(), // Match frontend component names
+            title: risk.title,
+            description: risk.description,
+            actionLabel: risk.recommendation, // Use recommendation for label
+            actionType: risk.action
+        }));
+    }
+
+    /**
+     * AI Copilot: Process Natural Language Command
+     */
+    /**
+     * AI Copilot: Process Natural Language Command
+     */
+    static async processCopilotCommand(tenantId: string, command: string, context: string) {
+        const cmd = command.toLowerCase();
+        
+        // 1. Termination Intent
+        if (cmd.includes("termination")) {
+            const clause = await (prisma as any).clause.findFirst({ where: { category: "TERMINATION" } });
+            return { 
+                action: "INSERT", 
+                content: clause?.content || "This agreement may be terminated by either party upon thirty (30) days' written notice.", 
+                title: "Termination Clause" 
+            };
+        }
+
+        // 2. Indemnity Intent
+        if (cmd.includes("indemnity") || cmd.includes("indemnify")) {
+             const clause = await (prisma as any).clause.findFirst({ where: { category: "INDEMNITY" } });
+             return { 
+                 action: "INSERT", 
+                 content: clause?.content || "Each party shall indemnify and hold harmless the other from and against any third-party claims...", 
+                 title: "Indemnity Clause" 
+             };
+        }
+
+        // 3. Governing Law Intent (Ghana-specific)
+        if (cmd.includes("governing law") || cmd.includes("laws of ghana")) {
+             return {
+                 action: "INSERT",
+                 content: "This Agreement shall be governed by and construed in accordance with the laws of the Republic of Ghana.",
+                 title: "Governing Law"
+             };
+        }
+
+        // 4. Dispute Resolution / Arbitration (Ghana-specific)
+        if (cmd.includes("dispute") || cmd.includes("arbitration")) {
+             return {
+                 action: "INSERT",
+                 content: "Any dispute arising out of or in connection with this contract shall be referred to and finally resolved by arbitration under the rules of the Ghana Arbitration Centre.",
+                 title: "Arbitration Clause"
+             };
+        }
+
+        // 5. Execution Block
+        if (cmd.includes("execution") || cmd.includes("signature") || cmd.includes("sign")) {
+             return {
+                action: "INSERT",
+                content: "\n\nIN WITNESS WHEREOF, the parties hereto have executed this Agreement as of the date first written above.\n\n__________________________\nParty A\n\n__________________________\nParty B\n",
+                title: "Execution Block"
+             };
+        }
+
+        return { 
+            action: "CHAT", 
+            message: "I've analyzed your request. I recommend adding a standardized Governing Law provision to ensure enforceability in Ghana." 
+        };
     }
 }

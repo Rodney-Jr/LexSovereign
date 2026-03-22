@@ -21,7 +21,6 @@ import {
   Eye,
   RefreshCw
 } from 'lucide-react';
-import BlankDocumentEditor from './BlankDocumentEditor';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
@@ -841,7 +840,7 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
       {selectedTemplateId && (
         <DraftingStudio
           templateId={selectedTemplateId}
-          matterId={filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : null)}
+          initialData={{ matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : null) }}
           onClose={() => setSelectedTemplateId(null)}
           onSave={(name, content) => {
             onAddDocument({
@@ -863,14 +862,17 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
         />
       )}
       {showBlankEditor && (
-        <BlankDocumentEditor
+        <DraftingStudio
+          initialData={{
+            id: editingDoc?.id,
+            name: editingDoc?.name,
+            content: editingDoc?.content,
+            matterId: filterMatterId !== 'All' ? filterMatterId : (uniqueMatterIds.length > 0 && uniqueMatterIds[0] ? uniqueMatterIds[0] : null),
+          }}
           onClose={() => {
             setShowBlankEditor(false);
             setEditingDoc(null);
           }}
-          initialId={editingDoc?.id}
-          initialName={editingDoc?.name}
-          initialContent={editingDoc?.content}
           onSave={async (name, content, id) => {
             if (id) {
               await onUpdateDocument(id, { name, content });

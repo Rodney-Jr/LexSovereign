@@ -7,105 +7,58 @@ import { TenantService } from '../services/TenantService';
 const prisma = new PrismaClient();
 
 const PERMISSIONS = [
-    // Platform
-    { id: 'manage_platform', description: 'Full platform control', resource: 'PLATFORM', action: 'MANAGE' },
-    { id: 'create_tenant', description: 'Create new tenants', resource: 'TENANT', action: 'CREATE' },
-    { id: 'configure_bridge', description: 'Configure integration bridges', resource: 'BRIDGE', action: 'CONFIGURE' },
-    { id: 'read_all_audits', description: 'Read system-wide audit logs', resource: 'AUDIT', action: 'READ_ALL' },
-
-    // Leadership
-    { id: 'manage_tenant', description: 'Manage tenant settings', resource: 'TENANT', action: 'MANAGE' },
-    { id: 'manage_users', description: 'Manage users and roles', resource: 'USER', action: 'MANAGE' },
-    { id: 'manage_roles', description: 'Create and edit custom roles', resource: 'ROLE', action: 'MANAGE' },
-    { id: 'approve_matter_high_risk', description: 'Approve high risk matters', resource: 'MATTER', action: 'APPROVE_HIGH_RISK' },
-    { id: 'approve_spend', description: 'Approve external spend', resource: 'FINANCE', action: 'APPROVE' },
-
-    // Practice
-    { id: 'sign_document', description: 'Sign legal documents', resource: 'DOCUMENT', action: 'SIGN' },
-    { id: 'close_matter', description: 'Close/Archive matters', resource: 'MATTER', action: 'CLOSE' },
-    { id: 'create_matter', description: 'Create new matters', resource: 'MATTER', action: 'CREATE' },
-    { id: 'edit_document', description: 'Edit document content', resource: 'DOCUMENT', action: 'EDIT' },
-    { id: 'override_ai', description: 'Override AI safety checks', resource: 'AI', action: 'OVERRIDE' },
-    { id: 'draft_document', description: 'Draft documents', resource: 'DOCUMENT', action: 'DRAFT' },
-
-    // Ops & Compliance
-    { id: 'design_workflow', description: 'Design workflows', resource: 'WORKFLOW', action: 'DESIGN' },
-    { id: 'upload_document', description: 'Upload documents', resource: 'DOCUMENT', action: 'UPLOAD' },
-    { id: 'read_billing', description: 'View billing dashboards', resource: 'BILLING', action: 'READ' },
-    { id: 'configure_rre', description: 'Configure Regulatory Rules Engine', resource: 'RRE', action: 'CONFIGURE' },
-    { id: 'configure_scrub', description: 'Configure PII scrubbing', resource: 'SCRUB', action: 'CONFIGURE' },
-
-    // Banking Specific
-    { id: 'approve_kyc', description: 'Approve KYC applications', resource: 'COMPLIANCE', action: 'APPROVE_KYC' },
-    { id: 'report_suspicious', description: 'File Suspicious Activity Reports', resource: 'COMPLIANCE', action: 'REPORT_SAR' },
-    { id: 'edit_policy', description: 'Edit internal banking policies', resource: 'POLICY', action: 'EDIT' },
-    { id: 'verify_collateral', description: 'Verify loan collateral', resource: 'FINANCE', action: 'VERIFY' },
-    { id: 'audit_access', description: 'Audit data access logs', resource: 'AUDIT', action: 'AUDIT_ACCESS' },
-
-    // Insurance Specific
-    { id: 'assess_coverage', description: 'Assess insurance coverage', resource: 'CLAIM', action: 'ASSESS' },
-    { id: 'approve_settlement', description: 'Approve claim settlements', resource: 'CLAIM', action: 'APPROVE_SETTLEMENT' },
-    { id: 'manage_outside_counsel', description: 'Manage external panel counsel', resource: 'VENDOR', action: 'MANAGE' },
-    { id: 'assign_counsel', description: 'Assign counsel to litigation', resource: 'LITIGATION', action: 'ASSIGN' },
-    { id: 'review_policy_language', description: 'Review policy wording', resource: 'POLICY', action: 'REVIEW' },
-
-    // General Industry
-    { id: 'review_work', description: 'Review associate work', resource: 'WORK', action: 'REVIEW' },
-    { id: 'organize_files', description: 'Organize file systems', resource: 'FILE', action: 'ORGANIZE' },
-    { id: 'execute_research', description: 'Execute legal research', resource: 'RESEARCH', action: 'EXECUTE' },
-    { id: 'check_conflicts', description: 'Perform conflict checks', resource: 'CONFLICT', action: 'CHECK' },
-    { id: 'read_assigned_matter', description: 'Read matters assigned to user', resource: 'MATTER', action: 'READ' },
-
-    // Intellectual Property
-    { id: 'manage_patent_portfolio', description: 'Manage patent application cycles', resource: 'IP', action: 'MANAGE' },
-    { id: 'conduct_prior_art_research', description: 'Perform technical prior art research', resource: 'RESEARCH', action: 'PRIOR_ART' },
-
-    // Maritime Law
-    { id: 'verify_vessel_registry', description: 'Verify vessel ownership and registration', resource: 'MARITIME', action: 'VERIFY' },
-    { id: 'manage_admiralty_claims', description: 'Process maritime liens and arrests', resource: 'CLAIM', action: 'ADMIRALTY' },
-
-    // Real Estate
-    { id: 'manage_conveyancing', description: 'Manage land transfer workflows', resource: 'PROPERTY', action: 'CONVEYANCE' },
-    { id: 'verify_title_deeds', description: 'Verify land registry documentation', resource: 'PROPERTY', action: 'VERIFY' },
-
-    // Public Sector
-    { id: 'draft_legislation', description: 'Draft legislative instruments', resource: 'LEGAL', action: 'DRAFT_LAW' },
-    { id: 'manage_public_disclosure', description: 'Manage FOI and public disclosure requests', resource: 'GOVERNANCE', action: 'DISCLOSE' },
-
-    // Approval & Portal
-    { id: 'create_draft', description: 'Create document drafts', resource: 'DOCUMENT', action: 'CREATE_DRAFT' },
-    { id: 'edit_draft', description: 'Edit existing drafts', resource: 'DOCUMENT', action: 'EDIT_DRAFT' },
-    { id: 'approve_document', description: 'Approve finalized documents', resource: 'DOCUMENT', action: 'APPROVE' },
-    { id: 'submit_review', description: 'Submit work for review', resource: 'WORK', action: 'SUBMIT' },
-    { id: 'export_final', description: 'Export finalized documents', resource: 'DOCUMENT', action: 'EXPORT' },
-    { id: 'client_portal_access', description: 'Access to client portal', resource: 'PORTAL', action: 'ACCESS' },
-    { id: 'ai_chat_execute', description: 'Execute AI chat and research', resource: 'AI', action: 'CHAT' },
-    { id: 'use_legal_chat', description: 'Access Legal Chat (practitioners only)', resource: 'AI', action: 'LEGAL_CHAT' },
-    { id: 'view_confidential', description: 'View confidential and matter-specific data', resource: 'DATA', action: 'VIEW_CONFIDENTIAL' },
-    { id: 'freeze_budget', description: 'Freeze firm-wide budgets', resource: 'FINANCE', action: 'FREEZE' },
-    { id: 'manage_expenses', description: 'Manage firm expenses', resource: 'FINANCE', action: 'MANAGE' },
+    { id: 'VIEW:CLIENT', description: 'Can view clients', resource: 'CLIENT', action: 'VIEW' },
+    { id: 'CREATE:CLIENT', description: 'Can create clients', resource: 'CLIENT', action: 'CREATE' },
+    { id: 'VIEW:MATTER', description: 'Can view matters', resource: 'MATTER', action: 'VIEW' },
+    { id: 'VIEW_STATS:TENANT', description: 'Can view tenant stats', resource: 'TENANT', action: 'VIEW_STATS' },
+    { id: 'VIEW_BILLING:TENANT', description: 'Can view billing', resource: 'TENANT', action: 'VIEW_BILLING' },
+    { id: 'MANAGE:TENANT_SETTINGS', description: 'Manage tenant settings', resource: 'TENANT_SETTINGS', action: 'MANAGE' },
+    { id: 'MANAGE_UI:TENANT', description: 'Manage UI visibility', resource: 'TENANT', action: 'MANAGE_UI' },
+    { id: 'MANAGE:USER', description: 'Manage users', resource: 'USER', action: 'MANAGE' },
+    { id: 'MANAGE:ROLE', description: 'Manage roles', resource: 'ROLE', action: 'MANAGE' },
+    { id: 'CHECK:CONFLICTS', description: 'Perform conflict checks', resource: 'CONFLICTS', action: 'CHECK' },
+    { id: 'REVIEW:WORK', description: 'Review work', resource: 'WORK', action: 'REVIEW' },
+    { id: 'MANAGE:WORKFLOW', description: 'Design workflows', resource: 'WORKFLOW', action: 'MANAGE' },
+    { id: 'UPLOAD:DOCUMENT', description: 'Upload documents', resource: 'DOCUMENT', action: 'UPLOAD' },
+    { id: 'CREATE:DRAFT', description: 'Create drafts', resource: 'DRAFT', action: 'CREATE' },
+    { id: 'EDIT:DRAFT', description: 'Edit drafts', resource: 'DRAFT', action: 'EDIT' },
+    { id: 'SUBMIT:REVIEW', description: 'Submit for review', resource: 'REVIEW', action: 'SUBMIT' },
+    { id: 'APPROVE:DOCUMENT', description: 'Approve documents', resource: 'DOCUMENT', action: 'APPROVE' },
+    { id: 'EXPORT:DOCUMENT', description: 'Export documents', resource: 'DOCUMENT', action: 'EXPORT' },
+    { id: 'EXECUTE:AI', description: 'Execute AI tasks', resource: 'AI', action: 'EXECUTE' },
+    { id: 'USE:CHAT', description: 'Use legal chat', resource: 'CHAT', action: 'USE' },
+    { id: 'VIEW:CONFIDENTIAL', description: 'View confidential docs', resource: 'DOCUMENT', action: 'VIEW_CONFIDENTIAL' },
+    { id: 'ACCESS:ACCOUNTING', description: 'Access accounting', resource: 'ACCOUNTING', action: 'ACCESS' },
+    { id: 'MANAGE:EXPENSES', description: 'Manage expenses', resource: 'EXPENSES', action: 'MANAGE' },
+    { id: 'MANAGE:BUDGET', description: 'Manage budgets', resource: 'BUDGET', action: 'MANAGE' },
+    { id: 'ACCESS:HR', description: 'Access HR', resource: 'HR', action: 'ACCESS' },
+    { id: 'ACCESS:CLIENT_PORTAL', description: 'Access client portal', resource: 'CLIENT_PORTAL', action: 'ACCESS' },
+    { id: 'ACCESS:INFRASTRUCTURE', description: 'Access infrastructure', resource: 'INFRASTRUCTURE', action: 'ACCESS' },
+    { id: 'ACCESS:ROADMAP', description: 'Access roadmap', resource: 'ROADMAP', action: 'ACCESS' },
+    { id: 'VIEW:TRIAL', description: 'View trial status', resource: 'TRIAL', action: 'VIEW' },
+    { id: 'MANAGE:PLATFORM', description: 'Manage platform', resource: 'PLATFORM', action: 'MANAGE' }
 ];
 
 const ROLES = [
-    { name: 'GLOBAL_ADMIN', permissions: ['manage_platform', 'manage_tenant', 'read_all_audits', 'use_legal_chat'] },
-    { name: 'TENANT_ADMIN', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'design_workflow'] },
-    { name: 'MANAGING_PARTNER', permissions: ['manage_tenant', 'manage_users', 'manage_roles', 'configure_bridge', 'read_all_audits', 'read_billing', 'create_matter', 'check_conflicts', 'review_work', 'upload_document', 'read_assigned_matter', 'design_workflow', 'create_draft', 'edit_draft', 'submit_review', 'ai_chat_execute', 'use_legal_chat', 'view_confidential', 'freeze_budget', 'approve_spend', 'manage_expenses'] },
-    { name: 'PARTNER', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'approve_document', 'export_final', 'read_billing', 'read_all_audits', 'manage_users', 'design_workflow', 'ai_chat_execute', 'use_legal_chat', 'view_confidential', 'freeze_budget'] },
-    { name: 'SENIOR_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'read_billing', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
-    { name: 'INTERNAL_COUNSEL', permissions: ['create_matter', 'read_assigned_matter', 'check_conflicts', 'review_work', 'upload_document', 'create_draft', 'edit_draft', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
-    { name: 'JUNIOR_ASSOCIATE', permissions: ['read_assigned_matter', 'check_conflicts', 'upload_document', 'create_draft', 'edit_draft', 'submit_review', 'create_matter', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
-    { name: 'LEGAL_OPS', permissions: ['manage_users', 'design_workflow', 'read_billing', 'read_all_audits', 'create_matter', 'upload_document', 'read_assigned_matter', 'create_draft', 'check_conflicts', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
-    { name: 'COMPLIANCE', permissions: ['read_all_audits', 'manage_tenant', 'use_legal_chat'] },
-    { name: 'FINANCE_BILLING', permissions: ['read_billing'] },
-    { name: 'EXTERNAL_COUNSEL', permissions: ['read_assigned_matter', 'upload_document', 'create_matter', 'create_draft', 'use_legal_chat'] },
-    { name: 'DEPUTY_GC', permissions: ['manage_users', 'read_all_audits', 'create_matter', 'review_work', 'check_conflicts', 'read_assigned_matter', 'manage_roles', 'create_draft', 'approve_document', 'read_billing', 'design_workflow', 'ai_chat_execute', 'use_legal_chat', 'view_confidential'] },
-    { name: 'CLIENT', permissions: ['read_assigned_matter', 'client_portal_access'] },
-    { name: 'EXECUTIVE_BOARD', permissions: ['read_all_audits', 'read_billing', 'use_legal_chat'] },
-    { name: 'OWNER', permissions: ['create_draft', 'edit_draft', 'submit_review', 'approve_document', 'export_final', 'manage_platform', 'use_legal_chat', 'freeze_budget'] },
-    { name: 'PARALEGAL', permissions: ['create_draft', 'edit_draft', 'submit_review', 'use_legal_chat'] },
-    { name: 'AUDITOR', permissions: ['read_all_audits', 'read_assigned_matter'] },
-    { name: 'CLERK', permissions: ['upload_document', 'read_assigned_matter', 'use_legal_chat', 'view_confidential'] },
-    { name: 'ADMIN_MANAGER', permissions: ['read_billing', 'approve_spend', 'manage_users', 'use_legal_chat', 'view_confidential', 'manage_expenses'] }
+    { name: 'GLOBAL_ADMIN', permissions: ['MANAGE:PLATFORM', 'MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'USE:CHAT'] },
+    { name: 'TENANT_ADMIN', permissions: ['MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'MANAGE:USER', 'MANAGE:ROLE', 'MANAGE:TENANT_SETTINGS', 'MANAGE:WORKFLOW', 'CREATE:DRAFT', 'UPLOAD:DOCUMENT', 'ACCESS:HR', 'ACCESS:ACCOUNTING', 'ACCESS:ROADMAP', 'ACCESS:INFRASTRUCTURE', 'VIEW:TRIAL'] },
+    { name: 'MANAGING_PARTNER', permissions: ['MANAGE:TENANT_SETTINGS', 'MANAGE:USER', 'MANAGE:ROLE', 'MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'VIEW_BILLING:TENANT', 'VIEW:CLIENT', 'CREATE:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'VIEW:MATTER', 'MANAGE:WORKFLOW', 'CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'EXECUTE:AI', 'USE:CHAT', 'VIEW:CONFIDENTIAL', 'MANAGE:BUDGET', 'APPROVE:SPEND', 'MANAGE:EXPENSES', 'ACCESS:HR', 'ACCESS:ACCOUNTING'] },
+    { name: 'PARTNER', permissions: ['CREATE:MATTER', 'VIEW:MATTER', 'VIEW_STATS:TENANT', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'APPROVE:DOCUMENT', 'EXPORT:DOCUMENT', 'VIEW_BILLING:TENANT', 'MANAGE:USER', 'MANAGE:WORKFLOW', 'USE:CHAT', 'MANAGE:BUDGET'] },
+    { name: 'SENIOR_COUNSEL', permissions: ['CREATE:MATTER', 'VIEW:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'USE:CHAT', 'VIEW_BILLING:TENANT'] },
+    { name: 'INTERNAL_COUNSEL', permissions: ['CREATE:MATTER', 'VIEW:MATTER', 'CHECK:CONFLICTS', 'REVIEW:WORK', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'USE:CHAT', 'VIEW:CLIENT'] },
+    { name: 'JUNIOR_ASSOCIATE', permissions: ['VIEW:MATTER', 'CHECK:CONFLICTS', 'UPLOAD:DOCUMENT', 'CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'CREATE:MATTER', 'USE:CHAT'] },
+    { name: 'LEGAL_OPS', permissions: ['MANAGE:USER', 'MANAGE:WORKFLOW', 'VIEW_BILLING:TENANT', 'VIEW_STATS:TENANT', 'CREATE:MATTER', 'UPLOAD:DOCUMENT', 'VIEW:MATTER', 'CREATE:DRAFT', 'CHECK:CONFLICTS', 'USE:CHAT', 'MANAGE:EXPENSES'] },
+    { name: 'COMPLIANCE', permissions: ['VIEW_STATS:TENANT', 'MANAGE:TENANT_SETTINGS', 'USE:CHAT'] },
+    { name: 'FINANCE_BILLING', permissions: ['VIEW_BILLING:TENANT'] },
+    { name: 'EXTERNAL_COUNSEL', permissions: ['VIEW:MATTER', 'UPLOAD:DOCUMENT', 'CREATE:MATTER', 'CREATE:DRAFT', 'USE:CHAT'] },
+    { name: 'DEPUTY_GC', permissions: ['MANAGE:USER', 'VIEW_STATS:TENANT', 'CREATE:MATTER', 'REVIEW:WORK', 'CHECK:CONFLICTS', 'VIEW:MATTER', 'MANAGE:ROLE', 'CREATE:DRAFT', 'APPROVE:DOCUMENT', 'VIEW_BILLING:TENANT', 'MANAGE:WORKFLOW', 'USE:CHAT'] },
+    { name: 'CLIENT', permissions: ['VIEW:MATTER', 'ACCESS:CLIENT_PORTAL', 'EXPORT:DOCUMENT'] },
+    { name: 'EXECUTIVE_BOARD', permissions: ['VIEW_STATS:TENANT', 'VIEW_BILLING:TENANT', 'USE:CHAT'] },
+    { name: 'OWNER', permissions: ['CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'APPROVE:DOCUMENT', 'EXPORT:DOCUMENT', 'MANAGE:PLATFORM', 'MANAGE:TENANT_SETTINGS', 'MANAGE:USER', 'MANAGE:ROLE', 'USE:CHAT', 'MANAGE:BUDGET', 'ACCESS:HR', 'ACCESS:ACCOUNTING'] },
+    { name: 'PARALEGAL', permissions: ['CREATE:DRAFT', 'EDIT:DRAFT', 'SUBMIT:REVIEW', 'USE:CHAT'] },
+    { name: 'AUDITOR', permissions: ['VIEW_STATS:TENANT', 'VIEW:MATTER'] },
+    { name: 'CLERK', permissions: ['UPLOAD:FIELD_INTAKE', 'USE:CHAT', 'VIEW:MATTER'] },
+    { name: 'ADMIN_MANAGER', permissions: ['VIEW_BILLING:TENANT', 'MANAGE:TENANT_SETTINGS', 'VIEW_STATS:TENANT', 'MANAGE:USER', 'MANAGE:ROLE', 'CHECK:CONFLICTS', 'MANAGE:EXPENSES', 'ACCESS:HR', 'ACCESS:ACCOUNTING'] }
 ];
 
 async function main() {
@@ -363,11 +316,11 @@ async function main() {
 
         // Matters
         const matterData = [
-            { id: 'MT-GENERAL', name: 'General Enclave Matters', client: 'Firm Internal', type: 'ADMIN', status: 'OPEN', riskLevel: 'LOW' },
-            { id: 'MT-772', name: 'Acme Corp Merger', client: 'Acme Corp', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH' },
-            { id: 'MT-881', name: 'Zylos Tech IP Dispute', client: 'Zylos Tech', type: 'LITIGATION', status: 'OPEN', riskLevel: 'MEDIUM' },
-            { id: 'MT-990', name: 'Global Finance Compliance', client: 'Global Finance', type: 'COMPLIANCE', status: 'OPEN', riskLevel: 'LOW' },
-            { id: 'MT-101', name: 'Startup Series A', client: 'Alpha Ventures', type: 'CORPORATE', status: 'OPEN', riskLevel: 'MEDIUM' }
+            { id: 'MT-GENERAL', name: 'General Enclave Matters', type: 'ADMIN', status: 'OPEN', riskLevel: 'LOW' },
+            { id: 'MT-772', name: 'Acme Corp Merger', type: 'M&A', status: 'OPEN', riskLevel: 'HIGH' },
+            { id: 'MT-881', name: 'Zylos Tech IP Dispute', type: 'LITIGATION', status: 'OPEN', riskLevel: 'MEDIUM' },
+            { id: 'MT-990', name: 'Global Finance Compliance', type: 'COMPLIANCE', status: 'OPEN', riskLevel: 'LOW' },
+            { id: 'MT-101', name: 'Startup Series A', type: 'CORPORATE', status: 'OPEN', riskLevel: 'MEDIUM' }
         ];
 
         for (const m of matterData) {
@@ -375,7 +328,11 @@ async function main() {
                 where: { id: m.id },
                 update: { riskLevel: m.riskLevel, tenantId: tenantId! },
                 create: {
-                    ...m,
+                    id: m.id,
+                    name: m.name,
+                    type: m.type,
+                    status: m.status,
+                    riskLevel: m.riskLevel,
                     tenantId: tenantId!,
                     internalCounselId: counselId!
                 }
@@ -973,6 +930,26 @@ Title: **{{receiving_party_signer_title}}**
                 });
                 console.log(`   - Seeded Dynamic Template: ${templateData.name || templateData.template_name}`);
             }
+        }
+
+        // === Clause Library Seeding ===
+        console.log('🌱 Seeding Clause Library Engine...');
+        const CLAUSES = [
+            { id: 'CL-NDA-001', title: 'Mutual Non-Disclosure (Standard)', category: 'NDA', jurisdiction: 'GLOBAL', content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Each party agrees to maintain the confidentiality of the Proprietary Information disclosed by the other party with at least the same degree of care as it uses to protect its own confidential information, but in no event less than reasonable care.' }] }] }, tags: ['confidentiality', 'disclosure', 'mutual'], isGlobal: true },
+            { id: 'CL-FM-001', title: 'Force Majeure (Broad)', category: 'Boilerplate', jurisdiction: 'GLOBAL', content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Neither party shall be liable for any failure or delay in performance under this Agreement (other than for delay in the payment of money due and payable hereunder) for causes beyond that party’s reasonable control and occurring without that party’s fault or negligence, including, but not limited to, acts of God, fire, pandemic, or government action.' }] }] }, tags: ['boilerlate', 'risk', 'excuse'], isGlobal: true },
+            { id: 'CL-IND-001', title: 'Indemnity (Mutual)', category: 'Indemnity', jurisdiction: 'GLOBAL', content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Each party (the "Indemnifying Party") shall indemnify, defend and hold harmless the other party (the "Indemnified Party") from and against any and all losses, damages, liabilities, costs and expenses arising out of any third-party claim relating to the Indemnifying Party’s gross negligence or willful misconduct.' }] }] }, tags: ['liability', 'protection', 'mutual'], isGlobal: true },
+            { id: 'CL-TERM-001', title: 'Termination for Convenience', category: 'Termination', jurisdiction: 'GLOBAL', content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Either party may terminate this Agreement at any time, for any reason or no reason, by providing at least thirty (30) days prior written notice to the other party.' }] }] }, tags: ['exit', 'notice', 'flexibility'], isGlobal: true },
+            { id: 'CL-GOV-LAW-001', title: 'Governing Law (Ghana)', category: 'Governance', jurisdiction: 'GH_ACC_1', content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'This Agreement and any dispute or claim arising out of or in connection with it or its subject matter or formation shall be governed by and construed in accordance with the laws of the Republic of Ghana.' }] }] }, tags: ['jurisdiction', 'ghana', 'legal'], isGlobal: true },
+            { id: 'CL-CONF-001', title: 'Confidentiality (Survival)', category: 'NDA', jurisdiction: 'GLOBAL', content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'The obligations of confidentiality set forth in this Section shall survive the expiration or termination of this Agreement for a period of three (3) years.' }] }] }, tags: ['survival', 'duration', 'confidentiality'], isGlobal: true }
+        ];
+
+        for (const c of CLAUSES) {
+            await prisma.clause.upsert({
+                where: { id: c.id },
+                update: { title: c.title, category: c.category, jurisdiction: c.jurisdiction, content: c.content as any, tags: c.tags, isGlobal: c.isGlobal },
+                create: { id: c.id, title: c.title, category: c.category, jurisdiction: c.jurisdiction, content: c.content as any, tags: c.tags, isGlobal: c.isGlobal }
+            });
+            console.log(`   - Seeded Clause: ${c.title}`);
         }
     }
 }
