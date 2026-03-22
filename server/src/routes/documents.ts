@@ -299,7 +299,7 @@ router.post('/', authenticateToken, async (req, res) => {
         // 🧠 Incept Sovereign AI Compliance Scrub (Text Drafts)
         let complianceData = undefined;
         if (req.body.content) {
-             complianceData = ComplianceService.analyzeDocument(
+             complianceData = await ComplianceService.analyzeDocument(
                 req.body.content, 
                 region || matter.tenant.primaryRegion || 'GHANA'
             );

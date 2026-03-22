@@ -26,4 +26,34 @@ export class ComplianceService {
 
         return evaluation;
     }
+
+    /**
+     * Deep analysis for binary or text files
+     */
+    static async analyzeFile(fileBuffer: Buffer, fileName: string, mimetype: string, region: string) {
+        // For now, assume we can convert buffer to text or it's already text-like
+        const text = fileBuffer.toString('utf8');
+        const evaluation = await ComplianceEngine.evaluate(text);
+
+        return {
+            complianceScore: evaluation.score,
+            piiCount: 0, // Mock for now
+            riskLevel: evaluation.status === 'compliant' ? 'LOW' : evaluation.status === 'partially_compliant' ? 'MEDIUM' : 'HIGH',
+            issues: evaluation.issues
+        };
+    }
+
+    /**
+     * Deep analysis for document drafts
+     */
+    static async analyzeDocument(content: string, region: string) {
+        const evaluation = await ComplianceEngine.evaluate(content);
+
+        return {
+            complianceScore: evaluation.score,
+            piiCount: 0, // Mock for now
+            riskLevel: evaluation.status === 'compliant' ? 'LOW' : evaluation.status === 'partially_compliant' ? 'MEDIUM' : 'HIGH',
+            issues: evaluation.issues
+        };
+    }
 }
