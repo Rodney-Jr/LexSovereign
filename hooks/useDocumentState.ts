@@ -63,7 +63,9 @@ export const useDocumentState = (initialContent: any = "") => {
 
   // 2. State Actions
   const updateContent = (newContent: any) => {
-    setRawContent(newContent);
+    // Ensure that incoming strings (from templates or AI) are hydrated into TipTap JSON
+    const reconciledContent = typeof newContent === 'string' ? hydrateContent(newContent) : newContent;
+    setRawContent(reconciledContent);
     setMetadata(prev => ({ ...prev, isDirty: true }));
   };
 
