@@ -1,5 +1,4 @@
 import { prisma } from '../db';
-import bcrypt from 'bcryptjs';
 
 /**
  * SEED DEMO ACCOUNTS SCRIPT
@@ -74,8 +73,6 @@ async function seedTenant(config: DemoTenantConfig) {
         return;
     }
 
-    const hashedPassword = await bcrypt.hash(DEMO_PASSWORD, 10);
-
     // --- Roles ---
     const tenantAdminRole = await findOrCreateRole(
         'TENANT_ADMIN',
@@ -105,7 +102,8 @@ async function seedTenant(config: DemoTenantConfig) {
             data: {
                 email: config.adminEmail,
                 name: config.adminName,
-                passwordHash: hashedPassword,
+                // @ts-ignore
+                firebaseUid: `fb-${config.id}-admin`,
                 tenantId: config.id,
                 roleId: tenantAdminRole.id,
                 roleString: 'TENANT_ADMIN',
@@ -125,7 +123,8 @@ async function seedTenant(config: DemoTenantConfig) {
             data: {
                 email: config.clientEmail,
                 name: config.clientName,
-                passwordHash: hashedPassword,
+                // @ts-ignore
+                firebaseUid: `fb-${config.id}-client`,
                 tenantId: config.id,
                 roleId: clientRole.id,
                 roleString: 'CLIENT',

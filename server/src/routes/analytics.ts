@@ -11,56 +11,44 @@ const router = express.Router();
 router.get('/metrics', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
+        const isGlobalAdmin = !tenantId;
+
+        // Global Admin: platform-wide counts; Tenant user: scoped counts
+        const tenantFilter = isGlobalAdmin ? {} : { tenantId: tenantId as string };
+        const matterTenantFilter = isGlobalAdmin ? {} : { matter: { tenantId: tenantId as string } };
 
         const [mattersCount, docsCount, rulesCount] = await Promise.all([
-            prisma.matter.count({ where: { tenantId: tenantId as string } }),
-            prisma.document.count({ where: { matter: { tenantId: tenantId as string } } }),
+            prisma.matter.count({ where: tenantFilter }),
+            prisma.document.count({ where: matterTenantFilter }),
             prisma.regulatoryRule.count()
         ]);
 
-        // Fetch tenant attributes for configurable heuristics
-        const tenant = await prisma.tenant.findUnique({
-            where: { id: tenantId as string },
+        // Fetch tenant attributes for configurable heuristics (platform admin gets defaults)
+        const tenant = tenantId ? await prisma.tenant.findUnique({
+            where: { id: tenantId },
             select: { attributes: true }
-        });
+        }) : null;
 
         const attributes = (tenant?.attributes as any) || {};
         const hoursPerMatter = attributes.hoursPerMatter ?? 10;
         const hoursPerDoc = attributes.hoursPerDoc ?? 0.5;
         const feePerMatter = attributes.feePerMatter ?? 5000;
 
-        // Growth Metrics Heuristics
-        // Default: 10h per matter + 0.5h per document
         const hoursSaved = (mattersCount * hoursPerMatter) + (docsCount * hoursPerDoc);
-
-        // Fee Recovery: Default Approx 5000 GHS per matter
         const feeRecovery = mattersCount * feePerMatter;
-
-        // TAT Reduction: Base 40% + scaling with volume up to 75%
         const tatReduction = Math.min(40 + (docsCount * 0.1), 75).toFixed(1);
 
-        // staffCount: Pull from users in tenant
-        const staffCount = await prisma.user.count({
-            where: { tenantId: tenantId as string }
-        });
+        const staffCount = await prisma.user.count({ where: tenantFilter });
 
-        // AI Validation Score: Calculate from AuditLog successes
-        const successfulValidations = await prisma.auditLog.count({
-            where: {
-                userId: { in: (await prisma.user.findMany({ where: { tenantId: tenantId as string }, select: { id: true } })).map(u => u.id) },
-                action: 'AI_VALIDATION_PASS'
-            }
-        });
-        const totalValidations = await prisma.auditLog.count({
-            where: {
-                userId: { in: (await prisma.user.findMany({ where: { tenantId: tenantId as string }, select: { id: true } })).map(u => u.id) },
-                action: { in: ['AI_VALIDATION_PASS', 'AI_VALIDATION_FAIL'] }
-            }
-        });
+        const userIds = (await prisma.user.findMany({ where: tenantFilter, select: { id: true } })).map(u => u.id);
+        const [successfulValidations, totalValidations] = await Promise.all([
+            prisma.auditLog.count({ where: { userId: { in: userIds }, action: 'AI_VALIDATION_PASS' } }),
+            prisma.auditLog.count({ where: { userId: { in: userIds }, action: { in: ['AI_VALIDATION_PASS', 'AI_VALIDATION_FAIL'] } } })
+        ]);
 
         const aiScore = totalValidations > 0
             ? parseFloat(((successfulValidations / totalValidations) * 100).toFixed(1))
-            : 0; // No validations recorded yet
+            : 0;
 
         res.json({
             matters: mattersCount,
@@ -76,7 +64,6 @@ router.get('/metrics', authenticateToken, async (req, res) => {
             }
         });
     } catch (error: any) {
-        // Fallback for missing tables or other DB errors
         console.error("[Analytics] Metrics failed:", error);
         res.status(500).json({ error: error.message });
     }
@@ -88,13 +75,12 @@ router.get('/history', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
         const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // Go back 5 months + current
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+
+        const tenantFilter = tenantId ? { tenantId, createdAt: { gte: sixMonthsAgo } } : { createdAt: { gte: sixMonthsAgo } };
 
         const matters = await prisma.matter.findMany({
-            where: {
-                tenantId: tenantId as string,
-                createdAt: { gte: sixMonthsAgo }
-            },
+            where: tenantFilter,
             select: { createdAt: true }
         });
 
@@ -185,14 +171,15 @@ router.get('/clm/stats', authenticateToken, async (req, res) => {
 router.get('/case-center', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
+        const matterFilter = tenantId ? { tenantId } : {};
 
         const [matters, deadlines] = await Promise.all([
             prisma.matter.findMany({
-                where: { tenantId: tenantId as string },
+                where: matterFilter,
                 select: { status: true, id: true }
             }),
             prisma.deadline.findMany({
-                where: { matter: { tenantId: tenantId as string } }
+                where: tenantId ? { matter: { tenantId } } : {}
             })
         ]);
 

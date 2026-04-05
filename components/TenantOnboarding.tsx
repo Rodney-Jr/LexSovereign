@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { Region, SaaSPlan, AppMode } from '../types';
 import { authorizedFetch } from '../utils/api';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 
 interface PricingConfig {
   id: string;
@@ -166,17 +168,12 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         throw new Error(errorMessage);
       }
 
-      const session = data;
-
-      // Add success log and wait a tiny bit
-      addLog("Silo Activation: CONFIRMED.");
-      await new Promise(r => setTimeout(r, 400));
+      // Sign into Firebase for immediate session activation
+      await signInWithEmailAndPassword(auth, formData.adminEmail, formData.adminPassword);
 
       setTimeout(() => {
         setIsProvisioning(false);
         setStep(5);
-        // Store for final launch
-        (window as any)._pendingSession = session;
       }, 500);
 
     } catch (e: any) {

@@ -20,6 +20,12 @@ export interface TextDiff {
   status: 'pending' | 'accepted' | 'rejected';
 }
 
+export interface DocumentPage {
+  id: string;
+  content: any; // TipTap JSON
+  html: string; // The canonical generated HTML snippet
+}
+
 export interface DocumentMetadata {
   matterId: string;
   firmId: string;
@@ -30,21 +36,27 @@ export interface DocumentMetadata {
 // --- The Hook ---
 
 export const useDocumentState = (initialContent: any = "") => {
-  // --- Migration Logic (Plain Text to TipTap JSON) ---
-  const hydrateContent = (input: any) => {
-    if (typeof input === 'string') {
-      return {
-        type: 'doc',
-        content: input.split('\n\n').filter(Boolean).map(p => ({
-          type: 'paragraph',
-          content: [{ type: 'text', text: p }]
-        }))
-      };
-    }
-    return input;
+  // --- Migration Logic (Handle String -> Virtual Pages) ---
+  const hydratePages = (input: any): DocumentPage[] => {
+    if (Array.isArray(input)) return input;
+    
+    // Default hydration for legacy strings or new docs
+    const content = typeof input === 'string' ? {
+      type: 'doc',
+      content: input ? input.split('\n\n').filter(Boolean).map(p => ({
+        type: 'paragraph',
+        content: [{ type: 'text', text: p }]
+      })) : [{ type: 'paragraph', content: [{ type: 'text', text: ' ' }] }]
+    } : input;
+
+    // Track original parsed HTML or default placeholder
+    const html = typeof input === 'string' ? input : '';
+
+    return [{ id: 'page-1', content, html }];
   };
 
-  const [rawContent, setRawContent] = useState<any>(hydrateContent(initialContent));
+  // --- Content Architecture ---
+  const [pages, setPages] = useState<DocumentPage[]>(hydratePages(initialContent));
   const [diffs, setDiffs] = useState<TextDiff[]>([]);
   const [metadata, setMetadata] = useState<DocumentMetadata>({
     matterId: 'UNTITLED',
@@ -53,20 +65,32 @@ export const useDocumentState = (initialContent: any = "") => {
     lastSaved: null
   });
 
-  // 1. Derived Compiled View
-  const compiledView = useMemo(() => {
-    if (typeof rawContent === 'string') return rawContent;
-    // For TipTap JSON, the state machine exposes the structure.
-    // Compilation logic for variables can be added here or in the editor.
-    return rawContent;
-  }, [rawContent]);
-
-  // 2. State Actions
-  const updateContent = (newContent: any) => {
-    // Ensure that incoming strings (from templates or AI) are hydrated into TipTap JSON
-    const reconciledContent = typeof newContent === 'string' ? hydrateContent(newContent) : newContent;
-    setRawContent(reconciledContent);
+  const updatePageContent = (pageId: string, newContent: any, newHtml: string = "") => {
+    setPages(prev => prev.map(p => p.id === pageId ? { ...p, content: newContent, html: newHtml } : p));
     setMetadata(prev => ({ ...prev, isDirty: true }));
+  };
+
+  const addPage = (overflowContent: any = null) => {
+    // Ensure the new page content is always at least a valid empty document
+    // If overflowContent is just a node (paragraph), wrap it in a 'doc' type
+    const content = overflowContent?.type === 'doc' 
+      ? overflowContent 
+      : { 
+          type: 'doc', 
+          content: overflowContent ? [overflowContent] : [{ type: 'paragraph' }] 
+        };
+
+    const newPage: DocumentPage = {
+      id: `page-${pages.length + 1}`,
+      content,
+      html: "" // Will be populated immediately by the editor's first render or update
+    };
+    setPages(prev => [...prev, newPage]);
+  };
+
+  const removeLastPage = () => {
+    if (pages.length <= 1) return;
+    setPages(prev => prev.slice(0, -1));
   };
 
   /**
@@ -78,21 +102,18 @@ export const useDocumentState = (initialContent: any = "") => {
       const session = getSavedSession();
       if (!session?.token) return;
 
-      // We send the current TEXT content for AI to see placeholders
-      // In a real TipTap scenario, we might want to send the JSON and let the server return JSON.
-      // But for our string-based placeholders, we can just send the flattened text.
-      
-      const flatText = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
+      // Join pages for processing
+      const combinedContent = pages.map(p => JSON.stringify(p.content)).join('\n');
 
       const response = await authorizedFetch('/api/ai/smart-fill', {
         method: 'POST',
         token: session.token,
-        body: JSON.stringify({ matterId, content: flatText })
+        body: JSON.stringify({ matterId, content: combinedContent })
       });
 
       if (response && response.content) {
-        // Hydrate the newly expanded text back into the editor
-        updateContent(response.content);
+        // Simple hydration back to first page for now, or re-paginate
+        updatePageContent('page-1', response.content);
         return true;
       }
     } catch (error) {
@@ -103,7 +124,6 @@ export const useDocumentState = (initialContent: any = "") => {
 
   const acceptChange = (diffId: string) => {
     setDiffs(prev => prev.map(d => d.id === diffId ? { ...d, status: 'accepted' } : d));
-    // Implementation Note: In Phase 3, accepted changes will be merged into rawContent
   };
 
   const rejectChange = (diffId: string) => {
@@ -111,16 +131,18 @@ export const useDocumentState = (initialContent: any = "") => {
   };
 
   return {
-    rawContent,
-    compiledView,
+    pages,
     diffs,
     metadata,
     actions: {
-      updateContent,
+      updatePageContent,
+      addPage,
+      removeLastPage,
       performSmartFill,
       acceptChange,
       rejectChange,
-      setMetadata
+      setMetadata,
+      setPages
     }
   };
 };

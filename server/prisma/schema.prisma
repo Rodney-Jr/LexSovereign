@@ -11,7 +11,7 @@ datasource db {
 model User {
   id                    String                 @id @default(uuid())
   email                 String                 @unique
-  passwordHash          String
+  passwordHash          String?
   name                  String
   roleString            String                 @default("INTERNAL_COUNSEL") @map("role")
   region                String                 @default("GH_ACC_1")
@@ -19,11 +19,7 @@ model User {
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   attributes            Json?                  @default("{}")
-  provider              String                 @default("LOCAL")
-  providerId            String?
   roleId                String?
-  resetToken            String?                @unique
-  resetTokenExpires     DateTime?
   credentials           Json?                  @default("[]")
   jurisdictionPins      Json?                  @default("[]")
   maxWeeklyHours        Float                  @default(40.0)
@@ -31,9 +27,9 @@ model User {
   isActive              Boolean                @default(true)
   lastActiveAt          DateTime               @default(now())
   mfaEnabled            Boolean                @default(false)
-  mfaSecret             String?
   mfaBackupCodes        Json?                  @default("[]")
   departmentId          String?
+  passkeys              PasskeyCredential[]
   aiRiskAnalyses        AIRiskAnalysis[]
   activityEntries       ActivityEntry[]
   approvals             Approval[]
@@ -53,6 +49,22 @@ model User {
   department            Department?            @relation(fields: [departmentId], references: [id])
   role                  Role?                  @relation(fields: [roleId], references: [id])
   tenant                Tenant?                @relation(fields: [tenantId], references: [id])
+}
+
+model PasskeyCredential {
+  id              String   @id @default(uuid())
+  userId          String
+  webauthnUserId  String
+  credentialID    Bytes    @unique
+  publicKey       Bytes
+  counter         BigInt   @default(0)
+  transports      Json?
+  deviceType      String   @default("singleDevice")
+  backedUp        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  lastUsedAt      DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Role {

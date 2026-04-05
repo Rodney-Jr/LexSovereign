@@ -381,4 +381,6 @@ export class OpenRouterProvider implements AIProvider {
             return "[]";
         }
     }
+
+    async embed(text: string): Promise<number[]> { throw new Error("OpenRouter Embedding Not Provisioned"); }
 }

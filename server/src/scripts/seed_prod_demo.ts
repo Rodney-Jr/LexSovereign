@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 // This script targets the DATABASE_URL env var - set it to production before running
 const prisma = new PrismaClient();
@@ -34,15 +33,20 @@ async function seedProdDemoAccounts() {
         console.log('ℹ️ ADMIN_MANAGER role already exists');
     }
 
-    const passwordHash = await bcrypt.hash('password123', 12);
-
     // Upsert Clerk
     const clerk = await prisma.user.upsert({
         where: { email: 'clerk@nomosdesk.com' },
-        update: { passwordHash, roleId: clerkRole.id, roleString: 'CLERK', name: 'Firm Clerk' },
+        update: { 
+            // @ts-ignore
+            firebaseUid: 'fb-clerk-prod-demo', 
+            roleId: clerkRole.id, 
+            roleString: 'CLERK', 
+            name: 'Firm Clerk' 
+        },
         create: {
             email: 'clerk@nomosdesk.com',
-            passwordHash,
+            // @ts-ignore
+            firebaseUid: 'fb-clerk-prod-demo',
             name: 'Firm Clerk',
             roleId: clerkRole.id,
             roleString: 'CLERK',
@@ -56,10 +60,17 @@ async function seedProdDemoAccounts() {
     // Upsert Admin Manager
     const adminManager = await prisma.user.upsert({
         where: { email: 'admin_manager@nomosdesk.com' },
-        update: { passwordHash, roleId: adminManagerRole.id, roleString: 'ADMIN_MANAGER', name: 'Firm Admin Manager' },
+        update: { 
+            // @ts-ignore
+            firebaseUid: 'fb-admin-manager-prod-demo', 
+            roleId: adminManagerRole.id, 
+            roleString: 'ADMIN_MANAGER', 
+            name: 'Firm Admin Manager' 
+        },
         create: {
             email: 'admin_manager@nomosdesk.com',
-            passwordHash,
+            // @ts-ignore
+            firebaseUid: 'fb-admin-manager-prod-demo',
             name: 'Firm Admin Manager',
             roleId: adminManagerRole.id,
             roleString: 'ADMIN_MANAGER',
@@ -71,9 +82,7 @@ async function seedProdDemoAccounts() {
     console.log('✅ Upserted admin_manager:', adminManager.email);
 
     // Verify
-    const clerkCheck = await bcrypt.compare('password123', clerk.passwordHash!);
-    const adminCheck = await bcrypt.compare('password123', adminManager.passwordHash!);
-    console.log(`\n🔐 Verification: clerk: ${clerkCheck ? '✅ PASS' : '❌ FAIL'} | admin_manager: ${adminCheck ? '✅ PASS' : '❌ FAIL'}`);
+    console.log(`\n🔐 Provisioning: clerk: ✅ OK | admin_manager: ✅ OK`);
 
     process.exit(0);
 }

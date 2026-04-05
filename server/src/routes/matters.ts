@@ -15,59 +15,50 @@ const router = express.Router();
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const user = req.user;
-        if (!user || !user.tenantId) {
-            return res.status(400).json({ error: 'User context invalid' });
+        if (!user) {
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        // Fetch tenant attributes for configurable heuristics
-        const tenant = await prisma.tenant.findUnique({
-            where: { id: user.tenantId as string }, // Changed user.tenantId to user.tenantId as string
-            select: { separationMode: true } // Kept original select, assuming the instruction's select was a copy-paste error from another context
-        });
+        const isGlobalAdmin = !user.tenantId;
 
-        const separationMode = tenant?.separationMode || 'OPEN';
-        let whereClause: any = { tenantId: user.tenantId }; // Filter by Tenant automatically handled by middleware, but good for explicit clarity
+        // Global Admin: see all matters. Tenant user: scoped by tenant.
+        let whereClause: any = isGlobalAdmin ? {} : { tenantId: user.tenantId };
 
-        // 2. Apply Separation Logic
-        // Apply Separation Logic. Only TENANT_ADMIN bypasses departmental separation for their own tenant.
-        const isAdmin = user.role === 'TENANT_ADMIN';
+        if (!isGlobalAdmin) {
+            // Fetch tenant attributes for separation mode
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: user.tenantId as string },
+                select: { separationMode: true }
+            });
 
-        if (user.role === 'CLIENT') {
-            // Clients see matters associated with their name/organization
-            // In this demo, we match the client string in the matter
-            whereClause = {
-                ...whereClause,
-                OR: [
-                    { clientRef: { name: { contains: user.name, mode: 'insensitive' } } },
-                    { clientRef: { name: { contains: user.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } } }
-                ]
-            };
-        } else if (!isAdmin) {
-            if (separationMode === 'STRICT') {
-                // Only see matters YOU are assigned to
+            const separationMode = tenant?.separationMode || 'OPEN';
+            const isAdmin = user.role === 'TENANT_ADMIN';
+
+            if (user.role === 'CLIENT') {
                 whereClause = {
                     ...whereClause,
-                    internalCounselId: user.id
+                    OR: [
+                        { clientRef: { name: { contains: user.name, mode: 'insensitive' } } },
+                        { clientRef: { name: { contains: user.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } } }
+                    ]
                 };
-            } else if (separationMode === 'DEPARTMENTAL') {
-                // See matters in YOUR department OR assigned to you
-                // If user has no department, fall back to strict (safe default)
-                if (user.department) {
-                    whereClause = {
-                        ...whereClause,
-                        OR: [
-                            { department: user.department },
-                            { internalCounselId: user.id } // Always see your own work
-                        ]
-                    };
-                } else {
-                    whereClause = {
-                        ...whereClause,
-                        internalCounselId: user.id
-                    };
+            } else if (!isAdmin) {
+                if (separationMode === 'STRICT') {
+                    whereClause = { ...whereClause, internalCounselId: user.id };
+                } else if (separationMode === 'DEPARTMENTAL') {
+                    if (user.department) {
+                        whereClause = {
+                            ...whereClause,
+                            OR: [
+                                { department: user.department },
+                                { internalCounselId: user.id }
+                            ]
+                        };
+                    } else {
+                        whereClause = { ...whereClause, internalCounselId: user.id };
+                    }
                 }
             }
-            // If OPEN, no extra filter (Middleware handles Tenant scope)
         }
 
         const matters = await prisma.matter.findMany({

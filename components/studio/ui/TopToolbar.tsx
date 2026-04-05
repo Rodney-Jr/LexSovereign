@@ -9,7 +9,7 @@ import {
   Printer, Save, Download, FileUp,
   ZoomIn, ZoomOut, Maximize2, Minimize2,
   GitBranch, Sparkles, Wand2,
-  Bold, Italic, Type, List, ListOrdered,
+  Bold, Italic, Type, List, ListOrdered, Highlighter,
   Menu, PanelLeft, PanelRight,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   Table, Link as LinkIcon, FileJson,
@@ -24,23 +24,33 @@ import { StudioMode } from '../domain/documentTypes';
 import { useStudioStore } from '../hooks/useStudioStore';
 
 interface TopToolbarProps {
-  // Added toggle handlers for panels
   onToggleLeft?: () => void;
   onToggleRight?: () => void;
   onPrint: () => void;
   onCommit: () => void;
+  onImportContent?: (html: string) => void;
+  showLineNumbers?: boolean;
+  onToggleLineNumbers?: () => void;
+  showMargins?: boolean;
+  onToggleMargins?: () => void;
 }
 
 export const TopToolbar: React.FC<TopToolbarProps> = ({ 
   onToggleLeft,
   onToggleRight,
   onPrint, 
-  onCommit 
+  onCommit,
+  onImportContent,
+  showLineNumbers,
+  onToggleLineNumbers,
+  showMargins,
+  onToggleMargins
 }) => {
   const { 
     activeMode, zoom, isSaving, 
     toggleBold, toggleItalic, toggleHeading, 
     toggleUnderline, toggleBulletList, toggleOrderedList,
+    toggleHighlight,
     setZoom 
   } = useStudioStore();
 
@@ -49,8 +59,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   };
 
   return (
-    <div className="h-14 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-4 z-10 backdrop-blur-sm">
-      <div className="flex items-center gap-4">
+    <div className="h-14 border-b border-slate-800 bg-slate-900/50 flex items-center w-full overflow-hidden px-4 z-10 backdrop-blur-sm gap-2">
+      {/* ── Left: Fluid tool groups (scroll when narrow) ──────────────── */}
+      <div className="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto scrollbar-hide">
         {/* Toggle Left Sidebar */}
         <button 
           onClick={onToggleLeft}
@@ -117,6 +128,42 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             </button>
           </div>
 
+          {/* Page Setup Controls */}
+          <div className="flex items-center gap-1 pl-6 border-l border-slate-800/50">
+            <button 
+              onClick={onToggleMargins}
+              className={`p-2 rounded-lg transition-all active:scale-90 ${showMargins ? 'bg-slate-700/50 text-emerald-400' : 'hover:bg-slate-800 text-slate-400 hover:text-white'}`}
+              title="Toggle Page Margins"
+            >
+              <AlignJustify size={16} />
+            </button>
+            <button 
+              onClick={onToggleLineNumbers}
+              className={`p-2 rounded-lg transition-all active:scale-90 flex items-center gap-1 ${showLineNumbers ? 'bg-slate-700/50 text-emerald-400' : 'hover:bg-slate-800 text-slate-400 hover:text-white'}`}
+              title="Toggle Legal Line Numbers (Pleading Gutter)"
+            >
+              <ListOrdered size={16} />
+            </button>
+          </div>
+
+          {/* Page Setup Controls */}
+          <div className="flex items-center gap-1 pl-6 border-l border-slate-800/50">
+            <button 
+              onClick={onToggleMargins}
+              className={`p-2 rounded-lg transition-all active:scale-90 ${showMargins ? 'bg-slate-700/50 text-emerald-400' : 'hover:bg-slate-800 text-slate-400 hover:text-white'}`}
+              title="Toggle Page Margins"
+            >
+              <AlignJustify size={16} />
+            </button>
+            <button 
+              onClick={onToggleLineNumbers}
+              className={`p-2 rounded-lg transition-all active:scale-90 flex items-center gap-1 ${showLineNumbers ? 'bg-slate-700/50 text-emerald-400' : 'hover:bg-slate-800 text-slate-400 hover:text-white'}`}
+              title="Toggle Legal Line Numbers (Pleading Gutter)"
+            >
+              <ListOrdered size={16} />
+            </button>
+          </div>
+
           {/* Typography Controls */}
           <div className="flex items-center gap-2 pl-6 border-l border-slate-800/50">
             <select 
@@ -163,6 +210,13 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
               title="Underline (Ctrl+U)"
             >
               <u className="text-xs font-bold no-underline border-b-2 border-slate-400">U</u>
+            </button>
+            <button 
+              onClick={() => toggleHighlight('#fef08a')} // Default yellow
+              className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-yellow-400 transition-all active:scale-90"
+              title="Highlight Text"
+            >
+              <Highlighter size={16} />
             </button>
             <div className="w-px h-4 bg-slate-800 mx-1" />
             <button 
@@ -251,8 +305,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="hidden lg:flex items-center gap-4 pr-6 border-r border-slate-800/50">
+      {/* ── Right: Action group — always visible, never truncated ────── */}
+      <div className="flex items-center gap-3 flex-shrink-0 pl-2 border-l border-slate-800/50 ml-2">
+        <div className="flex items-center gap-4">
            <button 
               className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-emerald-400 transition-all border border-transparent hover:border-emerald-500/20"
               title="Import External Artifact"
@@ -268,21 +323,31 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
                   const reader = new FileReader();
 
                   reader.onload = async (re: any) => {
-                    const editor = useStudioStore.getState().editor;
-                    if (!editor) return;
-
                     if (isDocx) {
                       try {
                         const arrayBuffer = re.target.result;
                         const result = await mammoth.convertToHtml({ arrayBuffer });
-                        editor.commands.setContent(result.value);
+                        const html = result.value;
+                        // 1. Flow imported content back through document state (re-hydrates all pages)
+                        if (onImportContent) {
+                          onImportContent(html);
+                        } else {
+                          // Fallback: push directly to store editor if no state handler is wired
+                          const editor = useStudioStore.getState().editor;
+                          editor?.commands.setContent(html);
+                        }
                         console.log("[IMPORT] MS Word Artifact Hydrated via Mammoth.");
                       } catch (err) {
                         console.error("[IMPORT] MS Word Conversion Failed:", err);
                       }
                     } else {
-                      const content = re.target.result;
-                      editor.commands.setContent(content);
+                      const content = re.target.result as string;
+                      if (onImportContent) {
+                        onImportContent(content);
+                      } else {
+                        const editor = useStudioStore.getState().editor;
+                        editor?.commands.setContent(content);
+                      }
                       console.log("[IMPORT] Text Artifact Hydrated.");
                     }
                   };

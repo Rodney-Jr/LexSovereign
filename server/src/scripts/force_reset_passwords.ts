@@ -1,20 +1,17 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-async function forceReset() {
+async function forceSync() {
     const DEMO_EMAILS = ['clerk@nomosdesk.com', 'admin_manager@nomosdesk.com', 'counsel@nomosdesk.com'];
-    const newHash = await bcrypt.hash('password123', 12);
-
-    console.log('New hash generated:', newHash.substring(0, 10) + '...');
 
     for (const email of DEMO_EMAILS) {
         const result = await prisma.user.updateMany({
             where: { email },
-            data: { passwordHash: newHash }
+            // @ts-ignore
+            data: { firebaseUid: `fb-${email.split('@')[0]}-demo` }
         });
-        console.log(`Reset password for ${email}: ${result.count} row(s) updated`);
+        console.log(`Synced identity for ${email}: ${result.count} row(s) updated`);
     }
 
     // Verify
@@ -23,14 +20,15 @@ async function forceReset() {
     });
 
     for (const user of users) {
-        const match = await bcrypt.compare('password123', user.passwordHash!);
-        console.log(`Verify ${user.email}: ${match ? '✅ MATCH' : '❌ FAIL'}`);
+        // @ts-ignore
+        const exists = !!user.firebaseUid;
+        console.log(`Verify ${user.email}: ${exists ? '✅ SYNCED' : '❌ MISSING'}`);
     }
 
     process.exit(0);
 }
 
-forceReset().catch(e => {
+forceSync().catch(e => {
     console.error(e);
     process.exit(1);
 });

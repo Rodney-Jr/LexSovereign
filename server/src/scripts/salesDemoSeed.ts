@@ -4,7 +4,6 @@
  * Fix: Uses findFirst to avoid brittle unique constraint type errors.
  */
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
@@ -12,8 +11,7 @@ const prisma = new PrismaClient();
 async function createDemoTenant(
     name: string,
     appMode: string,
-    users: { email: string; name: string; roleName: string }[],
-    password: string
+    users: { email: string; name: string; roleName: string }[]
 ) {
     const region = 'GH_ACC_1';
 
@@ -83,7 +81,6 @@ async function createDemoTenant(
 
     // 3. Create/Update Users
     console.log('   Provisioning Users...');
-    const hashedPass = await bcrypt.hash(password, 10);
 
     for (const u of users) {
         // Find role by name within this tenant
@@ -105,7 +102,8 @@ async function createDemoTenant(
             where: { email: u.email },
             update: {
                 name: u.name,
-                passwordHash: hashedPass,
+                // @ts-ignore
+                firebaseUid: `fb-${u.email}`,
                 tenantId: tenantId,
                 roleId: role.id,
                 roleString: role.name,
@@ -118,7 +116,8 @@ async function createDemoTenant(
                 id: randomUUID(),
                 email: u.email,
                 name: u.name,
-                passwordHash: hashedPass,
+                // @ts-ignore
+                firebaseUid: `fb-${u.email}`,
                 tenantId: tenantId,
                 roleId: role.id,
                 roleString: role.name,
@@ -146,10 +145,9 @@ async function main() {
                 { email: 'associate@sovlegal.com', name: 'Kwame Boateng (Associate)', roleName: 'JUNIOR_ASSOCIATE' },
                 { email: 'admin@sovlegal.com', name: 'Sarah Okai (Admin Manager)', roleName: 'ADMIN_MANAGER' },
                 { email: 'clerk@sovlegal.com', name: 'John Doe (Clerk)', roleName: 'CLERK' }
-            ],
-            COMMON_PASSWORD
+            ]
         );
-
+ 
         // Route 2: Enterprise Legal
         await createDemoTenant(
             'Global Tech Legal',
@@ -159,13 +157,11 @@ async function main() {
                 { email: 'counsel@globaltech.com', name: 'Marcus Cole (Legal Counsel)', roleName: 'JUNIOR_ASSOCIATE' },
                 { email: 'ops@globaltech.com', name: 'Legal Ops Manager', roleName: 'ADMIN_MANAGER' },
                 { email: 'legalassistant@globaltech.com', name: 'Tech Legal Assistant', roleName: 'CLERK' }
-            ],
-            COMMON_PASSWORD
+            ]
         );
 
         console.log('\n🌟 SALES DEMO PROVISIONING COMPLETE 🌟');
         console.log('-------------------------------------------');
-        console.log('PASSWORD: ' + COMMON_PASSWORD);
         console.log('STRIPE TEST CARD: 4242 4242 4242 4242 (12/28, 123)');
         console.log('-------------------------------------------');
 

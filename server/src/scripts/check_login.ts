@@ -13,9 +13,10 @@ async function checkLogin() {
         process.exit(1);
     }
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    console.log(`Login check for ${email}: ${isMatch ? 'SUCCESS' : 'FAILURE'}`);
-    process.exit(isMatch ? 0 : 1);
+    // @ts-ignore
+    const exists = !!user.firebaseUid;
+    console.log(`User ${email} has firebaseUid: ${exists ? 'YES' : 'NO'}`);
+    process.exit(exists ? 0 : 1);
 }
 
 checkLogin();

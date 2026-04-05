@@ -28,7 +28,13 @@ const extractTextFromJson = (json: any): string => {
  * Computes word count, character count, and estimated reading time.
  */
 export const calculateMetrics = (content: any): DocumentMetrics => {
-  const text = typeof content === 'string' ? content : extractTextFromJson(content);
+  let text = '';
+  if (Array.isArray(content)) {
+    // Correctly aggregates text across all pages in the virtual stack
+    text = content.map(p => extractTextFromJson(p.content)).join(' ');
+  } else {
+    text = typeof content === 'string' ? content : extractTextFromJson(content);
+  }
   
   if (!text || text.trim().length === 0) {
     return {

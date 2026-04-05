@@ -419,20 +419,23 @@ router.get('/staff/:id/dossier', async (req: Request, res: Response) => {
         const tenantId = (req.user as InternalUser).tenantId;
         const { id } = req.params;
 
+        const isGlobalAdmin = !tenantId;
+        const tenantFilter = isGlobalAdmin ? {} : { tenantId: tenantId as string };
+
         const [user, assets, leaves, cle, salary, appraisals] = await Promise.all([
-            prisma.user.findUnique({
-                where: { id, tenantId },
+            prisma.user.findFirst({
+                where: { id, ...tenantFilter },
                 select: { id: true, name: true, email: true, roleString: true, departmentId: true, isActive: true, createdAt: true }
             }),
-            prisma.firmAsset.findMany({ where: { assignedToId: id, tenantId } }),
-            prisma.leaveRecord.findMany({ where: { userId: id, tenantId } }),
-            prisma.cLERecord.findMany({ where: { userId: id, tenantId } }),
+            prisma.firmAsset.findMany({ where: { assignedToId: id, ...tenantFilter } }),
+            prisma.leaveRecord.findMany({ where: { userId: id, ...tenantFilter } }),
+            prisma.cLERecord.findMany({ where: { userId: id, ...tenantFilter } }),
             prisma.salaryRecord.findFirst({
-                where: { userId: id, tenantId },
+                where: { userId: id, ...tenantFilter },
                 orderBy: { effectiveFrom: 'desc' }
             }),
             prisma.performanceAppraisal.findMany({
-                where: { userId: id, tenantId },
+                where: { userId: id, ...tenantFilter },
                 include: { reviewer: true },
                 orderBy: { date: 'desc' }
             })
@@ -517,20 +520,23 @@ router.get('/my-dossier', async (req: Request, res: Response) => {
         const tenantId = user.tenantId;
         const id = user.id;
 
+        const isGlobalAdmin = !tenantId;
+        const tenantFilter = isGlobalAdmin ? {} : { tenantId: tenantId as string };
+
         const [dbUser, assets, leaves, cle, salary, appraisals] = await Promise.all([
-            prisma.user.findUnique({
-                where: { id, tenantId },
+            prisma.user.findFirst({
+                where: { id, ...tenantFilter },
                 select: { id: true, name: true, email: true, roleString: true, departmentId: true, isActive: true, createdAt: true }
             }),
-            prisma.firmAsset.findMany({ where: { assignedToId: id, tenantId } }),
-            prisma.leaveRecord.findMany({ where: { userId: id, tenantId } }),
-            prisma.cLERecord.findMany({ where: { userId: id, tenantId } }),
+            prisma.firmAsset.findMany({ where: { assignedToId: id, ...tenantFilter } }),
+            prisma.leaveRecord.findMany({ where: { userId: id, ...tenantFilter } }),
+            prisma.cLERecord.findMany({ where: { userId: id, ...tenantFilter } }),
             prisma.salaryRecord.findFirst({
-                where: { userId: id, tenantId },
+                where: { userId: id, ...tenantFilter },
                 orderBy: { effectiveFrom: 'desc' }
             }),
             prisma.performanceAppraisal.findMany({
-                where: { userId: id, tenantId },
+                where: { userId: id, ...tenantFilter },
                 include: { reviewer: true },
                 orderBy: { date: 'desc' }
             })

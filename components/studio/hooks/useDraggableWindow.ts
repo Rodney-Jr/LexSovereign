@@ -38,6 +38,7 @@ export const useDraggableWindow = () => {
   const onDragStart = useCallback((e: React.MouseEvent) => {
     if (win.isMaximized) return;
     dragRef.current = { active: true, startX: e.clientX, startY: e.clientY, winX: win.x, winY: win.y };
+    document.body.style.userSelect = 'none'; // Prevent text selection bleed during drag
     e.preventDefault();
   }, [win]);
 
@@ -49,6 +50,7 @@ export const useDraggableWindow = () => {
       startW: win.width, startH: win.height,
       startWinX: win.x, startWinY: win.y
     };
+    document.body.style.userSelect = 'none'; // Prevent text selection bleed during resize
     e.preventDefault();
     e.stopPropagation();
   }, [win]);
@@ -88,6 +90,7 @@ export const useDraggableWindow = () => {
     const onMouseUp = () => {
       dragRef.current.active = false;
       resizeRef.current = null;
+      document.body.style.userSelect = ''; // Restore text selectability
     };
 
     window.addEventListener('mousemove', onMouseMove);

@@ -176,13 +176,28 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
   const handleEdit = async (doc: DocumentMetadata) => {
     setIsEditingLoading(true);
     try {
-      const content = await getDocumentContent(doc.id);
-      setEditingDoc({ id: doc.id, name: doc.name, content });
-      setShowBlankEditor(true);
-      setViewingDoc(null); // Close preview if open
+      const session = getSavedSession();
+      const token = session?.token || '';
+      if (!token) throw new Error('Authorization required to launch Studio');
+
+      const response = await fetch('/api/auth/studio-token', { 
+        method: 'POST',
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ docId: doc.id })
+      });
+      const data = await response.json();
+      if (data.token) {
+        const studioUrl = import.meta.env.VITE_STUDIO_URL || 'http://localhost:3006';
+        window.open(`${studioUrl}/editor?token=${data.token}&docId=${doc.id}&matterId=${doc.matterId || 'MT-GENERAL'}&title=${encodeURIComponent(doc.name)}`, '_blank', 'noopener,noreferrer');
+      } else {
+        throw new Error('Could not acquire studio-token');
+      }
     } catch (err) {
-      console.error('Failed to fetch doc content for editing:', err);
-      alert('Failed to load document for editing.');
+      console.error('Failed to launch studio:', err);
+      alert('Failed to launch Sovereign Studio. Please ensure you are logged in.');
     } finally {
       setIsEditingLoading(false);
     }

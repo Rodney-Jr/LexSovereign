@@ -26,20 +26,25 @@ import { useDocumentMetrics } from './studio/hooks/useDocumentMetrics';
 import { useVaultCommit } from './studio/hooks/useVaultCommit';
 import { useStudioToasts } from './studio/hooks/useStudioToasts';
 import { useDraggableWindow } from './studio/hooks/useDraggableWindow';
+import { useStudioStore } from './studio/hooks/useStudioStore';
 
 export const DraftingStudio: React.FC<DraftingStudioProps> = ({ 
   initialData, 
   onSave, 
   onClose 
 }) => {
+  // --- Helix 1: Multi-Page State Machine ---
+  const { pages, diffs, metadata, actions } = useDocumentState(initialData?.content || "");
   const [templateLoading, setTemplateLoading] = useState(false);
-  // --- Helix 1: Canonical State Machine ---
-  const { rawContent, diffs, metadata, actions } = useDocumentState(initialData?.content || "");
+
+  const [showLineNumbers, setShowLineNumbers] = useState(true);
+  const [showMargins, setShowMargins] = useState(true);
   
   // --- Helix 2: Workspace Logic Architecture ---
-  const { activeMode, panels, zoom, isSaving, isSearching, actions: studioActions } = useStudioState();
-  const metrics = useDocumentMetrics(rawContent);
+  const { activeMode, panels, zoom, isSearching, actions: studioActions } = useStudioState();
+  const metrics = useDocumentMetrics(pages);
   const { toasts, addToast, removeToast } = useStudioToasts();
+  
   const { commitToVault, isCommitLoading } = useVaultCommit(onSave);
 
   // --- Helix 3: Window & Panel Geometry ---
@@ -57,19 +62,34 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
 
   // --- Handlers ---
   const handleCommit = useCallback(async () => {
+    // Join virtual pages into a single canonical HTML string for database storage.
+    // Uses a semantic separator that internal PDF engines recognize as a page break.
+    const allHtmlPages = pages.map(p => p.html || '');
+    const serializedPages = allHtmlPages.join('\n<div class="page-break" style="page-break-after: always;"></div>\n');
+    
     await commitToVault(
       initialData?.name || "UNTITLED", 
-      rawContent, 
+      serializedPages, 
       diffs, 
       addToast, 
       initialData?.id
     );
-  }, [commitToVault, initialData?.name, initialData?.id, rawContent, diffs, addToast]);
+  }, [pages, commitToVault, initialData, diffs, addToast]);
 
   const handlePrint = useCallback(() => {
     addToast('Initializing physical rendering engine...', 'info');
     window.print();
   }, [addToast]);
+
+  const handleImportContent = useCallback((html: string) => {
+    // Reset the virtual page stack to a single page with the imported content
+    actions.setPages([{
+      id: 'page-1',
+      content: html,
+      html,
+    }]);
+    addToast('Document imported successfully.', 'success');
+  }, [actions, addToast]);
 
   const handleSmartFill = useCallback(async () => {
     const matterId = initialData?.matterId;
@@ -113,10 +133,9 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
 
   return (
     <>
-      {/* Backdrop blur overlay */}
+      {/* Backdrop blur overlay — pointer-events:none so it never blocks editor interaction */}
       <div 
-        className="fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm pointer-events-none"
       />
 
       {/* Floating Window */}
@@ -211,20 +230,28 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
                 </>
               )}
 
-              {/* 📝 Canvas Area */}
-              <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
+              {/* 📝 Canvas Area — select-text ensures TipTap editors are fully selectable */}
+              <div className="flex-1 flex flex-col overflow-hidden relative min-w-0 select-text">
                 <TopToolbar 
                   onToggleLeft={() => studioActions.togglePanel('left')}
                   onToggleRight={() => studioActions.togglePanel('right')}
                   onPrint={handlePrint}
                   onCommit={handleCommit}
+                  onImportContent={handleImportContent}
+                  showLineNumbers={showLineNumbers}
+                  onToggleLineNumbers={() => setShowLineNumbers(p => !p)}
+                  showMargins={showMargins}
+                  onToggleMargins={() => setShowMargins(p => !p)}
                 />
                 <CanvasArea 
                   activeMode={activeMode}
-                  rawContent={rawContent}
-                  diffs={diffs}
+                  pages={pages}
                   zoom={zoom}
-                  onUpdate={actions.updateContent}
+                  matterId={metadata.matterId}
+                  showLineNumbers={showLineNumbers}
+                  showMargins={showMargins}
+                  onUpdatePage={actions.updatePageContent}
+                  onPageOverflow={actions.addPage}
                 />
                 <footer className="h-8 flex-shrink-0 border-t border-slate-800/60 bg-slate-950/80 flex items-center justify-between px-5">
                   <div className="flex items-center gap-5">
@@ -250,7 +277,7 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
                     isVisible={panels.right}
                     activeMode={activeMode}
                     diffs={diffs}
-                    rawContent={rawContent}
+                    rawContent={JSON.stringify(pages)}
                     isSearching={isSearching}
                     onAccept={(id) => actions.acceptChange(id)}
                     onReject={(id) => actions.rejectChange(id)}

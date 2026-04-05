@@ -158,9 +158,20 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
                                     <span className="text-[10px] text-slate-500 uppercase">Tenant ID</span>
                                     <span className="text-[10px] font-mono text-cyan-400">{result.tenantId.substring(0, 8)}...</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center">
                                     <span className="text-[10px] text-slate-500 uppercase">Temp Password</span>
-                                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-900/20 px-2 py-0.5 rounded">{result.tempPassword}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-900/20 px-2 py-0.5 rounded">{result.tempPassword}</span>
+                                        <button 
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(result.tempPassword);
+                                                alert('Password copied to clipboard');
+                                            }}
+                                            className="text-[10px] text-slate-500 hover:text-white uppercase font-bold"
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="mt-2 pt-2 border-t border-slate-800">
                                     <div className="text-[10px] text-slate-500 uppercase mb-1">One-Time Login URL</div>

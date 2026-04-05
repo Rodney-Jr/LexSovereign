@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AppMode, DocumentMetadata, UserRole, Matter } from './types';
 import { TAB_REQUIRED_PERMISSIONS } from './constants';
 import {
@@ -170,23 +169,7 @@ const AppContent: React.FC = () => {
   // Security Policy: Hardened 30-minute inactivity logout
   useInactivityLogout(handleLogout, 1800000, !!session && !isOnboarding);
 
-  const handleInceptionComplete = async (selectedMode: AppMode) => {
-    const pending = (window as any)._pendingSession;
-    if (pending) {
-      const sessionData = {
-        role: pending.user.role,
-        token: pending.token,
-        userId: pending.user.id,
-        userName: pending.user.name,
-        tenantId: pending.user.tenantId,
-        permissions: pending.user.permissions || [],
-        enabledModules: pending.user.tenant?.enabledModules || ["CORE"],
-        mode: selectedMode
-      };
-      await handleAuthenticated(sessionData);
-      setSession(sessionData);
-      delete (window as any)._pendingSession;
-    }
+  const handleInceptionComplete = (selectedMode: AppMode) => {
     setMode(selectedMode);
     setIsOnboarding(false);
   };
@@ -447,17 +430,10 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     return this.props.children;
   }
 }
-
+import { SovereignProvider } from './contexts/SovereignContext';
 export default function WrappedApp() {
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || (window as any)._GOOGLE_CLIENT_ID;
-  const hasValidGoogleClientId = googleClientId && googleClientId !== 'v0-google-client-id' && !googleClientId.includes('placeholder');
-
-  if (!hasValidGoogleClientId) {
-    console.warn("[Auth] Google OAuth is disabled - no valid Client ID found. Email/password login is still available.");
-  }
-
-  const AppWrapper = hasValidGoogleClientId ? (
-    <GoogleOAuthProvider clientId={googleClientId}>
+  return (
+    <SovereignProvider>
       <PermissionProvider>
         <NotificationProvider>
           <ErrorBoundary>
@@ -465,16 +441,6 @@ export default function WrappedApp() {
           </ErrorBoundary>
         </NotificationProvider>
       </PermissionProvider>
-    </GoogleOAuthProvider>
-  ) : (
-    <PermissionProvider>
-      <NotificationProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
-      </NotificationProvider>
-    </PermissionProvider>
+    </SovereignProvider>
   );
-
-  return AppWrapper;
 }

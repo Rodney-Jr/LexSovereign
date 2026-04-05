@@ -1,13 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../jwtConfig';
 import { prisma, requestContext } from '../db';
 import { CONFIG } from '../config';
-
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../jwtConfig';
 import { AuthUser } from '../types';
 
-
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
     // Priority: 1. HttpOnly Cookie (hardened), 2. Authorization header (legacy/API compatibility)
     const cookieToken = req.cookies?.token;
     const authHeader = req.headers['authorization'];
@@ -21,114 +19,37 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         return;
     }
 
-    jwt.verify(token, JWT_SECRET, async (err: any, user: any) => {
-        if (err) {
-            console.error(`[Auth] JWT Verification failed: ${err.message}`);
-            return res.status(403).json({
-                error: 'Invalid session token',
-                code: 'FORBIDDEN',
-                reason: err.message === 'jwt expired' ? 'expired' : 'invalid'
-            });
+    try {
+        // Strict Native JWT Verification
+        const decodedPayload: any = jwt.verify(token, JWT_SECRET);
+        
+        req.user = {
+            id: decodedPayload.id,
+            email: decodedPayload.email,
+            role: decodedPayload.role,
+            tenantId: decodedPayload.tenantId,
+            name: decodedPayload.name || 'User Session',
+            permissions: decodedPayload.permissions || [],
+            isImpersonating: !!decodedPayload.isImpersonating
+        };
+
+        if (req.user && !req.user.isImpersonating) {
+             const userStatus: any = await prisma.user.findUnique({ 
+                where: { id: req.user.id },
+                select: { isActive: true, tenant: { select: { status: true } } }
+             });
+             if (userStatus && !userStatus.isActive) return res.status(403).json({ error: 'Account disabled' });
+             if (userStatus?.tenant?.status === 'SUSPENDED') return res.status(403).json({ error: 'Tenant suspended' });
         }
 
-        // Normalize Platform Admin TenantID
-        if (user.tenantId === '__PLATFORM__') {
-            user.tenantId = null;
-        }
+        requestContext.run({ tenantId: req.user.tenantId || undefined, userId: req.user.id }, () => {
+            next();
+        });
 
-        try {
-            // [SECURITY] Bypass isolation for authentication lookup to find user across any/no tenant
-            const dbUser: any = await requestContext.run({ tenantId: undefined, userId: user.id }, () =>
-                (prisma as any).user.findUnique({
-                    where: { id: user.id },
-                    include: {
-                        tenant: { select: { id: true, status: true, enabledModules: true, isTrial: true, trialExpiresAt: true, jurisdiction: true, storageBucketUri: true } },
-                        role: { include: { permissions: true } },
-                        department: true
-                    }
-                })
-            );
-
-            if (!dbUser || !dbUser.isActive) {
-                return res.status(403).json({ error: 'Account disabled. Contact platform admin.', code: 'ACCOUNT_DISABLED' });
-            }
-
-            if (dbUser.tenant && dbUser.tenant.status === 'SUSPENDED') {
-                return res.status(403).json({ error: 'Tenant enclave suspended. Access denied.', code: 'TENANT_SUSPENDED' });
-            }
-
-            // Trial Enforce: Maturity Check
-            if (dbUser.tenant && dbUser.tenant.isTrial) {
-                const now = new Date();
-                const expiresAt = dbUser.tenant.trialExpiresAt ? new Date(dbUser.tenant.trialExpiresAt) : null;
-
-                if (dbUser.tenant.status === 'TRIAL_EXPIRED' || (expiresAt && now > expiresAt)) {
-                    // Auto-update status to TRIAL_EXPIRED if maturity hit
-                    if (dbUser.tenant.status !== 'TRIAL_EXPIRED') {
-                        await prisma.tenant.update({
-                            where: { id: user.tenantId },
-                            data: { status: 'TRIAL_EXPIRED' }
-                        }).catch(e => console.error("[TrialGuard] Failed to auto-suspend expired trial:", e));
-                    }
-
-                    return res.status(403).json({
-                        error: 'Sovereign Trial Matured',
-                        code: 'TRIAL_EXPIRED',
-                        message: 'Your 30-day sovereign trial has concluded. Please upgrade to maintain access to your data.',
-                        expiresAt: dbUser.tenant.trialExpiresAt
-                    });
-                }
-            }
-
-            console.log(`[Auth] JWT Verified for user: ${user.email} (Role: ${user.role})`);
-
-            // Deployment Adaptation: On-Premise Enclaves are Single Tenant
-            if (!CONFIG.ENABLE_MULTI_TENANCY) {
-                user.tenantId = CONFIG.SINGLE_TENANT_ID;
-            }
-
-            // Hydrate sensitive context from DB (Department, Permissions, Attributes, Modules)
-            const dbPermissions = dbUser.role?.permissions || [];
-            
-            console.log(`[Auth-Diag] User ${dbUser.email} hydrated with ${dbPermissions.length} total permissions.`);
-            
-            req.user = {
-                ...user,
-                department: (dbUser as any).department || undefined,
-                name: dbUser.name,
-                tenant: (dbUser as any).tenant,
-                permissions: dbPermissions,
-                isImpersonating: user.isImpersonating || false,
-                impersonatorId: user.impersonatorId || undefined
-            };
-
-            // 🛡️ [SECURITY] Impersonation Guard: Verify active grant
-            if (req.user?.isImpersonating) {
-                const grant = await (prisma as any).supportAccessGrant.findFirst({
-                    where: {
-                        tenantId: user.tenantId,
-                        expiresAt: { gte: new Date() },
-                        isActive: true
-                    }
-                });
-
-                if (!grant) {
-                    console.warn(`[SECURITY] Revoking invalid/expired impersonation session for Admin ${user.email} on Tenant ${user.tenantId}`);
-                    return res.status(403).json({ 
-                        error: 'Support access expired or revoked.', 
-                        code: 'IMPERSONATION_REVOKED' 
-                    });
-                }
-            }
-
-            requestContext.run({ tenantId: user.tenantId, userId: user.id }, () => {
-                next();
-            });
-        } catch (dbErr: any) {
-            console.error(`[Auth] Critical Exception in authenticateToken: ${dbErr.message}`);
-            res.status(500).json({ error: 'Authentication internal error', code: 'INTERNAL_ERROR' });
-        }
-    });
+    } catch (error: any) {
+        console.error(`[Auth] Authentication failed: ${error.message}`);
+        res.status(401).json({ error: 'Invalid or expired session', reason: error.message });
+    }
 };
 
 export const authorizeRole = (allowedRoles: string[]) => {

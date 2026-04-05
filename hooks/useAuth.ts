@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppMode, SessionData } from '../types';
 import { ROLE_DEFAULT_PERMISSIONS } from '../constants';
 import { authorizedFetch } from '../utils/api';
@@ -15,6 +15,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const [mfaEnabled, setMfaEnabled] = useState(false);
     const [mode, setMode] = useState<AppMode>(AppMode.LAW_FIRM);
     const { recoverWork } = useWorkPersistence({ activeTab, selectedMatterId: selectedMatter });
+    const isSyncing = useRef(false);
 
     const handleAuthenticated = useCallback(async (session: SessionData) => {
         const roleValue = typeof session.role === 'string'
@@ -46,7 +47,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         }
 
         setRole(normalizedRole);
-        setPermissions(activePermissions);
+        setPermissions(activePermissions as any);
         setEnabledModules(session.enabledModules || ["CORE"]);
         setUserId(session.userId);
         setUserName(session.userName || null);
@@ -59,7 +60,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         return normalizedRole;
     }, [setRole, setPermissions, setEnabledModules]);
 
-    const handleLogout = useCallback(() => {
+    const handleLogout = useCallback(async () => {
         // Clear server-side cookie by calling logout endpoint (non-blocking)
         fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
 
@@ -80,24 +81,61 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         localStorage.removeItem('nomosdesk_activeTab');
         sessionStorage.removeItem('nomosdesk_session');
         
-        // Final fallback: redirect to home or reload to ensure clean State
-        window.location.href = '/';
+        // Use history API or soft-navigate if needed, but DO NOT hard reload
+        // as that destroys in-flight error notifications.
+        if (window.location.pathname !== '/') {
+            window.history.pushState({}, '', '/');
+        }
     }, [setRole, setPermissions, setEnabledModules]);
 
+    // Native Sync Effect (Restore Session on Load)
     useEffect(() => {
-        const saved = localStorage.getItem('nomosdesk_session');
-        if (saved) {
-            try {
-                const session = JSON.parse(saved) as SessionData;
-                if (session.role && session.token) {
-                    handleAuthenticated(session);
+        const syncSession = async () => {
+            if (isSyncing.current) return;
+            isSyncing.current = true;
+
+            const storedSessionStr = localStorage.getItem('nomosdesk_session');
+            if (storedSessionStr) {
+                try {
+                    const sessionData = JSON.parse(storedSessionStr);
+                    // Validate with backend /me endpoint natively to ensure session token is still valid
+                    const response = await fetch('/api/auth/me', {
+                        headers: sessionData.token ? { 'Authorization': `Bearer ${sessionData.token}` } : undefined
+                    });
+
+                    if (response.ok) {
+                        const verifiedSessionData = await response.json();
+                        handleAuthenticated({
+                            role: verifiedSessionData.user?.role || sessionData.role || 'UNKNOWN',
+                            userId: verifiedSessionData.user?.id || sessionData.userId || '',
+                            userName: verifiedSessionData.user?.name || sessionData.userName || '',
+                            tenantId: verifiedSessionData.user?.tenantId || sessionData.tenantId || null,
+                            permissions: verifiedSessionData.user?.permissions || sessionData.permissions || [],
+                            token: verifiedSessionData.token || sessionData.token
+                        });
+                    } else if (response.status === 401 || response.status === 403) {
+                        const errData = await response.json().catch(() => ({}));
+                        const errorMsg = errData.error || 'Session expired or invalidated.';
+                        console.warn(`[useAuth] Backend session invalid (${response.status}):`, errorMsg);
+                        
+                        window.dispatchEvent(new CustomEvent('nomosdesk-api-error', {
+                            detail: { message: 'Session Expired', description: errorMsg }
+                        }));
+                        
+                        handleLogout();
+                    }
+                } catch (error) {
+                    console.error('[useAuth] Sync failed:', error);
+                    handleLogout();
                 }
-            } catch (e) {
-                console.error("[Auth] Session recovery failed", e);
-                handleLogout();
             }
-        }
-    }, [handleAuthenticated, handleLogout]);
+            isSyncing.current = false;
+        };
+
+        syncSession();
+        // Disabling hook exhaustive deps since we only want this to run once on mount or when handleLogout changes.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return {
         isAuthenticated,

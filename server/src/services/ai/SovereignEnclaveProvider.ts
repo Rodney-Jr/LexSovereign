@@ -138,4 +138,5 @@ export class SovereignEnclaveProvider implements AIProvider {
     async analyzeDocument(content: string, type: 'CASE' | 'CONTRACT'): Promise<string> { return "Report generated within sovereign boundary."; }
     async parseBankStatement(text: string): Promise<{ date: string, description: string, amount: number, type: 'DEBIT' | 'CREDIT' }[]> { return []; }
     async analyzeLocalPolicy(prompt: string): Promise<string> { return "[]"; }
+    async embed(text: string): Promise<number[]> { throw new Error("Local Sovereign Embedding Not Provisioned"); }
 }

@@ -1,13 +1,9 @@
-
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
     console.log('🌱 Seeding Managing Partner Demo Data...');
-
-    const hashedPassword = await bcrypt.hash('password123', 10);
 
     // 1. Find or Create Demo Tenant
     let tenant = await prisma.tenant.findFirst({
@@ -44,7 +40,8 @@ async function main() {
         create: {
             email: 'managing_partner@nomosdesk.com',
             name: 'Kofi Mensah (MP)',
-            passwordHash: hashedPassword,
+            // @ts-ignore
+            firebaseUid: 'fb-mp-demo',
             roleId: mpRole.id,
             tenantId: tenant.id,
             isActive: true
@@ -68,7 +65,8 @@ async function main() {
             create: {
                 email: 'tech_admin@nomosdesk.com',
                 name: 'Tech Admin (IT)',
-                passwordHash: hashedPassword,
+                // @ts-ignore
+                firebaseUid: 'fb-ta-demo',
                 roleId: taRole.id,
                 tenantId: tenant.id,
                 isActive: true
@@ -92,7 +90,8 @@ async function main() {
             create: {
                 email: 'associate1@nomosdesk.com',
                 name: 'Akwasi Mensah (Associate)',
-                passwordHash: hashedPassword,
+                // @ts-ignore
+                firebaseUid: 'fb-associate1-demo',
                 roleId: associateRole.id,
                 tenantId: tenant.id,
                 isActive: true
@@ -116,7 +115,8 @@ async function main() {
             create: {
                 email: 'admin_manager@nomosdesk.com',
                 name: 'Kofi Mensah (AM)',
-                passwordHash: hashedPassword,
+                // @ts-ignore
+                firebaseUid: 'fb-am-demo',
                 roleId: amRole.id,
                 tenantId: tenant.id,
                 isActive: true

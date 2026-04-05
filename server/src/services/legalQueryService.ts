@@ -1,12 +1,11 @@
 
-import { OpenAI } from 'openai';
 import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
+import { EmbeddingService } from './EmbeddingService';
 
 dotenv.config();
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface GazetteExcerpt {
     contentChunk: string;
@@ -27,6 +26,7 @@ export class LegalQueryService {
             dotProduct += v1[i] * v2[i];
             normA += v1[i] * v1[i];
             normB += v2[i] * v2[i];
+            if (i >= v2.length) break; // Defensive to avoid overflow
         }
         if (normA === 0 || normB === 0) return 0;
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
@@ -35,6 +35,7 @@ export class LegalQueryService {
     /**
      * Performs Retrieval-Augmented Generation (RAG) by fetching candidates
      * and calculating similarity in-memory (Standard PG Fallback).
+     * Defaults to OpenAI Embedding generation for the 1536-dim Gazette Repository.
      */
     static async getRelevantStatutes(query: string, region: string, allowedRegion?: string): Promise<GazetteExcerpt[]> {
         try {
@@ -45,15 +46,11 @@ export class LegalQueryService {
                 return [];
             }
 
-            // 2. Generate embedding for the user query
-            const response = await openai.embeddings.create({
-                model: "text-embedding-3-small",
-                input: query,
-                encoding_format: "float",
-            });
-            const queryEmbedding = response.data[0].embedding;
+            // 2. Generate embedding for the user query via EmbeddingService 
+            // We explicitly request 'openai' to match the dimension of the gazette repo.
+            const queryEmbedding = await EmbeddingService.generateEmbedding(query, 'openai');
 
-            // 2. Fetch candidates for the region from standard JSON storage
+            // 3. Fetch candidates for the region from standard JSON storage
             const candidates = await prisma.gazetteEmbedding.findMany({
                 where: { region },
                 select: {
@@ -64,7 +61,7 @@ export class LegalQueryService {
                 }
             });
 
-            // 3. Calculate similarity and sort in-memory
+            // 4. Calculate similarity and sort in-memory
             const results = candidates
                 .map(c => {
                     const docEmbedding = c.embedding as unknown as number[];
@@ -81,6 +78,46 @@ export class LegalQueryService {
             return results;
         } catch (error) {
             console.error("❌ LegalQueryService Error:", error);
+            return [];
+        }
+    }
+
+    /**
+     * Performs RAG against a Tenant-Specific repository using Gemini's 768-dim multimodal embeddings.
+     */
+    static async getRelevantTenantArtifacts(query: string, tenantId: string): Promise<any[]> {
+        try {
+             // Generate embedding for the user query specifically using 'gemini'
+             const queryEmbedding = await EmbeddingService.generateEmbedding(query, 'gemini');
+
+             // Fetch candidates from the tenant-specific knowledge base 
+             // (Implementation assumes a model 'TenantArtifactEmbedding' would be added to schema)
+             const candidates = await (prisma as any).knowledgeArtifact.findMany({
+                 where: { 
+                     OR: [
+                         { tenantId: tenantId },
+                         { isGlobal: true }
+                     ]
+                 }
+             });
+
+             const results = candidates
+                .map((c: any) => {
+                    const docEmbedding = c.embedding as unknown as number[];
+                    // Gemini 768-dim similarity
+                    return {
+                        id: c.id,
+                        title: c.title,
+                        content: c.content,
+                        score: this.cosineSimilarity(queryEmbedding, docEmbedding)
+                    };
+                })
+                .sort((a: any, b: any) => b.score - a.score)
+                .slice(0, 5);
+
+            return results;
+        } catch (error) {
+            console.error("❌ Tenant RAG Search Failed:", error);
             return [];
         }
     }

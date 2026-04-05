@@ -204,4 +204,6 @@ Example output:
             return "[]";
         }
     }
+
+    async embed(text: string): Promise<number[]> { throw new Error("Anthropic Embedding Not Provisioned"); }
 }

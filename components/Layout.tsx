@@ -124,7 +124,20 @@ const Layout: React.FC<LayoutProps> = ({
       }
     };
     window.addEventListener('keydown', handleGlobalKey);
-    return () => window.removeEventListener('keydown', handleGlobalKey);
+
+    // Studio Micro-Frontend Synchronization channel
+    const channel = new BroadcastChannel('sovereign_studio_sync');
+    channel.onmessage = (event) => {
+      if (event.data.type === 'STUDIO_COMMIT') {
+         console.log('[Sovereign Sync] Received payload from drafting studio:', event.data.payload.substring(0, 50) + '...');
+         alert('NomosDesk: Document successfully captured from Standalone Drafting Studio.');
+      }
+    };
+
+    return () => {
+       window.removeEventListener('keydown', handleGlobalKey);
+       channel.close();
+    };
   }, []);
 
   const isAllowed = (tab: string) => {
@@ -138,6 +151,26 @@ const Layout: React.FC<LayoutProps> = ({
     
     return true;
   };
+
+  const launchStudio = async () => {
+    try {
+      const response = await fetch('/api/auth/studio-token', { 
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('nomosdesk_session') ? JSON.parse(localStorage.getItem('nomosdesk_session') || '{}').token : ''}` }
+      });
+      const data = await response.json();
+      if (data.token) {
+        const studioUrl = import.meta.env.VITE_STUDIO_URL || 'http://localhost:3006';
+        window.open(`${studioUrl}/editor?token=${data.token}`, '_blank', 'noopener,noreferrer');
+      } else {
+        alert('Failed to handshake with Sovereign Studio Server');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error launching Studio Handoff');
+    }
+  };
+
   return (
     <div 
       className={`flex h-screen bg-brand-bg text-brand-text overflow-hidden transition-colors duration-500 theme-${theme}`}
@@ -358,8 +391,8 @@ const Layout: React.FC<LayoutProps> = ({
                 <NavItem
                   icon={<Sparkles size={18} className="text-brand-secondary" />}
                   label="Legal Drafting"
-                  isActive={activeTab === 'drafting'}
-                  onClick={() => setActiveTab('drafting')}
+                  isActive={false} // Force inactive since it pops out
+                  onClick={launchStudio}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}

@@ -1,5 +1,4 @@
 import { prisma } from '../db';
-import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 async function main() {
@@ -122,14 +121,14 @@ async function main() {
 
         // 3. Create Users
         console.log('Creating Admin Users...');
-        const hashedPartnerPassword = await bcrypt.hash(password, 10);
         
         // Owner
         await prisma.user.create({
             data: {
                 email: 'owner@enterpriselegal.com',
                 name: 'Firm Owner',
-                passwordHash: hashedPartnerPassword,
+                // @ts-ignore
+                firebaseUid: 'fb-owner-enterprise',
                 tenantId: tenantId,
                 roleId: ownerRole.id,
                 roleString: 'OWNER',
@@ -144,7 +143,8 @@ async function main() {
                 id: adminId,
                 email: adminEmail,
                 name: 'Senior Managing Partner',
-                passwordHash: hashedPartnerPassword,
+                // @ts-ignore
+                firebaseUid: 'fb-partner-enterprise',
                 tenantId: tenantId,
                 roleId: managingPartnerRole.id,
                 roleString: 'MANAGING_PARTNER',
@@ -158,7 +158,8 @@ async function main() {
             data: {
                 email: 'admin@enterpriselegal.com',
                 name: 'Admin Manager',
-                passwordHash: hashedPartnerPassword,
+                // @ts-ignore
+                firebaseUid: 'fb-admin-enterprise',
                 tenantId: tenantId,
                 roleId: adminManagerRole.id,
                 roleString: 'ADMIN_MANAGER',
@@ -169,11 +170,11 @@ async function main() {
 
         // 4. Create associate
         console.log('Creating Associate...');
-        const hashedAssociatePassword = await bcrypt.hash(password, 10);
         await prisma.user.create({
             data: {
                 email: 'associate@enterpriselegal.com',
-                passwordHash: hashedAssociatePassword,
+                // @ts-ignore
+                firebaseUid: 'fb-associate-enterprise',
                 name: 'Demo Associate',
                 roleId: associateRole.id,
                 roleString: 'JUNIOR_ASSOCIATE',
@@ -184,11 +185,11 @@ async function main() {
 
         // 5. Create client
         console.log('Creating Client...');
-        const hashedClientPassword = await bcrypt.hash(password, 10);
         const clientUser = await prisma.user.create({
             data: {
                 email: 'client@enterpriselegal.com',
-                passwordHash: hashedClientPassword,
+                // @ts-ignore
+                firebaseUid: 'fb-client-enterprise',
                 name: 'Demo Client (Acme Corp)',
                 roleId: clientRole.id,
                 roleString: 'CLIENT',

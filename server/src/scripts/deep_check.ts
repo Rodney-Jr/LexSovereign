@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -23,12 +22,12 @@ async function deepCheck() {
         roleName: user.role?.name,
         tenantId: user.tenantId,
         tenantName: (user as any).tenant?.name,
-        passwordHashLength: user.passwordHash?.length,
-        passwordHashPrefix: user.passwordHash?.substring(0, 7)
+        // @ts-ignore
+        firebaseUid: user.firebaseUid
     });
 
-    const match = await bcrypt.compare('password123', user.passwordHash!);
-    console.log(`bcrypt.compare result: ${match ? '✅ MATCH' : '❌ NO MATCH'}`);
+    // @ts-ignore
+    console.log(`Firebase UID present: ${user.firebaseUid ? '✅ YES' : '❌ NO'}`);
 
     process.exit(0);
 }

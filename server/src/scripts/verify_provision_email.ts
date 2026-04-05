@@ -21,7 +21,7 @@ async function verifyEmailDispatch() {
             to: testAdminEmail,
             adminName: "Email Tester",
             tenantName: "Verification Enclave",
-            tempPassword: "test-password-123",
+            tempPassword: "Check email for link",
             loginUrl: "http://localhost:3000/login"
         }).catch(err => {
             console.log("[Email Service] Note: Network call might fail (expected if no API key).");
@@ -42,13 +42,14 @@ async function verifyEmailDispatch() {
         const result = await PlatformService.provisionAdmin(adminInput);
         console.log("✅ Platform Admin Instance Created in DB.");
 
-        if (result.tempPassword && result.loginUrl) {
+        // @ts-ignore
+        if (result.firebaseUid && result.loginUrl) {
             console.log("✅ Provisioning Result contains credentials. Triggering email...");
             await sendTenantWelcomeEmail({
                 to: adminInput.email,
                 adminName: adminInput.name,
                 tenantName: 'Sovereign Control Plane',
-                tempPassword: result.tempPassword,
+                tempPassword: 'Check email for link',
                 loginUrl: result.loginUrl
             }).catch(() => { });
         }
@@ -63,19 +64,21 @@ async function verifyEmailDispatch() {
             name: `Tenant-Test-${Date.now()}`,
             adminEmail: `tenant-test-${Date.now()}@nomosdesk.com`,
             adminName: "Tenant Admin Test",
+            firebaseUid: `fb-test-${Date.now()}`,
             plan: "PRO"
         };
         console.log(`Provisioning tenant: ${tenantInput.name}`);
         const result = await TenantService.provisionTenant(tenantInput);
         console.log("✅ Tenant Instance Created in DB.");
 
-        if (result.tempPassword && result.loginUrl) {
+        // @ts-ignore
+        if (result.firebaseUid && result.loginUrl) {
             console.log("✅ Provisioning Result contains credentials. Triggering email...");
             await sendTenantWelcomeEmail({
                 to: tenantInput.adminEmail,
                 adminName: tenantInput.adminName,
                 tenantName: tenantInput.name,
-                tempPassword: result.tempPassword,
+                tempPassword: 'Check email for link',
                 loginUrl: result.loginUrl
             }).catch(() => { });
         }

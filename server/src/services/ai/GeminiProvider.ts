@@ -105,6 +105,13 @@ export class GeminiProvider implements AIProvider {
         };
     }
 
+    async embed(text: string): Promise<number[]> {
+        const ai = this.getAI();
+        const model = ai.getGenerativeModel({ model: "text-embedding-004" });
+        const result = await model.embedContent(text);
+        return result.embedding.values;
+    }
+
     async explainClause(clauseText: string): Promise<string> {
         const ai = this.getAI();
         try {

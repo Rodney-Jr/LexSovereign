@@ -15,18 +15,16 @@ router.get('/', authenticateToken, async (req, res) => {
             return;
         }
 
+        const tenantId = req.user.tenantId;
+        const isGlobalAdmin = req.user.role === 'GLOBAL_ADMIN';
+        const whereFilter = (tenantId && !isGlobalAdmin)
+            ? { matter: { tenantId } }
+            : {}; // Global Admin: see all documents
+
         const documents = await prisma.document.findMany({
-            where: {
-                matter: {
-                    tenantId: req.user.tenantId as string
-                }
-            },
-            include: {
-                matter: true
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
+            where: whereFilter,
+            include: { matter: true },
+            orderBy: { createdAt: 'desc' }
         });
 
         // Map to frontend DocumentMetadata format
@@ -400,20 +398,16 @@ router.get('/review-needed', authenticateToken, async (req, res) => {
             return;
         }
 
+        const tenantId = req.user.tenantId;
+        const whereFilter = tenantId
+            ? { matter: { tenantId }, status: { not: 'APPROVED' } }
+            : { status: { not: 'APPROVED' } };
+
         const documents = await prisma.document.findMany({
-            where: {
-                matter: {
-                    tenantId: req.user.tenantId as string
-                },
-                status: { not: 'APPROVED' }
-            },
-            include: {
-                matter: true
-            },
+            where: whereFilter,
+            include: { matter: true },
             take: 10,
-            orderBy: {
-                createdAt: 'desc'
-            }
+            orderBy: { createdAt: 'desc' }
         });
 
         const artifacts = documents.map(doc => ({
@@ -450,7 +444,7 @@ router.get('/:id/content', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        if (doc.matter.tenantId !== tenantId) {
+        if (doc.matter.tenantId !== tenantId && req.user?.role !== 'GLOBAL_ADMIN') {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
@@ -575,7 +569,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        if (doc.matter.tenantId !== req.user.tenantId) {
+        if (doc.matter.tenantId !== req.user.tenantId && req.user.role !== 'GLOBAL_ADMIN') {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
@@ -639,7 +633,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 
         if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-        if (doc.matter.tenantId !== req.user.tenantId) {
+        if (doc.matter.tenantId !== req.user.tenantId && req.user.role !== 'GLOBAL_ADMIN') {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
@@ -877,6 +871,57 @@ router.get('/:id/versions/:versionId/content', authenticateToken, async (req, re
         const content = `[OFFICIAL VERSION ${version.versionNumber}]\n\nSource: ${version.uri}\nCreated by: ${req.user?.name}\n\n[Sovereign Content Placeholder]\nThis is the historical artifact content as it existed at version ${version.versionNumber}.`;
 
         res.json({ content });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Revert document to a specific version
+router.post('/:id/revert/:versionId', authenticateToken, async (req, res) => {
+    try {
+        const { id, versionId } = req.params;
+        const tenantId = req.user?.tenantId;
+
+        const doc = await prisma.document.findUnique({
+            where: { id },
+            include: { matter: true }
+        });
+
+        if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+        if (doc.matter.tenantId !== tenantId) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const version = await prisma.documentVersion.findUnique({
+            where: { id: versionId }
+        });
+
+        if (!version || version.documentId !== id) {
+            return res.status(404).json({ error: 'Version not found' });
+        }
+
+        // 🛡️ [SECURITY] Audit historical version revert
+        await prisma.auditLog.create({
+            data: {
+                action: 'DOCUMENT_VERSION_REVERTED',
+                userId: req.user?.id,
+                matterId: doc.matterId,
+                resourceId: id,
+                details: `Artifact "${doc.name}" reverted to version ${version.versionNumber} by ${req.user?.name}`,
+            } as any
+        });
+
+        // Revert the main document pointer/metadata to match the historical version
+        const updated = await prisma.document.update({
+            where: { id },
+            data: {
+                uri: version.uri, // Assuming uri is the content storage pointer for drafts
+                updatedAt: new Date()
+            }
+        });
+
+        res.json({ success: true, version: version.versionNumber, content: version.uri });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

@@ -1,5 +1,4 @@
 import { prisma } from '../db';
-import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 async function main() {
@@ -41,21 +40,22 @@ async function main() {
         }
 
         // 3. User Upsert
-        const passwordHash = await bcrypt.hash('password123', 10);
         await prisma.user.upsert({
             where: { email: 'kofi.adu@nomoslaw.com' },
             create: {
                 id: adminId,
                 email: 'kofi.adu@nomoslaw.com',
                 name: 'Kofi Adu',
-                passwordHash,
+                // @ts-ignore
+                firebaseUid: 'fb-lifecycle-kofi',
                 tenantId: tenant.id,
                 roleId: partnerRole.id,
                 roleString: 'MANAGING_PARTNER',
                 region
             },
             update: {
-                passwordHash
+                // @ts-ignore
+                firebaseUid: 'fb-lifecycle-kofi'
             }
         });
 

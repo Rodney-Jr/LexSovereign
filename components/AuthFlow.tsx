@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { GoogleLogin } from '@react-oauth/google';
 import {
    ShieldCheck,
    Mail,
@@ -15,31 +14,7 @@ import {
    Link
 } from 'lucide-react';
 import { UserRole, SessionData } from '../types';
-
-// Declare global variables/constants
-declare const __SOVEREIGN_PIN__: string;
-declare global {
-   interface Window {
-      _SOVEREIGN_PIN_?: string;
-   }
-}
-
-const getSovereignPin = (): string => {
-   if (typeof __SOVEREIGN_PIN__ !== 'undefined' && __SOVEREIGN_PIN__) return __SOVEREIGN_PIN__;
-   if (typeof window !== 'undefined' && window._SOVEREIGN_PIN_) return window._SOVEREIGN_PIN_;
-   return '';
-};
-
-// Safe JSON parse to prevent "Unexpected end of JSON input" on empty server responses
-const parseJson = async (response: Response): Promise<any> => {
-   const text = await response.text();
-   if (!text) return {};
-   try {
-      return JSON.parse(text);
-   } catch {
-      return { error: text || `Server error ${response.status}` };
-   }
-};
+import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 
 interface AuthFlowProps {
    onAuthenticated: (session: SessionData) => Promise<void> | void;
@@ -59,9 +34,6 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    const [logoClicks, setLogoClicks] = useState(0);
    const [isForgotPassword, setIsForgotPassword] = useState(false);
    const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
-   const [mfaRequired, setMfaRequired] = useState(false);
-   const [mfaToken, setMfaToken] = useState<string | null>(null);
-   const [mfaCode, setMfaCode] = useState('');
 
    const handleLogoClick = () => {
       const nextClicks = logoClicks + 1;
@@ -78,21 +50,18 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       setError(null);
 
       try {
-         const sovPin = getSovereignPin();
+         // Call our native backend instead of firebase
          const response = await fetch('/api/auth/forgot-password', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
-            },
-            body: JSON.stringify({ email })
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ email })
          });
-
-         const data = await parseJson(response);
-         if (!response.ok) throw new Error(data.error || 'Failed to send reset link');
+         
+         if (!response.ok) throw new Error('Reset request failed');
+         
          setForgotPasswordSent(true);
-      } catch (err: unknown) {
-         setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } catch (err: any) {
+         setError(err.message || 'Failed to send reset email');
       } finally {
          setIsProcessing(false);
       }
@@ -103,129 +72,103 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       setIsProcessing(true);
       setError(null);
 
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const payload = isLogin
-         ? { email, password }
-         : { email, password, name, roleName: UserRole.TENANT_ADMIN };
-
       try {
-         const sovPin = getSovereignPin();
-         const response = await fetch(`${endpoint}`, {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
-            },
-            body: JSON.stringify(payload)
-         });
+         if (isLogin) {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-         const data = await parseJson(response);
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.error || 'Authentication failed');
+            }
 
-         if (!response.ok) {
-            throw new Error(data.error || 'Authentication failed');
+            const data = await response.json();
+            
+            // Rehydrate the UI by calling onAuthenticated with the returned session
+            if (data.user && data.token) {
+                // Synthesize the session object expected by sync
+                await onAuthenticated({
+                    role: data.user.role,
+                    userId: data.user.id,
+                    userName: data.user.name,
+                    tenantId: data.user.tenantId,
+                    permissions: data.user.permissions,
+                    token: data.token,
+                    mode: data.user.mode
+                });
+            }
+         } else {
+             setError('Direct registration is currently disabled. Please use an invitation or Provision New Silo.');
          }
-
-         if (data.mfaRequired) {
-            setMfaRequired(true);
-            setMfaToken(data.mfaToken);
-            setIsProcessing(false);
-            return;
-         }
-
-         await onAuthenticated({
-            role: data.user.role,
-            permissions: data.user.permissions || [],
-            userId: data.user.id,
-            tenantId: data.user.tenantId,
-            token: data.token,
-            userName: data.user.name,
-            mfaEnabled: data.user.mfaEnabled || false
-         });
-      } catch (err: unknown) {
-         setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-         setIsProcessing(false);
-      }
-   };
-
-   const handleGoogleSuccess = async (credentialResponse: any) => {
-      if (!credentialResponse.credential) return;
-
-      setIsProcessing(true);
-      setError(null);
-
-      try {
-         const sovPin = getSovereignPin();
-         const response = await fetch('/api/auth/google-login', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
-            },
-            body: JSON.stringify({ idToken: credentialResponse.credential })
-         });
-
-         const data = await parseJson(response);
-
-         if (!response.ok) {
-            throw new Error(data.error || 'Google Authentication failed');
-         }
-
-         if (data.mfaRequired) {
-            setMfaRequired(true);
-            setMfaToken(data.mfaToken);
-            setIsProcessing(false);
-            return;
-         }
-
-         await onAuthenticated({
-            role: data.user.role,
-            permissions: data.user.permissions || [],
-            userId: data.user.id,
-            tenantId: data.user.tenantId,
-            token: data.token,
-            userName: data.user.name,
-            mfaEnabled: data.user.mfaEnabled || false
-         });
-      } catch (err: unknown) {
-         setError(err instanceof Error ? err.message : 'Google Authentication failed');
-      } finally {
-         setIsProcessing(false);
-      }
-   };
-   const handleMfaVerify = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setIsProcessing(true);
-      setError(null);
-
-      try {
-         const sovPin = getSovereignPin();
-         const response = await fetch('/api/auth/mfa/verify', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               ...(sovPin ? { 'x-sov-pin': sovPin } : {})
-            },
-            body: JSON.stringify({ mfaToken, code: mfaCode })
-         });
-
-         const data = await parseJson(response);
-         if (!response.ok) throw new Error(data.error || 'MFA Verification failed');
-
-         await onAuthenticated({
-            role: data.user.role,
-            permissions: data.user.permissions || [],
-            userId: data.user.id,
-            tenantId: data.user.tenantId,
-            token: data.token,
-            userName: data.user.name,
-            mfaEnabled: true
-         });
       } catch (err: any) {
-         setError(err.message);
+         console.error('[AuthFlow] Authorization Error:', err.message);
+         setError(err.message || 'Authentication failed');
       } finally {
          setIsProcessing(false);
       }
+   };
+
+   const handleMicrosoftSSO = () => {
+      window.location.href = '/api/auth/msal/init';
+   };
+
+   const handlePasskeyLogin = async () => {
+       if (!email) {
+           setError("Please enter your email to use Passkey authentication.");
+           return;
+       }
+       
+       setIsProcessing(true);
+       setError(null);
+       
+       try {
+           // 1. Get options from server
+           const resp = await fetch(`/api/auth/webauthn/login/generate?email=${encodeURIComponent(email)}`);
+           if (!resp.ok) {
+               const errData = await resp.json().catch(() => ({}));
+               throw new Error(errData.error || 'Failed to start Passkey login. Are you registered?');
+           }
+           
+           const options = await resp.json();
+           
+           // 2. Pass options to browser authenticator via WebAuthn API
+           const authResp = await startAuthentication(options);
+           
+           // 3. Send authenticator response to server
+           const verifyResp = await fetch('/api/auth/webauthn/login/verify', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ email, body: authResp })
+           });
+           
+           if (!verifyResp.ok) {
+               const errData = await verifyResp.json().catch(() => ({}));
+               throw new Error(errData.error || 'Passkey verification failed');
+           }
+           
+           const data = await verifyResp.json();
+           
+           if (data.user && data.token) {
+                await onAuthenticated({
+                    role: data.user.role,
+                    userId: data.user.id,
+                    userName: data.user.name,
+                    tenantId: data.user.tenantId,
+                    permissions: data.user.permissions,
+                    token: data.token,
+                    mode: data.user.mode
+                });
+            }
+           
+       } catch (err: any) {
+           console.error('[WebAuthn] Login Error:', err);
+           setError(err.message || 'Passkey authentication failed.');
+       } finally {
+           setIsProcessing(false);
+       }
    };
 
    return (
@@ -251,57 +194,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl">
-               {mfaRequired ? (
-                  <form onSubmit={handleMfaVerify} className="space-y-6">
-                     <div className="space-y-2">
-                        <h3 className="text-2xl font-bold text-white">Sovereign 2FA</h3>
-                        <p className="text-slate-400 text-sm leading-relaxed">
-                           Enter the 6-digit code from your authenticator app or a recovery key.
-                        </p>
-                     </div>
-
-                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in shake duration-300">
-                           <AlertCircle size={18} />
-                           <p>{error}</p>
-                        </div>
-                     )}
-
-                     <div className="relative group">
-                        <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors" size={20} />
-                        <input
-                           type="text"
-                           required
-                           autoFocus
-                           value={mfaCode}
-                           onChange={e => setMfaCode(e.target.value.toUpperCase())}
-                           className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-mono tracking-widest"
-                           placeholder="CODE"
-                        />
-                     </div>
-
-                     <button
-                        type="submit"
-                        disabled={isProcessing}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20 group active:scale-95"
-                     >
-                        {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
-                        {isProcessing ? "Verifying..." : "Verify Authority"}
-                     </button>
-
-                     <button
-                        type="button"
-                        onClick={() => {
-                           setMfaRequired(false);
-                           setMfaToken(null);
-                           setMfaCode('');
-                        }}
-                        className="w-full text-xs text-slate-500 hover:text-white font-bold uppercase tracking-widest text-center transition-colors"
-                     >
-                        Cancel
-                     </button>
-                  </form>
-               ) : isForgotPassword ? (
+               {isForgotPassword ? (
                   <form onSubmit={handleForgotPassword} className="space-y-6">
                      <div className="space-y-2">
                         <h3 className="text-2xl font-bold text-white">Reset Access</h3>
@@ -455,7 +348,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                      </button>
 
 
-                     {isLogin && (window as any).GoogleOAuthProvider && (
+                     {isLogin && (
                         <div className="space-y-4">
                            <div className="flex items-center gap-4 py-2">
                               <div className="h-[1px] bg-slate-800 flex-1"></div>
@@ -463,16 +356,29 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                               <div className="h-[1px] bg-slate-800 flex-1"></div>
                            </div>
 
-                           <div className="flex justify-center">
-                              <GoogleLogin
-                                 onSuccess={handleGoogleSuccess}
-                                 onError={() => setError('Google Login Failed')}
-                                 useOneTap
-                                 theme="filled_black"
-                                 shape="pill"
-                                 text="continue_with"
-                                 width={320}
-                              />
+                           <div className="flex flex-col gap-3">
+                               <button
+                                  type="button"
+                                  onClick={handlePasskeyLogin}
+                                  className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all border border-slate-700 active:scale-95 shadow-inner"
+                               >
+                                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                                  Passkey (Windows Hello / biometric)
+                               </button>
+
+                                <button
+                                  type="button"
+                                  onClick={handleMicrosoftSSO}
+                                  className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all border border-slate-700 active:scale-95"
+                               >
+                                  <svg className="w-5 h-5" viewBox="0 0 21 21">
+                                     <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                                     <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                                     <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                                     <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                                  </svg>
+                                  Microsoft Work / School
+                               </button>
                            </div>
                         </div>
                      )}

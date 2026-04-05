@@ -339,7 +339,36 @@
   opacity: 0.6;
 }
 
-/* AI Inline Suggestions (Ghost Text) */
+/* --- Risk Highlighting (Proactive Compliance) --- */
+.risk-mark {
+  padding: 1px 0;
+  border-radius: 2px;
+  cursor: help;
+  transition: background-color 0.3s ease;
+}
+
+.risk-medium {
+  background-color: rgba(234, 179, 8, 0.2); /* yellow-500/20 */
+  border-bottom: 2px solid rgba(234, 179, 8, 0.5);
+}
+
+.risk-high {
+  background-color: rgba(249, 115, 22, 0.25); /* orange-500/25 */
+  border-bottom: 2px solid rgba(249, 115, 22, 0.6);
+}
+
+.risk-critical {
+  background-color: rgba(239, 68, 68, 0.3); /* red-500/30 */
+  border-bottom: 2px solid rgba(239, 68, 68, 0.8);
+  animation: risk-pulse 2s infinite ease-in-out;
+}
+
+@keyframes risk-pulse {
+  0% { background-color: rgba(239, 68, 68, 0.2); }
+  50% { background-color: rgba(239, 68, 68, 0.45); }
+  100% { background-color: rgba(239, 68, 68, 0.2); }
+}
+
 .ai-suggestion {
   color: #94a3b8 !important; /* slate-400 */
   font-style: italic !important;

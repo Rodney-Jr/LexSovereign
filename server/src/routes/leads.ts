@@ -45,10 +45,13 @@ router.post('/', async (req: any, res) => {
         // AUTO-PROVISIONING: Only for platform-level leads (no tenant context at all)
         if (!leadData.tenantId && source !== 'FOUNDING_PILOT') {
             const tenantName = company || `${name}'s Firm`;
+            const firebaseUid = `fb-lead-${lead.id}`; // System-generated identity
+            
             TenantService.provisionTenant({
                 name: tenantName,
                 adminEmail: email,
                 adminName: name,
+                firebaseUid,
                 plan: 'STANDARD',
                 region: 'GH_ACC_1'
             }).then(async (result) => {
@@ -61,7 +64,7 @@ router.post('/', async (req: any, res) => {
                     to: email,
                     adminName: name,
                     tenantName,
-                    tempPassword: result.tempPassword,
+                    tempPassword: 'Check your email for setup instructions', // Firebase handles the rest
                     loginUrl: result.loginUrl
                 });
             }).catch(err => {

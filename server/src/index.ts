@@ -17,6 +17,8 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import apiRouter from './routes/api';
 import authRouter from './routes/auth';
+import webauthnRouter from './routes/webauthn';
+import msalRouter from './routes/msal';
 import mattersRouter from './routes/matters';
 import workflowsRouter from './routes/workflows';
 import aiRouter from './routes/ai';
@@ -64,6 +66,10 @@ const port = process.env.PORT || 3001;
 // 1. Initial Logger (Pre-Parsing)
 app.use((req, res, next) => {
     console.log(`[Audit] Incoming ${req.method} request to ${req.url}`);
+    
+    // Enterprise Auth Hardening: Allow Firebase Auth Popups
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    
     next();
 });
 
@@ -83,7 +89,11 @@ app.use(helmet({
     },
 }));
 app.use(cors({
-    origin: process.env.PLATFORM_URL || 'http://localhost:5173',
+    origin: [
+        process.env.PLATFORM_URL || 'http://localhost:5173',
+        'http://localhost:3006',
+        'http://127.0.0.1:3006'
+    ],
     credentials: true
 }));
 
@@ -141,6 +151,8 @@ app.use('/api/attachments', authenticateToken, express.static(path.join(__dirnam
 
 // Authentication (Handshake/Login) - Higher security rate limit
 app.use('/api/auth', authRateLimiter, authRouter);
+app.use('/api/auth/webauthn', authRateLimiter, webauthnRouter);
+app.use('/api/auth/msal', authRateLimiter, msalRouter);
 
 import apiKeysRouter from './routes/apiKeys';
 import agentRouter from './routes/agent';

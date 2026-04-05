@@ -38,6 +38,7 @@ async function run() {
             name: TEST_ORG,
             adminEmail: TEST_EMAIL,
             adminName: TEST_NAME,
+            firebaseUid: `fb-verify-${Date.now()}`,
             plan: 'STANDARD',
             region: 'GH_ACC_1'
         });
@@ -45,7 +46,8 @@ async function run() {
         userId = result.adminId;
         console.log('    ✅ Tenant provisioned:', result.tenantId);
         console.log('    ✅ Admin user:', result.adminId);
-        console.log('    ✅ Temp password:', result.tempPassword);
+        // @ts-ignore
+        console.log('    ✅ Firebase UID:', result.firebaseUid);
 
         // STEP 3: Update lead status
         console.log('\n[3] Updating lead to CONVERTED...');
@@ -57,7 +59,7 @@ async function run() {
         console.log('\n[4] Sending welcome email...');
         await sendTenantWelcomeEmail({
             to: TEST_EMAIL, adminName: TEST_NAME,
-            tenantName: TEST_ORG, tempPassword: result.tempPassword, loginUrl: result.loginUrl
+            tenantName: TEST_ORG, tempPassword: 'Check email for login link', loginUrl: result.loginUrl
         });
         console.log('    ✅ Welcome email dispatched to:', TEST_EMAIL);
 

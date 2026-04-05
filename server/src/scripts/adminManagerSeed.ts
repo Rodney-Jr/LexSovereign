@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
@@ -48,18 +47,19 @@ async function main() {
 
     // 3. Create Admin Manager User
     console.log('Upserting Admin Manager User...');
-    const hashedPassword = await bcrypt.hash(password, 10);
     const adminUser = await prisma.user.upsert({
         where: { email: adminEmail },
         update: {
-            passwordHash: hashedPassword,
+            // @ts-ignore
+            firebaseUid: 'fb-admin-manager-demo',
             roleString: 'ADMIN_MANAGER',
             roleId: adminManagerRole.id
         },
         create: {
             email: adminEmail,
             name: 'Kofi Mensah (Admin Manager)',
-            passwordHash: hashedPassword,
+            // @ts-ignore
+            firebaseUid: 'fb-admin-manager-demo',
             tenantId: tenantId,
             roleId: adminManagerRole.id,
             roleString: 'ADMIN_MANAGER',
@@ -84,7 +84,8 @@ async function main() {
             create: {
                 email: s.email,
                 name: s.name,
-                passwordHash: hashedPassword,
+                // @ts-ignore
+                firebaseUid: `fb-staff-${s.email}`,
                 tenantId: tenantId,
                 roleString: s.role,
                 region: region,

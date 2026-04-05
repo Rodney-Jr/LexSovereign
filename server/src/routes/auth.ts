@@ -1,18 +1,111 @@
 import express from 'express';
 import { prisma } from '../db';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../jwtConfig';
-import crypto from 'crypto';
 import Stripe from 'stripe';
-import { StripeService } from '../services/StripeService';
-import { authenticateToken, requireRole } from '../middleware/auth';
-import { GoogleAuthService } from '../services/googleAuthService';
 import { stripe } from '../stripe';
-import { sendInvitationEmail, sendPasswordResetEmail, sendTenantWelcomeEmail } from '../services/EmailService';
-import { MfaService } from '../services/mfaService';
+import { StripeService } from '../services/StripeService';
+import { sendTenantWelcomeEmail, sendInvitationEmail } from '../services/EmailService';
+import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = express.Router();
+
+// 0. Email/Password Login
+// Verifies credentials via Bcrypt Hash, issues a signed JWT as an HttpOnly cookie.
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    try {
+        // Step 1: Look up the user in our database
+        const dbUser: any = await (prisma as any).user.findUnique({
+            where: { email },
+            include: {
+                role: { include: { permissions: true } },
+                tenant: { select: { id: true, status: true, appMode: true, enabledModules: true } }
+            }
+        });
+
+        if (!dbUser) {
+            return res.status(401).json({ error: 'Invalid email or password.' });
+        }
+
+        // Step 2: Verify password natively
+        if (!dbUser.passwordHash) {
+            return res.status(401).json({ error: 'This account relies exclusively on Passkeys or SSO. Native password login is disabled.' });
+        }
+
+        const isValid = await bcrypt.compare(password, dbUser.passwordHash);
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid email or password.' });
+        }
+
+        // Resiliency: fallback lookup by email if UID not stored yet
+        let resolvedUser = dbUser;
+
+        if (!resolvedUser) {
+            return res.status(401).json({ error: 'User not found in platform database.' });
+        }
+
+        // Step 4: Status checks
+        if (!resolvedUser.isActive) {
+            return res.status(403).json({ error: 'This account has been disabled.' });
+        }
+        if (resolvedUser.tenant?.status === 'SUSPENDED') {
+            return res.status(403).json({ error: 'Tenant account is suspended.' });
+        }
+
+        // Step 5: Issue a signed JWT (the legacy path in authenticateToken supports this)
+        const permissions = resolvedUser.role?.permissions || [];
+        const sessionToken = jwt.sign(
+            {
+                id: resolvedUser.id,
+                email: resolvedUser.email,
+                role: resolvedUser.roleString,
+                tenantId: resolvedUser.tenantId,
+                name: resolvedUser.name,
+                permissions: permissions.map((p: any) => p.id),
+                isImpersonating: false
+            },
+            JWT_SECRET,
+            { expiresIn: '12h' }
+        );
+
+        // Step 6: Set token as HttpOnly cookie for subsequent API calls
+        res.cookie('token', sessionToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 12 * 60 * 60 * 1000 // 12 hours
+        });
+
+        console.log(`[Login] Authenticated: ${resolvedUser.email} (${resolvedUser.roleString})`);
+
+        // Step 7: Return session payload to client
+        res.json({
+            token: sessionToken,
+            user: {
+                id: resolvedUser.id,
+                email: resolvedUser.email,
+                name: resolvedUser.name,
+                role: resolvedUser.roleString,
+                tenantId: resolvedUser.tenantId,
+                permissions,
+                mode: resolvedUser.tenant?.appMode || 'LAW_FIRM'
+            }
+        });
+
+    } catch (error: any) {
+        console.error('[Login] Critical error:', error.message);
+        res.status(500).json({ error: 'An internal authentication error occurred.' });
+    }
+});
+
+
 
 async function checkTenantUserLimit(tenantId: string) {
     const tenant = await prisma.tenant.findUnique({
@@ -20,13 +113,13 @@ async function checkTenantUserLimit(tenantId: string) {
         select: { plan: true }
     });
 
-    if (!tenant) return true; // Fail open if no tenant found (shouldn't happen)
+    if (!tenant) return true;
 
     const pricing = await prisma.pricingConfig.findUnique({
         where: { id: tenant.plan }
     });
 
-    if (!pricing) return true; // Fail open if no pricing config
+    if (!pricing) return true;
 
     const currentUsers = await prisma.user.count({
         where: { 
@@ -51,9 +144,7 @@ router.post('/onboard-silo', async (req, res) => {
     try {
         let stripeData: any = {};
 
-        // 1. Validate Payment if session ID is provided (Industry Standard)
         if (stripeSessionId) {
-            console.log(`[Stripe] Validating session: ${stripeSessionId}`);
             const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
                 expand: ['subscription']
             });
@@ -68,29 +159,26 @@ router.post('/onboard-silo', async (req, res) => {
                 stripeSubscriptionId: subscription?.id,
                 subscriptionStatus: subscription?.status || 'active'
             };
-            console.log(`[Stripe] Validated session for ${adminEmail}. Status: ${stripeData.subscriptionStatus}`);
         }
 
         const result = await prisma.$transaction(async (tx) => {
-            // Create Tenant
             const tenant = await tx.tenant.create({
                 data: {
                     name,
-                    plan: plan || 'Starter', // Default to Starter
+                    plan: plan || 'Starter',
                     appMode: appMode || 'LAW_FIRM',
                     primaryRegion: region || 'GH_ACC_1',
                     ...stripeData
                 }
             });
 
-            // Admin Role
             const role = await tx.role.findFirst({
                 where: { name: 'TENANT_ADMIN', isSystem: true, tenantId: null }
             });
             if (!role) throw new Error("Seed roles missing.");
 
-            // Primary Admin User
             const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
             const user = await tx.user.create({
                 data: {
                     email: adminEmail,
@@ -107,32 +195,12 @@ router.post('/onboard-silo', async (req, res) => {
             return { user, tenant };
         });
 
-        const permissions = result.user.role?.permissions || [];
-        
-        const userRoleName = result.user.role?.name || 'UNKNOWN';
-        const uiVisibility = (result.tenant as any).uiVisibilityConfig?.[userRoleName];
-        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
-        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
-
-        const token = jwt.sign({
-            id: result.user.id,
-            email: result.user.email,
-            role: userRoleName,
-            permissions,
-            tenantId: result.user.tenantId,
-            appMode: result.tenant.appMode,
-            allowedNavItems,
-            allowedQuickActions
-        }, JWT_SECRET, { expiresIn: '8h' });
-
-        // After successful onboarding, sync seat count
         if ((result.tenant as any).stripeSubscriptionId) {
             StripeService.syncSubscriptionQuantity(result.tenant.id).catch(err =>
                 console.error(`[Stripe Sync Error] ${err.message}`)
             );
         }
 
-        // Send welcome email (non-blocking)
         sendTenantWelcomeEmail({
             to: adminEmail,
             adminName: `${name} Administrator`,
@@ -142,33 +210,22 @@ router.post('/onboard-silo', async (req, res) => {
         }).catch(err => console.error('[Email] Welcome email failed:', err));
 
         res.status(201).json({
-            token,
             user: {
                 id: result.user.id,
                 email: result.user.email,
                 name: result.user.name,
-                role: userRoleName,
+                role: (result.user as any).role?.name,
                 tenantId: result.user.tenantId,
-                permissions,
-                mode: result.tenant.appMode,
-                allowedNavItems,
-                allowedQuickActions
+                mode: (result.tenant as any).appMode || 'LAW_FIRM'
             }
         });
 
     } catch (error: any) {
-        console.error(`[Auth] Onboarding Failed: ${error.message}`);
-
-        // Handle Prisma Unique Constraint Violation
+        console.error('[Onboard] Critical Failure:', error.message);
         if (error.code === 'P2002') {
-            const target = error.meta?.target || ['email'];
-            res.status(400).json({
-                error: `An account with this ${target.includes('email') ? 'email' : 'name'} already exists.`,
-                code: 'CONFLICT'
-            });
+            res.status(400).json({ error: 'Account or tenant already exists.', code: 'CONFLICT' });
             return;
         }
-
         res.status(400).json({ error: error.message || 'Onboarding failed.' });
     }
 });
@@ -177,28 +234,15 @@ router.post('/onboard-silo', async (req, res) => {
 router.post('/resolve-invite', async (req, res) => {
     try {
         const { token } = req.body;
-        console.log(`[Invite] Resolving token: ${token}`);
-
         const invitation = await prisma.invitation.findUnique({
             where: { token, isUsed: false },
             include: { tenant: true }
         });
 
-        if (!invitation) {
-            console.log(`[Invite] Token not found or already used: ${token}`);
-            res.status(404).json({ error: 'Invalid invitation token' });
-            return;
+        if (!invitation || invitation.expiresAt < new Date()) {
+            return res.status(404).json({ error: 'Invalid or expired invitation token' });
         }
 
-        console.log(`[Invite] Found invitation. Expires at: ${invitation.expiresAt}, Current time: ${new Date()}`);
-
-        if (invitation.expiresAt < new Date()) {
-            console.log(`[Invite] Token expired: ${token}`);
-            res.status(404).json({ error: 'Invitation has expired' });
-            return;
-        }
-
-        console.log(`[Invite] Token valid. Tenant: ${invitation.tenant.name}`);
         res.json({
             email: invitation.email,
             roleName: invitation.roleName,
@@ -206,84 +250,44 @@ router.post('/resolve-invite', async (req, res) => {
             tenantMode: invitation.tenant.appMode
         });
     } catch (error: any) {
-        console.error(`[Invite] Error resolving token:`, error);
         res.status(500).json({ error: error.message });
     }
 });
-
-
 
 // 3. Join Silo (Practitioner Completion) - PUBLIC
 router.post('/join-silo', async (req, res) => {
     const { token, name, password } = req.body;
 
-    console.log(`[Join] Attempting to join with token: ${token}`);
-    console.log(`[Join] Name: ${name}, Password length: ${password?.length}`);
-
     try {
-        // Enforce Plan Limits before even starting transaction
-        // First find the invitation to get the tenant ID
-        const preCheckInvite = await prisma.invitation.findUnique({
+        const invitation = await prisma.invitation.findUnique({
             where: { token, isUsed: false },
-            select: { tenantId: true }
+            include: { tenant: true }
         });
 
-        if (preCheckInvite) {
-            await checkTenantUserLimit(preCheckInvite.tenantId as string);
-        }
+        if (!invitation) throw new Error("Invitation not found or already used.");
+
+        await checkTenantUserLimit(invitation.tenantId as string);
 
         const result = await prisma.$transaction(async (tx) => {
-            const invitation = await tx.invitation.findUnique({
-                where: { token, isUsed: false },
-                include: { tenant: true }
-            });
-
-            if (!invitation) {
-                // Check if invitation exists at all
-                const anyInvitation = await tx.invitation.findUnique({
-                    where: { token },
-                    include: { tenant: true }
-                });
-
-                if (!anyInvitation) {
-                    console.log(`[Join] ERROR: Invitation not found in database: ${token}`);
-                    throw new Error("Invitation not found.");
-                } else if (anyInvitation.isUsed) {
-                    console.log(`[Join] ERROR: Invitation already used: ${token}`);
-                    throw new Error("This invitation has already been used.");
-                } else {
-                    console.log(`[Join] ERROR: Invitation exists but query failed: ${token}`);
-                    throw new Error("Invite resolution failed.");
-                }
-            }
-
-            console.log(`[Join] Found invitation for ${invitation.email}, tenant: ${invitation.tenant.name}`);
-
             let role = await tx.role.findFirst({
                 where: { name: invitation.roleName, tenantId: invitation.tenantId as string }
             });
 
             if (!role) {
-                // Fallback to System Role (e.g. CLIENT, GLOBAL_ADMIN)
-                console.log(`[Join] Tenant role not found, checking system roles for: ${invitation.roleName}`);
                 role = await tx.role.findFirst({
                     where: { name: invitation.roleName, isSystem: true, tenantId: null }
                 });
             }
 
-            if (!role) {
-                console.log(`[Join] ERROR: Role not found: ${invitation.roleName}`);
-                throw new Error("Target role not found.");
-            }
-
-            console.log(`[Join] Found role: ${role.name} (ID: ${role.id})`);
+            if (!role) throw new Error("Target role not found.");
 
             const hashedPassword = await bcrypt.hash(password, 10);
+
             const user = await tx.user.create({
                 data: {
                     email: invitation.email,
-                    name,
                     passwordHash: hashedPassword,
+                    name,
                     roleId: role.id,
                     roleString: role.name,
                     tenantId: invitation.tenantId as string,
@@ -292,94 +296,43 @@ router.post('/join-silo', async (req, res) => {
                 include: { role: { include: { permissions: true } }, tenant: true }
             });
 
-            console.log(`[Join] Created user: ${user.email} (ID: ${user.id})`);
-
             await tx.invitation.update({
                 where: { id: invitation.id },
                 data: { isUsed: true }
             });
 
-            console.log(`[Join] Marked invitation as used`);
-
             return { user, tenant: invitation.tenant };
         });
 
-        // Sync seat count after user joins
-        if ((result.tenant as any).stripeSubscriptionId) {
-            StripeService.syncSubscriptionQuantity(result.tenant.id).catch(err =>
-                console.error(`[Stripe Sync Error] ${err.message}`)
-            );
-        }
-
-        const permissions = result.user.role?.permissions || [];
-        
-        const roleName = result.user.role?.name || 'UNKNOWN';
-        const uiVisibility = (result.tenant as any).uiVisibilityConfig?.[roleName];
-        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
-        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
-
-        const jwtToken = jwt.sign({
-            id: result.user.id,
-            email: result.user.email,
-            role: roleName,
-            permissions,
-            tenantId: result.user.tenantId,
-            appMode: result.tenant.appMode,
-            allowedNavItems,
-            allowedQuickActions
-        }, JWT_SECRET, { expiresIn: '8h' });
-
-        console.log(`[Join] SUCCESS: User joined successfully`);
         res.json({
-            token: jwtToken,
             user: {
                 id: result.user.id,
                 email: result.user.email,
                 name: result.user.name,
-                role: roleName,
+                role: (result.user as any).role?.name,
                 tenantId: result.user.tenantId,
-                permissions,
-                mode: result.tenant.appMode,
-                allowedNavItems,
-                allowedQuickActions
+                mode: result.tenant.appMode
             }
         });
 
     } catch (error: any) {
-        console.error(`[Join] ERROR: ${error.message}`, error);
         res.status(400).json({ error: error.message });
     }
 });
 
 // 4. Generate Invitation - PROTECTED
-router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req: any, res) => {
     try {
         const { email, roleName } = req.body;
+        const tenantId = req.user.tenantId;
 
-        if (!req.user) {
-            res.status(401).json({ error: 'Unauthorized' });
-            return;
-        }
-
-        const tenantId = req.user.tenantId as string;
-
-        if (!tenantId) {
-            res.status(400).json({ error: 'Tenant context missing' });
-            return;
-        }
-
-        // Check limits before creating an invite
-        // Note: This is an optimistic check. The real check happens at join, but we shouldn't allow invites if full.
         await checkTenantUserLimit(tenantId);
 
-        const token = `SOV-INV-${crypto.randomUUID().split('-')[0]!.toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+        const token = `SOV-INV-${crypto.randomUUID().split('-')[0]!.toUpperCase()}`;
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+        expiresAt.setDate(expiresAt.getDate() + 7);
 
-        console.log(`[Invite] Creating invitation for ${email} in tenant ${tenantId}`);
-        console.log(`[Invite] Token: ${token}, Expires: ${expiresAt}`);
-
-        const invitation = await prisma.invitation.create({
+        await prisma.invitation.create({
             data: {
                 token,
                 email,
@@ -389,653 +342,77 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             }
         });
 
-        console.log(`[Invite] Invitation created successfully. ID: ${invitation.id}`);
-        res.json({ token, expiresAt: invitation.expiresAt });
-    } catch (error: any) {
-        console.error(`[Invite] Error creating invitation:`, error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 4.5 Dispatch Invitation - PROTECTED
-router.post('/dispatch-invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
-    try {
-        const { token, email, roleName, tenantName } = req.body;
-        const inviterName = req.user?.email || 'Your Administrator';
-
-        console.log(`[Notification] Dispatching Sovereign Invitation for ${email} with token ${token}`);
-
-        // Fire Resend email (non-blocking)
-        sendInvitationEmail({
-            to: email,
-            inviterName,
-            tenantName: tenantName || 'your organisation',
-            roleName: roleName || 'Team Member',
-            inviteToken: token
-        }).catch(err => console.error('[Email] Invitation dispatch failed:', err));
-
-        res.json({ success: true, message: 'Invitation dispatched successfully.' });
+        res.json({ token, expiresAt });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Register - Standard
-router.post('/register', async (req, res) => {
+// Session Hydration
+router.get('/me', authenticateToken, async (req: any, res) => {
     try {
-        const { email, password, name, roleName, region, tenantId } = req.body;
-
-        if (tenantId) {
-            await checkTenantUserLimit(tenantId as string);
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const role = await prisma.role.findFirst({
-            where: { name: roleName || 'INTERNAL_COUNSEL', tenantId: tenantId ? (tenantId as string) : null }
-        });
-
-        if (!role) {
-            res.status(400).json({ error: 'Invalid Role' });
-            return;
-        }
-
-        const user = await prisma.user.create({
-            data: {
-                email,
-                passwordHash: hashedPassword,
-                name,
-                roleId: role.id,
-                roleString: role.name,
-                region: region || 'GH_ACC_1',
-                tenantId: tenantId ? (tenantId as string) : null
-            },
-            include: {
-                role: { include: { permissions: true } },
-                tenant: true
-            }
-        });
-
-        const permissions = user.role?.permissions || [];
-        
-        const appMode = user.tenant?.appMode || 'LAW_FIRM';
-        const userRoleName = user.role?.name || 'UNKNOWN';
-        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
-        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
-        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
-
-        const token = jwt.sign({
-            id: user.id,
-            email: user.email,
-            role: userRoleName,
-            permissions,
-            tenantId: user.tenantId,
-            appMode,
-            allowedNavItems,
-            allowedQuickActions
-        }, JWT_SECRET, { expiresIn: '8h' });
+        const user = req.user;
+        if (!user) return res.status(401).json({ error: 'Session context missing' });
 
         res.json({
-            token,
             user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: userRoleName,
+                role: user.role,
                 tenantId: user.tenantId,
-                permissions,
-                mode: appMode,
-                allowedNavItems,
-                allowedQuickActions
+                permissions: user.permissions.map((p: any) => p.id) || [],
+                mode: user.tenant?.appMode || 'LAW_FIRM'
             }
         });
     } catch (error: any) {
-        res.status(400).json({ error: 'User already exists or invalid data' });
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Login
-router.post('/login', async (req, res) => {
-    try {
-        if (!req.body || typeof req.body !== 'object') {
-            return res.status(400).json({ error: 'Request body is missing or invalid' });
-        }
-        
-        let { email, password } = req.body;
-        
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required' });
-        }
-
-        email = email.toLowerCase().trim();
-        console.log(`[AuthFlow] Attempting login for normalized email: ${email}`);
-
-        const user = await prisma.user.findUnique({
-            where: { email },
-            include: {
-                role: { include: { permissions: true } },
-                tenant: true
-            }
-        });
-
-        if (!user) {
-            console.warn(`[AuthFlow] Login Failed: User not found for ${email}`);
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        if (!user.passwordHash) {
-            console.warn(`[AuthFlow] Login Failed: No password hash for user ${email}`);
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.passwordHash);
-        if (!isMatch) {
-            console.warn(`[AuthFlow] Login Failed: Password mismatch for ${email}`);
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        console.log(`[AuthFlow] Login Success for user: ${email} (Role: ${user.role?.name || 'UNKNOWN'})`);
-
-        const permissions = (user as any).role?.permissions || [];
-        
-        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
-        const userRoleName = (user as any)?.role?.name || 'UNKNOWN';
-        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
-        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
-        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
-
-        // MFA Integration - Two-Step Flow
-        if (user.mfaEnabled) {
-            console.log(`[AuthFlow] MFA Required for user: ${email}`);
-            const mfaToken = jwt.sign({
-                id: user.id,
-                purpose: 'mfa_verification'
-            }, JWT_SECRET, { expiresIn: '10m' });
-
-            return res.json({
-                mfaRequired: true,
-                mfaToken
-            });
-        }
-
-        const token = jwt.sign({
-            id: user.id,
-            email: user.email,
-            role: userRoleName,
-            permissions,
-            tenantId: user.tenantId || (user.roleString === 'GLOBAL_ADMIN' ? '__PLATFORM__' : null),
-            appMode,
-            allowedNavItems,
-            allowedQuickActions
-        }, JWT_SECRET, { expiresIn: '8h' });
-
-        // Set HttpOnly Secure cookie (primary hardened mechanism)
-        const isProduction = process.env.NODE_ENV === 'production';
-        res.cookie('token', token, {
-            httpOnly: true,     // JS cannot read this cookie (XSS protection)
-            secure: isProduction, // Only sent over HTTPS in production (Railway)
-            sameSite: 'lax',    // CSRF protection; allows top-level navigations
-            maxAge: 8 * 60 * 60 * 1000, // 8 hours in ms, matching JWT expiry
-            path: '/'
-        });
-
-        // Also return token in JSON body for backward compatibility with existing frontend auth flow
-        return res.json({
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: userRoleName,
-                tenantId: user.tenantId,
-                permissions,
-                mode: appMode,
-                allowedNavItems,
-                allowedQuickActions
-            }
-        });
-    } catch (error: any) {
-        return res.status(500).json({ error: error.message });
-    }
-});
-
-// Logout - Clears the HttpOnly session cookie
-router.post('/logout', (req, res) => {
-    res.clearCookie('token', { path: '/' });
-    res.json({ success: true, message: 'Logged out successfully.' });
-});
-
-// 5. Google Login - PUBLIC
-router.post('/google-login', async (req, res) => {
-    try {
-        const { idToken } = req.body;
-        if (!idToken) return res.status(400).json({ error: 'Missing ID Token' });
-
-        const payload = await GoogleAuthService.verifyToken(idToken);
-        if (!payload || !payload.email) {
-            return res.status(401).json({ error: 'Invalid Google Token' });
-        }
-
-        const email = payload.email;
-
-        // 1. Find or Setup User
-        let user = await prisma.user.findUnique({
-            where: { email },
-            include: {
-                role: { include: { permissions: true } },
-                tenant: true
-            }
-        });
-
-        if (!user) {
-            // Check if there is an invitation for this email
-            const invitation = await prisma.invitation.findFirst({
-                where: { email, isUsed: false },
-                include: { tenant: true }
-            });
-
-            if (invitation) {
-                // Provision user based on invitation
-                const role = await prisma.role.findFirst({
-                    where: { name: invitation.roleName, tenantId: invitation.tenantId as string }
-                });
-
-                if (role) {
-                    user = await prisma.user.create({
-                        data: {
-                            email,
-                            name: payload.name || email.split('@')[0],
-                            passwordHash: 'EXTERNAL_OIDC', // Flag for no local password
-                            roleId: role.id,
-                            roleString: role.name,
-                            tenantId: invitation.tenantId as string,
-                            region: invitation.tenant.primaryRegion,
-                            provider: 'GOOGLE',
-                            providerId: payload.sub
-                        },
-                        include: { role: { include: { permissions: true } }, tenant: true }
-                    });
-
-                    await prisma.invitation.update({
-                        where: { id: invitation.id },
-                        data: { isUsed: true }
-                    });
-                }
-            }
-        }
-
-        if (!user) {
-            return res.status(403).json({
-                error: 'Account not found. Please contact your administrator or seek an invitation.',
-                unregistered: true,
-                email
-            });
-        }
-
-        const permissions = (user as any).role?.permissions || [];
-        
-        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
-        const userRoleName = (user as any)?.role?.name || 'UNKNOWN';
-        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
-        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
-        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
-
-        // MFA Integration - Two-Step Flow for Google (Optional policy)
-        if (user.mfaEnabled) {
-            console.log(`[AuthFlow] Google Login requires second factor for: ${email}`);
-            const mfaToken = jwt.sign({
-                id: user.id,
-                purpose: 'mfa_verification'
-            }, JWT_SECRET, { expiresIn: '10m' });
-
-            return res.json({
-                mfaRequired: true,
-                mfaToken
-            });
-        }
-
-        const token = jwt.sign({
-            id: user.id,
-            email: user.email,
-            role: userRoleName,
-            permissions,
-            tenantId: user.tenantId,
-            appMode,
-            allowedNavItems,
-            allowedQuickActions
-        }, JWT_SECRET, { expiresIn: '8h' });
-
-        return res.json({
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: userRoleName,
-                tenantId: user.tenantId,
-                permissions,
-                mode: appMode,
-                allowedNavItems,
-                allowedQuickActions
-            }
-        });
-
-    } catch (error: any) {
-        console.error('[GoogleAuth] API Error:', error);
-        return res.status(500).json({ error: 'Authentication failed' });
-    }
-});
-
-// Get Me
-router.get('/me', async (req, res) => {
-    try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-        if (!token) { res.sendStatus(401); return; }
-
-        const decoded: any = jwt.verify(token, JWT_SECRET);
-
-        const user = await prisma.user.findUnique({
-            where: { id: decoded.id },
-            include: {
-                role: { include: { permissions: true } },
-                tenant: true
-            }
-        });
-
-        if (!user) { res.sendStatus(404); return; }
-
-        const permissions = (user as any).role?.permissions || [];
-        
-        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
-        const userRoleName = (user as any).role?.name || 'UNKNOWN';
-        const uiVisibility = (user.tenant as any)?.uiVisibilityConfig?.[userRoleName];
-        const allowedNavItems = uiVisibility ? (uiVisibility.navItems || []) : null;
-        const allowedQuickActions = uiVisibility ? (uiVisibility.quickActions || []) : null;
-
-        res.json({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: userRoleName,
-            tenantId: user.tenantId,
-            permissions,
-            mode: appMode,
-            allowedNavItems,
-            allowedQuickActions
-        });
-
-    } catch (e) {
-        res.sendStatus(403);
-    }
-});
-
-// 6. Get Sovereign Pin - SECURE
 router.get('/pin', authenticateToken, (req, res) => {
-    console.log(`[Auth] PIN requested by ${req.user?.email}`);
     res.json({ pin: process.env.SOVEREIGN_PIN || "" });
 });
 
-// 7. Get Pending Invites - PROTECTED
-router.get('/invites', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
+router.post('/logout', (req, res) => {
+    res.clearCookie('token', { path: '/' });
+    res.json({ success: true });
+});
+
+router.post('/studio-token', authenticateToken, async (req: any, res) => {
     try {
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-        if (!isGlobalAdmin && !req.user?.tenantId) {
-            res.status(401).json({ error: 'Unauthorized' });
-            return;
+        const { docId } = req.body;
+        const user = req.user;
+        let contextTenantId = user.tenantId;
+
+        // If user is a Global Admin without a tenantId, resolve the tenant context from the document being edited
+        if (!contextTenantId && user.role === 'GLOBAL_ADMIN' && docId) {
+             const doc = await prisma.document.findUnique({ where: { id: docId } });
+             if (doc) {
+                 contextTenantId = doc.tenantId;
+                 console.log(`[Studio-Link] Inheriting tenant scope: ${contextTenantId} for Global Admin: ${user.email}`);
+             }
         }
 
-        const invites = await prisma.invitation.findMany({
-            where: {
-                ...(isGlobalAdmin ? {} : { tenantId: req.user!.tenantId as string }),
-                isUsed: false,
-                expiresAt: { gt: new Date() }
+        console.log(`[Studio-Link] Generating handoff token for: ${user.email} (Tenant: ${contextTenantId})`);
+        
+        const studioToken = jwt.sign(
+            { 
+               id: user.id, 
+               tenantId: contextTenantId, 
+               role: user.role, 
+               email: user.email, 
+               name: user.name,
+               permissions: user.permissions?.map((p: any) => p.id) || [],
+               type: 'STUDIO_HANDOFF'
             },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        res.json(invites);
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 8. Delete Invitation - PROTECTED
-router.delete('/invites/:id', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req, res) => {
-    try {
-        const inviteId = req.params.id;
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-        const tenantId = req.user?.tenantId;
-
-        if (!isGlobalAdmin && !tenantId) {
-            res.status(401).json({ error: 'Unauthorized' });
-            return;
-        }
-
-        const invite = await prisma.invitation.findFirst({
-            where: isGlobalAdmin ? { id: inviteId } : { id: inviteId, tenantId: req.user!.tenantId as string }
-        });
-
-        if (!invite) {
-            res.status(404).json({ error: 'Invitation not found' });
-            return;
-        }
-
-        await prisma.invitation.delete({
-            where: { id: inviteId }
-        });
-
-        res.json({ success: true, message: 'Invitation revoked successfully' });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 9. Forgot Password - PUBLIC
-router.post('/forgot-password', async (req, res) => {
-    try {
-        const { email } = req.body;
-        const user = await prisma.user.findUnique({ where: { email } });
-
-        if (!user) {
-            // Return success anyway to avoid email enumeration
-            res.json({ success: true, message: 'If an account exists, a reset link has been generated.' });
-            return;
-        }
-
-        const token = crypto.randomBytes(32).toString('hex');
-        const expires = new Date(Date.now() + 3600000); // 1 hour
-
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                resetToken: token,
-                resetTokenExpires: expires
-            }
-        });
-
-        // Send real password reset email via Resend
-        sendPasswordResetEmail({ to: email, resetToken: token })
-            .catch(err => console.error('[Email] Password reset email failed:', err));
-
-        res.json({ success: true, message: 'Instructions sent to email.' });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 10. Verify Reset Token - PUBLIC
-router.post('/verify-reset-token', async (req, res) => {
-    try {
-        const { token } = req.body;
-        const user = await prisma.user.findFirst({
-            where: {
-                resetToken: token,
-                resetTokenExpires: { gt: new Date() }
-            }
-        });
-
-        if (!user) {
-            res.status(400).json({ error: 'Invalid or expired token' });
-            return;
-        }
-
-        res.json({ success: true, email: user.email });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 11. Reset Password - PUBLIC
-router.post('/reset-password', async (req, res) => {
-    try {
-        const { token, password } = req.body;
-        const user = await prisma.user.findFirst({
-            where: {
-                resetToken: token,
-                resetTokenExpires: { gt: new Date() }
-            }
-        });
-
-        if (!user) {
-            res.status(400).json({ error: 'Invalid or expired token' });
-            return;
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                passwordHash: hashedPassword,
-                resetToken: null,
-                resetTokenExpires: null
-            }
-        });
-
-        res.json({ success: true, message: 'Password reset successfully' });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ─── MFA Endpoints ──────────────────────────────────────────────────────────
-
-// 1. Setup MFA (Authenticated)
-router.post('/mfa/setup', authenticateToken, async (req: any, res) => {
-    try {
-        const userId = req.user.id;
-        const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        const secret = MfaService.generateSecret();
-        const qrCode = await MfaService.generateQRCode(user.email, secret);
-
-        // Store secret temporarily (or just return it for the user to verify in next step)
-        // We'll store it permanently only after first successful verification
-        res.json({ secret, qrCode });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 2. Enable MFA (Authenticated)
-router.post('/mfa/enable', authenticateToken, async (req: any, res) => {
-    try {
-        const { secret, token } = req.body;
-        const userId = req.user.id;
-
-        const isValid = MfaService.verifyToken(token, secret);
-        if (!isValid) return res.status(400).json({ error: 'Invalid verification code' });
-
-        // Generate backup codes
-        const { plaintext, hashed } = MfaService.generateBackupCodes();
-
-        await prisma.user.update({
-            where: { id: userId },
-            data: {
-                mfaEnabled: true,
-                mfaSecret: secret,
-                mfaBackupCodes: hashed as any
-            }
-        });
-
-        res.json({ success: true, backupCodes: plaintext });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 3. Verify MFA (Second Factor during Login)
-router.post('/mfa/verify', async (req, res) => {
-    try {
-        const { mfaToken, code } = req.body;
-
-        // 1. Verify mfaToken
-        const decoded = jwt.verify(mfaToken, JWT_SECRET) as any;
-        if (decoded.purpose !== 'mfa_verification') {
-            return res.status(401).json({ error: 'Invalid MFA session' });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { id: decoded.id },
-            include: { role: { include: { permissions: true } }, tenant: true }
-        });
-
-        if (!user || !user.mfaSecret) {
-            return res.status(401).json({ error: 'MFA not configured or user not found' });
-        }
-
-        // 2. Verify Code (Check TOTP or Backup Code)
-        let isValid = MfaService.verifyToken(code, user.mfaSecret);
-        let updatedBackupCodes: string[] | null = null;
-
-        if (!isValid && Array.isArray(user.mfaBackupCodes)) {
-            const result = MfaService.verifyBackupCode(code, user.mfaBackupCodes as string[]);
-            if (result.isValid) {
-                isValid = true;
-                updatedBackupCodes = result.updatedCodes;
-            }
-        }
-
-        if (!isValid) {
-            return res.status(401).json({ error: 'Invalid code or recovery key' });
-        }
-
-        // 3. Update backup codes if one was used
-        if (updatedBackupCodes) {
-            await prisma.user.update({
-                where: { id: user.id },
-                data: { mfaBackupCodes: updatedBackupCodes as any }
-            });
-        }
-
-        // 4. Issue full JWT
-        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
-        const appMode = (user as any).tenant?.appMode || 'LAW_FIRM';
-
-        const token = jwt.sign({
-            id: user.id,
-            email: user.email,
-            role: (user as any)?.role?.name || 'UNKNOWN',
-            permissions,
-            tenantId: user.tenantId,
-            appMode
-        }, JWT_SECRET, { expiresIn: '8h' });
-
-        res.json({
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: user.role?.name,
-                tenantId: user.tenantId,
-                permissions,
-                mode: appMode
-            }
-        });
-    } catch (error: any) {
-        res.status(401).json({ error: 'MFA verification timed out or invalid' });
+            JWT_SECRET,
+            { expiresIn: '15m' }
+        );
+        res.json({ token: studioToken });
+    } catch (e: any) {
+        console.error('[Studio-Link] Token generation failed:', e.message);
+        res.status(500).json({ error: e.message });
     }
 });
 

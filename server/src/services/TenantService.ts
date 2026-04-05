@@ -7,7 +7,7 @@ interface ProvisionTenantInput {
     name: string;
     adminEmail: string;
     adminName: string;
-    adminPassword?: string;
+    firebaseUid: string;
     plan?: string;
     region?: string;
     appMode?: string;
@@ -16,8 +16,8 @@ interface ProvisionTenantInput {
 interface ProvisionResult {
     tenantId: string;
     adminId: string;
-    tempPassword: string;
     loginUrl: string;
+    tempPassword?: string;
 }
 
 export class TenantService {
@@ -31,16 +31,18 @@ export class TenantService {
      * 5. Create Default Branding Profile
      */
     static async provisionTenant(input: ProvisionTenantInput): Promise<ProvisionResult> {
-        const { name, adminEmail, adminName, adminPassword, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM' } = input;
+        const { name, adminEmail, adminName, firebaseUid, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM' } = input;
 
-        // Generate a temporary password or use the provided one
-        const tempPassword = adminPassword || (Math.random().toString(36).slice(-8) + "!Aa1");
-        const passwordHash = await bcrypt.hash(tempPassword, 10);
         const adminId = randomUUID();
         const tenantId = randomUUID();
 
         try {
             console.log(`[TenantService] Starting provisioning for: ${name} (${adminEmail})`);
+            
+            // 🔥 [IDENTITY] Generate a secure random temporary password for the new admin
+            const tempPassword = randomUUID().replace(/-/g, '').substring(0, 12);
+            const passwordHash = await bcrypt.hash(tempPassword, 10);
+
             await prisma.$transaction(async (tx) => {
                 // 1. Create Tenant
                 console.log(`[Provisioning] Step 1: Creating Tenant: ${tenantId}`);
@@ -104,8 +106,8 @@ export class TenantService {
                     data: {
                         id: adminId,
                         email: adminEmail,
-                        name: adminName,
                         passwordHash,
+                        name: adminName,
                         tenantId: tenant.id,
                         roleId: adminRole.id,
                         region: region,
@@ -193,8 +195,8 @@ export class TenantService {
         return {
             tenantId,
             adminId,
-            tempPassword,
-            loginUrl
+            loginUrl,
+            tempPassword: tempPassword // Return in cleartext for initial handoff
         };
     }
 

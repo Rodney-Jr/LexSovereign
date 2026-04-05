@@ -96,6 +96,16 @@ export class OpenAIProvider implements AIProvider {
         }
     }
 
+    async embed(text: string): Promise<number[]> {
+        const openai = this.getClient();
+        const response = await openai.embeddings.create({
+            model: "text-embedding-3-small",
+            input: text,
+            encoding_format: "float",
+        });
+        return response.data[0].embedding;
+    }
+
     async explainClause(clauseText: string): Promise<string> {
         const openai = this.getClient();
         try {

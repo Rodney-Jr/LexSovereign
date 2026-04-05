@@ -30,6 +30,8 @@ export interface AIProvider {
     name: string; // Display name
 
     chat(params: ChatParams): Promise<ChatResult>;
+    
+    embed(text: string): Promise<number[]>;
 
     explainClause(clauseText: string): Promise<string>;
 

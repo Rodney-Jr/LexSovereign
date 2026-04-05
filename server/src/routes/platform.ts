@@ -28,7 +28,7 @@ router.post('/provision', authenticateToken, requireRole(['GLOBAL_ADMIN']), asyn
         const input = provisionSchema.parse(req.body);
 
         // Execute Provisioning
-        const result = await TenantService.provisionTenant(input);
+        const result = await TenantService.provisionTenant({ ...input });
 
         // Return sensitive credentials (HTTPS required)
         res.status(201).json({
@@ -41,7 +41,7 @@ router.post('/provision', authenticateToken, requireRole(['GLOBAL_ADMIN']), asyn
             to: input.adminEmail,
             adminName: input.adminName,
             tenantName: input.name,
-            tempPassword: result.tempPassword,
+            tempPassword: result.tempPassword || 'Securely Generated',
             loginUrl: result.loginUrl
         }).catch(err => console.error('[Email] Tenant welcome email failed:', err));
 
@@ -198,7 +198,7 @@ router.post('/admins', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (
             to: input.email,
             adminName: input.name,
             tenantName: 'Sovereign Control Plane',
-            tempPassword: result.tempPassword,
+            tempPassword: 'Managed via Firebase',
             loginUrl: result.loginUrl
         }).catch(err => console.error('[Email] Platform admin welcome email failed:', err));
     } catch (err: any) {

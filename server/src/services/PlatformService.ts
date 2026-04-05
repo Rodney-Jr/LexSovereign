@@ -1,17 +1,16 @@
-
 import { prisma } from '../db';
-import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
 
 interface ProvisionAdminInput {
     name: string;
     email: string;
+    password?: string;
     accessLevel: 'SUPER_ADMIN' | 'INFRA_ADMIN' | 'SECURITY_ADMIN' | 'MARKETING_ADMIN';
 }
 
 interface ProvisionResult {
     adminId: string;
-    tempPassword: string;
     loginUrl: string;
 }
 
@@ -32,36 +31,57 @@ export class PlatformService {
             throw new Error('GLOBAL_ADMIN system role not found. Please run migrations/seeds.');
         }
 
-        // 2. Generate Credentials
-        const tempPassword = Math.random().toString(36).slice(-10) + "!Aa1";
-        const passwordHash = await bcrypt.hash(tempPassword, 10);
-        const adminId = randomUUID();
+        // 2. Provision natively
+        let hashedPassword = null;
+        if (input.password) {
+            hashedPassword = await bcrypt.hash(input.password, 10);
+        } else {
+            hashedPassword = await bcrypt.hash(randomUUID(), 10);
+        }
 
-        // 3. Create the Admin User
-        await prisma.user.create({
-            data: {
-                id: adminId,
-                email,
-                name,
-                passwordHash,
-                roleId: globalAdminRole.id,
-                roleString: 'GLOBAL_ADMIN',
-                tenantId: null, // Platform admins are not bound to a tenant
-                attributes: {
-                    platformAccessLevel: accessLevel,
-                    provisionedBy: 'Sovereign Control Plane',
-                    isFleetMember: true
+        // 3. Create/Update the Admin User in DB
+        const existingDbUser = await prisma.user.findUnique({ where: { email } });
+
+        if (existingDbUser) {
+             await prisma.user.update({
+                where: { email },
+                data: {
+                    passwordHash: hashedPassword,
+                    roleString: 'GLOBAL_ADMIN',
+                    roleId: globalAdminRole.id,
+                    tenantId: null,
+                    attributes: {
+                        platformAccessLevel: accessLevel,
+                        provisionedBy: 'Sovereign Control Plane',
+                        isFleetMember: true
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            await prisma.user.create({
+                data: {
+                    id: randomUUID(),
+                    email,
+                    name,
+                    passwordHash: hashedPassword,
+                    roleId: globalAdminRole.id,
+                    roleString: 'GLOBAL_ADMIN',
+                    tenantId: null,
+                    attributes: {
+                        platformAccessLevel: accessLevel,
+                        provisionedBy: 'Sovereign Control Plane',
+                        isFleetMember: true
+                    }
+                }
+            });
+        }
 
         // 4. Construct Login URL
-        const baseUrl = process.env.PLATFORM_URL || 'https://app.nomosdesk.com';
+        const baseUrl = process.env.VITE_PLATFORM_URL || 'http://localhost:3005';
         const loginUrl = `${baseUrl}/login?email=${encodeURIComponent(email)}`;
 
         return {
-            adminId,
-            tempPassword,
+            adminId: existingDbUser?.id || 'new_provision',
             loginUrl
         };
     }
@@ -82,7 +102,6 @@ export class PlatformService {
                 name: true,
                 email: true,
                 createdAt: true,
-                provider: true,
                 attributes: true,
                 lastActiveAt: true
             }
@@ -95,7 +114,7 @@ export class PlatformService {
                 name: a.name,
                 email: a.email,
                 hardwareEnclaveId: `FIPS-SEC-${a.id.substring(0, 4).toUpperCase()}`,
-                mfaMethod: a.provider === 'GOOGLE' ? 'OIDC Hybrid' : 'ZK-Handshake',
+                mfaMethod: 'Firebase Auth',
                 status: 'Active',
                 lastHandshake: a.lastActiveAt ? a.lastActiveAt.toISOString() : 'Recently',
                 accessLevel: attrs.platformAccessLevel || 'PLATFORM_OWNER'

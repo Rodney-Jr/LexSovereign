@@ -5,12 +5,12 @@ async function check() {
     const users = await prisma.user.findMany({
         include: { role: true }
     });
-    console.log('Users:', users.map(u => ({
+    console.log('Users:', users.map((u: any) => ({
         email: u.email,
         roleString: u.roleString,
         roleName: u.role?.name,
         roleId: u.roleId,
-        hasPassword: !!u.passwordHash
+        hasFirebaseUid: !!u.firebaseUid
     })));
 
     const roles = await prisma.role.findMany();

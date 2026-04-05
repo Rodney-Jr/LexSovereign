@@ -20,10 +20,12 @@ export class OIDCService {
      */
     static async handleLogin(profile: OIDCProfile) {
 
+        const firebaseUid = `fb-oidc-${profile.sub}`;
         let user = await prisma.user.findFirst({
             where: {
                 OR: [
-                    { provider: profile.provider, providerId: profile.sub },
+                    // @ts-ignore
+                    { firebaseUid },
                     { email: profile.email } // Fallback linkage
                 ]
             },
@@ -50,9 +52,8 @@ export class OIDCService {
                 data: {
                     email: profile.email,
                     name: profile.name,
-                    passwordHash: 'FEDERATED_NO_PASSWORD',
-                    provider: profile.provider,
-                    providerId: profile.sub,
+                    // @ts-ignore - Prisma client needs regeneration
+                    firebaseUid: firebaseUid,
                     roleId: role.id,
                     roleString: role.name,
                     attributes: {
@@ -67,8 +68,11 @@ export class OIDCService {
             // e.g. update latest clearance level
         }
 
+        // Ensure user exists (should exist due to JIT)
+        if (!user) throw new Error("User not found after OIDC handling");
+
         // Generate Internal Token
-        const permissions = (user as any).role?.permissions.map((p: any) => p.id) || [];
+        const permissions = (user as any).role?.permissions?.map((p: any) => p.id) || [];
         const token = jwt.sign({
             id: user.id,
             email: user.email,

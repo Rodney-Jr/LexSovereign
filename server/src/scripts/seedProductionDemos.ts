@@ -1,10 +1,7 @@
 import { prisma } from '../db';
-import bcrypt from 'bcryptjs';
 
 async function main() {
   console.log('🌱 Starting Production Demo Seeding...');
-
-  const passwordHash = await bcrypt.hash('DemoPassword123!', 10);
 
   // --- Helpers to ensure idempotency ---
   async function upsertRole(name: string, tenantId: string, isSystem: boolean = false) {
@@ -18,8 +15,25 @@ async function main() {
   async function upsertUser(email: string, name: string, tenantId: string, roleId: string, roleString: string) {
     return await prisma.user.upsert({
       where: { email },
-      create: { email, name, passwordHash, tenantId, roleId, roleString, isActive: true },
-      update: { name, passwordHash, roleId, roleString, tenantId, isActive: true }
+      create: { 
+        email, 
+        name, 
+        // @ts-ignore
+        firebaseUid: `fb-${email.split('@')[0]}-prod`, 
+        tenantId, 
+        roleId, 
+        roleString, 
+        isActive: true 
+      },
+      update: { 
+        name, 
+        // @ts-ignore
+        firebaseUid: `fb-${email.split('@')[0]}-prod`, 
+        roleId, 
+        roleString, 
+        tenantId, 
+        isActive: true 
+      }
     });
   }
 
@@ -167,7 +181,7 @@ async function main() {
   }
 
   console.log('✅ Demo Production Data Seeded Successfully.');
-  console.log('   Users can log in with password: DemoPassword123!');
+  console.log('   Users can log in via Firebase.');
 }
 
 main().finally(() => prisma.$disconnect());

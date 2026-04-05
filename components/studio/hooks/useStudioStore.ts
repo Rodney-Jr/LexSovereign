@@ -27,6 +27,7 @@ interface StudioStore {
   toggleBold: () => void;
   toggleItalic: () => void;
   toggleUnderline: () => void;
+  toggleHighlight: (color?: string) => void;
   toggleHeading: (level: 1 | 2 | 3) => void;
   toggleBulletList: () => void;
   toggleOrderedList: () => void;
@@ -57,6 +58,7 @@ export const useStudioStore = create<StudioStore>((set, get) => ({
   toggleBold: () => get().editor?.chain().focus().toggleBold().run(),
   toggleItalic: () => get().editor?.chain().focus().toggleItalic().run(),
   toggleUnderline: () => get().editor?.chain().focus().toggleUnderline().run(),
+  toggleHighlight: (color = '#FEF08A') => get().editor?.chain().focus().toggleHighlight({ color }).run(),
   toggleHeading: (level) => get().editor?.chain().focus().toggleHeading({ level }).run(),
   toggleBulletList: () => get().editor?.chain().focus().toggleBulletList().run(),
   toggleOrderedList: () => get().editor?.chain().focus().toggleOrderedList().run(),
