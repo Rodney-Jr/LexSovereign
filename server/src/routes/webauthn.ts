@@ -79,19 +79,20 @@ router.post('/register/verify', async (req, res) => {
     }
 
     const { verified, registrationInfo } = verification;
-
+    
     if (verified && registrationInfo) {
-        const { credentialPublicKey, credentialID, counter } = registrationInfo;
+        const info = (registrationInfo as any);
+        const { credentialID, credentialPublicKey, counter, credentialDeviceType, credentialBackedUp } = info;
         
         await prisma.passkeyCredential.create({
             data: {
                 userId: user.id,
-                webauthnUserId: user.id, // For simple mapping
+                webauthnUserId: user.id,
                 credentialID: (credentialID as any),
                 publicKey: (credentialPublicKey as any),
                 counter: BigInt(counter),
-                deviceType: registrationInfo.credentialDeviceType,
-                backedUp: registrationInfo.credentialBackedUp,
+                deviceType: credentialDeviceType,
+                backedUp: credentialBackedUp,
                 transports: credential.response.transports || []
             }
         });
@@ -159,9 +160,9 @@ router.post('/login/verify', async (req, res) => {
             expectedChallenge,
             expectedOrigin: origin,
             expectedRPID: rpID,
-            authenticator: {
-                credentialID: passkey.credentialID as unknown as Uint8Array,
-                credentialPublicKey: passkey.publicKey as unknown as Uint8Array,
+            credential: {
+                id: passkey.credentialID.toString('base64url'),
+                publicKey: new Uint8Array(passkey.publicKey),
                 counter: Number(passkey.counter),
             },
         });

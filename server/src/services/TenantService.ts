@@ -7,7 +7,6 @@ interface ProvisionTenantInput {
     name: string;
     adminEmail: string;
     adminName: string;
-    firebaseUid: string;
     plan?: string;
     region?: string;
     appMode?: string;
@@ -31,17 +30,19 @@ export class TenantService {
      * 5. Create Default Branding Profile
      */
     static async provisionTenant(input: ProvisionTenantInput): Promise<ProvisionResult> {
-        const { name, adminEmail, adminName, firebaseUid, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM' } = input;
+        const { name, adminEmail, adminName, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM' } = input;
 
         const adminId = randomUUID();
         const tenantId = randomUUID();
+        let tempPassword = '';
+        let passwordHash = '';
 
         try {
             console.log(`[TenantService] Starting provisioning for: ${name} (${adminEmail})`);
             
             // 🔥 [IDENTITY] Generate a secure random temporary password for the new admin
-            const tempPassword = randomUUID().replace(/-/g, '').substring(0, 12);
-            const passwordHash = await bcrypt.hash(tempPassword, 10);
+            tempPassword = randomUUID().replace(/-/g, '').substring(0, 12);
+            passwordHash = await bcrypt.hash(tempPassword, 10);
 
             await prisma.$transaction(async (tx) => {
                 // 1. Create Tenant

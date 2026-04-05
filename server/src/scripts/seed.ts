@@ -111,7 +111,6 @@ async function main() {
             name: 'NomosDesk Demo',
             adminEmail: 'admin@nomosdesk.com',
             adminName: 'Sovereign Admin',
-            firebaseUid: 'fb-admin-demo',
             plan: 'ENTERPRISE',
             region: 'GH_ACC_1',
             appMode: 'LAW_FIRM'

@@ -38,7 +38,6 @@ async function run() {
             name: TEST_ORG,
             adminEmail: TEST_EMAIL,
             adminName: TEST_NAME,
-            firebaseUid: `fb-verify-${Date.now()}`,
             plan: 'STANDARD',
             region: 'GH_ACC_1'
         });
@@ -47,7 +46,7 @@ async function run() {
         console.log('    ✅ Tenant provisioned:', result.tenantId);
         console.log('    ✅ Admin user:', result.adminId);
         // @ts-ignore
-        console.log('    ✅ Firebase UID:', result.firebaseUid);
+        console.log('    ✅ Provisioning successful');
 
         // STEP 3: Update lead status
         console.log('\n[3] Updating lead to CONVERTED...');
