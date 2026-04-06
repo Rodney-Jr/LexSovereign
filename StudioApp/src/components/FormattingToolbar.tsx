@@ -17,9 +17,9 @@ import {
   AlignJustify,
   Type,
   Heading1,
-  Heading2,
   Undo,
   Redo,
+  Hash,
   ChevronDown,
   FileUp,
   FilePlus,
@@ -35,9 +35,18 @@ interface FormattingToolbarProps {
   onImport?: (content: string) => void;
   onSaveAsNew?: () => void;
   onSave?: () => void;
+  isPleadingMode: boolean;
+  onTogglePleading: () => void;
 }
 
-export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({ view, onImport, onSaveAsNew, onSave }) => {
+export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({ 
+  view, 
+  onImport, 
+  onSaveAsNew, 
+  onSave,
+  isPleadingMode,
+  onTogglePleading 
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   if (!view) return null;
 
@@ -266,8 +275,16 @@ export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({ view, onIm
       <div className="w-[1px] h-4 bg-gray-200 mx-1" />
       
       <ToolbarButton onClick={() => execCommand(setBlockType(legalSchema.nodes.heading, { level: 1 }))} icon={Heading1} title="H1" />
-      <ToolbarButton onClick={() => execCommand(setBlockType(legalSchema.nodes.heading, { level: 2 }))} icon={Heading2} title="H2" />
       <ToolbarButton onClick={() => execCommand(setBlockType(legalSchema.nodes.paragraph))} icon={Type} title="Text" />
+
+      <div className="w-[1px] h-4 bg-gray-200 mx-1" />
+
+      <ToolbarButton 
+        active={isPleadingMode} 
+        onClick={onTogglePleading} 
+        icon={Hash} 
+        title="Pleading Mode (1-28 Margins)" 
+      />
     </div>
   );
 };

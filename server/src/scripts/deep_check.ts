@@ -22,12 +22,10 @@ async function deepCheck() {
         roleName: user.role?.name,
         tenantId: user.tenantId,
         tenantName: (user as any).tenant?.name,
-        // @ts-ignore
-        firebaseUid: user.firebaseUid
+        hasPasswordHash: !!user.passwordHash
     });
 
-    // @ts-ignore
-    console.log(`Firebase UID present: ${user.firebaseUid ? '✅ YES' : '❌ NO'}`);
+    console.log(`Password Hash present: ${user.passwordHash ? '✅ YES' : '❌ NO'}`);
 
     process.exit(0);
 }

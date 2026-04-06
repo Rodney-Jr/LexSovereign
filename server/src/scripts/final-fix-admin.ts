@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
     const email = 'admin@nomosdesk.com';
-    const firebaseUid = 'fb-admin-demo';
+    const passwordHash = await bcrypt.hash('password123', 10);
 
     // Find the GLOBAL_ADMIN role
     const globalAdminRole = await prisma.role.findFirst({
@@ -19,16 +20,14 @@ async function main() {
     const user = await prisma.user.upsert({
         where: { email },
         update: {
-            // @ts-ignore
-            firebaseUid,
+            passwordHash,
             tenantId: null,
             roleId: globalAdminRole.id,
             roleString: 'GLOBAL_ADMIN'
         },
         create: {
             email,
-            // @ts-ignore
-            firebaseUid,
+            passwordHash,
             name: 'Global Admin',
             tenantId: null,
             roleId: globalAdminRole.id,
@@ -38,7 +37,7 @@ async function main() {
     });
 
     console.log(`✅ Superadmin user ${user.email} is ready.`);
-    console.log(`Firebase UID is set to: ${firebaseUid}`);
+    console.log(`Password is set to: password123`);
 }
 
 main()

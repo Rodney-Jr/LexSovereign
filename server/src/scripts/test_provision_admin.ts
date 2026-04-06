@@ -22,8 +22,6 @@ async function verifyProvisioning() {
 
         console.log("✅ Provisioning Result Received:");
         console.log(`   Admin ID: ${result.adminId}`);
-        // @ts-ignore
-        console.log(`   Firebase UID: ${result.firebaseUid}`);
         console.log(`   Login URL: ${result.loginUrl}`);
 
         // Verify in Database
@@ -34,8 +32,7 @@ async function verifyProvisioning() {
         if (dbUser && (dbUser.attributes as any)?.platformAccessLevel === "INFRA_ADMIN") {
             console.log("✅ Database Verification: SUCCESS");
             console.log(`   Internal Role: ${dbUser.roleString}`);
-            // @ts-ignore
-            console.log(`   Firebase UID: ${dbUser.firebaseUid}`);
+            console.log(`   Password Secured: ${!!dbUser.passwordHash ? '✅' : '❌'}`);
             console.log(`   Access Level: ${(dbUser.attributes as any).platformAccessLevel}`);
         } else {
             console.error("❌ Database Verification: FAILED");

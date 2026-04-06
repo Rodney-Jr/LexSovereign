@@ -445,8 +445,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Editor */}
-        <div className="flex-1 relative overflow-hidden bg-slate-900 flex justify-center py-10 overflow-y-auto">
+        {/* Editor Wrapper */}
+        <div className="flex-1 relative overflow-hidden bg-slate-900 flex flex-col items-center overflow-y-auto scrollbar-hide">
             <LegalEditor 
                 content={content} 
                 onChange={setContent} 
@@ -455,6 +455,15 @@ export default function App() {
                 onImport={handleImport}
                 onSaveAsNew={handleSaveAsNew}
             />
+
+            {/* Sync Progress Indicator */}
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-2 bg-slate-900 text-white rounded-full shadow-2xl border border-white/10 backdrop-blur-md animate-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-center gap-2 pr-3 border-r border-white/10">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Vault Secure</span>
+                </div>
+                <span className="text-[9px] text-brand-muted font-medium">Last synced: {new Date().toLocaleTimeString()}</span>
+            </div>
         </div>
       </div>
 

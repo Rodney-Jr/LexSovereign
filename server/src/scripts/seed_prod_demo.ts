@@ -1,9 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 // This script targets the DATABASE_URL env var - set it to production before running
 const prisma = new PrismaClient();
 
 async function seedProdDemoAccounts() {
+    const passwordHash = await bcrypt.hash('password123', 10);
     console.log('DATABASE_URL:', (process.env.DATABASE_URL || '').replace(/:[^@]+@/, ':***@'));
 
     // Find the tenant to associate with
@@ -37,16 +39,14 @@ async function seedProdDemoAccounts() {
     const clerk = await prisma.user.upsert({
         where: { email: 'clerk@nomosdesk.com' },
         update: { 
-            // @ts-ignore
-            firebaseUid: 'fb-clerk-prod-demo', 
+            passwordHash,
             roleId: clerkRole.id, 
             roleString: 'CLERK', 
             name: 'Firm Clerk' 
         },
         create: {
             email: 'clerk@nomosdesk.com',
-            // @ts-ignore
-            firebaseUid: 'fb-clerk-prod-demo',
+            passwordHash,
             name: 'Firm Clerk',
             roleId: clerkRole.id,
             roleString: 'CLERK',
@@ -61,16 +61,14 @@ async function seedProdDemoAccounts() {
     const adminManager = await prisma.user.upsert({
         where: { email: 'admin_manager@nomosdesk.com' },
         update: { 
-            // @ts-ignore
-            firebaseUid: 'fb-admin-manager-prod-demo', 
+            passwordHash,
             roleId: adminManagerRole.id, 
             roleString: 'ADMIN_MANAGER', 
             name: 'Firm Admin Manager' 
         },
         create: {
             email: 'admin_manager@nomosdesk.com',
-            // @ts-ignore
-            firebaseUid: 'fb-admin-manager-prod-demo',
+            passwordHash,
             name: 'Firm Admin Manager',
             roleId: adminManagerRole.id,
             roleString: 'ADMIN_MANAGER',

@@ -6,7 +6,7 @@ import { prisma } from '../db';
 
 async function verifyRbacSync() {
     const email = 'thrive.rodney@gmail.com';
-    console.log(`\n========== FIREBASE ↔ RBAC SYNC VERIFICATION ==========`);
+    console.log(`\n========== NATIVE ↔ RBAC SYNC VERIFICATION ==========`);
     console.log(`Target: ${email}\n`);
 
     const user = await (prisma as any).user.findUnique({
@@ -22,12 +22,9 @@ async function verifyRbacSync() {
         process.exit(1);
     }
 
-    // 1. Firebase UID check
-    const hasFirebaseUid = user.firebaseUid && !user.firebaseUid.startsWith('legacy-');
-    console.log(`1. Firebase UID Linked:     ${hasFirebaseUid ? '✅' : '❌'} ${user.firebaseUid || 'MISSING'}`);
-    if (user.firebaseUid?.startsWith('legacy-')) {
-        console.log(`   ⚠  WARNING: This is a placeholder UID. User must re-login via Firebase to update it.`);
-    }
+    // 1. Password Hash check
+    const hasPasswordHash = !!user.passwordHash;
+    console.log(`1. Password Secured:        ${hasPasswordHash ? '✅' : '❌'}`);
 
     // 2. Role check
     console.log(`2. roleString:              ${user.roleString ? '✅' : '❌'} ${user.roleString || 'NOT SET'}`);
@@ -66,7 +63,7 @@ async function verifyRbacSync() {
     // 8. Summary
     console.log(`\n========== SUMMARY ==========`);
     const issues = [];
-    if (!hasFirebaseUid) issues.push('Firebase UID not set or is a placeholder');
+    if (!hasPasswordHash) issues.push('Password hash not set');
     if (!user.roleString) issues.push('roleString not set');
     if (!user.roleId) issues.push('roleId FK not set');
     if (!user.role) issues.push('Role record not joined (roleId may be incorrect)');
@@ -74,7 +71,7 @@ async function verifyRbacSync() {
     if (!globalAdminRole) issues.push('GLOBAL_ADMIN system role missing from database');
 
     if (issues.length === 0) {
-        console.log('✅ All checks passed. Firebase Auth is fully synced with the RBAC system.');
+        console.log('✅ All checks passed. Native Auth is fully synced with the RBAC system.');
     } else {
         console.log('⚠  Issues found:');
         issues.forEach(i => console.log(`   - ${i}`));

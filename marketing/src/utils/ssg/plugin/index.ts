@@ -19,9 +19,6 @@
  *         outDir: 'dist/static',
  *         baseUrl: '/static',
  *       },
- *       hosting: {
- *         firebaseJson: '../firebase.json',
- *       },
  *     }),
  *   ],
  * });
@@ -31,7 +28,6 @@
 import type { Plugin, ResolvedConfig } from "vite";
 import type { SsgPluginOptions, ResolvedSsgPluginOptions } from "./types";
 import { generateStaticPages } from "./generator";
-import { createFirebaseConfigurator } from "./hosting";
 import { createDevMiddleware } from "./dev-middleware";
 
 const PLUGIN_NAME = "vite-plugin-ssg";
@@ -118,15 +114,6 @@ export function ssgPlugin(options: SsgPluginOptions): Plugin {
 
             try {
                 const result = await generateStaticPages(resolvedOptions, viteConfig);
-
-                // Configure hosting platform if specified
-                if (resolvedOptions.hosting?.firebaseJson) {
-                    const configurator = createFirebaseConfigurator(
-                        resolvedOptions.hosting.firebaseJson
-                    );
-                    const baseUrl = resolvedOptions.config.baseUrl ?? "/static";
-                    await configurator.configure(result.pages, baseUrl);
-                }
 
                 const duration = ((Date.now() - startTime) / 1000).toFixed(2);
                 console.log(`[${PLUGIN_NAME}] Static pages generated in ${duration}s`);

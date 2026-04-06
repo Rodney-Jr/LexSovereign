@@ -29,7 +29,7 @@ export function useNomosSync() {
         try {
             let initialContent = '';
             if (docId) {
-                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3005';
+                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
                 const response = await fetch(`${baseUrl}/api/documents/${docId}/content`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -53,19 +53,25 @@ export function useNomosSync() {
     verifyHandshake();
   }, []);
 
-  const commitToNomosDesk = (htmlContent: string) => {
+  const [isCommitting, setIsCommitting] = useState(false);
+
+  const commitToNomosDesk = async (htmlContent: string) => {
+    if (isCommitting) return;
+    setIsCommitting(true);
+
     // Utilize BroadcastChannel API to send payload back without CORS issues
     const channel = new BroadcastChannel('sovereign_studio_sync');
     channel.postMessage({
         type: 'STUDIO_COMMIT',
-        payload: htmlContent
+        docId: documentData?.docId,
+        content: htmlContent
     });
     
     // Close the drafting focus window to return to main platform
-    alert('Document committed to Sovereign Vault successfully.');
+    // In a real app we might wait for an 'ACK' from the host, but for now we follow the "Capture and Close" pattern
     setTimeout(() => {
         window.close();
-    }, 500);
+    }, 800);
   };
 
   return { isReady, documentData, commitToNomosDesk, error };

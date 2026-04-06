@@ -50,7 +50,7 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       setError(null);
 
       try {
-         // Call our native backend instead of firebase
+         // Call our native backend instead of the legacy provider
          const response = await fetch('/api/auth/forgot-password', {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },

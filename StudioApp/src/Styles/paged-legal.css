@@ -20,18 +20,16 @@ body {
 /* The actual paper rendering */
 .legal-page {
     background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='100' viewBox='0 0 400 100'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif' font-size='10' font-weight='900' fill='%23000' opacity='0.03' letter-spacing='0.5em'%3ESOVEREIGN DRAFTING ENCLAVE%3C/text%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center 0.5in;
     width: 8.5in;
     height: 11in;
     overflow: hidden;
-    /* Outer drop shadow + right boundary line via inset box-shadow */
-    box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.5),
-        inset calc(-0.5in) 0 0 0 white,
-        inset calc(-0.52in) 0 0 0 #94a3b8;
-    margin-bottom: 2rem;
+    /* Outer drop shadow */
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
+    margin: 2rem auto;
     padding: 1in;
-    padding-left: 1.2in;  /* account for pleading gutter */
-    padding-right: 0.8in; /* keep text away from right boundary */
     position: relative;
     box-sizing: border-box;
     flex-shrink: 0;
@@ -40,8 +38,12 @@ body {
     counter-increment: sovereign-page;
 }
 
-/* 1-28 Pleading Gutter on the left */
-.legal-page::before {
+/* 1-28 Pleading Gutter on the left — only in Pleading Mode */
+.mode-pleading .legal-page {
+    padding-left: 1.2in; /* Wider left margin for pleading numbers */
+}
+
+.mode-pleading .legal-page::before {
     content: "1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26\A 27\A 28";
     white-space: pre-wrap;
     position: absolute;
@@ -49,13 +51,13 @@ body {
     top: 1in;
     bottom: 1in;
     width: 0.5in;
-    border-right: 1px solid #94a3b8;
+    border-right: 1px solid #cbd5e1;
     text-align: right;
     padding-right: 0.1in;
-    font-family: inherit;
+    font-family: 'Times New Roman', Times, serif;
     font-size: 12pt;
     line-height: 24pt;
-    color: #64748b;
+    color: #94a3b8;
     pointer-events: none;
 }
 

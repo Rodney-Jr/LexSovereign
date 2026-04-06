@@ -46,17 +46,12 @@ async function main() {
                 id: adminId,
                 email: 'kofi.adu@nomoslaw.com',
                 name: 'Kofi Adu',
-                // @ts-ignore
-                firebaseUid: 'fb-lifecycle-kofi',
                 tenantId: tenant.id,
                 roleId: partnerRole.id,
                 roleString: 'MANAGING_PARTNER',
                 region
             },
-            update: {
-                // @ts-ignore
-                firebaseUid: 'fb-lifecycle-kofi'
-            }
+            update: {}
         });
 
         // 4. Create Pricing Config for Ghana Localization

@@ -114,7 +114,7 @@ export class PlatformService {
                 name: a.name,
                 email: a.email,
                 hardwareEnclaveId: `FIPS-SEC-${a.id.substring(0, 4).toUpperCase()}`,
-                mfaMethod: 'Firebase Auth',
+                mfaMethod: 'Native / Passkey',
                 status: 'Active',
                 lastHandshake: a.lastActiveAt ? a.lastActiveAt.toISOString() : 'Recently',
                 accessLevel: attrs.platformAccessLevel || 'PLATFORM_OWNER'

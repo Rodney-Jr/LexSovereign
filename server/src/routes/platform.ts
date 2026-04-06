@@ -198,7 +198,7 @@ router.post('/admins', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (
             to: input.email,
             adminName: input.name,
             tenantName: 'Sovereign Control Plane',
-            tempPassword: 'Managed via Firebase',
+            tempPassword: 'Managed via NomosDesk Native',
             loginUrl: result.loginUrl
         }).catch(err => console.error('[Email] Platform admin welcome email failed:', err));
     } catch (err: any) {

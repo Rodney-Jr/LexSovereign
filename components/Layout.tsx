@@ -127,10 +127,39 @@ const Layout: React.FC<LayoutProps> = ({
 
     // Studio Micro-Frontend Synchronization channel
     const channel = new BroadcastChannel('sovereign_studio_sync');
-    channel.onmessage = (event) => {
+    channel.onmessage = async (event) => {
       if (event.data.type === 'STUDIO_COMMIT') {
-         console.log('[Sovereign Sync] Received payload from drafting studio:', event.data.payload.substring(0, 50) + '...');
-         alert('NomosDesk: Document successfully captured from Standalone Drafting Studio.');
+         const { docId, content } = event.data;
+         if (!docId || !content) return;
+
+         console.log('[Sovereign Sync] Capturing Studio payload for Vault ID:', docId);
+         
+         const session = JSON.parse(localStorage.getItem('nomosdesk_session') || '{}');
+         const token = session.token;
+
+         try {
+             const response = await fetch(`/api/documents/${docId}`, {
+                 method: 'PATCH',
+                 headers: { 
+                     'Content-Type': 'application/json',
+                     'Authorization': `Bearer ${token}` 
+                 },
+                 body: JSON.stringify({ 
+                    content,
+                    changeSummary: 'Updated via Standalone Drafting Studio'
+                 })
+             });
+
+             if (response.ok) {
+                 console.log('[Sovereign Sync] Document successfully captured to Vault.');
+                 // Emit a global event or refresh state if needed
+                 window.dispatchEvent(new CustomEvent('nomos-document-updated', { detail: { docId } }));
+             } else {
+                 console.error('[Sovereign Sync] Failed to save Studio content.');
+             }
+         } catch (err) {
+             console.error('[Sovereign Sync] Error during Vault fulfillment:', err);
+         }
       }
     };
 

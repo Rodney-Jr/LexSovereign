@@ -46,6 +46,7 @@ function htmlToDoc(html: string): PMNode {
 export const LegalEditor = ({ content, onChange, onSave, onImport, onSaveAsNew }: LegalEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<EditorView | null>(null);
+  const [isPleadingMode, setIsPleadingMode] = useState(false);
   const [, setRefresh] = useState(0);
 
   useEffect(() => {
@@ -73,6 +74,9 @@ export const LegalEditor = ({ content, onChange, onSave, onImport, onSaveAsNew }
 
     const newView = new EditorView(editorRef.current, {
         state,
+        attributes: {
+            class: isPleadingMode ? 'mode-pleading' : ''
+        },
         dispatchTransaction(transaction) {
             const newState = newView.state.apply(transaction);
             newView.updateState(newState);
@@ -91,6 +95,17 @@ export const LegalEditor = ({ content, onChange, onSave, onImport, onSaveAsNew }
     return () => newView.destroy();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Update view attributes when mode changes
+  useEffect(() => {
+    if (view) {
+      view.setProps({
+        attributes: {
+          class: isPleadingMode ? 'mode-pleading' : ''
+        }
+      });
+    }
+  }, [isPleadingMode, view]);
 
   // Sync content prop when it changes externally (e.g. from AI, import, or revert)
   useEffect(() => {
@@ -125,19 +140,21 @@ export const LegalEditor = ({ content, onChange, onSave, onImport, onSaveAsNew }
   }, [view]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-900 flex flex-col items-center py-6">
+    <div className="flex-1 w-full bg-slate-900 flex flex-col items-center">
       {/* Sticky Formatting Toolbar */}
-      <div className="sticky top-0 z-10 w-[8.5in] mb-6 flex justify-center">
+      <div className="sticky top-0 z-10 w-full bg-slate-900/80 backdrop-blur-md border-b border-white/5 py-4 px-6 flex justify-center shadow-xl">
         <FormattingToolbar 
           view={view} 
           onImport={onImport}
           onSaveAsNew={onSaveAsNew}
           onSave={() => onSave(content)}
+          isPleadingMode={isPleadingMode}
+          onTogglePleading={() => setIsPleadingMode(!isPleadingMode)}
         />
       </div>
 
       {/* ProseMirror mounts here — pages render as .legal-page divs */}
-      <div className="w-[8.5in] relative pb-20">
+      <div className="relative pb-20 pt-10">
         <div ref={editorRef} className="ProseMirror-container" />
       </div>
     </div>

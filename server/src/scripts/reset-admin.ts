@@ -1,19 +1,19 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
     const email = 'admin@nomosdesk.com';
-    const firebaseUid = 'fb-admin-demo';
+    const passwordHash = await bcrypt.hash('password123', 10);
 
     const user = await prisma.user.update({
         where: { email },
-        // @ts-ignore
-        data: { firebaseUid }
+        data: { passwordHash }
     });
 
-    console.log(`✅ Identity reset successfully for: ${user.email}`);
-    console.log(`New Firebase UID: ${firebaseUid}`);
+    console.log(`✅ Password reset successfully for: ${user.email}`);
+    console.log(`New Native Password: password123`);
 }
 
 main()

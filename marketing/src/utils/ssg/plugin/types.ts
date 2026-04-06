@@ -11,13 +11,8 @@ import type { SsgBuildConfig } from "../types";
  */
 export interface HostingConfig {
     /**
-     * Path to firebase.json file.
-     * When provided, the plugin will update Firebase hosting rewrites
-     * to serve static pages at their configured routes.
-     *
-     * @example "../firebase.json"
+     * Managed Hosting configuration options.
      */
-    firebaseJson?: string;
 }
 
 /**
@@ -29,6 +24,7 @@ export interface HostingConfig {
  *
  * export default defineConfig({
  *   plugins: [
+ *     react(),
  *     ssgPlugin({
  *       // Required: pages to generate
  *       pages: 'src/pages/HomePage.tsx',
@@ -42,11 +38,6 @@ export interface HostingConfig {
  *         outDir: 'dist/static',
  *         baseUrl: '/static',
  *         images: { quality: 90 },
- *       },
- *
- *       // Optional: Hosting platform configuration
- *       hosting: {
- *         firebaseJson: '../firebase.json',
  *       },
  *     }),
  *   ],

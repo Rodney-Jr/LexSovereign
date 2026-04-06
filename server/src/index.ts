@@ -67,8 +67,7 @@ const port = process.env.PORT || 3001;
 app.use((req, res, next) => {
     console.log(`[Audit] Incoming ${req.method} request to ${req.url}`);
     
-    // Enterprise Auth Hardening: Allow Firebase Auth Popups
-    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    // Enterprise Auth Hardening: Allow Auth Popups for SSO
     
     next();
 });

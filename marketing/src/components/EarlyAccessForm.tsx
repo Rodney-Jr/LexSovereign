@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { Button } from './ui';
-import { Send, CheckCircle } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
 export default function EarlyAccessForm() {
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -11,14 +9,29 @@ export default function EarlyAccessForm() {
         role: ''
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('loading');
-        // Simulate API call
-        setTimeout(() => {
+        
+        try {
+            await apiFetch('/api/leads', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: formData.email,
+                    name: formData.name,
+                    company: formData.organization,
+                    source: 'EARLY_ACCESS_MODAL',
+                    metadata: {
+                        role: formData.role
+                    }
+                })
+            });
             setStatus('success');
             setFormData({ name: '', email: '', organization: '', role: '' });
-        }, 1500);
+        } catch (err) {
+            console.error('Lead submission failed:', err);
+            setStatus('error');
+        }
     };
 
     if (status === 'success') {

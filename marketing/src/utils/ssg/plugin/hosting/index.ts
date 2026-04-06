@@ -5,4 +5,3 @@
  */
 
 export type { GeneratedPage, HostingConfigurator } from "./types";
-export { createFirebaseConfigurator } from "./firebase";

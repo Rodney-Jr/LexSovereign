@@ -10,9 +10,9 @@ import { sendTenantWelcomeEmail } from "../services/EmailService";
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 async function verifyEmailDispatch() {
-    console.log("--- Starting Provisioning Email Verification ---");
-
+    console.log(`\n========== NATIVE ↔ RBAC SYNC VERIFICATION ==========`);
     const testAdminEmail = `fleet-email-test-${Date.now()}@nomosdesk.com`;
+    console.log(`Target: ${testAdminEmail}\n`);
 
     // 1. Manually trigger sendTenantWelcomeEmail to verify the log statement works
     console.log("\n[Test 1] Verifying EmailService log statement...");
@@ -42,8 +42,12 @@ async function verifyEmailDispatch() {
         const result = await PlatformService.provisionAdmin(adminInput);
         console.log("✅ Platform Admin Instance Created in DB.");
 
-        // @ts-ignore
-        if (result.firebaseUid && result.loginUrl) {
+        // 1. Password Hash check
+        const user = await prisma.user.findUnique({ where: { email: adminInput.email } });
+        const hasPasswordHash = !!user?.passwordHash;
+        console.log(`1. Password Secured:        ${hasPasswordHash ? '✅' : '❌'}`);
+
+        if (result.loginUrl) {
             console.log("✅ Provisioning Result contains credentials. Triggering email...");
             await sendTenantWelcomeEmail({
                 to: adminInput.email,
@@ -64,15 +68,13 @@ async function verifyEmailDispatch() {
             name: `Tenant-Test-${Date.now()}`,
             adminEmail: `tenant-test-${Date.now()}@nomosdesk.com`,
             adminName: "Tenant Admin Test",
-            firebaseUid: `fb-test-${Date.now()}`,
             plan: "PRO"
         };
         console.log(`Provisioning tenant: ${tenantInput.name}`);
         const result = await TenantService.provisionTenant(tenantInput);
         console.log("✅ Tenant Instance Created in DB.");
 
-        // @ts-ignore
-        if (result.firebaseUid && result.loginUrl) {
+        if (result.adminId && result.loginUrl) {
             console.log("✅ Provisioning Result contains credentials. Triggering email...");
             await sendTenantWelcomeEmail({
                 to: tenantInput.adminEmail,

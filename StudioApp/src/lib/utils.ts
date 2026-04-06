@@ -15,7 +15,7 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   };
 
   // Convert relative URLs to absolute based on VITE_API_URL
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3005';
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   const targetUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 
   const response = await fetch(targetUrl, {

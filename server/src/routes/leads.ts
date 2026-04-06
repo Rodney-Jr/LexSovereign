@@ -62,7 +62,7 @@ router.post('/', async (req: any, res) => {
                     to: email,
                     adminName: name,
                     tenantName,
-                    tempPassword: 'Check your email for setup instructions', // Firebase handles the rest
+                    tempPassword: 'Check your email for setup instructions',
                     loginUrl: result.loginUrl
                 });
             }).catch(err => {
