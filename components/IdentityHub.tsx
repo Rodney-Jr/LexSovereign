@@ -11,11 +11,13 @@ import {
   Power,
   ShieldAlert,
   Server,
-  CloudLightning
+  CloudLightning,
+  Fingerprint
 } from 'lucide-react';
 import { IdentityProvider, MobileSession } from '../types';
 import MfaSetup from './MfaSetup';
 import { useAuth } from '../hooks/useAuth'; // Assuming useAuth provides the token
+import { startRegistration } from '@simplewebauthn/browser';
 
 const IdentityHub: React.FC = () => {
   const [providers, setProviders] = useState<IdentityProvider[]>([
@@ -30,6 +32,53 @@ const IdentityHub: React.FC = () => {
 
   const [showMfaSetup, setShowMfaSetup] = useState(false);
   const { token, mfaEnabled } = useAuth('identity', null);
+  
+  const [isEnrollingPasskey, setIsEnrollingPasskey] = useState(false);
+  const [passkeyStatus, setPasskeyStatus] = useState<string>('');
+
+  const handleEnrollPasskey = async () => {
+    if (!token) return;
+    setIsEnrollingPasskey(true);
+    setPasskeyStatus('Initializing...');
+    
+    try {
+      // Decode email from token
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const userEmail = payload.email;
+      if (!userEmail) throw new Error('Email not found in session token.');
+
+      setPasskeyStatus('Contacting Security Module...');
+      const initResp = await fetch('/api/auth/webauthn/register/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ email: userEmail })
+      });
+
+      if (!initResp.ok) throw new Error('Failed to initialize passkey registration');
+      const options = await initResp.json();
+
+      setPasskeyStatus('Waiting for Biometric Input...');
+      const authResp = await startRegistration(options);
+
+      setPasskeyStatus('Verifying Signature...');
+      const verifyResp = await fetch('/api/auth/webauthn/register/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ email: userEmail, body: authResp })
+      });
+
+      if (!verifyResp.ok) throw new Error('Failed to verify passkey');
+      
+      setPasskeyStatus('Passkey Enrolled Successfully!');
+      setTimeout(() => setPasskeyStatus(''), 3000);
+    } catch (err: any) {
+      console.error('Passkey Enrollment Error:', err);
+      setPasskeyStatus(`Error: ${err.message}`);
+      setTimeout(() => setPasskeyStatus(''), 5000);
+    } finally {
+      setIsEnrollingPasskey(false);
+    }
+  };
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
@@ -114,6 +163,30 @@ const IdentityHub: React.FC = () => {
                     </button>
                   )}
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Biometric Passkey</p>
+              <div className="p-4 rounded-2xl border bg-slate-800/50 border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Fingerprint size={16} className="text-emerald-400" />
+                    <span className="text-[10px] font-bold text-white">Hardware Match inside Enclave</span>
+                  </div>
+                  <button
+                    onClick={handleEnrollPasskey}
+                    disabled={isEnrollingPasskey}
+                    className="text-[10px] font-bold text-blue-400 hover:text-blue-300 underline underline-offset-4 disabled:opacity-50 disabled:no-underline"
+                  >
+                    {isEnrollingPasskey ? 'Enrolling...' : 'Enroll Fingerprint'}
+                  </button>
+                </div>
+                {passkeyStatus && (
+                  <p className={`text-[10px] font-mono ${passkeyStatus.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>
+                    {passkeyStatus}
+                  </p>
+                )}
               </div>
             </div>
 

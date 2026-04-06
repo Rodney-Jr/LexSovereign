@@ -1,4 +1,10 @@
 import React, { useRef } from 'react';
+import * as mammoth from 'mammoth';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Use CDN worker to avoid Vite ESM pre-bundling conflicts with pdfjs-dist v5+
+const PDFJS_VERSION = pdfjsLib.version;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.mjs`;
 import { EditorView } from 'prosemirror-view';
 import { toggleMark, setBlockType } from 'prosemirror-commands';
 import { 
@@ -12,7 +18,6 @@ import {
   Type,
   Heading1,
   Heading2,
-  Heading3,
   Undo,
   Redo,
   ChevronDown,
@@ -84,24 +89,82 @@ export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({ view, onIm
   };
 
   const handleImportClick = () => fileInputRef.current?.click();
-  
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handlePdfImport = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let html = '';
+
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+
+      let pageHtml = '';
+      let currentLine = '';
+      let lastY: number | null = null;
+
+      for (const item of textContent.items as any[]) {
+        const text: string = item.str;
+        const y: number = item.transform[5];
+        const fontSize: number = item.height;
+
+        if (lastY !== null && Math.abs(y - lastY) > 2) {
+          // New line detected
+          if (currentLine.trim()) {
+            const isHeading = fontSize > 14;
+            const tag = isHeading ? 'h2' : 'p';
+            pageHtml += `<${tag}>${currentLine.trim()}</${tag}>`;
+          }
+          currentLine = text;
+        } else {
+          currentLine += text;
+        }
+        lastY = y;
+      }
+
+      // Flush last line
+      if (currentLine.trim()) {
+        pageHtml += `<p>${currentLine.trim()}</p>`;
+      }
+
+      if (pageHtml) html += pageHtml;
+    }
+
+    return html || '<p></p>';
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const text = event.target?.result as string;
-        if (onImport) onImport(text);
-    };
-    
-    if (file.name.endsWith('.html') || file.name.endsWith('.txt')) {
-        reader.readAsText(file);
+
+    if (file.name.endsWith('.docx')) {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            if (onImport) onImport(result.value);
+        } catch (error) {
+            console.error('Error parsing DOCX:', error);
+            alert('Failed to parse DOCX file. It might be corrupted.');
+        }
+    } else if (file.name.endsWith('.pdf')) {
+        try {
+            const html = await handlePdfImport(file);
+            if (onImport) onImport(html);
+        } catch (error) {
+            console.error('Error parsing PDF:', error);
+            alert('Failed to parse PDF. The file may be encrypted or image-only.');
+        }
     } else {
-        // Placeholder for DOCX/PDF
-        alert('Rich document import (DOCX/PDF) requires the Sovereign Conversion Service. Importing as plain text for now.');
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target?.result as string;
+            if (onImport) onImport(text);
+        };
         reader.readAsText(file);
     }
+
+    // Reset input so the same file can be selected again
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const clearFormatting = () => {

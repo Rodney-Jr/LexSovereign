@@ -151,7 +151,10 @@ export default function App() {
   };
 
   const insertClause = (clause: string) => {
-    setContent(prev => prev + `<p><strong>[INSERTED CLAUSE]</strong>: ${clause}</p>`);
+    const event = new CustomEvent('editor:insert', { 
+        detail: `<p><strong>[INSERTED CLAUSE]</strong>: ${clause}</p>` 
+    });
+    window.dispatchEvent(event);
   };
 
   const handleSave = async (htmlContent: string) => {

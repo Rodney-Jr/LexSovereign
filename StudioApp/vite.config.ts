@@ -11,5 +11,11 @@ export default defineConfig({
   },
   css: {
     postcss: {}
+  },
+  optimizeDeps: {
+    // pdfjs-dist v5+ uses import.meta.url for its worker which Vite's
+    // pre-bundler (esbuild) cannot handle correctly — serve it as raw ESM
+    exclude: ['pdfjs-dist']
   }
 })
+
