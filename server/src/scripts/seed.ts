@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import { TenantService } from '../services/TenantService';
 
 const prisma = new PrismaClient();
@@ -61,6 +62,7 @@ const ROLES = [
 ];
 
 async function main() {
+    const passwordHash = await bcrypt.hash('password123', 10);
     console.log('🌱 Bulk Seeding Permissions...');
     await prisma.permission.createMany({
         data: PERMISSIONS,
@@ -144,6 +146,7 @@ async function main() {
         const counsel = await prisma.user.create({
             data: {
                 email: 'counsel@nomosdesk.com',
+                passwordHash,
                 name: 'Internal Counsel',
                 roleId: counselRole?.id,
                 roleString: 'INTERNAL_COUNSEL',
@@ -162,6 +165,7 @@ async function main() {
             await prisma.user.create({
                 data: {
                     email: `associate${i}@nomosdesk.com`,
+                    passwordHash,
                     name: `Associate ${i}`,
                     roleId: counselRole?.id,
                     roleString: 'JUNIOR_ASSOCIATE',
@@ -183,6 +187,7 @@ async function main() {
             where: { email: 'admin@nomosdesk.com' },
             data: {
                 name: 'Sovereign Admin',
+                passwordHash,
                 roleString: 'GLOBAL_ADMIN',
                 role: { connect: { id: globalAdminRole.id } }
             }
@@ -208,6 +213,7 @@ async function main() {
         },
         create: {
             email: 'clerk@nomosdesk.com',
+            passwordHash,
             name: 'Firm Clerk',
             roleId: clerkRole?.id,
             roleString: 'CLERK',
@@ -229,6 +235,7 @@ async function main() {
         },
         create: {
             email: 'admin_manager@nomosdesk.com',
+            passwordHash,
             name: 'Firm Admin Manager',
             roleId: adminManagerRole?.id,
             roleString: 'ADMIN_MANAGER',
