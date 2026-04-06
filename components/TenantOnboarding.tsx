@@ -27,8 +27,6 @@ import {
 } from 'lucide-react';
 import { Region, SaaSPlan, AppMode } from '../types';
 import { authorizedFetch } from '../utils/api';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../lib/firebase';
 
 interface PricingConfig {
   id: string;
@@ -168,9 +166,8 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
         throw new Error(errorMessage);
       }
 
-      // Sign into Firebase for immediate session activation
-      await signInWithEmailAndPassword(auth, formData.adminEmail, formData.adminPassword);
-
+      // NO-OP: Native identity uses HttpOnly cookies set by the backend during /onboard-silo
+      
       setTimeout(() => {
         setIsProvisioning(false);
         setStep(5);

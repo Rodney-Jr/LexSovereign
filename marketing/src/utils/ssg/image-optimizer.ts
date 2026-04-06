@@ -6,6 +6,7 @@
  * and updates HTML with optimized local paths.
  */
 
+import { Bot, Zap, TrendingUp, Shield, Lock, Calculator, ArrowRight, MessageSquare, Cpu, Briefcase, Users } from 'lucide-react';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -73,6 +74,7 @@ function extractImages(html: string): ImageInfo[] {
 
     while ((match = imgRegex.exec(html)) !== null) {
         const attrs = match[1];
+        if (!attrs) continue;
 
         // Extract src
         const srcMatch = attrs.match(/src=["']([^"']+)["']/i);
@@ -88,8 +90,8 @@ function extractImages(html: string): ImageInfo[] {
         const widthMatch = attrs.match(/width=["']?(\d+)["']?/i);
         const heightMatch = attrs.match(/height=["']?(\d+)["']?/i);
 
-        const width = widthMatch ? parseInt(widthMatch[1], 10) : null;
-        const height = heightMatch ? parseInt(heightMatch[1], 10) : null;
+        const width = widthMatch && widthMatch[1] ? parseInt(widthMatch[1], 10) : null;
+        const height = heightMatch && heightMatch[1] ? parseInt(heightMatch[1], 10) : null;
 
         // Determine if external
         const isExternal = url.startsWith('http://') || url.startsWith('https://');
@@ -133,10 +135,10 @@ async function downloadImage(url: string): Promise<Buffer> {
 /**
  * Check if sharp is available, if not provide instructions
  */
-async function getSharp(): Promise<typeof import('sharp') | null> {
+async function getSharp(): Promise<any | null> {
     try {
         const sharp = await import('sharp');
-        return sharp.default;
+        return sharp.default || sharp;
     } catch {
         return null;
     }
@@ -151,7 +153,7 @@ async function optimizeImage(
     targetHeight: number | null,
     format: 'webp' | 'avif' | 'original',
     quality: number,
-    sharp: typeof import('sharp')
+    sharp: any
 ): Promise<{ buffer: Buffer; width: number; height: number; format: string }> {
     let pipeline = sharp(imageBuffer);
 

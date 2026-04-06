@@ -36,9 +36,9 @@ router.post('/chat', authenticateToken, async (req: Request, res) => {
             allowedRegion,
             req.user?.tenantId as string
         );
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -46,9 +46,9 @@ router.post('/briefing', authenticateToken, async (req: Request, res) => {
     try {
         const { matterId, documents } = req.body;
         const result = await geminiService.generateExecutiveBriefing(matterId, documents);
-        res.json({ briefing: result });
+        return res.json({ briefing: result });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -74,9 +74,9 @@ router.post('/scrub', authenticateToken, async (req: Request, res) => {
             }
         }
 
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -91,9 +91,9 @@ router.post('/evaluate-rre', authenticateToken, async (req: Request, res) => {
 
         const tenantId = req.user.tenantId;
         const result = await geminiService.evaluateRRE(text, rules);
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -101,9 +101,9 @@ router.post('/public-chat', async (req, res) => {
     try {
         const { input, config, knowledge } = req.body;
         const result = await geminiService.publicChat(input, config, knowledge);
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -118,9 +118,9 @@ router.post('/billing-description', authenticateToken, async (req: Request, res)
 
         const user = req.user;
         const result = await geminiService.generateBillingDescription(rawNotes);
-        res.json({ description: result });
+        return res.json({ description: result });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -130,9 +130,9 @@ router.post('/audit/generate', authenticateToken, async (req: Request, res) => {
         // Verify user has permission to trigger audit logs (usually internal system or specific roles)
         // For now, allow authenticated users to generate logs for their actions
         const log = await geminiService.generateAuditLog({ userId, firmId, action, resourceType, resourceId });
-        res.json({ message: log });
+        return res.json({ message: log });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -140,9 +140,9 @@ router.post('/documents/validate-export', authenticateToken, async (req: Request
     try {
         const { content } = req.body;
         const result = await geminiService.validateDocumentExport(content);
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -150,18 +150,18 @@ router.post('/pricing/generate', authenticateToken, async (req: Request, res) =>
     try {
         const { features } = req.body;
         const result = await geminiService.generatePricingModel(features);
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
 router.get('/document-templates', authenticateToken, async (req: Request, res) => {
     try {
         const templates = await prisma.documentTemplate.findMany();
-        res.json(templates);
+        return res.json(templates);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -174,9 +174,9 @@ router.get('/document-templates/:id', authenticateToken, async (req: Request, re
             res.status(404).json({ error: 'Template not found' });
             return;
         }
-        res.json(template);
+        return res.json(template);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -214,10 +214,9 @@ router.post('/document-templates/:id/hydrate', authenticateToken, async (req: Re
             }
         });
 
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
-
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -231,9 +230,9 @@ router.post('/documents/assemble', authenticateToken, async (req: Request, res) 
             selectedOptionalKeys,
             metadata
         });
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -245,9 +244,9 @@ router.post('/explain-clause', authenticateToken, async (req: Request, res) => {
             return;
         }
         const result = await geminiService.explainClause(clauseText);
-        res.json({ explanation: result });
+        return res.json({ explanation: result });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -265,9 +264,9 @@ router.post('/analysis/analyze', authenticateToken, upload.single('file'), async
             return;
         }
         const result = await geminiService.analyzeDocument(content, type);
-        res.json({ report: result });
+        return res.json({ report: result });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

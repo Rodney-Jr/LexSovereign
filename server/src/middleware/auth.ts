@@ -42,13 +42,14 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
              if (userStatus?.tenant?.status === 'SUSPENDED') return res.status(403).json({ error: 'Tenant suspended' });
         }
 
-        requestContext.run({ tenantId: req.user.tenantId || undefined, userId: req.user.id }, () => {
-            next();
+        return requestContext.run({ tenantId: req.user.tenantId || undefined, userId: req.user.id }, () => {
+            return next();
         });
 
     } catch (error: any) {
         console.error(`[Auth] Authentication failed: ${error.message}`);
         res.status(401).json({ error: 'Invalid or expired session', reason: error.message });
+        return;
     }
 };
 

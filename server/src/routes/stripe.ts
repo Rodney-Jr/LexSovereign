@@ -22,10 +22,15 @@ router.post('/create-checkout-session', async (req, res) => {
 // 2. Create Billing Portal Session
 router.post('/portal', authenticateToken, async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(403).json({ error: "Missing tenant context" });
+        const userTenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        if (!userTenantId && !isGlobalAdmin) return res.status(403).json({ error: "Missing tenant context" });
 
-        const session = await StripeService.createPortalSession(tenantId);
+        // Admins can see a specific tenant portal if they provide targetTenantId
+        const targetTenantId = userTenantId || req.body.targetTenantId;
+        if (!targetTenantId) return res.status(400).json({ error: "targetTenantId or session tenantId required" });
+
+        const session = await StripeService.createPortalSession(targetTenantId);
         res.json({ url: session.url });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -35,12 +40,17 @@ router.post('/portal', authenticateToken, async (req, res) => {
 // 3. Procure Module
 router.post('/modules/procure', authenticateToken, async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
-        const { moduleKey } = req.body;
-        if (!tenantId) return res.status(403).json({ error: "Missing tenant context" });
-        if (!moduleKey) return res.status(400).json({ error: "Missing moduleKey" });
+        const userTenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        const { moduleKey, targetTenantId } = req.body;
 
-        const result = await StripeService.addModuleToSubscription(tenantId, moduleKey);
+        const effectiveTenantId = userTenantId || targetTenantId;
+
+        if (!effectiveTenantId && !isGlobalAdmin) return res.status(403).json({ error: "Missing tenant context" });
+        if (!moduleKey) return res.status(400).json({ error: "Missing moduleKey" });
+        if (!effectiveTenantId) return res.status(400).json({ error: "Target tenantId required" });
+
+        const result = await StripeService.addModuleToSubscription(effectiveTenantId, moduleKey);
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

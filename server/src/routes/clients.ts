@@ -8,11 +8,13 @@ const router = express.Router();
 // GET all clients for the tenant
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(400).json({ error: 'Missing tenant context' });
+        const userTenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+
+        if (!userTenantId && !isGlobalAdmin) return res.status(400).json({ error: 'Missing tenant context' });
 
         const clients = await prisma.client.findMany({
-            where: { tenantId },
+            where: isGlobalAdmin ? {} : { tenantId: userTenantId as string },
             include: {
                 _count: { select: { matters: true } },
                 matters: {
@@ -34,10 +36,18 @@ router.get('/', authenticateToken, async (req, res) => {
 
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Authentication required' });
+        const userTenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+
+        if (!userTenantId && !isGlobalAdmin) return res.status(401).json({ error: 'Authentication required' });
+
+        const whereClause: any = { id: req.params.id };
+        if (!isGlobalAdmin) {
+            whereClause.tenantId = userTenantId;
+        }
+
         const client = await prisma.client.findFirst({
-            where: { id: req.params.id, tenantId },
+            where: whereClause,
             include: {
                 matters: {
                     include: {
@@ -58,19 +68,25 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // POST create a new client
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(400).json({ error: 'Missing tenant context' });
+        const userTenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+
+        if (!userTenantId && !isGlobalAdmin) return res.status(400).json({ error: 'Missing tenant context' });
 
         const { name, industry, contactEmail, contactPhone, billingAddress, taxId, type } = req.body;
 
         if (!name) return res.status(400).json({ error: 'Client name is required' });
 
-        // Check for duplicate within tenant
-        const existing = await prisma.client.findFirst({ where: { name, tenantId } });
+        // Admins can provision clients for specific tenants if they provide targetTenantId
+        const targetTenantId = userTenantId || req.body.targetTenantId;
+        if (!targetTenantId) return res.status(400).json({ error: 'targetTenantId is required for creation' });
+
+        // Check for duplicate within target tenant
+        const existing = await prisma.client.findFirst({ where: { name, tenantId: targetTenantId } });
         if (existing) return res.status(409).json({ error: `A client named "${name}" already exists` });
 
         const client = await prisma.client.create({
-            data: { name, tenantId, industry, contactEmail, contactPhone, billingAddress, taxId, type: type || 'CORPORATE' }
+            data: { name, tenantId: targetTenantId, industry, contactEmail, contactPhone, billingAddress, taxId, type: type || 'CORPORATE' }
         });
 
         await AuditService.log('CREATE_CLIENT', req.user?.id || null, client.id, `Client "${name}" added to directory`);

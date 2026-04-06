@@ -145,6 +145,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
                 privilege: privilege || 'INTERNAL',
                 tenantId: tenantId as string,
                 matterId,
+                status: 'AI_DRAFTED', // Force explicit status for TS strictness
                 isEncrypted,
                 encryptionIV,
                 encryptionKeyId,
@@ -166,16 +167,16 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
         await prisma.documentVersion.create({
             data: {
                 documentId: doc.id,
-                tenantId,
+                tenantId: tenantId as string,
                 versionNumber: 1,
                 uri: doc.uri,
-                authorId: req.user?.id,
+                authorId: req.user?.id || null,
                 changeSummary: 'Initial upload',
                 isCurrent: true
             }
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             id: doc.id,
             name: doc.name,
             type: doc.classification,
@@ -189,7 +190,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
 
     } catch (error: any) {
         console.error("Document upload failed:", error);
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -312,6 +313,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 privilege: privilege || 'INTERNAL',
                 matterId: actualMatterId,
                 tenantId: tenantId as string,
+                status: 'AI_DRAFTED',
                 isEncrypted,
                 encryptionIV,
                 encryptionKeyId,
@@ -339,7 +341,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 tenantId: tenantId as string,
                 versionNumber: 1,
                 uri: doc.uri,
-                authorId: req.user?.id,
+                authorId: req.user?.id || null,
                 changeSummary: 'Initial creation',
                 isCurrent: true
             }
@@ -369,7 +371,7 @@ router.post('/', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json({
+        return res.json({
             id: doc.id,
             name: doc.name,
             type: doc.classification,
@@ -386,7 +388,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     } catch (error: any) {
         console.error("Document creation failed:", error);
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -425,9 +427,9 @@ router.get('/review-needed', authenticateToken, async (req, res) => {
             piiCount: (doc.attributes as any)?.piiCount || 0
         }));
 
-        res.json(artifacts);
+        return res.json(artifacts);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -466,9 +468,9 @@ router.get('/:id/content', authenticateToken, async (req, res) => {
         Classification: ${doc.classification}.
         Integrity Hash: 0x${Math.random().toString(16).substr(2, 8)}`;
 
-        res.json({ content });
+        return res.json({ content });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -497,9 +499,9 @@ router.post('/:id/approve', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json({ success: true, status: updated.status });
+        return res.json({ success: true, status: updated.status });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -550,9 +552,9 @@ router.get('/client-audit', authenticateToken, async (req, res) => {
             };
         });
 
-        res.json(formattedLogs);
+        return res.json(formattedLogs);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -586,9 +588,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
         const content = `[VAULT DOCUMENT: ${doc.name}]\n\nJurisdiction: ${doc.jurisdiction}\nClassification: ${doc.classification}\nPrivilege: ${doc.privilege}\n\n---\n\n${doc.uri || 'Content pending vault integration.'}`;
 
-        res.json({ ...doc, content });
+        return res.json({ ...doc, content });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -611,10 +613,10 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
         await prisma.document.delete({ where: { id } });
 
-        res.json({ success: true, id });
+        return res.json({ success: true, id });
     } catch (error: any) {
         console.error('Document deletion failed:', error);
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -730,9 +732,9 @@ router.patch('/:id', authenticateToken, async (req, res) => {
         });
 
         const updatedDoc = await prisma.document.findUnique({ where: { id } });
-        res.json(updatedDoc);
+        return res.json(updatedDoc);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -767,9 +769,9 @@ router.patch('/bulk-update', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json({ success: true, count: updated.count });
+        return res.json({ success: true, count: updated.count });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -800,9 +802,9 @@ router.post('/bulk-delete', authenticateToken, async (req, res) => {
             where: { id: { in: ids } }
         });
 
-        res.json({ success: true, count: ids.length });
+        return res.json({ success: true, count: ids.length });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -829,9 +831,9 @@ router.get('/:id/versions', authenticateToken, async (req, res) => {
             include: { author: { select: { name: true } } }
         });
 
-        res.json(versions);
+        return res.json(versions);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -921,9 +923,9 @@ router.post('/:id/revert/:versionId', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json({ success: true, version: version.versionNumber, content: version.uri });
+        return res.json({ success: true, version: version.versionNumber, content: version.uri });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

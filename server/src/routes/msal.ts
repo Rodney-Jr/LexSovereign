@@ -32,10 +32,10 @@ router.get('/init', async (req, res) => {
 
     try {
         const response = await cca.getAuthCodeUrl(authCodeUrlParameters);
-        res.redirect(response);
+        return res.redirect(response);
     } catch (error) {
         console.error('[MSAL] getAuthCodeUrl Error:', error);
-        res.status(500).send('Error initializing Microsoft Authentication.');
+        return res.status(500).send('Error initializing Microsoft Authentication.');
     }
 });
 
@@ -93,11 +93,11 @@ router.get('/callback', async (req, res) => {
 
         // 3. Construct a client-side handoff query param string so the frontend detects the session (App.tsx / useAuth handles native cookie)
         // By just redirecting to base URL, `useAuth` hook will natively hydrate session parsing the `/me` endpoint!
-        res.redirect(REDIRECT_SUCCESS);
+        return res.redirect(REDIRECT_SUCCESS);
 
     } catch (error) {
         console.error('[MSAL] Callback Acquisition Error:', error);
-        res.redirect(`${REDIRECT_SUCCESS}?error=msal_auth_failed`);
+        return res.redirect(`${REDIRECT_SUCCESS}?error=msal_auth_failed`);
     }
 });
 

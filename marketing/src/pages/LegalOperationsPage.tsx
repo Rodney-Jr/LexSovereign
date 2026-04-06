@@ -108,7 +108,7 @@ export default function LegalOperationsPage() {
                         We provide the unified digital infrastructure that turns fragmented law firms into high-performing institutional enclaves.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button href="/ai-legal-intelligence" variant="outline" size="lg">Explore AI Intelligence</Button>
+                        <Button asLink="/ai-legal-intelligence" variant="outline" size="lg">Explore AI Intelligence</Button>
                         <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request Private Demo</Button>
                     </div>
                 </div>

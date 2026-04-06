@@ -13,15 +13,7 @@ async function main() {
     // 1. Find or Create Tenant
     let tenant = await prisma.tenant.findFirst({ where: { name: 'NomosDesk Demo' } });
     if (!tenant) {
-        console.log('Creating Tenant...');
-        tenant = await prisma.tenant.create({
-            data: {
-                name: 'NomosDesk Demo',
-                plan: 'ENTERPRISE',
-                primaryRegion: region,
-                appMode: 'LAW_FIRM'
-            }
-        });
+        throw new Error('Failed to find or create tenant "NomosDesk Demo"');
     }
     const tenantId = tenant.id;
 
@@ -29,20 +21,7 @@ async function main() {
     // Note: seed.ts already creates this, but let's be safe for standalone use
     let adminManagerRole = await prisma.role.findFirst({ where: { name: 'ADMIN_MANAGER', tenantId: null } });
     if (!adminManagerRole) {
-        console.log('Creating Admin Manager Role...');
-        adminManagerRole = await prisma.role.create({
-            data: {
-                name: 'ADMIN_MANAGER',
-                description: 'Office & Personnel Management',
-                isSystem: true,
-                permissions: {
-                    connect: [
-                        { id: 'read_billing' }, { id: 'approve_spend' }, { id: 'manage_users' },
-                        { id: 'use_legal_chat' }, { id: 'view_confidential' }
-                    ]
-                }
-            }
-        });
+        throw new Error('Failed to find or create ADMIN_MANAGER role');
     }
 
     // 3. Create Admin Manager User
@@ -50,21 +29,18 @@ async function main() {
     const adminUser = await prisma.user.upsert({
         where: { email: adminEmail },
         update: {
-            // @ts-ignore
-            firebaseUid: 'fb-admin-manager-demo',
             roleString: 'ADMIN_MANAGER',
             roleId: adminManagerRole.id
         },
         create: {
             email: adminEmail,
             name: 'Kofi Mensah (Admin Manager)',
-            // @ts-ignore
-            firebaseUid: 'fb-admin-manager-demo',
             tenantId: tenantId,
             roleId: adminManagerRole.id,
             roleString: 'ADMIN_MANAGER',
             region: region,
-            roleSeniority: 5.0
+            roleSeniority: 5.0,
+            passwordHash: await import('bcryptjs').then(b => b.hashSync(password, 10))
         }
     });
 
@@ -84,12 +60,11 @@ async function main() {
             create: {
                 email: s.email,
                 name: s.name,
-                // @ts-ignore
-                firebaseUid: `fb-staff-${s.email}`,
                 tenantId: tenantId,
                 roleString: s.role,
                 region: region,
-                roleSeniority: 2.0
+                roleSeniority: 2.0,
+                passwordHash: await import('bcryptjs').then(b => b.hashSync('staffpassword123', 10))
             }
         });
         staffUsers.push(u);

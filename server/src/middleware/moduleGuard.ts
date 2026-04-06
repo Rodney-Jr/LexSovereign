@@ -6,7 +6,8 @@ export const moduleGuard = (requiredModule: string) => {
         const tenant = (req as any).user?.tenant;
 
         if (!tenant) {
-            return res.status(401).json({ error: "Tenant context missing" });
+            res.status(401).json({ error: "Tenant context missing" });
+            return;
         }
 
         const enabledModules = tenant.enabledModules || ["CORE"];
@@ -22,6 +23,6 @@ export const moduleGuard = (requiredModule: string) => {
             });
         }
 
-        next();
+        return next();
     };
 };

@@ -258,9 +258,9 @@ router.post('/', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json({ ...matter, client: clientRecord.name });
+        return res.json({ ...matter, client: clientRecord.name });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -312,9 +312,9 @@ router.patch('/:id/assign', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json(updated);
+        return res.json(updated);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -435,14 +435,20 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.get('/:id/intelligence', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const tenantId = req.user?.tenantId;
+        const userTenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
 
-        if (!tenantId) {
+        if (!userTenantId && !isGlobalAdmin) {
             return res.status(401).json({ error: 'Unauthorized: Missing tenant context' });
         }
 
+        const whereClause: any = { id };
+        if (!isGlobalAdmin) {
+            whereClause.tenantId = userTenantId;
+        }
+
         const matter = await prisma.matter.findUnique({
-            where: { id },
+            where: whereClause,
             include: {
                 internalCounsel: true,
                 clientRef: true,
@@ -459,7 +465,7 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
             }
         });
 
-        if (!matter || matter.tenantId !== tenantId) {
+        if (!matter || (!isGlobalAdmin && matter.tenantId !== userTenantId)) {
             return res.status(404).json({ error: 'Matter not found' });
         }
 
@@ -476,7 +482,7 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
 
         // Fetch Legal Team peers (everyone mapped via MatterTeamMember)
         const teamMappings = await prisma.matterTeamMember.findMany({
-            where: { matterId: id, matter: { tenantId } },
+            where: { matterId: id, matter: userTenantId ? { tenantId: userTenantId } : {} },
             include: { user: true }
         });
 
@@ -501,7 +507,7 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
 
         const teamPeers = Array.from(teamPeersMap.values());
 
-        res.json({
+        return res.json({
             matter: { ...matter, client: matter.clientRef?.name },
             metrics: {
                 docCycleTime: avgCycleTime, // in ms
@@ -510,7 +516,7 @@ router.get('/:id/intelligence', authenticateToken, async (req, res) => {
             team: teamPeers
         });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -532,9 +538,9 @@ router.post('/:id/team', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json(newMember);
+        return res.json(newMember);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -552,9 +558,9 @@ router.get('/:id/available-team', authenticateToken, async (req, res) => {
             select: { id: true, name: true, roleString: true }
         });
 
-        res.json(users);
+        return res.json(users);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -602,9 +608,9 @@ router.get('/:id/notes', authenticateToken, async (req, res) => {
             });
         }
 
-        res.json(notes);
+        return res.json(notes);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -661,18 +667,18 @@ router.post('/:id/notes', authenticateToken, upload.single('file'), async (req, 
             data: {
                 text: text || '', // Allow empty text if file is present
                 matterId: id,
-                tenantId: tenantId,
-                authorId: userId,
+                tenantId: tenantId as string,
+                authorId: userId as string,
                 attachmentUrl,
                 attachmentName
             },
             include: { author: true }
         });
 
-        res.json(note);
+        return res.json(note);
     } catch (error: any) {
         console.error('Note creation error:', error);
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -697,9 +703,9 @@ router.post('/:id/time-entries', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json(entry);
+        return res.json(entry);
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

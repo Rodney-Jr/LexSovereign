@@ -120,9 +120,9 @@ const AccountingDashboard: React.FC = () => {
         setJournalError('');
         try {
             const entries = journalState.entries
-                .filter(e => e.accountId)
+                .filter(e => e.accountId && (e.debit || e.credit))
                 .map(e => ({
-                    accountId: e.accountId,
+                    accountId: e.accountId!,
                     debit: parseFloat(e.debit) || 0,
                     credit: parseFloat(e.credit) || 0,
                     description: journalState.description
@@ -299,9 +299,13 @@ const AccountingDashboard: React.FC = () => {
                                         <div className="space-y-6">
                                             <h3 className="text-sm font-black text-white uppercase tracking-widest">Account Balances</h3>
                                             <div className="space-y-3">
-                                                {accounts.slice(0, 6).map((acc, i) => (
-                                                    <AccountBadge key={acc.id} name={acc.name} balance={`GHS ${acc.balance.toLocaleString()}`} color={(['blue', 'purple', 'emerald', 'amber', 'blue', 'purple'] as const)[i % 6]} />
-                                                ))}
+                                                {accounts.slice(0, 6).map((acc, i) => {
+                                                    const colorOptions = ['blue', 'purple', 'emerald', 'amber', 'blue', 'purple'] as const;
+                                                    const color = colorOptions[i % colorOptions.length];
+                                                    return (
+                                                        <AccountBadge key={acc.id} name={acc.name} balance={`GHS ${acc.balance.toLocaleString()}`} color={color} />
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     </div>
@@ -605,8 +609,11 @@ const AccountingDashboard: React.FC = () => {
                                         value={entry.accountId}
                                         onChange={e => {
                                             const entries = [...journalState.entries];
-                                            entries[i] = { ...entries[i], accountId: e.target.value };
-                                            setJournalState(s => ({ ...s, entries }));
+                                            const currentEntry = entries[i];
+                                            if (currentEntry) {
+                                                entries[i] = { accountId: e.target.value, debit: currentEntry.debit, credit: currentEntry.credit };
+                                                setJournalState(s => ({ ...s, entries }));
+                                            }
                                         }}
                                         className="col-span-6 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
                                     >
@@ -618,8 +625,11 @@ const AccountingDashboard: React.FC = () => {
                                         value={entry.debit}
                                         onChange={e => {
                                             const entries = [...journalState.entries];
-                                            entries[i] = { ...entries[i], debit: e.target.value, credit: '' };
-                                            setJournalState(s => ({ ...s, entries }));
+                                            const currentEntry = entries[i];
+                                            if (currentEntry) {
+                                                entries[i] = { accountId: currentEntry.accountId, debit: e.target.value, credit: '' };
+                                                setJournalState(s => ({ ...s, entries }));
+                                            }
                                         }}
                                         className="col-span-3 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-emerald-400 font-mono text-right focus:outline-none focus:border-emerald-500"
                                     />
@@ -628,8 +638,11 @@ const AccountingDashboard: React.FC = () => {
                                         value={entry.credit}
                                         onChange={e => {
                                             const entries = [...journalState.entries];
-                                            entries[i] = { ...entries[i], credit: e.target.value, debit: '' };
-                                            setJournalState(s => ({ ...s, entries }));
+                                            const currentEntry = entries[i];
+                                            if (currentEntry) {
+                                                entries[i] = { accountId: currentEntry.accountId, credit: e.target.value, debit: '' };
+                                                setJournalState(s => ({ ...s, entries }));
+                                            }
                                         }}
                                         className="col-span-3 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-amber-400 font-mono text-right focus:outline-none focus:border-amber-500"
                                     />

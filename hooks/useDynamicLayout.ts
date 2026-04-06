@@ -75,10 +75,10 @@ export const useDynamicLayout = ({
         let totalSpan = 0;
 
         if (direction === 'horizontal') {
-            clientCoord = 'touches' in e ? e.touches[0].clientX : e.clientX;
+            clientCoord = 'touches' in e ? e.touches[0]?.clientX || 0 : (e as MouseEvent).clientX;
             totalSpan = window.innerWidth;
         } else {
-            clientCoord = 'touches' in e ? e.touches[0].clientY : e.clientY;
+            clientCoord = 'touches' in e ? e.touches[0]?.clientY || 0 : (e as MouseEvent).clientY;
             totalSpan = window.innerHeight;
         }
 

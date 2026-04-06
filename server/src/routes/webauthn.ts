@@ -52,7 +52,7 @@ router.post('/register/generate', async (req, res) => {
 
     userChallengeStore[user.id] = options.challenge;
 
-    res.json(options);
+    return res.json(options);
 });
 
 // 2. Verify Registration
@@ -127,7 +127,7 @@ router.get('/login/generate', async (req, res) => {
 
     userChallengeStore[user.id] = options.challenge;
 
-    res.json(options);
+    return res.json(options);
 });
 
 // 4. Verify Authentication (Finalize Login)

@@ -86,7 +86,7 @@ router.post('/login', async (req, res) => {
         console.log(`[Login] Authenticated: ${resolvedUser.email} (${resolvedUser.roleString})`);
 
         // Step 7: Return session payload to client
-        res.json({
+        return res.json({
             token: sessionToken,
             user: {
                 id: resolvedUser.id,
@@ -101,7 +101,7 @@ router.post('/login', async (req, res) => {
 
     } catch (error: any) {
         console.error('[Login] Critical error:', error.message);
-        res.status(500).json({ error: 'An internal authentication error occurred.' });
+        return res.status(500).json({ error: 'An internal authentication error occurred.' });
     }
 });
 
@@ -209,7 +209,7 @@ router.post('/onboard-silo', async (req, res) => {
             loginUrl: `${process.env.PLATFORM_URL || 'https://app.nomosdesk.com'}/login`
         }).catch(err => console.error('[Email] Welcome email failed:', err));
 
-        res.status(201).json({
+        return res.status(201).json({
             user: {
                 id: result.user.id,
                 email: result.user.email,
@@ -223,10 +223,9 @@ router.post('/onboard-silo', async (req, res) => {
     } catch (error: any) {
         console.error('[Onboard] Critical Failure:', error.message);
         if (error.code === 'P2002') {
-            res.status(400).json({ error: 'Account or tenant already exists.', code: 'CONFLICT' });
-            return;
+            return res.status(400).json({ error: 'Account or tenant already exists.', code: 'CONFLICT' });
         }
-        res.status(400).json({ error: error.message || 'Onboarding failed.' });
+        return res.status(400).json({ error: error.message || 'Onboarding failed.' });
     }
 });
 
@@ -243,14 +242,14 @@ router.post('/resolve-invite', async (req, res) => {
             return res.status(404).json({ error: 'Invalid or expired invitation token' });
         }
 
-        res.json({
+        return res.json({
             email: invitation.email,
             roleName: invitation.roleName,
             tenantName: invitation.tenant.name,
             tenantMode: invitation.tenant.appMode
         });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -304,7 +303,7 @@ router.post('/join-silo', async (req, res) => {
             return { user, tenant: invitation.tenant };
         });
 
-        res.json({
+        return res.json({
             user: {
                 id: result.user.id,
                 email: result.user.email,
@@ -316,7 +315,7 @@ router.post('/join-silo', async (req, res) => {
         });
 
     } catch (error: any) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 });
 
@@ -342,9 +341,9 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
             }
         });
 
-        res.json({ token, expiresAt });
+        return res.json({ token, expiresAt });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
@@ -354,7 +353,7 @@ router.get('/me', authenticateToken, async (req: any, res) => {
         const user = req.user;
         if (!user) return res.status(401).json({ error: 'Session context missing' });
 
-        res.json({
+        return res.json({
             user: {
                 id: user.id,
                 email: user.email,
@@ -366,17 +365,17 @@ router.get('/me', authenticateToken, async (req: any, res) => {
             }
         });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 
 router.get('/pin', authenticateToken, (req, res) => {
-    res.json({ pin: process.env.SOVEREIGN_PIN || "" });
+    return res.json({ pin: process.env.SOVEREIGN_PIN || "" });
 });
 
 router.post('/logout', (req, res) => {
     res.clearCookie('token', { path: '/' });
-    res.json({ success: true });
+    return res.json({ success: true });
 });
 
 router.post('/studio-token', authenticateToken, async (req: any, res) => {
@@ -409,10 +408,10 @@ router.post('/studio-token', authenticateToken, async (req: any, res) => {
             JWT_SECRET,
             { expiresIn: '15m' }
         );
-        res.json({ token: studioToken });
+        return res.json({ token: studioToken });
     } catch (e: any) {
         console.error('[Studio-Link] Token generation failed:', e.message);
-        res.status(500).json({ error: e.message });
+        return res.status(500).json({ error: e.message });
     }
 });
 

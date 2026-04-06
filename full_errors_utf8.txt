@@ -1,0 +1,343 @@
+﻿components/AccountingDashboard.tsx(303,144): error TS2322: Type '"blue" | "purple" | "emerald" | "amber" | undefined' is not assignable to type '"blue" | "purple" | "emerald" | "amber"'.
+  Type 'undefined' is not assignable to type '"blue" | "purple" | "emerald" | "amber"'.
+components/AccountingDashboard.tsx(608,45): error TS2322: Type '{ accountId: string; debit?: string | undefined; credit?: string | undefined; }' is not assignable to type '{ accountId: string; debit: string; credit: string; }'.
+  Types of property 'debit' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+components/AccountingDashboard.tsx(621,45): error TS2322: Type '{ debit: string; credit: string; accountId?: string | undefined; }' is not assignable to type '{ accountId: string; debit: string; credit: string; }'.
+  Types of property 'accountId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+components/AccountingDashboard.tsx(631,45): error TS2322: Type '{ credit: string; debit: string; accountId?: string | undefined; }' is not assignable to type '{ accountId: string; debit: string; credit: string; }'.
+  Types of property 'accountId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+components/ChatbotStudio.tsx(216,21): error TS2322: Type 'string' is not assignable to type '"Faq" | "PracticeArea" | "JurisdictionGuide" | "OnboardingProcess"'.
+components/ClientDirectory.tsx(77,9): error TS2322: Type '{ name: string; industry: string; contactEmail: string; contactPhone: string; billingAddress: string; taxId: string; type: "CORPORATE" | "INDIVIDUAL"; }' is not assignable to type 'BodyInit | null | undefined'.
+  Type '{ name: string; industry: string; contactEmail: string; contactPhone: string; billingAddress: string; taxId: string; type: "CORPORATE" | "INDIVIDUAL"; }' is missing the following properties from type 'Blob': size, arrayBuffer, bytes, slice, and 2 more.
+components/DraftingStudio.tsx(45,38): error TS2345: Argument of type 'DocumentPage[]' is not assignable to parameter of type 'string'.
+components/HRWorkbench.tsx(769,76): error TS18047: 'editingSalary' is possibly 'null'.
+components/MatterIntelligence.tsx(401,15): error TS2322: Type '{ templateId: string; matterId: string; onClose: () => void; onSave: (name: string, content: string) => void; }' is not assignable to type 'IntrinsicAttributes & DraftingStudioProps'.
+  Property 'matterId' does not exist on type 'IntrinsicAttributes & DraftingStudioProps'.
+components/SovereignMarketplace.tsx(207,21): error TS2322: Type '{ templateId: string; matterId: null; onClose: () => void; onSave: (name: string, content: string) => void; }' is not assignable to type 'IntrinsicAttributes & DraftingStudioProps'.
+  Property 'matterId' does not exist on type 'IntrinsicAttributes & DraftingStudioProps'.
+components/SovereignStaffDossierModal.tsx(60,44): error TS2304: Cannot find name 'SovereignStaffDossierModalProps'.
+components/SovereignStaffDossierModal.tsx(715,52): error TS2345: Argument of type '"ALL"' is not assignable to parameter of type 'never'.
+components/SovereignStaffDossierModal.tsx(716,91): error TS2345: Argument of type '"CLIENT"' is not assignable to parameter of type 'never'.
+components/SovereignStaffDossierModal.tsx(717,55): error TS2345: Argument of type '"PRACTITIONER"' is not assignable to parameter of type 'never'.
+components/studio/ai/ROIStrategyPanel.tsx(3,24): error TS2307: Cannot find module '../../ui' or its corresponding type declarations.
+components/studio/ui/LegalEditor.tsx(106,21): error TS2532: Object is possibly 'undefined'.
+components/studio/ui/StudioBubbleMenu.tsx(39,7): error TS2322: Type '{ children: Element[]; editor: Editor; pluginKey: string; tippyOptions: { duration: number; zIndex: number; theme: string; }; className: string; }' is not assignable to type 'IntrinsicAttributes & Pick<Partial<Omit<Optional$1<BubbleMenuPluginProps, "pluginKey">, "element">>, "editor"> & Omit<...> & HTMLAttributes<...> & RefAttributes<...>'.
+  Property 'tippyOptions' does not exist on type 'IntrinsicAttributes & Pick<Partial<Omit<Optional$1<BubbleMenuPluginProps, "pluginKey">, "element">>, "editor"> & Omit<...> & HTMLAttributes<...> & RefAttributes<...>'.
+components/TemplateManager.tsx(222,98): error TS7006: Parameter 'v' implicitly has an 'any' type.
+components/TemplateManager.tsx(223,105): error TS7006: Parameter 'v' implicitly has an 'any' type.
+components/TenantOnboarding.tsx(30,44): error TS2307: Cannot find module 'firebase/auth' or its corresponding type declarations.
+components/TenantOnboarding.tsx(31,22): error TS2307: Cannot find module '../lib/firebase' or its corresponding type declarations.
+CONVERSATIONS_TAB_CODE.tsx(5,5): error TS2304: Cannot find name 'activeTab'.
+CONVERSATIONS_TAB_CODE.tsx(10,26): error TS2304: Cannot find name 'MessageSquare'.
+CONVERSATIONS_TAB_CODE.tsx(13,26): error TS2304: Cannot find name 'RefreshCw'.
+CONVERSATIONS_TAB_CODE.tsx(19,26): error TS2304: Cannot find name 'conversations'.
+CONVERSATIONS_TAB_CODE.tsx(20,29): error TS2304: Cannot find name 'conversations'.
+CONVERSATIONS_TAB_CODE.tsx(31,58): error TS2304: Cannot find name 'MessageSquare'.
+CONVERSATIONS_TAB_CODE.tsx(79,34): error TS2304: Cannot find name 'MessageSquare'.
+hooks/useDynamicLayout.ts(78,44): error TS2532: Object is possibly 'undefined'.
+hooks/useDynamicLayout.ts(81,44): error TS2532: Object is possibly 'undefined'.
+marketing/src/pages/LegalOperationsPage.tsx(111,33): error TS2322: Type '{ children: string; href: string; variant: "outline"; size: "lg"; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+marketing/src/pages/pillars/AILegalSoftware.tsx(185,34): error TS2304: Cannot find name 'Briefcase'.
+marketing/src/pages/pillars/AILegalSoftware.tsx(193,34): error TS2304: Cannot find name 'Users'.
+marketing/src/pages/PilotProgramPage.tsx(111,33): error TS2322: Type '{ children: string; href: string; onClick: () => void; size: "lg"; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+marketing/src/utils/ssg/image-optimizer.ts(78,26): error TS18048: 'attrs' is possibly 'undefined'.
+marketing/src/utils/ssg/image-optimizer.ts(88,28): error TS18048: 'attrs' is possibly 'undefined'.
+marketing/src/utils/ssg/image-optimizer.ts(89,29): error TS18048: 'attrs' is possibly 'undefined'.
+marketing/src/utils/ssg/image-optimizer.ts(91,45): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/image-optimizer.ts(92,47): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/image-optimizer.ts(136,50): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+marketing/src/utils/ssg/image-optimizer.ts(138,36): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+marketing/src/utils/ssg/image-optimizer.ts(154,26): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+marketing/src/utils/ssg/island-scanner.ts(26,23): error TS2532: Object is possibly 'undefined'.
+marketing/src/utils/ssg/island-scanner.ts(81,19): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/island-scanner.ts(102,20): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/page-discovery.ts(60,27): error TS18048: 'optionsContent' is possibly 'undefined'.
+marketing/src/utils/ssg/page-discovery.ts(68,31): error TS18048: 'optionsContent' is possibly 'undefined'.
+marketing/src/utils/ssg/page-discovery.ts(72,58): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/page-discovery.ts(73,47): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/page-discovery.ts(76,65): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/page-discovery.ts(77,52): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/page-discovery.ts(80,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/page-discovery.ts(81,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/plugin/dev-middleware.ts(43,27): error TS18048: 'optionsContent' is possibly 'undefined'.
+marketing/src/utils/ssg/plugin/dev-middleware.ts(51,31): error TS18048: 'optionsContent' is possibly 'undefined'.
+marketing/src/utils/ssg/plugin/dev-middleware.ts(55,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/plugin/dev-middleware.ts(56,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+marketing/src/utils/ssg/plugin/hosting/firebase.ts(80,17): error TS2322: Type 'FirebaseHostingConfig | undefined' is not assignable to type 'FirebaseHostingConfig'.
+  Type 'undefined' is not assignable to type 'FirebaseHostingConfig'.
+server/scripts/checkDemoSeed.ts(28,81): error TS2339: Property 'role' does not exist on type '{ tenant: { status: string; id: string; name: string; jurisdiction: string; attributes: JsonValue; separationMode: string; enabledModules: string[]; createdAt: Date; updatedAt: Date; ... 13 more ...; uiVisibilityConfig: JsonValue; } | null; } & { ...; }'.
+server/scripts/list_users.ts(8,7): error TS2353: Object literal may only specify known properties, and 'firebaseUid' does not exist in type 'UserSelect<DefaultArgs>'.
+server/src/index.ts(222,24): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/index.ts(229,14): error TS7030: Not all code paths return a value.
+server/src/index.ts(236,37): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/middleware/agentAuth.ts(9,37): error TS7030: Not all code paths return a value.
+server/src/middleware/auth.ts(8,34): error TS7030: Not all code paths return a value.
+server/src/middleware/moduleGuard.ts(5,12): error TS7030: Not all code paths return a value.
+server/src/routes/accounting.ts(107,100): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/accounting.ts(127,81): error TS7030: Not all code paths return a value.
+server/src/routes/admin.ts(16,51): error TS7030: Not all code paths return a value.
+server/src/routes/admin.ts(82,49): error TS7030: Not all code paths return a value.
+server/src/routes/admin.ts(116,45): error TS7030: Not all code paths return a value.
+server/src/routes/admin.ts(134,70): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/admin.ts(144,48): error TS7030: Not all code paths return a value.
+server/src/routes/agent.ts(40,73): error TS7030: Not all code paths return a value.
+server/src/routes/analytics.ts(118,45): error TS7030: Not all code paths return a value.
+server/src/routes/apiKeys.ts(22,103): error TS7030: Not all code paths return a value.
+server/src/routes/apiKeys.ts(51,104): error TS7030: Not all code paths return a value.
+server/src/routes/apiKeys.ts(87,109): error TS7030: Not all code paths return a value.
+server/src/routes/auth.ts(17,23): error TS7030: Not all code paths return a value.
+server/src/routes/auth.ts(234,32): error TS7030: Not all code paths return a value.
+server/src/routes/auth.ts(352,38): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(10,26): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(48,28): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(75,40): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(93,27): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(112,25): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(146,38): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(166,40): error TS7030: Not all code paths return a value.
+server/src/routes/billing.ts(184,51): error TS7030: Not all code paths return a value.
+server/src/routes/bridges.ts(66,88): error TS7030: Not all code paths return a value.
+server/src/routes/chatbot.ts(22,37): error TS7030: Not all code paths return a value.
+server/src/routes/chatbot.ts(36,42): error TS7030: Not all code paths return a value.
+server/src/routes/chatbot.ts(50,43): error TS7030: Not all code paths return a value.
+server/src/routes/chatbot.ts(68,59): error TS7030: Not all code paths return a value.
+server/src/routes/chatbot.ts(102,22): error TS7030: Not all code paths return a value.
+server/src/routes/chatConversations.ts(188,18): error TS7030: Not all code paths return a value.
+server/src/routes/chatConversations.ts(393,70): error TS7030: Not all code paths return a value.
+server/src/routes/clauses.ts(56,20): error TS7030: Not all code paths return a value.
+server/src/routes/clauses.ts(107,20): error TS7030: Not all code paths return a value.
+server/src/routes/clauses.ts(131,23): error TS7030: Not all code paths return a value.
+server/src/routes/clients.ts(9,36): error TS7030: Not all code paths return a value.
+server/src/routes/clients.ts(37,39): error TS7030: Not all code paths return a value.
+server/src/routes/clients.ts(69,37): error TS7030: Not all code paths return a value.
+server/src/routes/clients.ts(100,41): error TS7030: Not all code paths return a value.
+server/src/routes/clients.ts(122,42): error TS7030: Not all code paths return a value.
+server/src/routes/clients.ts(139,71): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+server/src/routes/contentEngine.ts(41,36): error TS7030: Not all code paths return a value.
+server/src/routes/contentEngine.ts(81,34): error TS7030: Not all code paths return a value.
+server/src/routes/contentEngine.ts(161,35): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(86,66): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(271,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/documents.ts(435,47): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(476,48): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(507,48): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(560,39): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(596,42): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(622,41): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(697,17): error TS2322: Type '{ documentId: string | undefined; tenantId: string; versionNumber: number; uri: any; authorId: string; changeSummary: any; isCurrent: true; }' is not assignable to type '(Without<DocumentVersionCreateInput, DocumentVersionUncheckedCreateInput> & DocumentVersionUncheckedCreateInput) | (Without<...> & DocumentVersionCreateInput)'.
+  Types of property 'documentId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+server/src/routes/documents.ts(740,49): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(777,48): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(810,48): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(839,67): error TS7030: Not all code paths return a value.
+server/src/routes/documents.ts(880,58): error TS7030: Not all code paths return a value.
+server/src/routes/documentTemplates.ts(40,44): error TS7030: Not all code paths return a value.
+server/src/routes/documentTemplates.ts(81,49): error TS7030: Not all code paths return a value.
+server/src/routes/firm.ts(293,49): error TS7030: Not all code paths return a value.
+server/src/routes/firm.ts(380,38): error TS7030: Not all code paths return a value.
+server/src/routes/firm.ts(396,33): error TS7030: Not all code paths return a value.
+server/src/routes/firm.ts(417,34): error TS7030: Not all code paths return a value.
+server/src/routes/firm.ts(517,27): error TS7030: Not all code paths return a value.
+server/src/routes/leads.ts(17,18): error TS7030: Not all code paths return a value.
+server/src/routes/leads.ts(82,36): error TS7030: Not all code paths return a value.
+server/src/routes/leads.ts(105,48): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(15,36): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(268,48): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(290,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+server/src/routes/matters.ts(352,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+server/src/routes/matters.ts(435,52): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(524,45): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(534,13): error TS2322: Type '{ matterId: string | undefined; userId: any; role: any; }' is not assignable to type '(Without<MatterTeamMemberCreateInput, MatterTeamMemberUncheckedCreateInput> & MatterTeamMemberUncheckedCreateInput) | (Without<...> & MatterTeamMemberCreateInput)'.
+  Type '{ matterId: string | undefined; userId: any; role: any; }' is not assignable to type 'Without<MatterTeamMemberUncheckedCreateInput, MatterTeamMemberCreateInput> & MatterTeamMemberCreateInput'.
+    Type '{ matterId: string | undefined; userId: any; role: any; }' is not assignable to type 'Without<MatterTeamMemberUncheckedCreateInput, MatterTeamMemberCreateInput>'.
+      Types of property 'matterId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'undefined'.
+          Type 'string' is not assignable to type 'undefined'.
+server/src/routes/matters.ts(548,54): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(568,55): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(618,52): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(641,69): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(659,17): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/matters.ts(667,13): error TS2322: Type '{ text: any; matterId: string | undefined; tenantId: string; authorId: string; attachmentUrl: string | null; attachmentName: string | null; }' is not assignable to type '(Without<CollaborationMessageCreateInput, CollaborationMessageUncheckedCreateInput> & CollaborationMessageUncheckedCreateInput) | (Without<...> & CollaborationMessageCreateInput)'.
+  Types of property 'matterId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+server/src/routes/matters.ts(686,53): error TS7030: Not all code paths return a value.
+server/src/routes/matters.ts(695,13): error TS2322: Type '{ description: any; durationMinutes: any; startTime: Date; isBillable: any; matterId: string | undefined; tenantId: string; userId: string; }' is not assignable to type '(Without<TimeEntryCreateInput, TimeEntryUncheckedCreateInput> & TimeEntryUncheckedCreateInput) | (Without<...> & TimeEntryCreateInput)'.
+  Types of property 'matterId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+server/src/routes/platform.ts(25,77): error TS7030: Not all code paths return a value.
+server/src/routes/platform.ts(94,87): error TS7030: Not all code paths return a value.
+server/src/routes/platform.ts(103,63): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/platform.ts(117,42): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/platform.ts(187,74): error TS7030: Not all code paths return a value.
+server/src/routes/platform.ts(308,86): error TS7030: Not all code paths return a value.
+server/src/routes/platform.ts(333,106): error TS7030: Not all code paths return a value.
+server/src/routes/platform.ts(379,55): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/productivity.ts(53,22): error TS2538: Type 'undefined' cannot be used as an index type.
+server/src/routes/productivity.ts(54,21): error TS2538: Type 'undefined' cannot be used as an index type.
+server/src/routes/productivity.ts(60,17): error TS2538: Type 'undefined' cannot be used as an index type.
+server/src/routes/productivity.ts(62,21): error TS2538: Type 'undefined' cannot be used as an index type.
+server/src/routes/productivity.ts(63,21): error TS2538: Type 'undefined' cannot be used as an index type.
+server/src/routes/stripe.ts(23,43): error TS7030: Not all code paths return a value.
+server/src/routes/stripe.ts(41,52): error TS7030: Not all code paths return a value.
+server/src/routes/stripe.ts(61,68): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(46,93): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(92,87): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(145,36): error TS2532: Object is possibly 'undefined'.
+server/src/routes/tenant.ts(352,94): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(401,98): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(428,98): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(472,81): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(510,87): error TS7030: Not all code paths return a value.
+server/src/routes/tenant.ts(535,89): error TS7030: Not all code paths return a value.
+server/src/routes/webauthn.ts(22,35): error TS7030: Not all code paths return a value.
+server/src/routes/webauthn.ts(108,31): error TS7030: Not all code paths return a value.
+server/src/routes/workflows.ts(13,42): error TS7030: Not all code paths return a value.
+server/src/routes/workflows.ts(34,13): error TS18048: 'initialState' is possibly 'undefined'.
+server/src/routes/workflows.ts(48,44): error TS7030: Not all code paths return a value.
+server/src/routes/workflows.ts(67,51): error TS7030: Not all code paths return a value.
+server/src/routes/workflows.ts(83,59): error TS7030: Not all code paths return a value.
+server/src/routes/workflows.ts(91,56): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/routes/workflows.ts(199,53): error TS7030: Not all code paths return a value.
+server/src/routes/workflows.ts(220,48): error TS7030: Not all code paths return a value.
+server/src/scripts/adminManagerSeed.ts(102,23): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(103,23): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(104,23): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(113,134): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(115,139): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(156,23): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(157,23): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(180,23): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/adminManagerSeed.ts(181,23): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/bulk_ingest_sovereign.ts(53,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/scripts/bulk_ingest_sovereign.ts(54,38): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/scripts/bulk_ingest_sovereign.ts(75,44): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(path: PathOrFileDescriptor, options?: { encoding?: null | undefined; flag?: string | undefined; } | null | undefined): NonSharedBuffer', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'PathOrFileDescriptor'.
+      Type 'undefined' is not assignable to type 'PathOrFileDescriptor'.
+  Overload 2 of 3, '(path: PathOrFileDescriptor, options?: BufferEncoding | (ObjectEncodingOptions & { flag?: string | undefined; }) | null | undefined): string | NonSharedBuffer', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'PathOrFileDescriptor'.
+      Type 'undefined' is not assignable to type 'PathOrFileDescriptor'.
+server/src/scripts/create_global_admin.ts(23,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/scripts/debug_openrouter_direct.ts(42,34): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/debug_openrouter_direct.ts(64,42): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/gazetteIngestor.ts(21,12): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/gazetteIngestor.ts(59,51): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/scripts/gazetteIngestor.ts(65,17): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/scripts/legalRepositoryIngestor.ts(22,12): error TS2532: Object is possibly 'undefined'.
+server/src/scripts/seedTemplates.ts(32,24): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'PathLike'.
+  Type 'undefined' is not assignable to type 'PathLike'.
+server/src/scripts/seedTemplates.ts(37,34): error TS2769: No overload matches this call.
+  Overload 1 of 5, '(path: PathLike, options?: BufferEncoding | { encoding: BufferEncoding | null; withFileTypes?: false | undefined; recursive?: boolean | undefined; } | null | undefined): string[]', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'PathLike'.
+      Type 'undefined' is not assignable to type 'PathLike'.
+  Overload 2 of 5, '(path: PathLike, options?: BufferEncoding | (ObjectEncodingOptions & { withFileTypes?: false | undefined; recursive?: boolean | undefined; }) | null | undefined): string[] | NonSharedBuffer[]', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'PathLike'.
+      Type 'undefined' is not assignable to type 'PathLike'.
+server/src/scripts/seedTemplates.ts(44,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/services/ai/AIServiceFactory.ts(13,9): error TS2322: Type 'AIProvider | undefined' is not assignable to type 'AIProvider'.
+  Type 'undefined' is not assignable to type 'AIProvider'.
+server/src/services/ai/OpenAIProvider.ts(62,29): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenAIProvider.ts(106,16): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenAIProvider.ts(121,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenAIProvider.ts(139,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenAIProvider.ts(157,31): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenAIProvider.ts(198,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenAIProvider.ts(223,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenAIProvider.ts(245,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(100,25): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(139,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(163,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(180,27): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(194,31): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(213,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(238,31): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(263,31): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(296,22): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(312,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(335,31): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(356,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/OpenRouterProvider.ts(378,20): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/SovereignEnclaveProvider.ts(85,29): error TS2532: Object is possibly 'undefined'.
+server/src/services/ai/SovereignEnclaveProvider.ts(114,16): error TS2532: Object is possibly 'undefined'.
+server/src/services/CLMService.ts(35,55): error TS2532: Object is possibly 'undefined'.
+server/src/services/ContentEngine/ArticleCodegenService.ts(220,16): error TS18048: 'lastPart' is possibly 'undefined'.
+server/src/services/EmbeddingService.ts(28,69): error TS18048: 'provider' is possibly 'undefined'.
+server/src/services/EmbeddingService.ts(29,26): error TS18048: 'provider' is possibly 'undefined'.
+server/src/services/EmbeddingService.ts(31,49): error TS18048: 'provider' is possibly 'undefined'.
+server/src/services/EmbeddingService.ts(34,17): error TS18048: 'provider' is possibly 'undefined'.
+server/src/services/EmbeddingService.ts(34,33): error TS2532: Object is possibly 'undefined'.
+server/src/services/EmbeddingService.ts(35,85): error TS2532: Object is possibly 'undefined'.
+server/src/services/EmbeddingService.ts(36,30): error TS2532: Object is possibly 'undefined'.
+server/src/services/fxRateService.ts(75,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+server/src/services/legalQueryService.ts(26,27): error TS2532: Object is possibly 'undefined'.
+server/src/services/legalQueryService.ts(26,35): error TS2532: Object is possibly 'undefined'.
+server/src/services/legalQueryService.ts(27,22): error TS2532: Object is possibly 'undefined'.
+server/src/services/legalQueryService.ts(27,30): error TS2532: Object is possibly 'undefined'.
+server/src/services/legalQueryService.ts(28,22): error TS2532: Object is possibly 'undefined'.
+server/src/services/legalQueryService.ts(28,30): error TS2532: Object is possibly 'undefined'.
+server/src/services/LexAIService.ts(40,49): error TS2532: Object is possibly 'undefined'.
+server/src/services/piiService.ts(64,17): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+server/src/services/piiService.ts(65,17): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+server/src/services/piiService.ts(66,17): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+server/src/services/piiService.ts(67,17): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+server/src/services/piiService.ts(69,44): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+server/src/services/piiService.ts(71,21): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+server/src/services/piiService.ts(72,21): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+server/src/services/piiService.ts(74,44): error TS2345: Argument of type 'RegExp | undefined' is not assignable to parameter of type 'RegExp'.
+  Type 'undefined' is not assignable to type 'RegExp'.
+tmp/check_templates.ts(8,21): error TS7006: Parameter 't' implicitly has an 'any' type.
+tmp/test_upload_direct.ts(11,13): error TS2322: Type '{ name: string; description: string; category: string; jurisdiction: string; content: string; version: string; tenantId: string; }' is not assignable to type '(Without<DocumentTemplateCreateInput, DocumentTemplateUncheckedCreateInput> & DocumentTemplateUncheckedCreateInput) | (Without<...> & DocumentTemplateCreateInput)'.
+  Type '{ name: string; description: string; category: string; jurisdiction: string; content: string; version: string; tenantId: string; }' is not assignable to type 'Without<DocumentTemplateCreateInput, DocumentTemplateUncheckedCreateInput> & DocumentTemplateUncheckedCreateInput'.
+    Property 'structure' is missing in type '{ name: string; description: string; category: string; jurisdiction: string; content: string; version: string; tenantId: string; }' but required in type 'DocumentTemplateUncheckedCreateInput'.

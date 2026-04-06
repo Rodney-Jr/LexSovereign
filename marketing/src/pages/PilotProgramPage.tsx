@@ -108,7 +108,7 @@ export default function PilotProgramPage() {
                         ))}
                     </div>
                     <div className="mt-12">
-                        <Button href="#apply" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Ready to Apply?</Button>
+                        <Button asLink="#apply" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} size="lg">Ready to Apply?</Button>
                     </div>
                 </div>
             </Section>

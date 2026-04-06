@@ -43,6 +43,7 @@ export interface DraftingStudioProps {
     content?: any;
     matterId?: string | null;
   };
+  matterId?: string | null;
   templateId?: string;
   onSave?: (name: string, content: string, id?: string) => void;
   onClose?: () => void;

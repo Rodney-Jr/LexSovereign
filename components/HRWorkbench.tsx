@@ -758,7 +758,7 @@ const SovereignHRWorkbench: React.FC<HRWorkbenchProps> = ({ userRole }) => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        {editingSalary?.id === p.id ? (
+                                                        {editingSalary && editingSalary.id === p.id ? (
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-xs text-slate-400">GHS</span>
                                                                 <input

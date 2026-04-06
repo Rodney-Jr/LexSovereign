@@ -5,7 +5,6 @@ async function main() {
     select: {
       id: true,
       email: true,
-      firebaseUid: true,
       roleString: true,
       tenantId: true
     }

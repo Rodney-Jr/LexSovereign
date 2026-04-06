@@ -25,7 +25,7 @@ async function checkSeedData() {
         });
 
         if (user) {
-            console.log(`✅ FOUND: ${item.email} in ${item.tenant} (Role: ${user.role})`);
+            console.log(`✅ FOUND: ${item.email} in ${item.tenant} (Role: ${user.roleString})`);
         } else {
             // Check if tenant exists at least
             const tenant = await prisma.tenant.findFirst({ where: { name: item.tenant } });

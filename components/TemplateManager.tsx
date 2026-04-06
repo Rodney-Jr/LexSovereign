@@ -318,7 +318,14 @@ const TemplateCard = ({ template, onDelete, isOwner }: { template: Template, onD
     </div>
 );
 
-const InputField = ({ label, value, onChange, placeholder }: any) => (
+interface InputFieldProps {
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    placeholder?: string;
+}
+
+const InputField = ({ label, value, onChange, placeholder }: InputFieldProps) => (
     <div className="space-y-2">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
         <input

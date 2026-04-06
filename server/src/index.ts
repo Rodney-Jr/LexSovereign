@@ -196,18 +196,18 @@ app.use(errorHandler);
 import fs from 'fs';
 
 // Resolve static directory paths using process.cwd() for reliability in root-run environments
-const potentialDistPaths = [
+const potentialDistPaths: string[] = [
     path.join(process.cwd(), 'client-dist'), // Docker production mapping
     path.join(process.cwd(), '../dist'),      // Local split-root mapping (running from server/)
     path.join(process.cwd(), 'dist'),         // Local monorepo mapping (running from root)
-    path.join(__dirname, '../../client-dist'),// Container fallback
-    path.join(__dirname, '../../../dist')     // Deeply nested fallback
+    path.join(__dirname || '', '../../client-dist'),// Container fallback
+    path.join(__dirname || '', '../../../dist')     // Deeply nested fallback
 ];
 
-let DIST_PATH = potentialDistPaths[1]; // Default to local split-root
+let DIST_PATH: string = potentialDistPaths[1] || '';
 
 for (const p of potentialDistPaths) {
-    if (fs.existsSync(path.join(p, 'index.html'))) {
+    if (p && fs.existsSync(path.join(p, 'index.html'))) {
         DIST_PATH = p;
         console.log(`[Static] Validated DIST_PATH at: ${DIST_PATH}`);
         break;
@@ -251,13 +251,13 @@ app.get('*', (req, res) => {
     </script>`;
 
             html = html.replace(/<head>/i, `<head>${injection}`);
-            res.send(html);
+            return res.send(html);
         } catch (error) {
             console.error("[Runtime Error] Failed to serve index.html:", error);
-            res.status(500).send("Internal Server Error");
+            return res.status(500).send("Internal Server Error");
         }
     } else {
-        res.status(404).send("Application dist not found. Please ensure the frontend is built.");
+        return res.status(404).send("Application dist not found. Please ensure the frontend is built.");
     }
 });
 

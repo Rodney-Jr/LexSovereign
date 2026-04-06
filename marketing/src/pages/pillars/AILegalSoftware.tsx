@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../../layouts/Layout';
 import SEO from '../../components/SEO';
 import { Section, Button } from '../../components/ui';
-import { Bot, Zap, TrendingUp, Shield, Lock, Calculator, ArrowRight, MessageSquare, Cpu } from 'lucide-react';
+import { Bot, Zap, TrendingUp, Shield, Lock, Calculator, ArrowRight, MessageSquare, Cpu, Briefcase, Users } from 'lucide-react';
 import { Link } from '../../utils/ssr-compat';
 
 export default function AILegalSoftware() {

@@ -56,7 +56,7 @@ interface LiveTimeEntry {
   description: string;
   status: string;
   user?: { name: string };
-  startTime?: string;
+  startTime: string;
 }
 
 const gemini = new LexGeminiService();
