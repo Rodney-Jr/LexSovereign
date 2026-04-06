@@ -127,8 +127,6 @@ async function main() {
             data: {
                 email: 'owner@enterpriselegal.com',
                 name: 'Firm Owner',
-                // @ts-ignore
-                firebaseUid: 'fb-owner-enterprise',
                 tenantId: tenantId,
                 roleId: ownerRole.id,
                 roleString: 'OWNER',
@@ -143,8 +141,6 @@ async function main() {
                 id: adminId,
                 email: adminEmail,
                 name: 'Senior Managing Partner',
-                // @ts-ignore
-                firebaseUid: 'fb-partner-enterprise',
                 tenantId: tenantId,
                 roleId: managingPartnerRole.id,
                 roleString: 'MANAGING_PARTNER',
@@ -158,8 +154,6 @@ async function main() {
             data: {
                 email: 'admin@enterpriselegal.com',
                 name: 'Admin Manager',
-                // @ts-ignore
-                firebaseUid: 'fb-admin-enterprise',
                 tenantId: tenantId,
                 roleId: adminManagerRole.id,
                 roleString: 'ADMIN_MANAGER',
@@ -173,8 +167,6 @@ async function main() {
         await prisma.user.create({
             data: {
                 email: 'associate@enterpriselegal.com',
-                // @ts-ignore
-                firebaseUid: 'fb-associate-enterprise',
                 name: 'Demo Associate',
                 roleId: associateRole.id,
                 roleString: 'JUNIOR_ASSOCIATE',
@@ -188,8 +180,6 @@ async function main() {
         const clientUser = await prisma.user.create({
             data: {
                 email: 'client@enterpriselegal.com',
-                // @ts-ignore
-                firebaseUid: 'fb-client-enterprise',
                 name: 'Demo Client (Acme Corp)',
                 roleId: clientRole.id,
                 roleString: 'CLIENT',

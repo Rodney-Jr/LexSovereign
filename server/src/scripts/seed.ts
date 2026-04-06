@@ -144,8 +144,6 @@ async function main() {
         const counsel = await prisma.user.create({
             data: {
                 email: 'counsel@nomosdesk.com',
-                // @ts-ignore
-                firebaseUid: 'fb-counsel-demo',
                 name: 'Internal Counsel',
                 roleId: counselRole?.id,
                 roleString: 'INTERNAL_COUNSEL',
@@ -164,8 +162,6 @@ async function main() {
             await prisma.user.create({
                 data: {
                     email: `associate${i}@nomosdesk.com`,
-                    // @ts-ignore
-                    firebaseUid: `fb-${i}`,
                     name: `Associate ${i}`,
                     roleId: counselRole?.id,
                     roleString: 'JUNIOR_ASSOCIATE',
@@ -186,8 +182,6 @@ async function main() {
         await prisma.user.update({
             where: { email: 'admin@nomosdesk.com' },
             data: {
-                // @ts-ignore
-                firebaseUid: 'fb-admin-demo',
                 name: 'Sovereign Admin',
                 roleString: 'GLOBAL_ADMIN',
                 role: { connect: { id: globalAdminRole.id } }
@@ -211,13 +205,9 @@ async function main() {
             roleId: clerkRole?.id,
             roleString: 'CLERK',
             name: 'Firm Clerk',
-            // @ts-ignore
-            firebaseUid: 'fb-clerk-demo'
         },
         create: {
             email: 'clerk@nomosdesk.com',
-            // @ts-ignore
-            firebaseUid: 'fb-clerk-demo',
             name: 'Firm Clerk',
             roleId: clerkRole?.id,
             roleString: 'CLERK',
@@ -236,13 +226,9 @@ async function main() {
             roleId: adminManagerRole?.id,
             roleString: 'ADMIN_MANAGER',
             name: 'Firm Admin Manager',
-            // @ts-ignore
-            firebaseUid: 'fb-admin-manager-demo'
         },
         create: {
             email: 'admin_manager@nomosdesk.com',
-            // @ts-ignore
-            firebaseUid: 'fb-admin-manager-demo',
             name: 'Firm Admin Manager',
             roleId: adminManagerRole?.id,
             roleString: 'ADMIN_MANAGER',

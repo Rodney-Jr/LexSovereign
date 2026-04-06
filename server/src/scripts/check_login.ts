@@ -13,10 +13,8 @@ async function checkLogin() {
         process.exit(1);
     }
 
-    // @ts-ignore
-    const exists = !!user.firebaseUid;
-    console.log(`User ${email} has firebaseUid: ${exists ? 'YES' : 'NO'}`);
-    process.exit(exists ? 0 : 1);
+    console.log(`User ${email} found.`);
+    process.exit(0);
 }
 
 checkLogin();

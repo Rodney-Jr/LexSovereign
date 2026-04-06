@@ -102,8 +102,6 @@ async function createDemoTenant(
             where: { email: u.email },
             update: {
                 name: u.name,
-                // @ts-ignore
-                firebaseUid: `fb-${u.email}`,
                 tenantId: tenantId,
                 roleId: role.id,
                 roleString: role.name,
@@ -116,8 +114,6 @@ async function createDemoTenant(
                 id: randomUUID(),
                 email: u.email,
                 name: u.name,
-                // @ts-ignore
-                firebaseUid: `fb-${u.email}`,
                 tenantId: tenantId,
                 roleId: role.id,
                 roleString: role.name,

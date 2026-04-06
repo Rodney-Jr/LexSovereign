@@ -20,14 +20,9 @@ export class OIDCService {
      */
     static async handleLogin(profile: OIDCProfile) {
 
-        const firebaseUid = `fb-oidc-${profile.sub}`;
         let user = await prisma.user.findFirst({
             where: {
-                OR: [
-                    // @ts-ignore
-                    { firebaseUid },
-                    { email: profile.email } // Fallback linkage
-                ]
+                email: profile.email
             },
             include: { role: { include: { permissions: true } } }
         });
@@ -52,8 +47,6 @@ export class OIDCService {
                 data: {
                     email: profile.email,
                     name: profile.name,
-                    // @ts-ignore - Prisma client needs regeneration
-                    firebaseUid: firebaseUid,
                     roleId: role.id,
                     roleString: role.name,
                     attributes: {

@@ -102,8 +102,6 @@ async function seedTenant(config: DemoTenantConfig) {
             data: {
                 email: config.adminEmail,
                 name: config.adminName,
-                // @ts-ignore
-                firebaseUid: `fb-${config.id}-admin`,
                 tenantId: config.id,
                 roleId: tenantAdminRole.id,
                 roleString: 'TENANT_ADMIN',
@@ -123,8 +121,6 @@ async function seedTenant(config: DemoTenantConfig) {
             data: {
                 email: config.clientEmail,
                 name: config.clientName,
-                // @ts-ignore
-                firebaseUid: `fb-${config.id}-client`,
                 tenantId: config.id,
                 roleId: clientRole.id,
                 roleString: 'CLIENT',

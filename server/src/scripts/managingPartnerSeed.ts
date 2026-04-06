@@ -40,8 +40,6 @@ async function main() {
         create: {
             email: 'managing_partner@nomosdesk.com',
             name: 'Kofi Mensah (MP)',
-            // @ts-ignore
-            firebaseUid: 'fb-mp-demo',
             roleId: mpRole.id,
             tenantId: tenant.id,
             isActive: true
@@ -65,8 +63,6 @@ async function main() {
             create: {
                 email: 'tech_admin@nomosdesk.com',
                 name: 'Tech Admin (IT)',
-                // @ts-ignore
-                firebaseUid: 'fb-ta-demo',
                 roleId: taRole.id,
                 tenantId: tenant.id,
                 isActive: true
@@ -90,8 +86,6 @@ async function main() {
             create: {
                 email: 'associate1@nomosdesk.com',
                 name: 'Akwasi Mensah (Associate)',
-                // @ts-ignore
-                firebaseUid: 'fb-associate1-demo',
                 roleId: associateRole.id,
                 tenantId: tenant.id,
                 isActive: true
@@ -115,8 +109,6 @@ async function main() {
             create: {
                 email: 'admin_manager@nomosdesk.com',
                 name: 'Kofi Mensah (AM)',
-                // @ts-ignore
-                firebaseUid: 'fb-am-demo',
                 roleId: amRole.id,
                 tenantId: tenant.id,
                 isActive: true
