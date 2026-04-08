@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../layouts/Layout';
 import SEO from '../components/SEO';
 import { Section, SectionHeader, Button } from '../components/ui';
-import { CheckCircle, Briefcase, Globe, Scale } from 'lucide-react';
+import { CheckCircle, Briefcase, Globe, Scale, Users, Database, PieChart } from 'lucide-react';
 import RelatedInsights from '../components/RelatedInsights';
 import type { SsgOptions } from 'vite-plugin-ssg';
 
@@ -140,11 +140,16 @@ export default function ForLawFirms() {
             </Section>
 
             <Section darker>
-                <SectionHeader title="Partner Oversight & Multi-Office Control" />
+                <SectionHeader title="Complete Firm Operations" />
+                <div className="grid md:grid-cols-3 gap-8 text-center mb-8">
+                    <FeatureBox icon={<Globe className="w-6 h-6" />} title="Multi-Office Support" desc="Manage Nairobi, Lagos, and London offices from a single dashboard while keeping data logically separated." />
+                    <FeatureBox icon={<Briefcase className="w-6 h-6" />} title="Partner Workflows" desc="Set approval thresholds for high-stakes matters. Associates draft, Partners approve." />
+                    <FeatureBox icon={<Scale className="w-6 h-6" />} title="Ethical Walls" desc="Restrict information access to only the specific legal team assigned to the matter." />
+                </div>
                 <div className="grid md:grid-cols-3 gap-8 text-center">
-                    <FeatureBox icon={<Globe />} title="Multi-Office Support" desc="Manage Nairobi, Lagos, and London offices from a single dashboard while keeping data logically separated." />
-                    <FeatureBox icon={<Briefcase />} title="Partner Workflows" desc="Set approval thresholds for high-stakes matters. Associates draft, Partners approve." />
-                    <FeatureBox icon={<Scale />} title="Ethical Walls" desc="Restrict information access to only the specific legal team assigned to the matter." />
+                    <FeatureBox icon={<Users className="w-6 h-6" />} title="HR Workbench" desc="Manage associate performance, payroll integration, and resource allocation across your firm." />
+                    <FeatureBox icon={<Database className="w-6 h-6" />} title="Asset Register" desc="Track intellectual property, physical assets, and corporate registries securely." />
+                    <FeatureBox icon={<PieChart className="w-6 h-6" />} title="Sovereign Accounting" desc="Built-in trust accounting, general ledger, and integrated billing tied directly to matters." />
                 </div>
             </Section>
 
