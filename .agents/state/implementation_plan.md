@@ -1,26 +1,50 @@
-# Implementation Plan: structural_maturity_migration
+# Marketing Content Alignment Plan
 
-This plan outlines the transition of NomosDesk from a **Modal-Centric** architecture to a **Route-Driven** and **Context-Aware** system.
+This plan focuses on updating the marketing website to reflect the latest "Zero-Gap" legal intelligence features and the new frictionless trial onboarding system.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This refactor will change how users navigate the application. Instead of constant pop-ups, users will move between full-page workspaces. Deep-linking will become possible.
+> **CTAs**: I will change "Schedule Demo" to "Start 30-Day Free Trial" across the site to drive self-signup conversions.
+>
+> **Product Naming**: I will standardize on "Global Clause Library" for the admin-curated text feature.
 
 ## Proposed Changes
 
-### 1. Unified Identity & Permissions Logic
-Centralize `userRole` and `tenantId` in a new `useSovereign` hook.
+### HomePage Refresh
 
-### 2. Router-First Navigation
-Define top-level routes for Dashboard, Registry, Matters, Practitioners, and Settings in `App.tsx`.
+#### [MODIFY] [HomePage.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/marketing/src/pages/HomePage.tsx)
+- **Hero Section**:
+    - Update primary CTA to "Start 30-Day Free Trial".
+    - Add a "No Credit Card Required" subtext.
+- **Pillars Section**:
+    - Update "Clause Foundry" to "Global Clause Library".
+    - Add detail about "Regional Scoping" (e.g., GH_ACC_1 specific provisions).
+- **Intelligence Panel**:
+    - Add a bullet for "Legacy Document Ingestion" highlighting the .docx import/pagination capability.
 
-### 3. Workspace Migration
-Migrate heavy modals (Settings, Dossiers, Accounting) into dedicated layouts.
+### Pricing & Onboarding
 
-### 4. URL-Addressability (Deep Linking)
-Ensure system states (like active settings tab) are reflected in query parameters.
+#### [MODIFY] [PricingPage.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/marketing/src/pages/PricingPage.tsx)
+- **Header**: Add a banner: "Experience Sovereign Intelligence. Free 30-Day Trial on all plans."
+- **Cards**:
+    - Add "30-Day Trial Included" to every tier.
+    - Update CTAs to "Launch My Enclave".
+- **FAQ**: Update to include trial-related questions.
+
+### Industry Focus Updates
+
+#### [MODIFY] [ForLawFirms.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/marketing/src/pages/ForLawFirms.tsx)
+- Add a section on "Rapid Onboarding" (.docx import of legacy matters).
+- Highlight "Standardized Drafting" via the Global Clause Library.
+
+## Open Questions
+
+1. **Pricing Tiers**: The app uses `Starter`, `Standard`, `Professional`, `Sovereign`, `Enclave`. The marketing page currently uses `Solo`, `Professional`, `Institutional`. Should I align them exactly?
+2. **Demo Link**: Should we keep the "Schedule Demo" link as a secondary option for Enterprise clients?
 
 ## Verification Plan
-- **Context Integrity**: Verify role-based permissions in the new context.
-- **Deep Linking**: Confirm that refreshing the page on a Practitioner route restores the correct view.
+
+### Manual Verification
+- View updated pages to ensure consistency in tone and feature descriptions.
+- Verify that all CTAs point to the registration/onboarding flow correctly.

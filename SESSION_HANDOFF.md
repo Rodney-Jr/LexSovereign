@@ -1,9 +1,17 @@
 # Antigravity Session Handoff
 
 ## Current Focus
-Scaling NomosDesk via **Structural Maturity** (Phase 9) and completing **Data Residency Infrastructure** (Phase 7-8).
+Scaling NomosDesk via **Automated Onboarding** (Phase 10) and completing **Governance Infrastructure** (Clauses & Trials).
 
-## Latest Accomplishments (March 17)
+## Latest Accomplishments (April 8)
+- **Automated Trial Management**: Implemented 30-day free trials for self-signup tenants with automated middleware enforcement.
+- **Visual Paywall Architecture**: Created a global interceptor and high-fidelity `TrialExpirationModal` to block usage upon trial maturation.
+- **Global Clause Library**: Built a curation engine for platform owners to distribute standardized legal text with regional jurisdictional scoping.
+- **Marketing Website Alignment**: Synchronized the site with the app's 4-tier pricing model (`Starter`, `Standard`, `Professional`, `Sovereign`) and a premium horizontal layout.
+- **Legacy Migration Support**: Highlighted the new `.docx` ingestion and automated pagination capabilities in marketing feature pillars.
+- **Administrative Flexibility**: Added a Trial/Full Access toggle in the manual provisioning flow, enabling "White-Glove" enterprise onboarding without Stripe reliance.
+
+## Previous Accomplishments (March 17)
 - **Global Admin Access Fix**: Resolved the "ReferenceError" and session context issues preventing platform owners from managing tenant residency settings.
 - **Targeted Tenant Management**: Implemented `targetTenantId` across backend and a "Manage" control in the Global Plane.
 - **Desktop Sync Agent**: Functional Node.js daemon for automated local-to-cloud file ingestion.

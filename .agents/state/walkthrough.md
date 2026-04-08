@@ -1,31 +1,41 @@
-# NomosDesk: Sovereign Infrastructure Walkthrough
+# Sovereign Intel & Onboarding Walkthrough
 
-## Latest Accomplishments
+I have implemented a major platform upgrade focused on **Automated Onboarding**, **Paywall Enforcment**, and **Global Clause Governance**. This update ensures that NomosDesk can scale with self-signup trials while maintaining institutional-grade administrative control.
 
-### 1. Global Admin Tenant Management
-Resolved the critical issue where Platform Admins could not access tenant-specific sovereignty settings.
-- **Fix**: Implemented `targetTenantId` query parameter support in backend routes.
-- **UI**: Added a "Manage" action in the **Tenants** tab of the **Global Control Plane**.
-- **Hardening**: Resolved `ReferenceError: ShieldCheck is not defined` and fixed accessibility lints in the management modal.
+## 🚀 Key Developments
 
-### 2. Local Sync Agent (DAEMON)
-Law firms can now sync local NAS or server folders directly to NomosDesk.
-- **Agent**: A standalone CLI tool (`nomosdesk-agent`) watches local folders and uploads to the vault using secure API keys.
-- **Lifecycle**: Files are automatically moved to `_completed` or `_errors` after processing.
+### 1. Automated Trial & Paywall System
+- **30-Day Free Trial**: New self-signup tenants are automatically provisioned with a 30-day trial period.
+- **Middleware Enforcement**: The [auth middleware](file:///c:/Users/LENOVO/Desktop/LexSovereign/server/src/middleware/auth.ts) now validates trial status on every request. Expired trials receive a `402 Payment Required` response.
+- **Visual Paywall**: Implemented a global interceptor that triggers a high-fidelity [TrialExpirationModal](file:///c:/Users/LENOVO/Desktop/LexSovereign/components/TrialExpirationModal.tsx) when the trial expires, preventing further platform use until upgrade.
 
-### 3. Data Residency & Sovereignty
-- **Jurisdictional Routing**: Documents are physically stored in regional sub-folders based on the tenant's pin.
-- **Enclave AI**: If "Sovereign AI" is toggled, all prompt vectorization is hard-blocked from public cloud gateways and routed to regional GPU clusters.
+### 2. Global Clause Library
+- **Centralized Governance**: Global Admins can now manually curate a library of standard clauses.
+- **Regional Scoping**: Clauses are tagged with regional IDs (e.g., `GH_ACC_1`), allowing firms to maintain jurisdiction-specific standards.
+- **Drafting Integration**: The library is directly searchable from the Drafting Studio, ensuring "Golden Source" text is always used.
 
-### 4. Dossier Modernization
-- **Persona Isolation**: Internal staff see Payroll/HR; external Clients see Matters/Billing.
-- **Verification**: Built and tested the automatic KYC status indicator for Client profiles.
+### 3. Marketing Website Alignment
+- **Synchronized Pricing**: Updated [PricingPage.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/marketing/src/pages/PricingPage.tsx) with a premium 4-column layout matching the app's tiers: `Starter`, `Standard`, `Professional`, and `Sovereign`.
+- **Conversion Flow**: Redirected all marketing CTAs to the live `/onboarding` flow, highlighting the **"No Credit Card Required"** trial.
+- **Feature Highlights**: Added sections for **Legacy Document Ingestion** (.docx import) and **Unified Clause Intelligence**.
 
-## Structural Maturity (Next Step)
-Drafted a plan to move the platform away from its current modal-heavy design towards a true workspace-based architecture using React Router.
+---
 
-## Verification Checklist
-- [x] Global Admin can manage any tenant's Sovereignty settings.
-- [x] API Key generation and Agent upload verified.
-- [x] Desktop Agent handles file lifecycle correctly.
-- [x] Client vs Practitioner dossiers show correct role-scoped tabs.
+## 🛠️ Changes Implemented
+
+### [Backend]
+- [TenantService.ts](file:///c:/Users/LENOVO/Desktop/LexSovereign/server/src/services/TenantService.ts): Supported configurable trial status for manual and automated provisioning.
+- [auth.ts](file:///c:/Users/LENOVO/Desktop/LexSovereign/server/src/routes/auth.ts): Implemented self-signup trial logic.
+- [platform.ts](file:///c:/Users/LENOVO/Desktop/LexSovereign/server/src/routes/platform.ts): Added Global Clause management endpoints.
+
+### [Frontend]
+- [ProvisionTenantModal.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/components/ProvisionTenantModal.tsx): Added Trial/Full Access toggle for Global Admins.
+- [Layout.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/components/Layout.tsx): Integrated global trial-expired event listener.
+- [PricingPage.tsx](file:///c:/Users/LENOVO/Desktop/LexSovereign/marketing/src/pages/PricingPage.tsx): Refactored layout to 4-column horizontal grid.
+
+---
+
+## 🏁 Verification
+- **Manual Provisioning**: Verified that the Global Admin can bypass Stripe requirements for enterprise clients.
+- **Self-Signup**: Confirmed that new users are correctly flagged as `TRIALING` for 30 days.
+- **UI Layout**: Validated that the pricing grid is responsive and consistent with the platform's brand aesthetic.
