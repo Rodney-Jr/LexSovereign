@@ -31,6 +31,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import MatterJourney from './MatterJourney';
 import ClientInvoicesRecord from './ClientInvoicesRecord';
 import DocumentPreviewModal from './DocumentPreviewModal';
+import { ClientTrustLedger } from './ClientTrustLedger';
 import { getSavedSession } from '../utils/api';
 import { LexGeminiService } from '../services/geminiService';
 
@@ -497,6 +498,13 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                      <p className="text-slate-500 text-sm">View and manage your outstanding invoices securely via the platform enclave.</p>
                   </div>
                </div>
+               
+               {latestMatter?.clientId && (
+                  <div className="mb-10">
+                     <ClientTrustLedger clientId={latestMatter.clientId} />
+                  </div>
+               )}
+
                {/* Reuse existing component, isolated for client context */}
                <ClientInvoicesRecord />
             </div>

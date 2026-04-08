@@ -82,10 +82,49 @@ router.get('/balance-sheet', authenticateToken, async (req, res) => {
     }
 });
 
-// Get Trust Ledger
+// Get Trust Ledger (IOLTA summary)
 router.get('/trust-ledger', authenticateToken, async (req, res) => {
     try {
         const ledger = await AccountingService.getTrustLedger((req as any).user.tenantId);
+        res.json(ledger);
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+import { TrustAccountingService } from '../services/TrustAccountingService';
+
+// Record Trust Deposit
+router.post('/trust/deposit', authenticateToken, async (req, res) => {
+    try {
+        const { clientId, matterId, amount, reference, description } = req.body;
+        const transaction = await TrustAccountingService.recordTrustDeposit(
+            (req as any).user.tenantId, clientId, matterId, amount, reference, description
+        );
+        res.json(transaction);
+    } catch (e: any) {
+        res.status(400).json({ error: e.message });
+    }
+});
+
+// Record Trust Drawdown
+router.post('/trust/drawdown', authenticateToken, async (req, res) => {
+    try {
+        const { clientId, matterId, amount, reference, description } = req.body;
+        const transaction = await TrustAccountingService.recordTrustDrawdown(
+            (req as any).user.tenantId, clientId, matterId, amount, reference, description
+        );
+        res.json(transaction);
+    } catch (e: any) {
+        res.status(400).json({ error: e.message });
+    }
+});
+
+// Get Specific Client Trust Ledger
+router.get('/trust/client/:clientId', authenticateToken, async (req, res) => {
+    try {
+        // Additional RBAC validation here if the user is a client, ensuring they can only fetch their own clientId.
+        const ledger = await TrustAccountingService.getClientTrustLedger((req as any).user.tenantId, req.params.clientId);
         res.json(ledger);
     } catch (e: any) {
         res.status(500).json({ error: e.message });

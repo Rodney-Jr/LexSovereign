@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 import InvoicePreviewModal from './InvoicePreviewModal';
+import { Wallet } from 'lucide-react';
 
 interface Invoice {
     id: string;
@@ -37,6 +38,7 @@ interface Invoice {
     matter: {
         name: string;
         client: string;
+        clientId?: string;
     };
 }
 
@@ -54,6 +56,11 @@ const ClientInvoicesRecord: React.FC = () => {
     const [isAILoading, setIsAILoading] = useState(false);
     const [aiSyncing, setAiSyncing] = useState(false);
     const [isBackfilling, setIsBackfilling] = useState(false);
+    
+    // Trust Drawdown State
+    const [drawdownInvoice, setDrawdownInvoice] = useState<Invoice | null>(null);
+    const [trustLedger, setTrustLedger] = useState<any>(null);
+    const [isDrawdownLoading, setIsDrawdownLoading] = useState(false);
 
     const fetchInvoices = async () => {
         const session = getSavedSession();
@@ -108,6 +115,53 @@ const ClientInvoicesRecord: React.FC = () => {
             fetchInvoices();
         } catch (e) {
             console.error("[Invoicing] Status update failed:", e);
+        }
+    };
+
+    const handleOpenDrawdown = async (inv: Invoice) => {
+        setDrawdownInvoice(inv);
+        setIsDrawdownLoading(true);
+        const session = getSavedSession();
+        if (session?.token && inv.matter.clientId) {
+            try {
+                const res = await authorizedFetch(`/api/accounting/trust/client/${inv.matter.clientId}`, { token: session.token });
+                setTrustLedger(res);
+            } catch (e) {
+                console.error("Failed to fetch trust ledger for drawdown:", e);
+            }
+        }
+        setIsDrawdownLoading(false);
+    };
+
+    const executeDrawdown = async () => {
+        if (!drawdownInvoice || !trustLedger || trustLedger.balance < drawdownInvoice.totalAmount) {
+            alert("Cannot drawdown: Insufficient trust balance.");
+            return;
+        }
+
+        const session = getSavedSession();
+        setIsDrawdownLoading(true);
+        try {
+            await authorizedFetch('/api/accounting/trust/drawdown', {
+                method: 'POST',
+                token: session?.token || '',
+                body: JSON.stringify({
+                    clientId: drawdownInvoice.matter.clientId,
+                    matterId: drawdownInvoice.matterId,
+                    amount: drawdownInvoice.totalAmount,
+                    reference: `INV-${drawdownInvoice.id.slice(0, 8).toUpperCase()}`,
+                    description: `Trust drawdown for ${drawdownInvoice.matter.name}`
+                })
+            });
+            // Update invoice status locally or globally
+            await handleUpdateStatus(drawdownInvoice.id, 'PAID');
+            setDrawdownInvoice(null);
+            setTrustLedger(null);
+        } catch (e: any) {
+             console.error(e);
+             alert("Drawdown execution failed.");
+        } finally {
+             setIsDrawdownLoading(false);
         }
     };
 
@@ -412,13 +466,24 @@ const ClientInvoicesRecord: React.FC = () => {
                                                     </button>
                                                 )}
                                                 {inv.status === 'ISSUED' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(inv.id, 'PAID')}
-                                                        className="p-2.5 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 rounded-xl transition-all hover:scale-105"
-                                                        title="Mark as Paid"
-                                                    >
-                                                        <CheckCircle size={16} />
-                                                    </button>
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(inv.id, 'PAID')}
+                                                            className="p-2.5 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 rounded-xl transition-all hover:scale-105"
+                                                            title="Mark as Paid"
+                                                        >
+                                                            <CheckCircle size={16} />
+                                                        </button>
+                                                        {getSavedSession()?.user?.role !== 'CLIENT' && (
+                                                            <button
+                                                                onClick={() => handleOpenDrawdown(inv)}
+                                                                className="p-2.5 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 text-purple-400 rounded-xl transition-all hover:scale-105"
+                                                                title="Execute Trust Drawdown"
+                                                            >
+                                                                <Wallet size={16} />
+                                                            </button>
+                                                        )}
+                                                    </>
                                                 )}
                                                 <button
                                                     onClick={() => handlePreview(inv.id)}
@@ -494,6 +559,69 @@ const ClientInvoicesRecord: React.FC = () => {
                         setSelectedInvoice(null);
                     }}
                 />
+            )}
+
+            {drawdownInvoice && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-3xl p-8 w-full max-w-md shadow-2xl relative overflow-hidden">
+                        <button onClick={() => { setDrawdownInvoice(null); setTrustLedger(null); }} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+                            <X size={20} />
+                        </button>
+                        
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="p-3 bg-purple-500/10 text-purple-400 rounded-2xl">
+                                <Wallet size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Trust Drawdown</h3>
+                                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">{drawdownInvoice.matter.client}</p>
+                            </div>
+                        </div>
+
+                        {isDrawdownLoading && !trustLedger ? (
+                            <div className="py-10 text-center text-slate-500 flex flex-col items-center gap-3">
+                                <div className="w-8 h-8 border-4 border-slate-700 border-t-purple-500 rounded-full animate-spin" />
+                                <span className="text-xs uppercase tracking-widest font-bold">Querying Trust Ledger...</span>
+                            </div>
+                        ) : trustLedger ? (
+                            <div className="space-y-6">
+                                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-slate-400">Invoice Amount</span>
+                                        <span className="font-bold text-white">GHS {drawdownInvoice.totalAmount.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-slate-400">Available Trust</span>
+                                        <span className={`font-bold ${trustLedger.balance >= drawdownInvoice.totalAmount ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                            GHS {trustLedger.balance.toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                {trustLedger.balance < drawdownInvoice.totalAmount ? (
+                                    <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-start gap-3">
+                                        <AlertCircle className="text-rose-400 shrink-0 mt-0.5" size={16} />
+                                        <p className="text-xs text-rose-400 font-medium leading-relaxed">
+                                            Insufficient funds to execute drawdown. The client needs to replenish their trust retainer before this invoice can be paid algorithmically.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={executeDrawdown}
+                                        disabled={isDrawdownLoading}
+                                        className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold uppercase tracking-widest text-xs transition-all shadow-xl shadow-purple-900/20 active:scale-95 flex items-center justify-center gap-2">
+                                        {isDrawdownLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Wallet size={16} />}
+                                        Execute Drawdown
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="py-10 text-center text-rose-400 font-medium text-sm">
+                                Failed to locate trust ledger for this client.
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );

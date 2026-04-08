@@ -222,20 +222,22 @@ model Matter {
 }
 
 model Client {
-  id              String      @id @default(uuid())
-  name            String
-  industry        String?
-  contactEmail    String?
-  contactPhone    String?
-  billingAddress  String?
-  taxId           String?
-  type            String      @default("CORPORATE")
-  tenantId        String
-  tenant          Tenant      @relation(fields: [tenantId], references: [id])
-  matters         Matter[]
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  attributes      Json?       @default("{}")
+  id                  String               @id @default(uuid())
+  name                String
+  industry            String?
+  contactEmail        String?
+  contactPhone        String?
+  billingAddress      String?
+  taxId               String?
+  type                String               @default("CORPORATE")
+  tenantId            String
+  trustAlertThreshold Float?               // Alert when trust balance drops below this
+  tenant              Tenant               @relation(fields: [tenantId], references: [id])
+  matters             Matter[]
+  ledgerTransactions  LedgerTransaction[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  attributes          Json?                @default("{}")
 }
 
 model MatterTeamMember {
@@ -914,11 +916,15 @@ model LedgerTransaction {
   description String
   reference   String?
   status      String        @default("POSTED")
+  type        String        @default("GENERAL") // GENERAL | TRUST_DEPOSIT | TRUST_DRAWDOWN
   tenantId    String
+  clientId    String?       // For trust transactions: which client's funds
+  matterId    String?       // For trust transactions: which matter these funds are for
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   entries     LedgerEntry[]
   tenant      Tenant        @relation(fields: [tenantId], references: [id])
+  client      Client?       @relation(fields: [clientId], references: [id])
 }
 
 model LedgerEntry {

@@ -393,6 +393,7 @@ export class BillingService {
             ...i,
             matter: {
                 ...i.matter,
+                clientId: i.matter.clientRef?.id || '',
                 client: i.matter.clientRef?.name || 'Unknown Client'
             }
         }));
