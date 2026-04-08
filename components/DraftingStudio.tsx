@@ -23,7 +23,8 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
   const token = sessionStr ? JSON.parse(sessionStr).token : '';
   const title = encodeURIComponent(initialData?.name || 'Untitled');
   
-  const iframeUrl = `http://localhost:3006?matterId=${effectiveMatterId}&docId=${docId}&token=${token}&title=${title}`;
+  const studioUrl = import.meta.env.VITE_STUDIO_URL || 'http://localhost:3006';
+  const iframeUrl = `${studioUrl}?matterId=${effectiveMatterId}&docId=${docId}&token=${token}&title=${title}`;
 
   const handlePopOut = () => {
     window.open(iframeUrl, '_blank');

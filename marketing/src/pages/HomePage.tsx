@@ -121,7 +121,7 @@ export default function HomePage() {
                                 transition={{ duration: 0.7, delay: 0.3 }}
                                 className="flex flex-col sm:flex-row gap-6 justify-center"
                             >
-                                <Button asLink="/app/drafting-studio" size="lg" className="px-12 h-16 text-lg rounded-2xl shadow-2xl shadow-indigo-500/30">Start Drafting</Button>
+                                <Button asLink="/onboarding" size="lg" className="px-12 h-16 text-lg rounded-2xl shadow-2xl shadow-indigo-500/30">Start 30-Day Free Trial</Button>
                                 <Button 
                                     variant="outline" 
                                     size="lg" 
@@ -132,6 +132,7 @@ export default function HomePage() {
                                     Watch Intro
                                 </Button>
                             </motion.div>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em]">No Credit Card Required • Instant Enclave Provisioning</p>
                         </div>
                     </div>
 
@@ -218,9 +219,9 @@ export default function HomePage() {
                                 icon: <Scale className="w-8 h-8 text-emerald-400" /> 
                             },
                             { 
-                                title: "Clause Foundry", 
-                                tag: "Institutional Memory",
-                                description: "Centralized, version-controlled library of your firm's golden-source text.",
+                                title: "Clause Library", 
+                                tag: "Global Access",
+                                description: "Centralized, version-controlled library of your firm's standards with regional scoping.",
                                 icon: <Library className="w-8 h-8 text-sky-400" /> 
                             },
                         ].map((pillar, idx) => (
@@ -262,7 +263,7 @@ export default function HomePage() {
                         <div className="grid gap-6">
                             {[
                                 { title: "Context-Aware Logic", text: "Understands your specific matter type and mission intent.", icon: <BrainCircuit className="w-5 h-5" /> },
-                                { title: "Real-time Statutory Checks", text: "Cross-references your draft with active local statutes.", icon: <Search className="w-5 h-5" /> },
+                                { title: "Legacy Ingestion", text: "Import .docx files with automated pagination and structural parsing.", icon: <FileText className="w-5 h-5" /> },
                                 { title: "Audit Trail Generation", text: "Every AI suggestion provides the rationale and source.", icon: <Fingerprint className="w-5 h-5" /> }
                             ].map((item, i) => (
                                 <motion.div key={i} whileHover={{ x: 15 }} className="flex gap-6 items-center p-6 bg-slate-900/40 border border-slate-800/60 rounded-3xl group cursor-default">
@@ -378,7 +379,7 @@ export default function HomePage() {
                                 Drafting efficiency is just the start. Calculate the financial impact of removing document-level risk from your organization.
                             </p>
                             <div className="flex justify-center gap-6">
-                                <Button asLink="/app/drafting-studio" size="lg" className="px-12 h-16 rounded-2xl">Start Professional Trial</Button>
+                                <Button asLink="/onboarding" size="lg" className="px-12 h-16 rounded-2xl">Start 30-Day Free Trial</Button>
                                 <Button variant="outline" size="lg" className="px-12 h-16 rounded-2xl border-slate-700">Request Custom ROI Case Study</Button>
                             </div>
                         </div>
@@ -410,7 +411,7 @@ export default function HomePage() {
                         Join the next generation of institutional drafting. Provision your enclave today and experience Zero-Gap legal intelligence.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                        <Button asLink="/app/drafting-studio" size="lg" className="px-16 h-20 text-xl font-black rounded-3xl shadow-2xl shadow-indigo-500/40">Launch My Enclave</Button>
+                        <Button asLink="/onboarding" size="lg" className="px-16 h-20 text-xl font-black rounded-3xl shadow-2xl shadow-indigo-500/40">Launch My Enclave</Button>
                         <Button 
                             variant="outline" 
                             size="lg" 

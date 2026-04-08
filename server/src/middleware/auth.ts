@@ -36,10 +36,37 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
         if (req.user && !req.user.isImpersonating) {
              const userStatus: any = await prisma.user.findUnique({ 
                 where: { id: req.user.id },
-                select: { isActive: true, tenant: { select: { status: true } } }
+                select: { 
+                    isActive: true, 
+                    tenant: { 
+                        select: { 
+                            status: true, 
+                            isTrial: true, 
+                            trialExpiresAt: true,
+                            subscriptionStatus: true
+                        } 
+                    } 
+                }
              });
+
              if (userStatus && !userStatus.isActive) return res.status(403).json({ error: 'Account disabled' });
-             if (userStatus?.tenant?.status === 'SUSPENDED') return res.status(403).json({ error: 'Tenant suspended' });
+             
+             if (userStatus?.tenant) {
+                 const t = userStatus.tenant;
+                 if (t.status === 'SUSPENDED') return res.status(403).json({ error: 'Tenant suspended' });
+                 
+                 // Trial Expiry Check
+                 if (t.isTrial && t.trialExpiresAt && new Date(t.trialExpiresAt) < new Date()) {
+                     // If it's a trial and it's expired, and hasn't been upgraded to ACTIVE/PAID
+                     if (t.subscriptionStatus !== 'active' && t.status !== 'ACTIVE_PAID') {
+                         return res.status(402).json({ 
+                             error: 'Trial expired', 
+                             code: 'TRIAL_EXPIRED',
+                             message: 'Your 30-day sovereign trial has concluded. Please upgrade to maintain enclave access.' 
+                         });
+                     }
+                 }
+             }
         }
 
         return requestContext.run({ tenantId: req.user.tenantId || undefined, userId: req.user.id }, () => {

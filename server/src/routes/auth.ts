@@ -157,7 +157,19 @@ router.post('/onboard-silo', async (req, res) => {
             stripeData = {
                 stripeCustomerId: session.customer as string,
                 stripeSubscriptionId: subscription?.id,
-                subscriptionStatus: subscription?.status || 'active'
+                subscriptionStatus: subscription?.status || 'active',
+                isTrial: false,
+                status: 'ACTIVE'
+            };
+        } else {
+            // No payment session - Start 30-day trial
+            const trialExpiresAt = new Date();
+            trialExpiresAt.setDate(trialExpiresAt.getDate() + 30);
+            stripeData = {
+                isTrial: true,
+                trialExpiresAt,
+                subscriptionStatus: 'TRIALING',
+                status: 'ACTIVE'
             };
         }
 

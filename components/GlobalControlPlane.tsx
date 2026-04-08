@@ -34,6 +34,7 @@ import { ProvisionTenantModal } from './ProvisionTenantModal';
 import { ProvisionAdminModal } from './ProvisionAdminModal';
 import { LegalRepositoryTab } from './LegalRepositoryTab';
 import { TenantManagementModal } from './TenantManagementModal';
+import { ClauseManagementTab } from './ClauseManagementTab';
 import { authorizedFetch } from '../utils/api';
 
 interface GlobalControlPlaneProps {
@@ -43,7 +44,7 @@ interface GlobalControlPlaneProps {
 }
 
 const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userRole, onNavigate }) => {
-   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'tenants' | 'ai-registry' | 'leads' | 'conversations' | 'repository'>('telemetry');
+   const [activeTab, setActiveTab] = useState<'telemetry' | 'admins' | 'tenants' | 'ai-registry' | 'leads' | 'conversations' | 'repository' | 'clauses'>('telemetry');
    const [globalStatus, setGlobalStatus] = useState('NOMINAL');
    const [isSyncing, setIsSyncing] = useState(false);
    const [showProvisionModal, setShowProvisionModal] = useState(false);
@@ -150,6 +151,12 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
                      className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'conversations' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                      Conversations
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('clauses')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeTab === 'clauses' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                     Clause Library
                   </button>
                   <button
                      onClick={() => setActiveTab('repository')}
@@ -481,6 +488,8 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
          {activeTab === 'conversations' && <ConversationsTab conversations={conversations} />}
 
          {activeTab === 'repository' && <LegalRepositoryTab userRole={userRole} />}
+
+         {activeTab === 'clauses' && <ClauseManagementTab />}
       </div>
    );
 };

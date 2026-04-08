@@ -61,7 +61,8 @@ export default function ForLawFirms() {
                         keep your firm compliant and efficient.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))}>Schedule Demo</Button>
+                        <Button asLink="/onboarding">Start 30-Day Free Trial</Button>
+                        <Button variant="outline" onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))}>Schedule Partner Demo</Button>
                     </div>
                 </div>
             </Section>
@@ -130,8 +131,8 @@ export default function ForLawFirms() {
                             Empower your associates with verified jurisdictional data. NomosDesk's deep research enclave is grounded in your regional legal history.
                         </p>
                         <ul className="space-y-4">
-                            <ListItem title="Constitutional Grounding" desc="AI responses are strictly anchored in national and regional constitutional frameworks." />
-                            <ListItem title="Statutory Precision" desc="Instant access to the latest statutes and official gazette updates." />
+                            <ListItem title="Global Clause Library" desc="Access firm-wide standards curated by Global Admins with regional jurisdiction scoping." />
+                            <ListItem title="Legacy Matter Migration" desc="Import .docx casefiles instantly with automated pagination and structural parsing." />
                             <ListItem title="Judicial Case Memory" desc="Leverage a library of closed casefiles and precedents to build stronger arguments faster." />
                         </ul>
                     </div>
@@ -149,7 +150,10 @@ export default function ForLawFirms() {
 
             <Section className="text-center bg-indigo-900/20 border-t border-indigo-900/30">
                 <h2 className="text-3xl font-bold text-white mb-6">Ready to secure your firm?</h2>
-                <Button onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Get Started</Button>
+                <div className="flex justify-center gap-4">
+                    <Button asLink="/onboarding" size="lg">Start 30-Day Free Trial</Button>
+                    <Button variant="outline" onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-demo'))} size="lg">Request 1:1 Demo</Button>
+                </div>
             </Section>
             <RelatedInsights
                 heading="Guides for Law Firms"

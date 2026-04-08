@@ -10,6 +10,7 @@ interface ProvisionTenantInput {
     plan?: string;
     region?: string;
     appMode?: string;
+    isTrial?: boolean;
 }
 
 interface ProvisionResult {
@@ -30,7 +31,7 @@ export class TenantService {
      * 5. Create Default Branding Profile
      */
     static async provisionTenant(input: ProvisionTenantInput): Promise<ProvisionResult> {
-        const { name, adminEmail, adminName, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM' } = input;
+        const { name, adminEmail, adminName, plan = 'STANDARD', region = 'GH_ACC_1', appMode = 'LAW_FIRM', isTrial = true } = input;
 
         const adminId = randomUUID();
         const tenantId = randomUUID();
@@ -59,9 +60,10 @@ export class TenantService {
                         plan,
                         primaryRegion: region,
                         appMode,
-                        isTrial: true,
-                        trialExpiresAt,
-                        aiCreditLimit: 50.0 // Default $50 worth of AI credits for trial
+                        status: 'ACTIVE',
+                        isTrial: isTrial,
+                        trialExpiresAt: isTrial ? trialExpiresAt : null,
+                        aiCreditLimit: isTrial ? 50.0 : 500.0 // Higher limit for non-trial
                     }
                 });
 

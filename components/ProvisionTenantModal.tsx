@@ -16,7 +16,8 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
         adminName: '',
         adminEmail: '',
         plan: 'STANDARD',
-        region: 'GH_ACC_1'
+        region: 'GH_ACC_1',
+        isTrial: true
     });
     const [result, setResult] = useState<any>(null);
 
@@ -132,6 +133,28 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
                                         <option value="ZA_CPT_1">South Africa (Cape Town)</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${formData.isTrial ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                                        <Shield size={16} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-white uppercase tracking-wider">{formData.isTrial ? '30-Day Free Trial' : 'Full Access Account'}</p>
+                                        <p className="text-[9px] text-slate-500 uppercase">{formData.isTrial ? 'Auto-expires after 30 days' : 'Permanent sovereign access'}</p>
+                                    </div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        title="Toggle Trial Status"
+                                        className="sr-only peer" 
+                                        checked={!formData.isTrial}
+                                        onChange={() => setFormData({ ...formData, isTrial: !formData.isTrial })}
+                                    />
+                                    <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
                             </div>
 
                             <button

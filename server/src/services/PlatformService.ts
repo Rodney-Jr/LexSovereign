@@ -121,4 +121,54 @@ export class PlatformService {
             };
         });
     }
+
+    /**
+     * Lists all global or standard clauses.
+     */
+    static async getGlobalClauses() {
+        return await (prisma as any).clause.findMany({
+            where: {
+                OR: [
+                    { isGlobal: true },
+                    { tenantId: null }
+                ]
+            },
+            orderBy: { updatedAt: 'desc' }
+        });
+    }
+
+    /**
+     * Creates a new global clause.
+     */
+    static async createGlobalClause(data: any) {
+        return await (prisma as any).clause.create({
+            data: {
+                ...data,
+                isGlobal: true,
+                tenantId: null
+            }
+        });
+    }
+
+    /**
+     * Updates an existing global clause.
+     */
+    static async updateGlobalClause(id: string, data: any) {
+        return await (prisma as any).clause.update({
+            where: { id },
+            data: {
+                ...data,
+                updatedAt: new Date()
+            }
+        });
+    }
+
+    /**
+     * Deletes a global clause.
+     */
+    static async deleteGlobalClause(id: string) {
+        return await (prisma as any).clause.delete({
+            where: { id }
+        });
+    }
 }

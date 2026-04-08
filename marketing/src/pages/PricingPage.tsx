@@ -31,23 +31,30 @@ const DEFAULT_PRICING: PricingConfig[] = [
     {
         id: 'Starter',
         basePrice: 0,
-        pricePerUser: 0,
+        pricePerUser: 19,
         creditsIncluded: 0,
-        features: ['Matter management', 'Document storage', 'Conflict checks', 'Basic reporting']
+        features: ['Matter Management', 'Basic Document Vault', 'Conflict Checks', 'Team Collaboration']
+    },
+    {
+        id: 'Standard',
+        basePrice: 0,
+        pricePerUser: 49,
+        creditsIncluded: 1000,
+        features: ['Advanced Workflows', 'AI Clause Library', 'Matter Templates', 'Priority Support']
     },
     {
         id: 'Professional',
         basePrice: 0,
-        pricePerUser: 0,
-        creditsIncluded: 0,
-        features: ['Advanced workflows', 'AI document tools', 'Compliance tracking', 'Team collaboration']
+        pricePerUser: 99,
+        creditsIncluded: 5000,
+        features: ['Full AI Suite', 'Compliance Engine', 'Custom Branding', 'Legacy Data Ingestion']
     },
     {
-        id: 'Enterprise',
+        id: 'Sovereign',
         basePrice: 0,
-        pricePerUser: 0,
-        creditsIncluded: 0,
-        features: ['Custom integrations', 'Governance controls', 'Advanced analytics', 'Dedicated infrastructure support']
+        pricePerUser: 299,
+        creditsIncluded: 25000,
+        features: ['Dedicated Enclave', 'Statutory Intelligence', 'Multi-Region Support', 'SSO & IAM Control']
     }
 ];
 
@@ -139,7 +146,7 @@ export default function PricingPage() {
                         <p className="font-mono animate-pulse">Synchronizing with Sovereign Billing Enclave...</p>
                     </div>
                 ) : (
-                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[90rem] mx-auto">
                         {configs.map((config) => (
                             <PricingCard
                                 key={config.id}
@@ -149,9 +156,10 @@ export default function PricingPage() {
                                 userMonth={false}
                                 featured={config.id === 'Professional'}
                                 description={
-                                    config.id === 'Starter' ? "For small law firms establishing digital foundations." :
-                                        config.id === 'Professional' ? "For growing firms requiring AI-powered oversight." :
-                                            "For large firms and institutional legal departments."
+                                    config.id === 'Starter' ? "For solo practitioners establishing roots." :
+                                        config.id === 'Standard' ? "For growing firms scaling efficiency." :
+                                            config.id === 'Professional' ? "For elite firms requiring AI oversight." :
+                                                "Institutional-grade sovereign infrastructure."
                                 }
                                 features={config.features}
                             />
@@ -271,9 +279,10 @@ function PricingCard({ title, price, userMonth, pricePerUser, description, featu
             )}
             <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
             <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-4xl font-bold text-white">{price}</span>
-                {userMonth && <span className="text-slate-500">/user/mo (${pricePerUser})</span>}
+                <span className="text-4xl font-bold text-white">${pricePerUser}</span>
+                <span className="text-slate-500">/user/mo</span>
             </div>
+            <div className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-6">30-Day Free Trial Included</div>
             <p className="text-slate-400 text-sm mb-8 min-h-[40px]">{description}</p>
 
             <div className="space-y-4 flex-1 mb-8">
@@ -287,10 +296,16 @@ function PricingCard({ title, price, userMonth, pricePerUser, description, featu
 
             <Button
                 variant={featured ? 'primary' : 'outline'}
-                onClick={() => window.dispatchEvent(new CustomEvent('nomosdesk-open-sales'))}
+                onClick={() => {
+                    if (title === 'Sovereign') {
+                        window.dispatchEvent(new CustomEvent('nomosdesk-open-sales'));
+                    } else {
+                        window.location.href = '/onboarding';
+                    }
+                }}
                 className="w-full"
             >
-                {title === 'Enterprise' ? 'Contact Sales' : 'Request Demo'}
+                {title === 'Sovereign' ? 'Contact Sales' : 'Start 30-Day Trial'}
             </Button>
         </div>
     );

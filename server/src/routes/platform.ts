@@ -383,4 +383,66 @@ router.delete('/judicial/documents/:id', authenticateToken, requireRole(['GLOBAL
     }
 });
 
+/**
+ * GET /api/platform/clauses
+ * Returns all global/standard clauses for the platform.
+ */
+router.get('/clauses', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const clauses = await PlatformService.getGlobalClauses();
+        res.json(clauses);
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to fetch global clauses' });
+    }
+});
+
+/**
+ * POST /api/platform/clauses
+ * Create a new global clause (Manual ingest).
+ */
+router.post('/clauses', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { title, category, jurisdiction, content, tags } = req.body;
+        const clause = await PlatformService.createGlobalClause({
+            title,
+            category,
+            jurisdiction: jurisdiction || 'GH_ACC_1',
+            content,
+            tags: tags || []
+        });
+        res.status(201).json(clause);
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to create global clause' });
+    }
+});
+
+/**
+ * PATCH /api/platform/clauses/:id
+ * Update an existing global clause.
+ */
+router.patch('/clauses/:id', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        const clause = await PlatformService.updateGlobalClause(id, updateData);
+        res.json(clause);
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to update global clause' });
+    }
+});
+
+/**
+ * DELETE /api/platform/clauses/:id
+ * Remove a global clause.
+ */
+router.delete('/clauses/:id', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        await PlatformService.deleteGlobalClause(id);
+        res.json({ message: 'Clause removed from global registry' });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to delete global clause' });
+    }
+});
+
 export default router;
