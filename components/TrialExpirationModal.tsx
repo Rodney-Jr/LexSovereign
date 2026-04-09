@@ -34,7 +34,7 @@ const TrialExpirationModal: React.FC<TrialExpirationModalProps> = ({ expiresAt }
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                         <button
-                            onClick={() => window.location.href = '#/billing'}
+                            onClick={() => window.location.href = '/billing'}
                             className="flex items-center justify-between p-6 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-[1.5rem] transition-all group"
                         >
                             <div className="text-left">

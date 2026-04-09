@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Server, Check, Loader2, Shield } from 'lucide-react';
+import { X, Server, Check, Loader2, Shield, ShieldAlert } from 'lucide-react';
 import { authorizedFetch } from '../utils/api';
 
 interface ProvisionTenantModalProps {
@@ -20,10 +20,12 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
         isTrial: true
     });
     const [result, setResult] = useState<any>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setErrorMessage(null);
         try {
             const sessionData = localStorage.getItem('nomosdesk_session');
             const token = sessionData ? JSON.parse(sessionData).token : '';
@@ -31,6 +33,7 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
             const data = await authorizedFetch('/api/platform/provision', {
                 method: 'POST',
                 token,
+                silent: true,
                 body: JSON.stringify(formData)
             });
 
@@ -40,11 +43,11 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
                 if (onSuccess) onSuccess();
             } else {
                 const errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
-                alert(errorMsg || 'Provisioning failed');
+                setErrorMessage(errorMsg || 'Provisioning failed');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert('Provisioning error');
+            setErrorMessage(err.message || 'Provisioning error');
         } finally {
             setIsLoading(false);
         }
@@ -156,6 +159,16 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
                                     <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                                 </label>
                             </div>
+
+                            {errorMessage && (
+                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 animate-in fade-in zoom-in duration-200">
+                                    <ShieldAlert size={16} className="text-red-400 mt-0.5 shrink-0" />
+                                    <div>
+                                        <h4 className="text-[10px] font-bold text-red-400 uppercase tracking-widest">Deployment Halted</h4>
+                                        <p className="text-[11px] text-red-300 leading-tight mt-0.5">{errorMessage}</p>
+                                    </div>
+                                </div>
+                            )}
 
                             <button
                                 type="submit"

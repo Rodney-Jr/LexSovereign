@@ -70,6 +70,21 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
                 id = legacyMap[id]!;
             }
 
+            // AUTO-BRIDGE: If ID uses underscores and is uppercase, or matches known legacy patterns
+            // specifically handle MANAGE_USER, MANAGE_ROLE, etc.
+            if (!id.includes(':')) {
+                const upper = id.toUpperCase();
+                if (upper === 'MANAGE_USER') id = 'MANAGE:USER';
+                else if (upper === 'MANAGE_ROLE') id = 'MANAGE:ROLE';
+                else if (upper === 'MANAGE_TENANT_SETTINGS') id = 'MANAGE:TENANT_SETTINGS';
+                else if (upper === 'VIEW_STATS_TENANT') id = 'VIEW_STATS:TENANT';
+                else if (upper === 'VIEW_BILLING_TENANT') id = 'VIEW_BILLING:TENANT';
+                else if (upper === 'CREATE_MATTER') id = 'CREATE:MATTER';
+                else if (upper === 'VIEW_MATTER') id = 'VIEW:MATTER';
+                else if (upper === 'VIEW_CLIENTS' || upper === 'VIEW_CLIENT') id = 'VIEW:CLIENT';
+                else if (upper === 'CREATE_CLIENT') id = 'CREATE:CLIENT';
+            }
+
             if (id.includes(':')) {
                 const [action, resource] = id.split(':');
                 return { 

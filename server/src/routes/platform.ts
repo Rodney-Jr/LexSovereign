@@ -49,6 +49,12 @@ router.post('/provision', authenticateToken, requireRole(['GLOBAL_ADMIN']), asyn
         if (err instanceof z.ZodError) {
             return res.status(400).json({ error: err.errors });
         }
+        
+        // Semantic Error Translation
+        if (err.code === 'P2002' && err.meta?.target?.includes('email')) {
+            return res.status(409).json({ error: 'The email address provided is already registered to another silo.' });
+        }
+
         console.error("Provisioning Error:", err);
         res.status(500).json({ error: 'Failed to provision tenant' });
     }

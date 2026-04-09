@@ -182,36 +182,9 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
   };
 
   const handleStripeRedirect = async () => {
-    try {
-      setIsProvisioning(true); // Re-use loading state
-      const response = await authorizedFetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        body: JSON.stringify({
-          planId: formData.plan,
-          adminEmail: formData.adminEmail,
-          userCount: formData.userCount
-        })
-      });
-
-      // DIRECT STRIPE CHECKOUT DISABLED FOR EARLY PILOT PHASE
-      alert("Inception Gate: Your pilot application is being reviewed. Our institutional team will contact you with a private onboarding link.");
-      setIsProvisioning(false);
-      return;
-
-      /*
-      if (response.url) {
-        // Save state to recover on return
-        sessionStorage.setItem('onboarding_form_data', JSON.stringify(formData));
-        if (entityType) sessionStorage.setItem('onboarding_entity_type', entityType);
-        window.location.href = response.url;
-      } else {
-        throw new Error("Failed to generate payment session");
-      }
-      */
-    } catch (e: any) {
-      alert(`Payment Error: ${e.message}`);
-      setIsProvisioning(false);
-    }
+    // Self-Provisioning: Bypass Stripe to issue 30-Day Sovereign Trial Automatically
+    setStep(4);
+    runProvisioning();
   };
 
   const next = () => {
@@ -522,7 +495,7 @@ const TenantOnboarding: React.FC<{ onComplete: (mode: AppMode) => void }> = ({ o
             disabled={(step === 1 && !isStep1Valid) || (step === 4 && isProvisioning) || (step === 6 && !affidavitSigned)}
             className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white px-12 py-3.5 rounded-2xl font-bold flex items-center gap-3 transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
           >
-            {step === 3 ? 'Submit for Pilot Review' : (step === 6 ? 'Launch Legal Silo' : 'Initialize Phase')}
+            {step === 3 ? 'Activate 30-Day Trial' : (step === 6 ? 'Launch Legal Silo' : 'Initialize Phase')}
             {step < 6 && <ChevronRight size={20} />}
           </button>
         </div>
