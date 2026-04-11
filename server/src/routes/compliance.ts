@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { ComplianceService } from '../services/ComplianceService';
-import { AuditService } from '../services/AuditService';
+import { AuditService } from '../services/auditService';
 
 const router = express.Router();
 

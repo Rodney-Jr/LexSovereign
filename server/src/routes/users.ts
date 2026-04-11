@@ -2,7 +2,7 @@ import express from 'express';
 import { prisma } from '../db';
 import { StripeService } from '../services/StripeService';
 import { authenticateToken, requireRole, requirePermission } from '../middleware/auth';
-import { AuditService } from '../services/AuditService';
+import { AuditService } from '../services/auditService';
 
 const router = express.Router();
 
@@ -102,7 +102,7 @@ router.delete('/:id', authenticateToken, requirePermission('MANAGE', 'USER'), as
         // Audit User Removal
         await AuditService.log(
             'USER_REMOVED',
-            req.user?.id,
+            req.user?.id || null,
             tenantId as string,
             userId,
             { email: user.email, name: user.name }

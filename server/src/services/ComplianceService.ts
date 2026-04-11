@@ -1,5 +1,6 @@
 import { prisma } from '../db';
 import { ComplianceEngine, ComplianceResult } from '../engines/compliance/complianceEngine';
+import { AuditService } from './auditService';
 
 export class ComplianceService {
     /**

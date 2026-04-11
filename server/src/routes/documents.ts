@@ -4,6 +4,7 @@ import { authenticateToken } from '../middleware/auth';
 import multer from 'multer';
 import { saveDocumentContent } from '../utils/fileStorage';
 import { ComplianceService } from '../services/ComplianceService';
+import { AuditService } from '../services/auditService';
 
 const router = express.Router();
 
@@ -350,7 +351,7 @@ router.post('/', authenticateToken, async (req, res) => {
         // Audit Log for Initial Creation
         await AuditService.log(
             'DOCUMENT_VERSION_CREATED',
-            req.user?.id,
+            req.user?.id || null,
             tenantId as string,
             doc.id,
             { 
@@ -453,7 +454,7 @@ router.get('/:id/content', authenticateToken, async (req, res) => {
         // 🛡️ [SECURITY] Audit document read access
         await AuditService.log(
             'DOCUMENT_CONTENT_READ',
-            req.user?.id,
+            req.user?.id || null,
             tenantId as string,
             doc.id,
             { 

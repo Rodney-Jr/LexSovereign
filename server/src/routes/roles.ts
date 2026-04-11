@@ -1,7 +1,7 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole, requirePermission } from '../middleware/auth';
-import { AuditService } from '../services/AuditService';
+import { AuditService } from '../services/auditService';
 
 const router = express.Router();
 

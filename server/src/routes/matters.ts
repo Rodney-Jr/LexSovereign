@@ -167,8 +167,9 @@ router.post('/', authenticateToken, async (req, res) => {
                     await AuditService.log(
                         'CAPACITY_OVERRIDE',
                         req.user?.id || null,
-                        name,
-                        `Manual override for assignment to ${internalCounselId}. Reason: ${overrideJustification}`
+                        tenantId,
+                        null,
+                        { matterName: name, details: `Manual override for assignment to ${internalCounselId}. Reason: ${overrideJustification}` }
                     );
                 } else {
                     res.status(403).json({
@@ -287,8 +288,9 @@ router.patch('/:id/assign', authenticateToken, async (req, res) => {
                 await AuditService.log(
                     'CAPACITY_OVERRIDE_POST_ASSIGN',
                     user.id,
+                    user.tenantId as string,
                     id,
-                    `Manual override during post-assignment to ${targetCounselId}. Reason: ${overrideJustification}`
+                    { details: `Manual override during post-assignment to ${targetCounselId}. Reason: ${overrideJustification}` }
                 );
             } else {
                 return res.status(403).json({
@@ -349,8 +351,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
                     await AuditService.log(
                         'CAPACITY_OVERRIDE_UPDATE',
                         user.id,
+                        user.tenantId as string,
                         id,
-                        `Manual override during update for matter ${id}. Reason: ${overrideJustification}`
+                        { details: `Manual override during update for matter ${id}. Reason: ${overrideJustification}` }
                     );
                 } else {
                     return res.status(403).json({

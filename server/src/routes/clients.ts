@@ -89,7 +89,7 @@ router.post('/', authenticateToken, async (req, res) => {
             data: { name, tenantId: targetTenantId, industry, contactEmail, contactPhone, billingAddress, taxId, type: type || 'CORPORATE' }
         });
 
-        await AuditService.log('CREATE_CLIENT', req.user?.id || null, client.id, `Client "${name}" added to directory`);
+        await AuditService.log('CREATE_CLIENT', req.user?.id || null, targetTenantId, client.id, { details: `Client "${name}" added to directory` });
         res.status(201).json(client);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -111,7 +111,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
             data: { name, industry, contactEmail, contactPhone, billingAddress, taxId, type }
         });
 
-        await AuditService.log('UPDATE_CLIENT', req.user?.id || null, updated.id, `Client "${updated.name}" updated`);
+        await AuditService.log('UPDATE_CLIENT', req.user?.id || null, tenantId, updated.id, { details: `Client "${updated.name}" updated` });
         res.json(updated);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -136,7 +136,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         }
 
         await prisma.client.delete({ where: { id: req.params.id } });
-        await AuditService.log('DELETE_CLIENT', req.user?.id || null, req.params.id, `Client "${client.name}" removed from directory`);
+        await AuditService.log('DELETE_CLIENT', req.user?.id || null, tenantId, req.params.id, { details: `Client "${client.name}" removed from directory` });
         res.json({ success: true });
     } catch (error: any) {
         res.status(500).json({ error: error.message });

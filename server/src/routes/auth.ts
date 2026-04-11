@@ -9,6 +9,7 @@ import { stripe } from '../stripe';
 import { StripeService } from '../services/StripeService';
 import { sendTenantWelcomeEmail, sendInvitationEmail } from '../services/EmailService';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { AuditService } from '../services/auditService';
 
 const router = express.Router();
 
@@ -462,7 +463,7 @@ router.post('/studio-token', authenticateToken, async (req: any, res) => {
 });
 
 // --- NEW: MFA SYSTEM ROUTES ---
-import { MfaService } from '../services/MfaService';
+import { MfaService } from '../services/mfaService';
 
 // 5. MFA Setup Initiation (Request Secret/QR)
 router.get('/mfa/setup', authenticateToken, async (req: any, res) => {
