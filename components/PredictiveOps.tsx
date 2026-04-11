@@ -73,33 +73,30 @@ const PredictiveOps: React.FC<{ mode: AppMode }> = ({ mode }) => {
                      </div>
                   </div>
 
-                  <div className="h-[280px] w-full flex items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-500">
-                     <p>Forecasting System Offline</p>
-                     {/*
-                <ResponsiveContainer width="100%" height="100%">
-                   <AreaChart data={chartData}>
-                      <defs>
-                        <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="colorCycle" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                      <XAxis dataKey="name" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
-                      <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
-                      />
-                      <Area type="monotone" dataKey="risk" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRisk)" strokeWidth={3} />
-                      <Area type="monotone" dataKey="cycle" stroke="#10b981" fillOpacity={1} fill="url(#colorCycle)" strokeWidth={3} />
-                   </AreaChart>
-                </ResponsiveContainer>
-                */}
-                  </div>
+                   <div className="h-[280px] w-full">
+                      <ResponsiveContainer width="100%" height="100%" debounce={1}>
+                         <AreaChart data={chartData}>
+                            <defs>
+                              <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                              </linearGradient>
+                              <linearGradient id="colorCycle" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                            <XAxis dataKey="name" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                            <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
+                            />
+                            <Area type="monotone" dataKey="risk" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRisk)" strokeWidth={3} />
+                            <Area type="monotone" dataKey="cycle" stroke="#10b981" fillOpacity={1} fill="url(#colorCycle)" strokeWidth={3} />
+                         </AreaChart>
+                      </ResponsiveContainer>
+                   </div>
                </div>
 
                {/* Predictive Risk List */}

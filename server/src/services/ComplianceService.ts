@@ -7,24 +7,20 @@ export class ComplianceService {
      */
     static async checkCompliance(tenantId: string, matterId: string, content: string): Promise<ComplianceResult> {
         const evaluation = await ComplianceEngine.evaluate(content);
+        const isValidMatterId = matterId && matterId.length === 36;
 
-        // Audit Log - Sanitize matterId to avoid Foreign Key violations (e.g. if "UNTITLED")
-        const isValidMatterId = matterId && matterId.length === 36; // Simple UUID check
-
-        await prisma.auditLog.create({
-            data: {
-                tenantId,
-                matterId: isValidMatterId ? matterId : null,
-                action: 'COMPLIANCE_CHECK',
-                details: `Compliance Score: ${evaluation.score}/100. Status: ${evaluation.status}. Issues: ${evaluation.issues.length}`,
-                metadata: {
-                    type: 'BANK_GRADE_COMPLIANCE',
-                    score: evaluation.score,
-                    status: evaluation.status,
-                    issueIds: evaluation.issues.map((i: any) => i.id)
-                }
+        await AuditService.log(
+            'COMPLIANCE_CHECK',
+            null, // System action, no specific user in this context
+            tenantId,
+            isValidMatterId ? matterId : null,
+            {
+                type: 'BANK_GRADE_COMPLIANCE',
+                score: evaluation.score,
+                status: evaluation.status,
+                issueCount: evaluation.issues.length
             }
-        });
+        );
 
         return evaluation;
     }

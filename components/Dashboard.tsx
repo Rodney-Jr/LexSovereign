@@ -127,7 +127,7 @@ const Dashboard: React.FC<{
             {loading ? (
               <div className="h-full flex items-center justify-center text-brand-muted"><Loader2 className="animate-spin" /></div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="100%" height="100%" debounce={1}>
                 <BarChart 
                   data={data}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}

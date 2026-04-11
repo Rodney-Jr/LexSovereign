@@ -536,18 +536,20 @@ model CollaborationMessage {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid())
-  action     String
-  timestamp  DateTime @default(now())
-  userId     String?
-  details    String?
-  ipAddress  String?
-  resourceId String?
-  matterId   String?
-  metadata   Json?    @default("{}")
-  tenantId   String?
-  matter     Matter?  @relation(fields: [matterId], references: [id])
-  user       User?    @relation(fields: [userId], references: [id])
+  id           String   @id @default(uuid())
+  action       String
+  timestamp    DateTime @default(now())
+  userId       String?
+  details      String?
+  ipAddress    String?
+  resourceId   String?
+  matterId     String?
+  metadata     Json?    @default("{}")
+  tenantId     String?
+  hash         String   @default("UNSIGN")
+  previousHash String?
+  matter       Matter?  @relation(fields: [matterId], references: [id])
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model KnowledgeArtifact {
@@ -565,6 +567,7 @@ model Invitation {
   id        String   @id @default(uuid())
   token     String   @unique
   email     String
+  name      String?
   roleName  String
   tenantId  String
   isUsed    Boolean  @default(false)

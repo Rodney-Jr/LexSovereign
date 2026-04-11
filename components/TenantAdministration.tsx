@@ -56,7 +56,7 @@ const TenantAdministration: React.FC = () => {
    const [isGenerating, setIsGenerating] = useState(false);
    const [copySuccess, setCopySuccess] = useState(false);
    const [isEmailing, setIsEmailing] = useState(false);
-   const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL', department: Department.INVESTIGATION });
+   const [inviteForm, setInviteForm] = useState({ email: '', roleName: 'SENIOR_COUNSEL', department: Department.INVESTIGATION, name: '' });
    const [availableRoles, setAvailableRoles] = useState<{ id: string, name: string, isSystem: boolean }[]>([]);
    const [isLoadingRoles, setIsLoadingRoles] = useState(false);
    const [searchTerm, setSearchTerm] = useState('');
@@ -381,6 +381,7 @@ const TenantAdministration: React.FC = () => {
                                      setCopySuccess(false); 
                                      setIsEmailing(false); 
                                      setEmailError('');
+                                     setInviteForm(prev => ({ ...prev, email: '', name: '' }));
                                      // Re-fetch roles if empty to ensure dropdown is populated
                                      if (availableRoles.length === 0) fetchData();
                                   }}
@@ -716,6 +717,18 @@ const TenantAdministration: React.FC = () => {
                                  External Client
                               </button>
                            </div>
+
+                           <div className="space-y-2">
+                               <label htmlFor="invite-name" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                               <input
+                                  id="invite-name"
+                                  type="text"
+                                  placeholder="John Practitioner Esq."
+                                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all text-slate-200"
+                                  value={inviteForm.name}
+                                  onChange={e => setInviteForm({ ...inviteForm, name: e.target.value })}
+                               />
+                            </div>
 
                            <div className="space-y-2">
                               <label htmlFor="invite-email" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>

@@ -2,6 +2,7 @@ import express from 'express';
 import { prisma } from '../db';
 import { StripeService } from '../services/StripeService';
 import { authenticateToken, requireRole, requirePermission } from '../middleware/auth';
+import { AuditService } from '../services/AuditService';
 
 const router = express.Router();
 
@@ -97,6 +98,15 @@ router.delete('/:id', authenticateToken, requirePermission('MANAGE', 'USER'), as
         await prisma.user.delete({
             where: { id: userId }
         });
+
+        // Audit User Removal
+        await AuditService.log(
+            'USER_REMOVED',
+            req.user?.id,
+            tenantId as string,
+            userId,
+            { email: user.email, name: user.name }
+        );
 
         // 4. Sync Stripe seats
         if (user.tenantId) {

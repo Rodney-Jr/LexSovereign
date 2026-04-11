@@ -34,6 +34,11 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    const [logoClicks, setLogoClicks] = useState(0);
    const [isForgotPassword, setIsForgotPassword] = useState(false);
    const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+   
+   // MFA State
+   const [isMfaStep, setIsMfaStep] = useState(false);
+   const [mfaToken, setMfaToken] = useState<string | null>(null);
+   const [mfaCode, setMfaCode] = useState('');
 
    const handleLogoClick = () => {
       const nextClicks = logoClicks + 1;
@@ -87,6 +92,14 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
 
             const data = await response.json();
             
+            // Handle MFA Challenge
+            if (data.mfaRequired) {
+                setMfaToken(data.mfaToken);
+                setIsMfaStep(true);
+                setIsProcessing(false);
+                return;
+            }
+
             // Rehydrate the UI by calling onAuthenticated with the returned session
             if (data.user && data.token) {
                 // Synthesize the session object expected by sync
@@ -109,6 +122,44 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
       } finally {
          setIsProcessing(false);
       }
+   };
+
+   const handleMfaSubmit = async (e: React.FormEvent) => {
+       e.preventDefault();
+       if (!mfaToken || mfaCode.length !== 6) return;
+       
+       setIsProcessing(true);
+       setError(null);
+       
+       try {
+           const response = await fetch('/api/auth/mfa/verify', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ mfaToken, code: mfaCode })
+           });
+           
+           if (!response.ok) {
+               const data = await response.json().catch(() => ({}));
+               throw new Error(data.error || 'MFA verification failed');
+           }
+           
+           const data = await response.json();
+           if (data.user && data.token) {
+               await onAuthenticated({
+                   role: data.user.role,
+                   userId: data.user.id,
+                   userName: data.user.name,
+                   tenantId: data.user.tenantId,
+                   permissions: data.user.permissions,
+                   token: data.token,
+                   mode: data.user.mode
+               });
+           }
+       } catch (err: any) {
+           setError(err.message || 'Verification failed');
+       } finally {
+           setIsProcessing(false);
+       }
    };
 
    const handleMicrosoftSSO = () => {
@@ -194,7 +245,56 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl">
-               {isForgotPassword ? (
+               {isMfaStep ? (
+                  <form onSubmit={handleMfaSubmit} className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+                     <div className="space-y-2 text-center">
+                        <div className="mx-auto p-3 bg-blue-500/20 rounded-2xl w-fit mb-4">
+                           <Smartphone className="text-blue-400" size={28} />
+                        </div>
+                        <h3 className="text-2xl font-bold text-white tracking-tight">Access Verification</h3>
+                        <p className="text-slate-500 text-sm leading-relaxed">
+                           Enter the 6-digit security code from your Authenticator app or a backup code.
+                        </p>
+                     </div>
+
+                     <div className="space-y-6">
+                        <div className="relative group">
+                           <input
+                              type="text"
+                              maxLength={6}
+                              value={mfaCode}
+                              onChange={e => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-3xl py-6 text-center text-4xl font-bold text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all tracking-[0.5em] placeholder:opacity-10"
+                              placeholder="000000"
+                              autoFocus
+                           />
+                        </div>
+
+                        {error && (
+                           <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-400 animate-shake">
+                              <AlertCircle size={20} className="shrink-0" />
+                              <p className="text-xs font-bold leading-none">{error}</p>
+                           </div>
+                        )}
+
+                        <button
+                           disabled={mfaCode.length !== 6 || isProcessing}
+                           className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-blue-900/20 group h-16"
+                        >
+                           {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ShieldCheck size={20} />}
+                           Secure Sign-in
+                        </button>
+
+                        <button
+                           type="button"
+                           onClick={() => { setIsMfaStep(false); setMfaToken(null); setError(null); }}
+                           className="w-full text-center text-xs font-bold text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                        >
+                           ← Back to Login
+                        </button>
+                     </div>
+                  </form>
+               ) : isForgotPassword ? (
                   <form onSubmit={handleForgotPassword} className="space-y-6">
                      <div className="space-y-2">
                         <h3 className="text-2xl font-bold text-white">Reset Access</h3>

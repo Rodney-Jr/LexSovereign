@@ -348,17 +348,17 @@ router.post('/', authenticateToken, async (req, res) => {
         });
 
         // Audit Log for Initial Creation
-        await prisma.auditLog.create({
-            data: {
-                action: 'DOCUMENT_VERSION_CREATED',
-                tenantId: tenantId as string,
-                userId: req.user?.id,
-                matterId: doc.matterId,
-                resourceId: doc.id,
-                details: `Vault Version 1 committed for artifact: ${doc.name}`,
-                // metadata is not in schema or needs (prisma as any)
-            } as any
-        });
+        await AuditService.log(
+            'DOCUMENT_VERSION_CREATED',
+            req.user?.id,
+            tenantId as string,
+            doc.id,
+            { 
+               name: doc.name, 
+               version: 1, 
+               message: `Vault Version 1 committed for artifact: ${doc.name}` 
+            }
+        );
 
         // --- NEW: Forensic Activity Log (Phase 2) ---
         await prisma.activityEntry.create({
@@ -451,22 +451,36 @@ router.get('/:id/content', authenticateToken, async (req, res) => {
         }
 
         // 🛡️ [SECURITY] Audit document read access
-        await prisma.auditLog.create({
-            data: {
-                action: 'DOCUMENT_CONTENT_READ',
-                userId: req.user?.id,
-                matterId: doc.matterId,
-                resourceId: doc.id,
-                details: `Artifact content read by user ${req.user?.email}. Classification: ${doc.classification}`,
-            } as any
-        });
+        await AuditService.log(
+            'DOCUMENT_CONTENT_READ',
+            req.user?.id,
+            tenantId as string,
+            doc.id,
+            { 
+               name: doc.name, 
+               classification: doc.classification, 
+               ip: req.ip,
+               message: `Artifact content read by user ${req.user?.email}. Classification: ${doc.classification}`
+            }
+        );
 
         // In a real app, read from storage (uri)
-        // For now, return the URI or a placeholder if it's a seed
-        let content = `[ENCLAVE CONTENT]: Original artifact content for '${doc.name}' at URI ${doc.uri}. 
-        Jurisdiction: ${doc.jurisdiction}. 
-        Classification: ${doc.classification}.
-        Integrity Hash: 0x${Math.random().toString(16).substr(2, 8)}`;
+        let content = '';
+        if (doc.uri.startsWith('file://')) {
+            const { readDocumentContent } = await import('../utils/fileStorage');
+            try {
+                content = await readDocumentContent(doc.uri.replace('file://', ''));
+            } catch (e) {
+                console.error("Failed to read document from disk:", e);
+                content = "[ERROR]: Content retrieval failed.";
+            }
+        } else {
+            // Fallback for non-file URIs
+            content = `[ENCLAVE CONTENT]: Original artifact content for '${doc.name}' at URI ${doc.uri}. 
+            Jurisdiction: ${doc.jurisdiction}. 
+            Classification: ${doc.classification}.
+            Integrity Hash: 0x${Math.random().toString(16).substr(2, 8)}`;
+        }
 
         return res.json({ content });
     } catch (error: any) {
@@ -576,15 +590,17 @@ router.get('/:id', authenticateToken, async (req, res) => {
         }
 
         // 🛡️ [SECURITY] Audit document metadata pull
-        await prisma.auditLog.create({
-            data: {
-                action: 'DOCUMENT_METADATA_READ',
-                userId: req.user?.id,
-                matterId: doc.matterId,
-                resourceId: doc.id,
-                details: `Artifact overview accessed. Classification: ${doc.classification}`,
-            } as any
-        });
+        await AuditService.log(
+            'DOCUMENT_METADATA_READ',
+            req.user?.id,
+            req.user?.tenantId as string,
+            doc.id,
+            { 
+               name: doc.name, 
+               classification: doc.classification,
+               message: `Artifact overview accessed. Classification: ${doc.classification}`
+            }
+        );
 
         const content = `[VAULT DOCUMENT: ${doc.name}]\n\nJurisdiction: ${doc.jurisdiction}\nClassification: ${doc.classification}\nPrivilege: ${doc.privilege}\n\n---\n\n${doc.uri || 'Content pending vault integration.'}`;
 
@@ -612,6 +628,15 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         }
 
         await prisma.document.delete({ where: { id } });
+
+        // Audit Document Deletion
+        await AuditService.log(
+            'DOCUMENT_PERMANENTLY_DELETED',
+            req.user?.id,
+            req.user?.tenantId as string,
+            id,
+            { name: doc.name, matterId: doc.matterId }
+        );
 
         return res.json({ success: true, id });
     } catch (error: any) {
@@ -721,15 +746,17 @@ router.patch('/:id', authenticateToken, async (req, res) => {
         ]);
 
         // Explicit Audit Log for Versioning
-        await prisma.auditLog.create({
-            data: {
-                action: 'DOCUMENT_VERSION_CREATED',
-                userId: req.user?.id,
-                matterId: doc.matterId,
-                resourceId: id,
-                details: `Vault Version ${nextVersionNumber} committed for artifact: ${name || doc.name}`,
-            } as any
-        });
+        await AuditService.log(
+            'DOCUMENT_VERSION_CREATED',
+            req.user?.id,
+            tenantId,
+            id,
+            { 
+               name: name || doc.name, 
+               version: nextVersionNumber, 
+               message: `Vault Version ${nextVersionNumber} committed for artifact: ${name || doc.name}`
+            }
+        );
 
         const updatedDoc = await prisma.document.findUnique({ where: { id } });
         return res.json(updatedDoc);

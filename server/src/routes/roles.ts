@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole, requirePermission } from '../middleware/auth';
+import { AuditService } from '../services/AuditService';
 
 const router = express.Router();
 
@@ -103,6 +104,14 @@ router.post('/', authenticateToken, requirePermission('MANAGE', 'ROLE'), async (
             include: { permissions: true }
         });
 
+        await AuditService.log(
+            'ROLE_CREATED',
+            req.user.id,
+            tenantId,
+            role.id,
+            { name: role.name, permissions: permissionIds }
+        );
+
         res.json(role);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -187,6 +196,14 @@ router.post('/templates/:type', authenticateToken, requireRole(['TENANT_ADMIN', 
             results.push({ name: roleDef.name, status: 'CREATED', permissionCount: validPermissions.length });
         }
 
+        await AuditService.log(
+            'INDUSTRY_TEMPLATE_APPLIED',
+            req.user.id,
+            tenantId,
+            null,
+            { template: type, results }
+        );
+
         return res.json({ message: 'Template applied successfully', results });
 
     } catch (error: any) {
@@ -234,6 +251,14 @@ router.put('/:id', authenticateToken, requirePermission('MANAGE', 'ROLE'), async
             include: { permissions: true }
         });
 
+        await AuditService.log(
+            'ROLE_UPDATED',
+            req.user.id,
+            tenantId,
+            id,
+            { name: updated.name, previousName: role.name, permissions: permissionIds }
+        );
+
         res.json(updated);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -269,6 +294,15 @@ router.delete('/:id', authenticateToken, requirePermission('MANAGE', 'ROLE'), as
         // Check if users are assigned? (Optional safety)
 
         await prisma.role.delete({ where: { id } });
+
+        await AuditService.log(
+            'ROLE_DELETED',
+            req.user.id,
+            tenantId,
+            id,
+            { name: role.name }
+        );
+
         res.json({ message: 'Role deleted successfully' });
     } catch (error: any) {
         res.status(500).json({ error: error.message });

@@ -25,9 +25,15 @@ const REDIRECT_SUCCESS = process.env.NODE_ENV === 'production'
     : 'http://localhost:5173/';
 
 router.get('/init', async (req, res) => {
+    const { invitationToken } = req.query;
+    
+    // Persist invitation token through the MSAL redirect loop using the state parameter
+    const state = invitationToken ? JSON.stringify({ invitationToken }) : undefined;
+
     const authCodeUrlParameters = {
         scopes: ["user.read", "profile", "email"],
         redirectUri: REDIRECT_URI,
+        state
     };
 
     try {
@@ -58,10 +64,66 @@ router.get('/callback', async (req, res) => {
         const name = response.account.name || 'Microsoft User';
 
         // 1. Resolve user in DB
-        const user: any = await prisma.user.findUnique({
+        let user: any = await prisma.user.findUnique({
              where: { email },
              include: { role: { include: { permissions: true } }, tenant: true }
         });
+
+        // 2. Handling Join Silo via Invitation
+        if (!user && req.query.state) {
+            try {
+                const stateData = JSON.parse(req.query.state as string);
+                const invitationToken = stateData.invitationToken;
+
+                if (invitationToken) {
+                    console.log(`[MSAL] Resolving invitation: ${invitationToken} for ${email}`);
+                    const invitation = await prisma.invitation.findUnique({
+                        where: { token: invitationToken, isUsed: false },
+                        include: { tenant: true }
+                    });
+
+                    if (invitation && invitation.email.toLowerCase() === email) {
+                        // Atomic Join logic (inherited from auth.ts join-silo)
+                        user = await prisma.$transaction(async (tx) => {
+                            let role = await tx.role.findFirst({
+                                where: { name: invitation.roleName, tenantId: invitation.tenantId as string }
+                            });
+                            if (!role) {
+                                role = await tx.role.findFirst({
+                                    where: { name: invitation.roleName, isSystem: true, tenantId: null }
+                                });
+                            }
+                            if (!role) throw new Error("Target role not found.");
+
+                            const newUser = await tx.user.create({
+                                data: {
+                                    email: invitation.email,
+                                    name, // From Microsoft identity
+                                    roleId: role.id,
+                                    roleString: role.name,
+                                    tenantId: invitation.tenantId as string,
+                                    region: invitation.tenant.primaryRegion,
+                                    isActive: true
+                                },
+                                include: { role: { include: { permissions: true } }, tenant: true }
+                            });
+
+                            await tx.invitation.update({
+                                where: { id: invitation.id },
+                                data: { isUsed: true }
+                            });
+
+                            return newUser;
+                        });
+                        console.log(`[MSAL] Invitation fulfilled successfully for ${email}`);
+                    } else {
+                        console.warn(`[MSAL] Invitation mismatch or token invalid for ${email}`);
+                    }
+                }
+            } catch (err) {
+                console.error('[MSAL] State/Invitation Parsing Error:', err);
+            }
+        }
 
         if (!user) {
              console.warn(`[MSAL] User ${email} attempted login but doesn't exist.`);

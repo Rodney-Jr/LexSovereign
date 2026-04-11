@@ -100,6 +100,51 @@ export default function ForLawFirms() {
                 </div>
             </Section>
 
+            <Section className="py-24 bg-slate-950">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid lg:grid-cols-2 gap-24 items-center">
+                        <div className="order-2 lg:order-1 relative group">
+                            <div className="absolute -inset-10 bg-indigo-500/10 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                            <div className="relative p-3 bg-slate-900 border border-slate-800 rounded-[3rem] shadow-3xl overflow-hidden">
+                                <img 
+                                    src="/images/mockups/matter_lifecycle_vault_1775751161498.png" 
+                                    alt="NomosDesk Matter Vault Lifecycle" 
+                                    className="w-full rounded-[2.5rem] border border-slate-700 shadow-2xl transition-all duration-700 group-hover:scale-[1.01]"
+                                />
+                                <div className="absolute top-10 -right-10 w-56 p-6 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl hidden md:block">
+                                    <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Matter Health</div>
+                                    <div className="text-2xl font-black text-emerald-400">98%</div>
+                                    <div className="text-[10px] font-bold text-slate-500 mt-1 uppercase">Audit Readiness</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="order-1 lg:order-2 space-y-10">
+                            <div className="space-y-6">
+                                <div className="text-indigo-400 font-black uppercase tracking-[0.3em] text-sm">Operational Mastery</div>
+                                <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">Visual Rigor for <br />High-Stakes Work.</h2>
+                                <p className="text-xl text-slate-400 leading-relaxed font-medium">
+                                    NomosDesk provides a bird's-eye view of your entire firm's pipeline. 
+                                    Track every matter through the 
+                                    <span className="text-white italic"> automated governance lifecycle</span>—from conflict clearance to final verdict.
+                                </p>
+                            </div>
+
+                            <div className="grid gap-6">
+                                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl group hover:border-indigo-500/40 transition-colors">
+                                    <h4 className="text-lg font-black text-white mb-2 tracking-tight">Lifecycle Traceability</h4>
+                                    <p className="text-sm text-slate-500 leading-relaxed">Every document version and partner approval is pinned to the matter timeline, creating an unshakeable record for internal oversight and client reporting.</p>
+                                </div>
+                                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl group hover:border-indigo-500/40 transition-colors">
+                                    <h4 className="text-lg font-black text-white mb-2 tracking-tight">Regional Scope Enforcement</h4>
+                                    <p className="text-sm text-slate-500 leading-relaxed">Automatically apply Ghana Companies Act rules or regional precedents based on the matter's jurisdictional tag.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+
             <Section>
                 <div className="grid md:grid-cols-2 gap-16 items-center">
                     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl overflow-hidden relative group">

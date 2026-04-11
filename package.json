@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "cd server && npm run dev",
-    "dev:all": "npx concurrently \"npm run dev\" \"npm run dev:server\" \"npm run dev:studio\"",
+    "dev:marketing": "cd marketing && npm run dev",
     "dev:studio": "cd StudioApp && npm install && npm run dev -- --port 3006",
+    "dev:all": "npx concurrently \"npm run dev\" \"npm run dev:server\" \"npm run dev:marketing\" \"npm run dev:studio\"",
     "build": "vite build",
     "start": "npx prisma migrate deploy && (node server/dist/index.js || node dist/index.js)"
   },

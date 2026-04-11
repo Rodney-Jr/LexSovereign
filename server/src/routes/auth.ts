@@ -59,6 +59,16 @@ router.post('/login', async (req, res) => {
             return res.status(403).json({ error: 'Tenant account is suspended.' });
         }
 
+        // --- NEW: MFA CHALLENGE ---
+        if (resolvedUser.mfaEnabled) {
+             const mfaChallengeToken = jwt.sign(
+                 { id: resolvedUser.id, type: 'MFA_CHALLENGE' },
+                 JWT_SECRET,
+                 { expiresIn: '5m' }
+             );
+             return res.json({ mfaRequired: true, mfaToken: mfaChallengeToken });
+        }
+
         // Step 5: Issue a signed JWT (the legacy path in authenticateToken supports this)
         const permissions = resolvedUser.role?.permissions || [];
         const sessionToken = jwt.sign(
@@ -85,6 +95,15 @@ router.post('/login', async (req, res) => {
 
         console.log(`[Login] Authenticated: ${resolvedUser.email} (${resolvedUser.roleString})`);
 
+        // Audit Success
+        await AuditService.log(
+            'SIGN_IN_SUCCESS',
+            resolvedUser.id,
+            resolvedUser.tenantId,
+            null,
+            { method: 'PASSWORD', ip: req.ip }
+        );
+
         // Step 7: Return session payload to client
         return res.json({
             token: sessionToken,
@@ -101,6 +120,19 @@ router.post('/login', async (req, res) => {
 
     } catch (error: any) {
         console.error('[Login] Critical error:', error.message);
+        
+        // Audit Failure if email was provided
+        if (req.body.email) {
+            const user = await prisma.user.findUnique({ where: { email: req.body.email } });
+            await AuditService.log(
+                'SIGN_IN_FAILURE',
+                user?.id || null,
+                user?.tenantId || null,
+                null,
+                { email: req.body.email, error: error.message, ip: req.ip }
+            );
+        }
+
         return res.status(500).json({ error: 'An internal authentication error occurred.' });
     }
 });
@@ -256,6 +288,7 @@ router.post('/resolve-invite', async (req, res) => {
 
         return res.json({
             email: invitation.email,
+            name: (invitation as any).name,
             roleName: invitation.roleName,
             tenantName: invitation.tenant.name,
             tenantMode: invitation.tenant.appMode
@@ -334,7 +367,7 @@ router.post('/join-silo', async (req, res) => {
 // 4. Generate Invitation - PROTECTED
 router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_ADMIN']), async (req: any, res) => {
     try {
-        const { email, roleName } = req.body;
+        const { email, roleName, name } = req.body;
         const tenantId = req.user.tenantId;
 
         await checkTenantUserLimit(tenantId);
@@ -343,10 +376,11 @@ router.post('/invite', authenticateToken, requireRole(['TENANT_ADMIN', 'GLOBAL_A
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
-        await prisma.invitation.create({
+        await (prisma.invitation as any).create({
             data: {
                 token,
                 email,
+                name,
                 roleName: roleName || 'INTERNAL_COUNSEL',
                 tenantId,
                 expiresAt
@@ -424,6 +458,124 @@ router.post('/studio-token', authenticateToken, async (req: any, res) => {
     } catch (e: any) {
         console.error('[Studio-Link] Token generation failed:', e.message);
         return res.status(500).json({ error: e.message });
+    }
+});
+
+// --- NEW: MFA SYSTEM ROUTES ---
+import { MfaService } from '../services/MfaService';
+
+// 5. MFA Setup Initiation (Request Secret/QR)
+router.get('/mfa/setup', authenticateToken, async (req: any, res) => {
+    try {
+        const userId = req.user.id;
+        const secret = MfaService.generateSecret();
+        const qrCode = await MfaService.generateQRCode(req.user.email, secret);
+        
+        // Cache secret temporarily or tell client to provide it back for /enable step
+        // For simplicity, we return it to the client for the confirmation screen
+        return res.json({ secret, qrCode });
+    } catch (e: any) {
+        return res.status(500).json({ error: 'MFA setup initialization failed.' });
+    }
+});
+
+// 6. MFA Enablement (Verification & Activation)
+router.post('/mfa/enable', authenticateToken, async (req: any, res) => {
+    const { secret, code } = req.body;
+    try {
+        const isValid = MfaService.verifyToken(code, secret);
+        if (!isValid) return res.status(400).json({ error: 'Invalid verification code.' });
+
+        // Generate backup codes
+        const { plaintext, hashed } = MfaService.generateBackupCodes();
+
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: {
+                mfaEnabled: true,
+                attributes: {
+                    ...(req.user.attributes as any),
+                    mfaSecret: secret // Encrypt in production!
+                },
+                mfaBackupCodes: hashed
+            }
+        });
+
+        await AuditService.log(
+            'MFA_ACTIVATED',
+            req.user.id,
+            req.user.tenantId,
+            null,
+            { method: 'TOTP', ip: req.ip }
+        );
+
+        return res.json({ success: true, backupCodes: plaintext });
+    } catch (e: any) {
+        return res.status(500).json({ error: 'MFA activation failed.' });
+    }
+});
+
+// 7. MFA Verification (Login Flow Fulfillment)
+router.post('/mfa/verify', async (req, res) => {
+    const { code, mfaToken } = req.body;
+    try {
+        const payload: any = jwt.verify(mfaToken, JWT_SECRET);
+        if (payload.type !== 'MFA_CHALLENGE') throw new Error('Invalid token type');
+
+        const user: any = await prisma.user.findUnique({
+            where: { id: payload.id },
+            include: { 
+                role: { include: { permissions: true } },
+                tenant: { select: { id: true, status: true, appMode: true } }
+            }
+        });
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const mfaSecret = (user.attributes as any)?.mfaSecret;
+        if (!mfaSecret) return res.status(400).json({ error: 'MFA not configured correctly' });
+
+        const isValid = MfaService.verifyToken(code, mfaSecret);
+        if (!isValid) return res.status(401).json({ error: 'Invalid MFA code' });
+
+        // Phase Finalized: Issue full session JWT
+        const permissions = user.role?.permissions || [];
+        const sessionToken = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                role: user.roleString,
+                tenantId: user.tenantId,
+                name: user.name,
+                permissions: permissions.map((p: any) => p.id),
+                isImpersonating: false
+            },
+            JWT_SECRET,
+            { expiresIn: '12h' }
+        );
+
+        res.cookie('token', sessionToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 12 * 60 * 60 * 1000
+        });
+
+        return res.json({
+            token: sessionToken,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.roleString,
+                tenantId: user.tenantId,
+                permissions,
+                mode: user.tenant?.appMode || 'LAW_FIRM'
+            }
+        });
+
+    } catch (e: any) {
+        return res.status(401).json({ error: 'Verification failed' });
     }
 });
 

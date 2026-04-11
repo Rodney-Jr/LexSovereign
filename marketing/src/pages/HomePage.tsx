@@ -56,9 +56,9 @@ export default function HomePage() {
     return (
         <Layout>
             <SEO
-                title="Legal Intelligence & Compliance Platform"
-                description="Draft, detect risk, and ensure compliance. NomosDesk combines AI-powered drafting with bank-grade compliance checks for regulated institutions."
-                keywords="legal drafting software, legal compliance platform, contract risk analysis, AI legal drafting Ghana, legal document automation"
+                title="Africa's First Sovereign Legal OS | NomosDesk"
+                description="The only legal operating system that hard-pins your data to local Ghanaian enclaves. Draft, detect risk, and ensure compliance with Ghana Bar standards using adversarial AI."
+                keywords="legal software Ghana, data sovereignty Africa, legal document automation Accra, Ghana Companies Act compliance, sovereign legal enclave"
                 schema={[
                     {
                         "@context": "https://schema.org",
@@ -111,8 +111,8 @@ export default function HomePage() {
                                 transition={{ duration: 0.7, delay: 0.2 }}
                                 className="text-xl md:text-2xl text-slate-400 leading-relaxed max-w-3xl mx-auto font-medium"
                             >
-                                The first integrated platform for professionals who demand zero document risk. 
-                                <span className="text-white"> NomosDesk</span> automates compliance validation and risk alerting in your private legal enclave.
+                                Africa's first integrated platform for professionals who demand **Digital Data Sovereignty.** 
+                                <span className="text-white"> NomosDesk</span> hard-pins your legal records to private enclaves in Accra and Kumasi, automating compliance validation against the Ghana Bar standards.
                             </motion.p>
 
                             <motion.div 
@@ -147,8 +147,8 @@ export default function HomePage() {
                         <div className="relative bg-[#020617] border border-slate-800 rounded-[3rem] overflow-hidden shadow-[0_60px_120px_-24px_rgba(0,0,0,1)] p-3">
                             <div className="bg-[#0B0E14] rounded-[2.5rem] overflow-hidden border border-slate-800/50 relative">
                                 <img 
-                                    src="/images/demos/matter_drafting_filled.png" 
-                                    alt="NomosDesk Studio" 
+                                    src="/images/mockups/adversarial_ai_drafting_1775750946568.png" 
+                                    alt="NomosDesk Adversarial Drafting Studio" 
                                     className="w-full grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700"
                                 />
                                 
@@ -177,7 +177,7 @@ export default function HomePage() {
             <div className="py-12 bg-slate-950 border-y border-slate-900 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-wrap justify-center gap-10 md:gap-24 opacity-30 hover:opacity-100 transition-opacity duration-700">
-                        {['Central Bank Standards', 'ISO 27001 Certified', 'Digital Evidence Act Compliant', 'Bank-Grade Infrastructure', 'Institutional Privacy'].map((text, i) => (
+                        {['Ghana Bar Standards', 'Data Residency (Accra)', 'Digital Evidence Act Compliant', 'Bank-Grade Infrastructure', 'Institutional Privacy'].map((text, i) => (
                             <span key={i} className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] font-sans">{text}</span>
                         ))}
                     </div>
@@ -280,40 +280,19 @@ export default function HomePage() {
                     </div>
 
                     <div className="relative order-1 lg:order-2">
-                        {/* High-Fidelity Intelligence Mock */}
-                        <div className="relative p-10 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-[3rem] shadow-3xl">
-                            <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-800">
-                                <div className="flex gap-3 items-center">
-                                    <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                                    <span className="text-xs font-black text-white uppercase tracking-widest">Active Analysis</span>
+                        <div className="relative group">
+                            <div className="absolute -inset-4 bg-indigo-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                            <div className="relative p-10 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-[3rem] shadow-3xl overflow-hidden">
+                                <img 
+                                    src="/images/mockups/ghanaian_enclave_dashboard_1775751008916.png" 
+                                    alt="Sovereign Ghanaian Enclave" 
+                                    className="w-full rounded-2xl border border-slate-700 shadow-2xl transition-transform duration-700 group-hover:scale-[1.02]"
+                                />
+                                <div className="absolute -bottom-10 -left-10 w-64 p-8 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-[2.5rem] shadow-2xl hidden md:block">
+                                    <div className="text-[10px] font-black text-emerald-500 uppercase mb-4 tracking-[0.2em]">Sovereign Integrity</div>
+                                    <div className="text-3xl font-black text-white tracking-tight">Accra, GH</div>
+                                    <div className="text-[10px] font-bold text-slate-500 mt-3 uppercase tracking-widest leading-relaxed">Primary Jurisdictional Enclave Active & Synced</div>
                                 </div>
-                                <div className="text-[10px] font-bold text-slate-500 uppercase">Matter ID: LL-2026-003</div>
-                            </div>
-                            
-                            <div className="space-y-8">
-                                <div className="p-6 bg-rose-500/5 border border-rose-500/30 rounded-3xl space-y-3">
-                                    <div className="flex justify-between items-center text-[10px] uppercase font-black text-rose-400 tracking-widest">
-                                        <span>Risk Alert</span>
-                                        <span>High Priority</span>
-                                    </div>
-                                    <p className="text-sm text-slate-200 font-bold leading-relaxed">"Missing 'Force Majeure' provision for pandemic-related disruptions found in Section 12."</p>
-                                    <Button variant="outline" size="sm" className="w-full mt-4 text-[10px] h-10 border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500">Fix Provision</Button>
-                                </div>
-
-                                <div className="p-6 bg-[#0B0E14] border border-slate-800 rounded-3xl space-y-4">
-                                    <div className="flex justify-between items-center text-[10px] uppercase font-black text-indigo-400 tracking-widest">
-                                        <span>Library Suggestion</span>
-                                        <span>89% Match</span>
-                                    </div>
-                                    <p className="text-sm text-slate-400 font-medium">Matching 'Indemnity Cap' found in your Firm Library.</p>
-                                    <div className="h-1 bg-slate-800 rounded-full w-full"><div className="h-full w-[89%] bg-indigo-500"></div></div>
-                                </div>
-                            </div>
-
-                            <div className="absolute -bottom-10 -left-10 w-48 p-6 bg-slate-900 border border-slate-800 rounded-[2rem] shadow-2xl hidden md:block">
-                                <div className="text-[10px] font-black text-slate-600 uppercase mb-4">Compliance</div>
-                                <div className="text-3xl font-black text-emerald-400 tracking-tight">85%</div>
-                                <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Optimal Secure</div>
                             </div>
                         </div>
                     </div>
@@ -334,6 +313,57 @@ export default function HomePage() {
                                 <div className="text-xs text-slate-500 font-bold uppercase tracking-widest">{stat.sub}</div>
                             </motion.div>
                         ))}
+                    </div>
+                </div>
+            </Section>
+
+            {/* CLIENT TRANSPARENCY - THE TRUST LAYER */}
+            <Section className="relative bg-slate-950 border-t border-slate-900 py-32 overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/5 rounded-full blur-[140px] pointer-events-none"></div>
+                
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid lg:grid-cols-2 gap-24 items-center">
+                        <div className="relative group">
+                            <div className="absolute -inset-2 bg-indigo-500/20 blur-[60px] opacity-0 group-hover:opacity-40 transition-opacity duration-1000"></div>
+                            <div className="relative bg-white rounded-[3rem] p-4 shadow-[0_48px_100px_-12px_rgba(0,0,0,0.4)] overflow-hidden">
+                                <img 
+                                    src="/images/mockups/client_portal_account_1775751471995.png" 
+                                    alt="NomosDesk Secure Client Portal" 
+                                    className="w-full rounded-[2rem]"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-10">
+                            <div className="space-y-6">
+                                <div className="text-emerald-400 font-black uppercase tracking-[0.3em] text-sm">Transparency as a Service</div>
+                                <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">Turn Trust into a <br />Competitive Edge.</h2>
+                                <p className="text-xl text-slate-400 leading-relaxed font-medium">
+                                    Winning a mandate is about proof. NomosDesk provides your clients with a secure, 
+                                    <span className="text-white italic"> sovereign window</span> into their matter's progress, 
+                                    trust accounting, and verifiable document history.
+                                </p>
+                            </div>
+
+                            <div className="grid gap-6">
+                                {[
+                                    { title: "Real-Time Progress", text: "End manual status updates. Clients see real-time matter health.", icon: <CheckCircle className="w-5 h-5" /> },
+                                    { title: "Trust Ledger Visibility", text: "Secure transparency for retainer utilization and billing history.", icon: <Receipt className="w-5 h-5" /> }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex gap-6 items-start">
+                                        <div className="mt-1 p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <h4 className="text-lg font-black text-white tracking-tight mb-1">{item.title}</h4>
+                                            <p className="text-slate-500 font-medium leading-relaxed">{item.text}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <Button asLink="/for-enterprise-legal" variant="outline" className="border-slate-800 rounded-2xl h-14 px-8">Explore Client Transparency</Button>
+                        </div>
                     </div>
                 </div>
             </Section>

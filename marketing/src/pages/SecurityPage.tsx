@@ -64,6 +64,46 @@ export default function SecurityPage() {
                 </div>
             </Section>
 
+            <Section className="py-24 bg-slate-950">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid lg:grid-cols-2 gap-24 items-center">
+                        <div className="space-y-10">
+                            <div className="space-y-6">
+                                <div className="text-indigo-400 font-black uppercase tracking-[0.3em] text-sm">Verifiable Integrity</div>
+                                <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">The Mathematical <br />Chain of Trust.</h2>
+                                <p className="text-xl text-slate-400 leading-relaxed font-medium">
+                                    Traditional audit logs can be manipulated. NomosDesk uses SHA256 
+                                    <span className="text-white italic"> cryptographic chaining</span> to ensure that 
+                                    every system action and AI decision is permanently anchored. 
+                                </p>
+                            </div>
+
+                            <div className="grid gap-8">
+                                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
+                                    <h4 className="text-lg font-black text-white mb-2">Forensic Record Proof</h4>
+                                    <p className="text-sm text-slate-500 leading-relaxed">Each log entry contains a hash of its predecessor. If a single bit is altered, the entire chain breaks—providing immediate proof of tampering.</p>
+                                </div>
+                                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
+                                    <h4 className="text-lg font-black text-white mb-2">Non-Repudiation</h4>
+                                    <p className="text-sm text-slate-500 leading-relaxed">Mandatory administrative events are anchored to jurisdictional enclaves, ensuring your firm's compliance history is unalterable and audit-ready.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="relative group">
+                            <div className="absolute -inset-4 bg-emerald-500/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                            <div className="relative p-2 bg-slate-900/80 border border-slate-800 rounded-[3rem] shadow-3xl overflow-hidden">
+                                <img 
+                                    src="/images/mockups/decision_ledger_mockup_1775750912087.png" 
+                                    alt="Sovereign Decision Trace Ledger" 
+                                    className="w-full rounded-[2.5rem] border border-slate-700 shadow-2xl"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+
             <Section>
                 <div className="grid md:grid-cols-2 gap-8">
                     <SecurityCard

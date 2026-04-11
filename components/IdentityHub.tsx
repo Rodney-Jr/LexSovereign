@@ -15,7 +15,7 @@ import {
   Fingerprint
 } from 'lucide-react';
 import { IdentityProvider, MobileSession } from '../types';
-import MfaSetup from './MfaSetup';
+import MfaSetupModal from './MfaSetupModal';
 import { useAuth } from '../hooks/useAuth'; // Assuming useAuth provides the token
 import { startRegistration } from '@simplewebauthn/browser';
 
@@ -202,17 +202,14 @@ const IdentityHub: React.FC = () => {
       </div>
 
       {showMfaSetup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm">
-          <MfaSetup
-            token={token || ''}
-            onCancel={() => setShowMfaSetup(false)}
-            onComplete={() => {
-              setShowMfaSetup(false);
-              // In a real app, refresh user state here
-              window.location.reload();
-            }}
-          />
-        </div>
+        <MfaSetupModal
+          onClose={() => setShowMfaSetup(false)}
+          onSuccess={() => {
+            setShowMfaSetup(false);
+            // Refresh logic - in a real app, this would update the auth context
+            window.location.reload();
+          }}
+        />
       )}
 
       {/* Active Mobile Sessions */}

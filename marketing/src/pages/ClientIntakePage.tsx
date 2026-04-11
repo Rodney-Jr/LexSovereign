@@ -93,31 +93,25 @@ export default function ClientIntakePage() {
                             />
                         </div>
                     </div>
-                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                        {/* Visual Mockup of Widget */}
-                        <div className="absolute top-0 left-0 w-full h-8 bg-slate-800 flex items-center px-4 gap-2">
-                            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        </div>
-                        <div className="mt-8 space-y-4">
-                            <div className="flex justify-start">
-                                <div className="bg-slate-800 text-slate-200 rounded-tr-xl rounded-br-xl rounded-bl-xl p-3 text-sm max-w-[80%]">
-                                    Welcome to [Firm Name]. How can we assist you today?
-                                </div>
+                    <div className="relative group">
+                        <div className="absolute -inset-10 bg-indigo-500/10 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                        <div className="relative flex justify-center items-center">
+                            <img 
+                                src="/images/mockups/ai_legal_chatbot_mockup_1775751066007.png" 
+                                alt="NomosDesk AI Intake Assistant" 
+                                className="w-full max-w-[400px] drop-shadow-[0_50px_100px_rgba(0,0,0,0.6)] transform group-hover:translate-y-[-10px] transition-transform duration-700"
+                            />
+                            
+                            {/* Floating Stats */}
+                            <div className="absolute -right-4 top-20 p-5 bg-slate-900/90 backdrop-blur-xl border border-indigo-500/30 rounded-3xl shadow-2xl hidden md:block">
+                                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Automated Ops</div>
+                                <div className="text-2xl font-black text-white">24/7</div>
+                                <div className="text-[10px] font-bold text-slate-500 mt-1 uppercase">Response Efficiency</div>
                             </div>
-                            <div className="flex justify-end">
-                                <div className="bg-indigo-600 text-white rounded-tl-xl rounded-bl-xl rounded-br-xl p-3 text-sm max-w-[80%]">
-                                    I'd like to discuss a corporate merger.
-                                </div>
-                            </div>
-                            <div className="flex justify-start">
-                                <div className="bg-slate-800 text-slate-200 rounded-tr-xl rounded-br-xl rounded-bl-xl p-3 text-sm max-w-[80%]">
-                                    I can help gather some initial details for our Corporate Team. First, is this for a public or private entity?
-                                </div>
-                            </div>
-                            <div className="flex justify-center py-4">
-                                <span className="text-xs text-slate-500 uppercase tracking-widest">Secure Connection</span>
+                            
+                            <div className="absolute -left-10 bottom-24 p-5 bg-slate-900/90 backdrop-blur-xl border border-emerald-500/30 rounded-3xl shadow-2xl hidden md:block">
+                                <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Conflict Shield</div>
+                                <div className="text-sm font-bold text-white">Pre-Screening <br />Active</div>
                             </div>
                         </div>
                     </div>

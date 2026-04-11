@@ -1,68 +1,95 @@
-
 import { prisma } from '../db';
 import crypto from 'crypto';
 
 export class AuditService {
+    private static readonly GENESIS_HASH = '0000000000000000000000000000000000000000000000000000000000000000';
 
     /**
-     * Log a secure, tamper-evident audit entry.
+     * Log a secure, tamper-evident audit entry with Hash Chaining.
      */
     static async log(
         action: string,
         userId: string | null,
+        tenantId: string | null, // Now required for chaining scope
         resourceId: string | null,
         details: any,
         ipAddress?: string
     ) {
         try {
-            // 1. Serialize details
-            const detailsStr = JSON.stringify(details);
+            // 1. Fetch the latest hash for this tenant to maintain the chain
+            const latestLog = await prisma.auditLog.findFirst({
+                where: { tenantId },
+                orderBy: { timestamp: 'desc' }
+            });
 
-            // 2. Compute Hash (Tamper-Evidence) - For a real chain, we'd need the previous hash. 
-            // For now, simpler: Hash(Action + User + Timestamp + Details)
-            // This prevents changing the details without invalidating the hash.
+            const previousHash = latestLog ? latestLog.hash : this.GENESIS_HASH;
+
+            // 2. Serialize and setup payload
+            const detailsStr = JSON.stringify(details);
             const timestamp = new Date().toISOString();
-            const payload = `${action}:${userId}:${timestamp}:${detailsStr}`;
+
+            // 3. Compute Hash (Action + User + Timestamp + Details + PreviousHash)
+            // This is the core of the "Immutable" Proof.
+            const payload = `${action}:${userId}:${tenantId}:${timestamp}:${detailsStr}:${previousHash}`;
             const hash = crypto.createHash('sha256').update(payload).digest('hex');
 
             await prisma.auditLog.create({
                 data: {
                     action,
                     userId,
+                    tenantId,
                     resourceId,
                     details: detailsStr,
                     ipAddress,
                     timestamp,
-                    // If we add a 'hash' column later, we store it here. 
-                    // For now we just computed it to show intent, or we could store it in details metadata.
+                    hash,
+                    previousHash
                 }
             });
 
-            // In a real Hyperledger/Blockchain system, we'd submit 'hash' to the ledger here.
-
+            console.log(`[Audit] Chained Entry: ${action} -> Hash: ${hash.substring(0, 8)}...`);
         } catch (e) {
-            console.error("AUDIT FAILURE:", e);
-            // Critical: If audit fails, should we block the action? 
-            // "Fail Closed" security says yes.
+            console.error("CRITICAL AUDIT FAILURE:", e);
+            // In a production regulated environment, we would throw here to fail-closed
         }
     }
 
-    static async getLogs(tenantId: string | null, limit = 100) {
-        // Tenants only see their own users' logs? 
-        // This is tricky if logs don't have tenantId directly.
-        // We link via User.
+    /**
+     * Verify the integrity of the audit chain for a specific tenant.
+     * Returns true if the chain is valid, false if tampering is detected.
+     */
+    static async verifyTenantIntegrity(tenantId: string): Promise<{ isValid: boolean; brokenAt?: string }> {
+        const logs = await prisma.auditLog.findMany({
+            where: { tenantId },
+            orderBy: { timestamp: 'asc' }
+        });
 
-        const whereClause: any = {};
+        let currentPrevHash = this.GENESIS_HASH;
 
-        if (tenantId) {
-            whereClause.user = { tenantId };
+        for (const log of logs) {
+            // Recompute what the hash SHOULD be
+            const payload = `${log.action}:${log.userId}:${log.tenantId}:${log.timestamp.toISOString()}:${log.details}:${currentPrevHash}`;
+            const expectedHash = crypto.createHash('sha256').update(payload).digest('hex');
+
+            if (log.hash !== expectedHash || log.previousHash !== currentPrevHash) {
+                return { isValid: false, brokenAt: log.id };
+            }
+
+            currentPrevHash = log.hash;
         }
+
+        return { isValid: true };
+    }
+
+    static async getLogs(tenantId: string | null, limit = 100) {
+        const whereClause: any = {};
+        if (tenantId) whereClause.tenantId = tenantId;
 
         return await prisma.auditLog.findMany({
             where: whereClause,
             take: limit,
             orderBy: { timestamp: 'desc' },
-            include: { user: { select: { name: true, email: true, role: true } } }
+            include: { user: { select: { name: true, email: true, roleString: true } } }
         });
     }
 }

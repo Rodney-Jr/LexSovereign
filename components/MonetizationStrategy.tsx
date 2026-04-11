@@ -106,33 +106,30 @@ const MonetizationStrategy: React.FC = () => {
                   </div>
                </div>
 
-               <div className="h-[350px] w-full flex items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-500">
-                  <p>Projection Model Offline</p>
-                  {/*
-               <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueData}>
-                     <defs>
-                       <linearGradient id="colorLtv" x1="0" y1="0" x2="0" y2="1">
-                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                         <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                       </linearGradient>
-                       <linearGradient id="colorMargin" x1="0" y1="0" x2="0" y2="1">
-                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                       </linearGradient>
-                     </defs>
-                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                     <XAxis dataKey="label" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
-                     <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
-                     <Tooltip 
-                       contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
-                     />
-                     <Area type="monotone" dataKey="ltv" stroke="#10b981" fillOpacity={1} fill="url(#colorLtv)" strokeWidth={4} />
-                     <Area type="monotone" dataKey="margin" stroke="#3b82f6" fillOpacity={1} fill="url(#colorMargin)" strokeWidth={2} />
-                  </AreaChart>
-               </ResponsiveContainer>
-               */}
-               </div>
+                <div className="h-[350px] w-full">
+                   <ResponsiveContainer width="100%" height="100%" debounce={1}>
+                      <AreaChart data={revenueData}>
+                         <defs>
+                           <linearGradient id="colorLtv" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                             <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                           </linearGradient>
+                           <linearGradient id="colorMargin" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                             <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                           </linearGradient>
+                         </defs>
+                         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                         <XAxis dataKey="label" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                         <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                         <Tooltip 
+                           contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
+                         />
+                         <Area type="monotone" dataKey="ltv" stroke="#10b981" fillOpacity={1} fill="url(#colorLtv)" strokeWidth={4} />
+                         <Area type="monotone" dataKey="margin" stroke="#3b82f6" fillOpacity={1} fill="url(#colorMargin)" strokeWidth={2} />
+                      </AreaChart>
+                   </ResponsiveContainer>
+                </div>
             </div>
 
             {/* ROI Breakdown */}

@@ -32,7 +32,7 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
    const [isProcessing, setIsProcessing] = useState(false);
    const [affidavitSigned, setAffidavitSigned] = useState(false);
 
-   const [inviteContext, setInviteContext] = useState<{ email: string, roleName: string, tenantName: string, tenantMode: string } | null>(null);
+   const [inviteContext, setInviteContext] = useState<{ email: string, name?: string, roleName: string, tenantName: string, tenantMode: string } | null>(null);
    const [name, setName] = useState('');
    const [password, setPassword] = useState('');
    const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
@@ -67,6 +67,9 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
             body: JSON.stringify({ token: tokenToResolve })
          });
          setInviteContext(data);
+         if (data.name) {
+            setName(data.name);
+         }
          setStep(1.5);
       } catch (e: any) {
          // Improved error handling with specific messages
@@ -118,6 +121,17 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
       } finally {
          setIsProcessing(false);
       }
+   };
+
+   const handleMicrosoftJoin = () => {
+      if (!inviteToken) return;
+      // Clean the token (case-insensitive for direct input)
+      const cleanToken = inviteToken.includes('SOV-INV-') ? 
+          inviteToken.split('/').pop()?.trim() : 
+          inviteToken.trim();
+          
+      // Redirect to the MSAL initialization route with the invitation token
+      window.location.href = `/api/auth/msal/init?invitationToken=${encodeURIComponent(cleanToken || '')}`;
    };
 
    return (
@@ -190,11 +204,13 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                      <div className="space-y-3 p-6 bg-blue-500/5 border border-blue-500/10 rounded-3xl">
                         <div className="flex items-center gap-4">
                            <div className="p-2 bg-blue-500/20 rounded-xl">
-                              <Building2 className="text-blue-400" size={20} />
+                              <Fingerprint className="text-blue-400" size={20} />
                            </div>
                            <div>
-                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Target Silo</p>
-                              <h4 className="text-lg font-bold text-white tracking-tight">{inviteContext.tenantName}</h4>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sovereign Onboarding</p>
+                              <h4 className="text-lg font-bold text-white tracking-tight">
+                                 {inviteContext.name ? `Welcome, ${inviteContext.name.split(' ')[0]}` : 'Construct Your Identity'}
+                              </h4>
                            </div>
                         </div>
                         <div className="flex items-center gap-4 border-t border-slate-800/50 pt-3 mt-3">
@@ -228,13 +244,14 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                            />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Secure Password</label>
+                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Create Secure Password</label>
                            <input
                               type="password"
                               value={password}
                               onChange={e => handlePasswordChange(e.target.value)}
-                              className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium"
-                              placeholder="••••••••"
+                              className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all font-medium placeholder:text-slate-700 shadow-inner"
+                              placeholder="Choose a complex password"
+                              autoFocus={!!inviteContext.name}
                            />
                            {password.length > 0 && passwordErrors.length > 0 && (
                               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 space-y-1">
@@ -252,10 +269,30 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                         </div>
                         <button
                            onClick={() => setStep(3)}
-                           disabled={!name || passwordErrors.length > 0 || password.length === 0}
-                           className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20"
+                           disabled={!name || passwordErrors.length > 0 || password.length === 0 || isProcessing}
+                           className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20 h-16"
                         >
                            Confirm Identity & Proceed <ChevronRight size={20} />
+                        </button>
+
+                        <div className="flex items-center gap-4 py-2">
+                           <div className="h-[1px] bg-slate-800 flex-1"></div>
+                           <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Or Use Enterprise SSO</span>
+                           <div className="h-[1px] bg-slate-800 flex-1"></div>
+                        </div>
+
+                        <button
+                           type="button"
+                           onClick={handleMicrosoftJoin}
+                           className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all border border-slate-700 h-16 shadow-inner animate-in fade-in slide-in-from-bottom-2 duration-700"
+                        >
+                           <svg className="w-5 h-5" viewBox="0 0 21 21">
+                              <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                              <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                              <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                              <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                           </svg>
+                           Join Silo with Microsoft
                         </button>
                      </div>
                   </div>
