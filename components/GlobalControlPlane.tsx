@@ -572,6 +572,7 @@ const TenantsTab = ({ onManage }: { onManage: (tenant: any) => void }) => {
                         <th className="px-8 py-5">Tenant Enclave</th>
                         <th className="px-8 py-5">Geography</th>
                         <th className="px-8 py-5">Metrics</th>
+                        <th className="px-8 py-5">Provisioned</th>
                         <th className="px-8 py-5 text-right">Actions</th>
                      </tr>
                   </thead>
@@ -609,6 +610,16 @@ const TenantsTab = ({ onManage }: { onManage: (tenant: any) => void }) => {
                                     <p className="text-[10px] font-bold text-cyan-400">{tenant.plan}</p>
                                     <p className="text-[8px] text-slate-500 uppercase">Plan</p>
                                  </div>
+                              </div>
+                           </td>
+                           <td className="px-8 py-6">
+                              <div className="flex flex-col">
+                                 <span className="text-[11px] font-bold text-slate-300">
+                                    {tenant.createdAt ? new Date(tenant.createdAt).toLocaleDateString() : 'Legacy'}
+                                 </span>
+                                 <span className="text-[9px] text-slate-500 font-mono mt-0.5">
+                                    {tenant.createdAt ? new Date(tenant.createdAt).toLocaleTimeString() : ''}
+                                 </span>
                               </div>
                            </td>
                            <td className="px-8 py-6 text-right">

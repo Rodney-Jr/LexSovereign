@@ -422,8 +422,9 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                                           </a>
                                        )}
 
-                                       <div className={`text-[8px] font-mono mt-2 uppercase opacity-40 ${isClient ? 'text-right' : 'text-left'}`}>
-                                          {relativeTime(note.createdAt)}
+                                       <div className={`flex flex-col gap-0.5 text-[8px] font-mono mt-2 uppercase opacity-40 ${isClient ? 'items-end text-right' : 'items-start text-left'}`}>
+                                          <span>{new Date(note.createdAt).toLocaleDateString()} {new Date(note.createdAt).toLocaleTimeString()}</span>
+                                          <span>({relativeTime(note.createdAt)})</span>
                                        </div>
                                     </div>
                                  </div>

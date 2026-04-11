@@ -663,7 +663,10 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
                         <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${activity.status === 'Approved' || activity.status === 'COMMITTED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                           {activity.status}
                         </span>
-                        <span className="text-[9px] text-brand-muted/50 font-mono">{relativeTime(activity.timestamp)}</span>
+                        <div className="flex gap-1.5 items-center ml-2">
+                           <span className="text-[9px] text-brand-muted font-mono">{new Date(activity.timestamp).toLocaleDateString()} {new Date(activity.timestamp).toLocaleTimeString()}</span>
+                           <span className="text-[8px] text-brand-muted/40 font-mono">({relativeTime(activity.timestamp)})</span>
+                        </div>
                       </div>
                     </div>
                     {activity.type === 'DOCUMENT' && (
