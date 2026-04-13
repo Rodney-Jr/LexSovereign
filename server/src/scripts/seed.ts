@@ -63,6 +63,70 @@ const ROLES = [
 
 async function main() {
     const passwordHash = await bcrypt.hash('password123', 10);
+    
+    // --- 🔥 Sovereign HARD PURGE (Bootstrap Clean) ---
+    console.log('--- 🔥 Sovereign HARD PURGE Starting (Bootstrap) ---');
+    const demoTenantName = 'NomosDesk Demo';
+    const demoTenantSnapshot = await prisma.tenant.findFirst({ where: { name: demoTenantName } });
+    
+    if (demoTenantSnapshot) {
+        const demoId = demoTenantSnapshot.id;
+        console.log(`🛡️ Preserving Tenant: ${demoTenantSnapshot.name} (${demoId})`);
+        const whereNotDemoStrict = { tenantId: { not: demoId } };
+        const p = prisma as any;
+
+        // Leaf-level and dependent tables
+        await p.auditLog.deleteMany({ where: { tenantId: { not: demoId, not: null } } });
+        await p.activityEntry.deleteMany({ where: whereNotDemoStrict });
+        await p.documentVersion.deleteMany({ where: whereNotDemoStrict });
+        await p.evidenceLink.deleteMany({ where: whereNotDemoStrict });
+        await p.document.deleteMany({ where: whereNotDemoStrict });
+        await p.collaborationMessage.deleteMany({ where: whereNotDemoStrict });
+        await p.timeEntry.deleteMany({ where: whereNotDemoStrict });
+        await p.task.deleteMany({ where: whereNotDemoStrict });
+        await p.approval.deleteMany({ where: whereNotDemoStrict });
+        await p.hearing.deleteMany({ where: whereNotDemoStrict });
+        await p.deadline.deleteMany({ where: whereNotDemoStrict });
+        await p.caseMetadata.deleteMany({ where: whereNotDemoStrict });
+        await p.contractMetadata.deleteMany({ where: whereNotDemoStrict });
+        await p.predictiveRisk.deleteMany({ where: whereNotDemoStrict });
+        await p.aIRiskAnalysis.deleteMany({ where: whereNotDemoStrict });
+        await p.aIUsage.deleteMany({ where: whereNotDemoStrict });
+        await p.chatbotConfig.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.invitation.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.apiKey.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.firmAccount.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.ledgerTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.bankTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.externalMapping.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.syncLog.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.cloudIntegration.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.platformFolderSync.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.firmAsset.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.expense.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.leaveRecord.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.candidate.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.cLERecord.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.salaryRecord.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.performanceAppraisal.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.onboardingItem.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.brandingProfile.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.lead.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.bridge.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.chatConversation.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.documentTemplate.deleteMany({ where: { tenantId: { not: demoId, not: null } } });
+        
+        await p.matterTeamMember.deleteMany({ where: { matter: { tenantId: { not: demoId } } } });
+        await p.matter.deleteMany({ where: whereNotDemoStrict });
+        await p.client.deleteMany({ where: whereNotDemoStrict });
+        await p.policy.deleteMany({ where: whereNotDemoStrict });
+        await p.user.deleteMany({ where: { tenantId: { not: demoId, not: null }, email: { not: 'admin@nomosdesk.com' } } });
+        await p.role.deleteMany({ where: { tenantId: { not: demoId, not: null } } });
+
+        const purged = await prisma.tenant.deleteMany({ where: { id: { not: demoId } } });
+        console.log(`🚀 [Success] Hard Purged ${purged.count} stale tenants.`);
+    }
+
     console.log('🌱 Bulk Seeding Permissions...');
     await prisma.permission.createMany({
         data: PERMISSIONS,

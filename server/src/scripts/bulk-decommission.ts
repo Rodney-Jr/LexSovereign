@@ -1,49 +1,102 @@
 import { prisma } from '../db';
 
 /**
- * Bulk Decommission Script
- * Marks all tenants (except the Demo tenant) as DELETED.
+ * Sovereign Hard Purge Script (V3)
+ * Expanded to include all tenant-linked models to fix foreign key violations.
  */
 async function main() {
-    console.log('--- 🛡️ Sovereign Bulk Decommission Starting ---');
-    
-    // 1. Identify Demo Tenant (Preservation Target)
+    console.log('--- 🔥 Sovereign HARD PURGE Starting (V3) ---');
+
     const demoTenantName = 'NomosDesk Demo';
-    const demoTenant = await prisma.tenant.findFirst({
-        where: { name: demoTenantName }
-    });
+    const demoTenant = await prisma.tenant.findFirst({ where: { name: demoTenantName } });
 
     if (!demoTenant) {
-        console.warn('⚠️ Warning: System Demo tenant not found by name. Proceeding with caution...');
-    } else {
-        console.log(`✅ Identified Demo Tenant for preservation: ${demoTenant.name} (${demoTenant.id})`);
+        console.error('❌ Critical: Demo Tenant not found. Aborting.');
+        process.exit(1);
     }
+    const demoId = demoTenant.id;
+    console.log(`🛡️ Preserving Tenant: ${demoTenant.name} (${demoId})`);
 
-    // 2. Decommission all other ACTIVE or SUSPENDED tenants
-    const decommissionResult = await prisma.tenant.updateMany({
-        where: {
-            id: { not: demoTenant?.id || 'NO_DEMO_ID' },
-            status: { not: 'DELETED' } // Don't re-delete already deleted ones
-        },
-        data: {
-            status: 'DELETED'
-        }
+    const whereNotDemoStrict = { tenantId: { not: demoId } };
+    const p = prisma as any;
+
+    console.log('🧹 Purging related records...');
+
+    // 1. Leaf and deep relation tables
+    await p.auditLog.deleteMany({ where: { tenantId: { not: demoId, not: null } } });
+    await p.activityEntry.deleteMany({ where: whereNotDemoStrict });
+    await p.documentVersion.deleteMany({ where: whereNotDemoStrict });
+    await p.evidenceLink.deleteMany({ where: whereNotDemoStrict });
+    await p.document.deleteMany({ where: whereNotDemoStrict });
+    await p.collaborationMessage.deleteMany({ where: whereNotDemoStrict });
+    await p.timeEntry.deleteMany({ where: whereNotDemoStrict });
+    await p.task.deleteMany({ where: whereNotDemoStrict });
+    await p.approval.deleteMany({ where: whereNotDemoStrict });
+    await p.hearing.deleteMany({ where: whereNotDemoStrict });
+    await p.deadline.deleteMany({ where: whereNotDemoStrict });
+    await p.caseMetadata.deleteMany({ where: whereNotDemoStrict });
+    await p.contractMetadata.deleteMany({ where: whereNotDemoStrict });
+    await p.predictiveRisk.deleteMany({ where: whereNotDemoStrict });
+    await p.aIRiskAnalysis.deleteMany({ where: whereNotDemoStrict });
+    await p.aIUsage.deleteMany({ where: whereNotDemoStrict });
+
+    // 2. Mid-level Infrastucture
+    await p.matterTeamMember.deleteMany({ where: { matter: { tenantId: { not: demoId } } } });
+    await p.matter.deleteMany({ where: whereNotDemoStrict });
+    await p.client.deleteMany({ where: whereNotDemoStrict });
+    await p.policy.deleteMany({ where: whereNotDemoStrict });
+    
+    // 3. System Enclaves and Configs (Missed in V2)
+    console.log('🧹 Purging configs and integrations...');
+    await p.chatbotConfig.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.invitation.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.apiKey.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.firmAccount.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.ledgerTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.bankTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.externalMapping.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.syncLog.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.cloudIntegration.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.platformFolderSync.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.firmAsset.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.expense.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.leaveRecord.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.candidate.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.cLERecord.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.salaryRecord.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.performanceAppraisal.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.onboardingItem.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.brandingProfile.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.lead.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.bridge.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.chatConversation.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.documentTemplate.deleteMany({ where: { tenantId: { not: demoId, not: null } } });
+
+    // 4. Users and Roles
+    console.log('🧹 Purging user and role hierarchy...');
+    await p.user.deleteMany({ 
+        where: { 
+            tenantId: { not: demoId, not: null },
+            email: { not: 'admin@nomosdesk.com' }
+        } 
+    });
+    
+    await p.role.deleteMany({ where: { tenantId: { not: demoId, not: null } } });
+
+    // 5. Final Blow
+    console.log('💥 Executing final Tenant removal...');
+    const result = await prisma.tenant.deleteMany({
+        where: { id: { not: demoId } }
     });
 
-    console.log(`🚀 [Success] Decommissioned ${decommissionResult.count} tenants.`);
-
-    // 3. Verify
-    const activeCount = await prisma.tenant.count({
-        where: { status: 'ACTIVE' }
-    });
-
-    console.log(`📊 Final Platform Pulse: ${activeCount} active tenant(s) remaining.`);
-    console.log('--- ✅ Decommission Complete ---');
+    console.log(`🚀 [Success] Hard Purged ${result.count} tenants.`);
+    const finalCount = await prisma.tenant.count();
+    console.log(`📊 Final Platform Footprint: ${finalCount} tenant(s) remaining.`);
 }
 
 main()
     .catch((e) => {
-        console.error('❌ Decommission Failed:', e);
+        console.error('❌ Hard Purge Failed:', e);
         process.exit(1);
     })
     .finally(async () => {
