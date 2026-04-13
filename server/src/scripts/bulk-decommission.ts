@@ -71,6 +71,14 @@ async function main() {
     await p.invoice.deleteMany({ where: whereNotDemoStrict });
     await p.billingComponent.deleteMany({ where: { matter: { tenantId: { not: demoId } } } });
 
+    // --- Workflow Stack ---
+    console.log('🧹 Purging workflow hierarchies...');
+    await p.workflowTransition.deleteMany({ where: { fromState: { workflow: { tenantId: { not: demoId } } } } });
+    await p.workflowState.deleteMany({ where: { workflow: { tenantId: { not: demoId } } } });
+    await p.workflow.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.matterType.deleteMany({ where: { tenantId: { not: demoId } } });
+    await p.department.deleteMany({ where: { tenantId: { not: demoId } } });
+
     await p.externalMapping.deleteMany({ where: { tenantId: { not: demoId } } });
     await p.syncLog.deleteMany({ where: { tenantId: { not: demoId } } });
     await p.cloudIntegration.deleteMany({ where: { tenantId: { not: demoId } } });
