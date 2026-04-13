@@ -33,7 +33,8 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         localStorage.setItem('nomosdesk_session', JSON.stringify(sessionToSave));
 
         const existingPin = localStorage.getItem('nomosdesk_pin');
-        if (!existingPin || existingPin === 'undefined') {
+        if (!existingPin || existingPin === 'undefined' || existingPin === 'null') {
+            console.log("[Auth] Missing or invalid pin. Triggering handshake...");
             try {
                 const data = await authorizedFetch('/api/auth/pin', {
                     token: session.token
@@ -98,7 +99,6 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
             if (storedSessionStr) {
                 try {
                     const sessionData = JSON.parse(storedSessionStr);
-                    // Validate with backend /me endpoint natively to ensure session token is still valid
                     const response = await fetch('/api/auth/me', {
                         headers: sessionData.token ? { 'Authorization': `Bearer ${sessionData.token}` } : undefined
                     });
@@ -133,9 +133,27 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         };
 
         syncSession();
-        // Disabling hook exhaustive deps since we only want this to run once on mount or when handleLogout changes.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Listen for pin invalidation signals from the API layer
+    useEffect(() => {
+        const handlePinInvalid = () => {
+            console.warn("[Auth] Pin invalidation signal received. Forcing re-handshake.");
+            const storedSession = localStorage.getItem('nomosdesk_session');
+            if (storedSession) {
+                try {
+                    const session = JSON.parse(storedSession);
+                    handleAuthenticated(session);
+                } catch (e) {
+                    console.error("[Auth] Failed to re-handshake pin:", e);
+                }
+            }
+        };
+
+        window.addEventListener('nomosdesk-pin-invalid', handlePinInvalid);
+        return () => window.removeEventListener('nomosdesk-pin-invalid', handlePinInvalid);
+    }, [handleAuthenticated]);
 
     return {
         isAuthenticated,

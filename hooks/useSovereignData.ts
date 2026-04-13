@@ -7,6 +7,16 @@ export const useSovereignData = (isAuthenticated: boolean) => {
     const [documents, setDocuments] = useState<DocumentMetadata[]>(INITIAL_DOCS);
     const [matters, setMatters] = useState<Matter[]>(INITIAL_MATTERS);
     const [rules, setRules] = useState<RegulatoryRule[]>(INITIAL_RULES);
+    const [pinVersion, setPinVersion] = useState(0);
+
+    useEffect(() => {
+        const handlePinUpdate = () => {
+            console.log("[Data] Pin invalidation detected. Incrementing version for retry...");
+            setPinVersion(v => v + 1);
+        };
+        window.addEventListener('nomosdesk-pin-invalid', handlePinUpdate);
+        return () => window.removeEventListener('nomosdesk-pin-invalid', handlePinUpdate);
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -31,7 +41,7 @@ export const useSovereignData = (isAuthenticated: boolean) => {
         if (isAuthenticated) {
             fetchData();
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, pinVersion]);
 
     const addDocument = (doc: DocumentMetadata) => setDocuments(prev => [...prev, doc]);
     const removeDocument = (id: string) => setDocuments(prev => prev.filter(d => d.id !== id));

@@ -13,14 +13,15 @@ export interface FetchOptions extends RequestInit {
  * Perform an authenticated request with robust error handling
  * Handles 403 Forbidden strings and JSON error objects gracefully
  */
-// Declare the global constant injected by Vite
-declare const __SOVEREIGN_PIN__: string;
-
 export const getSovereignPin = () => {
     try {
-        return localStorage.getItem('nomosdesk_pin') ||
-            (window as any)._SOVEREIGN_PIN_ ||
-            (typeof __SOVEREIGN_PIN__ !== 'undefined' ? __SOVEREIGN_PIN__ : '');
+        const storedPin = localStorage.getItem('nomosdesk_pin');
+        if (storedPin && storedPin !== 'undefined' && storedPin !== 'null') {
+            return storedPin;
+        }
+        // Access window property indirectly to bypass potential Vite 'define' replacements
+        // and improve compatibility with SES strict environment
+        return (window as any)['_SOVEREIGN_PIN_'] || '';
     } catch (e) {
         return '';
     }
@@ -110,6 +111,10 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
                 window.dispatchEvent(new CustomEvent('nomosdesk-trial-expired', {
                     detail: errorData
                 }));
+            } else if (response.status === 403 && (errorData.code === 'INVALID_SOVEREIGN_PIN' || errorData.error === 'Sovereign Enclave Access Denied')) {
+                console.warn(`[API] Sovereign Enclave Access Denied (${response.status}). Clearing pin.`);
+                localStorage.removeItem('nomosdesk_pin');
+                window.dispatchEvent(new CustomEvent('nomosdesk-pin-invalid'));
             } else {
                 console.warn(`[API] Request Forbidden (Business Logic/Permission): ${errorData.error}`);
                 if (!silent) {
