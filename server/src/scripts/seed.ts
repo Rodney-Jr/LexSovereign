@@ -102,9 +102,18 @@ async function main() {
         await p.chatbotConfig.deleteMany({ where: { tenantId: { not: demoId } } });
         await p.invitation.deleteMany({ where: { tenantId: { not: demoId } } });
         await p.apiKey.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.firmAccount.deleteMany({ where: { tenantId: { not: demoId } } });
+        
+        // --- Billing and Accounting Stack (FK Heavy) ---
+        await p.ledgerEntry.deleteMany({ where: { account: { tenantId: { not: demoId } } } });
         await p.ledgerTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
         await p.bankTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.firmAccount.deleteMany({ where: { tenantId: { not: demoId } } });
+        
+        await p.invoiceLineItem.deleteMany({ where: { invoice: { tenantId: { not: demoId } } } });
+        await p.aIUsage.deleteMany({ where: whereNotDemoStrict });
+        await p.invoice.deleteMany({ where: whereNotDemoStrict });
+        await p.billingComponent.deleteMany({ where: { matter: { tenantId: { not: demoId } } } });
+        
         await p.externalMapping.deleteMany({ where: { tenantId: { not: demoId } } });
         await p.syncLog.deleteMany({ where: { tenantId: { not: demoId } } });
         await p.cloudIntegration.deleteMany({ where: { tenantId: { not: demoId } } });
