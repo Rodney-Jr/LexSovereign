@@ -76,7 +76,14 @@ async function main() {
         const p = prisma as any;
 
         // Leaf-level and dependent tables
-        await p.auditLog.deleteMany({ where: { tenantId: { notIn: [demoId, null] } } });
+        await p.auditLog.deleteMany({ 
+            where: { 
+                AND: [
+                    { tenantId: { not: demoId } },
+                    { tenantId: { not: null } }
+                ]
+            } 
+        });
         await p.activityEntry.deleteMany({ where: whereNotDemoStrict });
         await p.documentVersion.deleteMany({ where: whereNotDemoStrict });
         await p.evidenceLink.deleteMany({ where: whereNotDemoStrict });
@@ -114,14 +121,36 @@ async function main() {
         await p.lead.deleteMany({ where: { tenantId: { not: demoId } } });
         await p.bridge.deleteMany({ where: { tenantId: { not: demoId } } });
         await p.chatConversation.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.documentTemplate.deleteMany({ where: { tenantId: { notIn: [demoId, null] } } });
+        await p.documentTemplate.deleteMany({ 
+            where: { 
+                AND: [
+                    { tenantId: { not: demoId } },
+                    { tenantId: { not: null } }
+                ]
+            } 
+        });
         
         await p.matterTeamMember.deleteMany({ where: { matter: { tenantId: { not: demoId } } } });
         await p.matter.deleteMany({ where: whereNotDemoStrict });
         await p.client.deleteMany({ where: whereNotDemoStrict });
         await p.policy.deleteMany({ where: whereNotDemoStrict });
-        await p.user.deleteMany({ where: { tenantId: { notIn: [demoId, null] }, email: { not: 'admin@nomosdesk.com' } } });
-        await p.role.deleteMany({ where: { tenantId: { notIn: [demoId, null] } } });
+        await p.user.deleteMany({ 
+            where: { 
+                AND: [
+                    { tenantId: { not: demoId } },
+                    { tenantId: { not: null } },
+                    { email: { not: 'admin@nomosdesk.com' } }
+                ]
+            } 
+        });
+        await p.role.deleteMany({ 
+            where: { 
+                AND: [
+                    { tenantId: { not: demoId } },
+                    { tenantId: { not: null } }
+                ]
+            } 
+        });
 
         const purged = await prisma.tenant.deleteMany({ where: { id: { not: demoId } } });
         console.log(`🚀 [Success] Hard Purged ${purged.count} stale tenants.`);

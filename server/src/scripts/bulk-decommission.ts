@@ -23,7 +23,14 @@ async function main() {
     console.log('🧹 Purging related records...');
 
     // 1. Leaf and deep relation tables
-    await p.auditLog.deleteMany({ where: { tenantId: { notIn: [demoId, null] } } });
+    await p.auditLog.deleteMany({ 
+        where: { 
+            AND: [
+                { tenantId: { not: demoId } },
+                { tenantId: { not: null } }
+            ]
+        } 
+    });
     await p.activityEntry.deleteMany({ where: whereNotDemoStrict });
     await p.documentVersion.deleteMany({ where: whereNotDemoStrict });
     await p.evidenceLink.deleteMany({ where: whereNotDemoStrict });
@@ -70,18 +77,35 @@ async function main() {
     await p.lead.deleteMany({ where: { tenantId: { not: demoId } } });
     await p.bridge.deleteMany({ where: { tenantId: { not: demoId } } });
     await p.chatConversation.deleteMany({ where: { tenantId: { not: demoId } } });
-    await p.documentTemplate.deleteMany({ where: { tenantId: { notIn: [demoId, null] } } });
+    await p.documentTemplate.deleteMany({ 
+        where: { 
+            AND: [
+                { tenantId: { not: demoId } },
+                { tenantId: { not: null } }
+            ]
+        } 
+    });
 
     // 4. Users and Roles
     console.log('🧹 Purging user and role hierarchy...');
     await p.user.deleteMany({ 
         where: { 
-            tenantId: { notIn: [demoId, null] },
-            email: { not: 'admin@nomosdesk.com' }
+            AND: [
+                { tenantId: { not: demoId } },
+                { tenantId: { not: null } },
+                { email: { not: 'admin@nomosdesk.com' } }
+            ]
         } 
     });
     
-    await p.role.deleteMany({ where: { tenantId: { notIn: [demoId, null] } } });
+    await p.role.deleteMany({ 
+        where: { 
+            AND: [
+                { tenantId: { not: demoId } },
+                { tenantId: { not: null } }
+            ]
+        } 
+    });
 
     // 5. Final Blow
     console.log('💥 Executing final Tenant removal...');
