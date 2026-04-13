@@ -29,7 +29,11 @@ export function useNomosSync() {
         try {
             let initialContent = '';
             if (docId) {
-                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                const baseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
+                if (!baseUrl && !import.meta.env.DEV) {
+                    setError('API URL not configured for production. Handshake aborted.');
+                    return;
+                }
                 const response = await fetch(`${baseUrl}/api/documents/${docId}/content`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });

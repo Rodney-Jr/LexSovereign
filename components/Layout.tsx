@@ -189,7 +189,11 @@ const Layout: React.FC<LayoutProps> = ({
       });
       const data = await response.json();
       if (data.token) {
-        const studioUrl = import.meta.env.VITE_STUDIO_URL || 'http://localhost:3006';
+        const studioUrl = import.meta.env.VITE_STUDIO_URL || (import.meta.env.DEV ? 'http://localhost:3006' : '');
+        if (!studioUrl && !import.meta.env.DEV) {
+            alert('Drafting Studio URL not configured for production. Please check your environment variables.');
+            return;
+        }
         window.open(`${studioUrl}/editor?token=${data.token}`, '_blank', 'noopener,noreferrer');
       } else {
         alert('Failed to handshake with Sovereign Studio Server');

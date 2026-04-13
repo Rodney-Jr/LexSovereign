@@ -190,7 +190,12 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
       });
       const data = await response.json();
       if (data.token) {
-        const studioUrl = import.meta.env.VITE_STUDIO_URL || 'http://localhost:3006';
+        const studioUrl = import.meta.env.VITE_STUDIO_URL || (import.meta.env.DEV ? 'http://localhost:3006' : '');
+        if (!studioUrl && !import.meta.env.DEV) {
+            console.error('Drafting Studio URL not configured for production.');
+            alert('Drafting Studio is not configured for this environment. Please contact your administrator.');
+            return;
+        }
         window.open(`${studioUrl}/editor?token=${data.token}&docId=${doc.id}&matterId=${doc.matterId || 'MT-GENERAL'}&title=${encodeURIComponent(doc.name)}`, '_blank', 'noopener,noreferrer');
       } else {
         throw new Error('Could not acquire studio-token');

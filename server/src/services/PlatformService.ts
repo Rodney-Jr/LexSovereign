@@ -77,7 +77,10 @@ export class PlatformService {
         }
 
         // 4. Construct Login URL
-        const baseUrl = process.env.VITE_PLATFORM_URL || 'http://localhost:3005';
+        const baseUrl = process.env.VITE_PLATFORM_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3005');
+        if (!baseUrl && process.env.NODE_ENV === 'production') {
+            throw new Error('VITE_PLATFORM_URL not configured for production environment.');
+        }
         const loginUrl = `${baseUrl}/login?email=${encodeURIComponent(email)}`;
 
         return {

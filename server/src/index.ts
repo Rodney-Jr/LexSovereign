@@ -82,16 +82,17 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "https://accounts.google.com/gsi/style"],
             fontSrc: ["'self'", "fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:", "https://lh3.googleusercontent.com"],
-            connectSrc: ["'self'", "https:", "https://accounts.google.com/gsi/"],
-            frameSrc: ["'self'", "https://accounts.google.com/"],
+            connectSrc: ["'self'", "https:", "https://accounts.google.com/gsi/", process.env.VITE_STUDIO_URL || 'http://localhost:3006'],
+            frameSrc: ["'self'", "https://accounts.google.com/", process.env.VITE_STUDIO_URL || 'http://localhost:3006'],
         },
     },
 }));
 app.use(cors({
     origin: [
-        process.env.PLATFORM_URL || 'http://localhost:5173',
+        process.env.PLATFORM_URL || 'http://localhost:3005',
         process.env.VITE_STUDIO_URL || 'http://localhost:3006',
-        'http://127.0.0.1:3006'
+        'http://127.0.0.1:3006',
+        'http://localhost:3006'
     ],
     credentials: true
 }));
