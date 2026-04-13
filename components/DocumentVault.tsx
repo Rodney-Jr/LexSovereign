@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { DocumentMetadata, Region, PrivilegeStatus } from '../types';
 import DocumentIngestModal from './DocumentIngestModal';
+import { getRuntimeConfig } from '../utils/runtimeConfig';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
 import { LexGeminiService } from '../services/geminiService';
@@ -190,8 +191,8 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
       });
       const data = await response.json();
       if (data.token) {
-        const studioUrl = import.meta.env.VITE_STUDIO_URL || (import.meta.env.DEV ? 'http://localhost:3006' : '');
-        if (!studioUrl && !import.meta.env.DEV) {
+        const studioUrl = getRuntimeConfig('VITE_STUDIO_URL');
+        if (!studioUrl) {
             console.error('Drafting Studio URL not configured for production.');
             alert('Drafting Studio is not configured for this environment. Please contact your administrator.');
             return;

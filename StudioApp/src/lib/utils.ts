@@ -5,6 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+import { getRuntimeConfig } from "../utils/runtimeConfig";
+
 export async function apiFetch(url: string, options: RequestInit = {}) {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
@@ -15,7 +17,7 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   };
 
   // Convert relative URLs to absolute based on VITE_API_URL
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const baseUrl = getRuntimeConfig('VITE_API_URL');
   const targetUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 
   const response = await fetch(targetUrl, {

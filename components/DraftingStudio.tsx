@@ -1,4 +1,5 @@
 import React from 'react';
+import { getRuntimeConfig } from '../utils/runtimeConfig';
 import { Maximize2, Minimize2, Minus, Move, X, ExternalLink } from 'lucide-react';
 import { DraftingStudioProps } from './studio/domain/documentTypes';
 import { useDraggableWindow } from './studio/hooks/useDraggableWindow';
@@ -23,7 +24,7 @@ export const DraftingStudio: React.FC<DraftingStudioProps> = ({
   const token = sessionStr ? JSON.parse(sessionStr).token : '';
   const title = encodeURIComponent(initialData?.name || 'Untitled');
   
-  const studioUrl = import.meta.env.VITE_STUDIO_URL || (import.meta.env.DEV ? 'http://localhost:3006' : '');
+  const studioUrl = getRuntimeConfig('VITE_STUDIO_URL');
   const iframeUrl = `${studioUrl}?matterId=${effectiveMatterId}&docId=${docId}&token=${token}&title=${title}`;
 
   const handlePopOut = () => {

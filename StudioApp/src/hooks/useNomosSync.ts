@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getRuntimeConfig } from '../utils/runtimeConfig';
 
 export function useNomosSync() {
   const [isReady, setIsReady] = useState(false);
@@ -26,11 +27,9 @@ export function useNomosSync() {
 
     // Verify token & Handshake
     const verifyHandshake = async () => {
-        try {
-            let initialContent = '';
             if (docId) {
-                const baseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
-                if (!baseUrl && !import.meta.env.DEV) {
+                const baseUrl = getRuntimeConfig('VITE_API_URL');
+                if (!baseUrl) {
                     setError('API URL not configured for production. Handshake aborted.');
                     return;
                 }

@@ -56,6 +56,7 @@ import { AppMode, UserRole } from '../types';
 import { usePermissions } from '../hooks/usePermissions';
 import { TAB_REQUIRED_PERMISSIONS } from '../constants';
 import { useSovereign } from '../contexts/SovereignContext';
+import { getRuntimeConfig } from '../utils/runtimeConfig';
 
 
 
@@ -189,8 +190,8 @@ const Layout: React.FC<LayoutProps> = ({
       });
       const data = await response.json();
       if (data.token) {
-        const studioUrl = import.meta.env.VITE_STUDIO_URL || (import.meta.env.DEV ? 'http://localhost:3006' : '');
-        if (!studioUrl && !import.meta.env.DEV) {
+        const studioUrl = getRuntimeConfig('VITE_STUDIO_URL');
+        if (!studioUrl) {
             alert('Drafting Studio URL not configured for production. Please check your environment variables.');
             return;
         }

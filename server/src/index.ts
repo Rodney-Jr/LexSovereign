@@ -242,12 +242,23 @@ app.get('*', (req, res) => {
             // Inject runtime variables
             const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
             const sovereignPin = process.env.SOVEREIGN_PIN || '';
+            const studioUrl = process.env.VITE_STUDIO_URL || '';
+            const apiUrl = process.env.VITE_API_URL || '';
+            const platformUrl = process.env.VITE_PLATFORM_URL || '';
 
             const injection = `
     <script>
+      window._GLOBAL_CONFIG = {
+        VITE_STUDIO_URL: "${studioUrl}",
+        VITE_API_URL: "${apiUrl}",
+        VITE_PLATFORM_URL: "${platformUrl}",
+        GOOGLE_CLIENT_ID: "${googleClientId}",
+        SOVEREIGN_PIN: "${sovereignPin}"
+      };
+      // Legacy hooks for backward compatibility
       window._GOOGLE_CLIENT_ID = "${googleClientId}";
       window._SOVEREIGN_PIN_ = "${sovereignPin}";
-      console.log("[Runtime] Credentials injected into client pulse.");
+      console.log("[Sovereign] Runtime configuration synchronized from host environment.");
     </script>`;
 
             html = html.replace(/<head>/i, `<head>${injection}`);
