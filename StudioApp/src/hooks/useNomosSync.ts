@@ -27,6 +27,8 @@ export function useNomosSync() {
 
     // Verify token & Handshake
     const verifyHandshake = async () => {
+        try {
+            let initialContent = '';
             if (docId) {
                 const baseUrl = getRuntimeConfig('VITE_API_URL');
                 if (!baseUrl) {
