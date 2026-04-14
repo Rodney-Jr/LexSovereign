@@ -186,7 +186,8 @@ export class TenantService {
             console.error("❌ [TenantService] Provisioning Transaction Failed!");
             console.error("Error Detail:", error.message || error);
             if (error.code === 'P2025') {
-                console.error("Tip: This error usually means one of the connected permissions (manage_tenant, etc) is missing from the database.");
+                console.error("❌ Tip: A connected record (permission or role) was not found in the database.");
+                console.error("Please ensure you have run 'npm run seed' to synchronize system permissions.");
             }
             throw error;
         }
