@@ -36,7 +36,8 @@ export const SovereignProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         localStorage.removeItem('nomosdesk_session');
         localStorage.removeItem('nomosdesk_pin');
         setSession(null);
-        window.location.href = '/'; 
+        // Dispatch a global event so other legacy hooks can react if needed
+        window.dispatchEvent(new CustomEvent('nomosdesk-logout'));
     };
 
     const can = (permission: string) => {

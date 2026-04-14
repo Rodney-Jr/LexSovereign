@@ -4,9 +4,11 @@ import { ROLE_DEFAULT_PERMISSIONS } from '../constants';
 import { authorizedFetch } from '../utils/api';
 import { usePermissions } from './usePermissions';
 import { useWorkPersistence } from './useWorkPersistence';
+import { useSovereign } from '../contexts/SovereignContext';
 
 export const useAuth = (activeTab: string, selectedMatter: string | null) => {
     const { setPermissions, setRole, setEnabledModules, role: contextRole } = usePermissions();
+    const { setSession } = useSovereign();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
@@ -81,13 +83,15 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         localStorage.removeItem('nomosdesk_pin');
         localStorage.removeItem('nomosdesk_activeTab');
         sessionStorage.removeItem('nomosdesk_session');
+        // Synchronize with Sovereign Context
+        setSession(null);
         
         // Use history API or soft-navigate if needed, but DO NOT hard reload
         // as that destroys in-flight error notifications.
         if (window.location.pathname !== '/') {
             window.history.pushState({}, '', '/');
         }
-    }, [setRole, setPermissions, setEnabledModules]);
+    }, [setRole, setPermissions, setEnabledModules, setSession]);
 
     // Native Sync Effect (Restore Session on Load)
     useEffect(() => {
@@ -152,8 +156,20 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
         };
 
         window.addEventListener('nomosdesk-pin-invalid', handlePinInvalid);
-        return () => window.removeEventListener('nomosdesk-pin-invalid', handlePinInvalid);
     }, [handleAuthenticated]);
+
+    // Listen for global logout events to ensure atomic state reset
+    useEffect(() => {
+        const handleGlobalLogout = () => {
+            console.log("[Auth] Global logout signal detected. Syncing local state...");
+            setIsAuthenticated(false);
+            setUserId(null);
+            setUserName(null);
+            setToken(null);
+        };
+        window.addEventListener('nomosdesk-logout', handleGlobalLogout);
+        return () => window.removeEventListener('nomosdesk-logout', handleGlobalLogout);
+    }, []);
 
     return {
         isAuthenticated,
