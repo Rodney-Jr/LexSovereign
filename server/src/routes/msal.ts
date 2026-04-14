@@ -6,6 +6,17 @@ import { JWT_SECRET } from '../jwtConfig';
 
 const router = express.Router();
 
+// Security Guard: Sovereign Integration Suspension Check
+router.use((req, res, next) => {
+    if (process.env.ENABLE_MICROSOFT_AUTH !== 'true') {
+        return res.status(503).json({ 
+            error: 'Sovereign Integration Suspended',
+            message: 'Microsoft Work / School Authentication is currently disabled for security protocol compliance.' 
+        });
+    }
+    next();
+});
+
 const msalConfig = {
     auth: {
         clientId: process.env.MSAL_CLIENT_ID || 'dummy-client-id',

@@ -466,19 +466,21 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
                                   Passkey (Windows Hello / biometric)
                                </button>
 
-                                <button
-                                  type="button"
-                                  onClick={handleMicrosoftSSO}
-                                  className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all border border-slate-700 active:scale-95"
-                               >
-                                  <svg className="w-5 h-5" viewBox="0 0 21 21">
-                                     <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                                     <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                                     <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                                     <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-                                  </svg>
-                                  Microsoft Work / School
-                               </button>
+                               {import.meta.env.VITE_ENABLE_MICROSOFT_AUTH === 'true' && (
+                                  <button
+                                     type="button"
+                                     onClick={handleMicrosoftSSO}
+                                     className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all border border-slate-700 active:scale-95"
+                                  >
+                                     <svg className="w-5 h-5" viewBox="0 0 21 21">
+                                        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                                        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                                        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                                        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                                     </svg>
+                                     Microsoft Work / School
+                                  </button>
+                               )}
                            </div>
                         </div>
                      )}

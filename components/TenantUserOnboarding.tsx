@@ -281,19 +281,21 @@ const TenantUserOnboarding: React.FC<TenantUserOnboardingProps> = ({ mode, userI
                            <div className="h-[1px] bg-slate-800 flex-1"></div>
                         </div>
 
-                        <button
-                           type="button"
-                           onClick={handleMicrosoftJoin}
-                           className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all border border-slate-700 h-16 shadow-inner animate-in fade-in slide-in-from-bottom-2 duration-700"
-                        >
-                           <svg className="w-5 h-5" viewBox="0 0 21 21">
-                              <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                              <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                              <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                              <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-                           </svg>
-                           Join Silo with Microsoft
-                        </button>
+                        {import.meta.env.VITE_ENABLE_MICROSOFT_AUTH === 'true' && (
+                           <button
+                              type="button"
+                              onClick={handleMicrosoftJoin}
+                              className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all border border-slate-700 h-16 shadow-inner animate-in fade-in slide-in-from-bottom-2 duration-700"
+                           >
+                              <svg className="w-5 h-5" viewBox="0 0 21 21">
+                                 <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                                 <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                                 <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                                 <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                              </svg>
+                              Join Silo with Microsoft
+                           </button>
+                        )}
                      </div>
                   </div>
                )}
