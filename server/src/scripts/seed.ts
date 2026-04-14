@@ -237,8 +237,8 @@ async function main() {
         await prisma.user.update({
             where: { id: result.adminId },
             data: {
-                roleString: 'GLOBAL_ADMIN',
-                role: { connect: { id: globalAdminRole.id } },
+                roleString: 'TENANT_ADMIN',
+                role: { connect: { name_tenantId: { name: 'TENANT_ADMIN', tenantId: result.tenantId } } },
                 jurisdictionPins: ['GH_ACC_1', 'SOV-PR-1'],
                 credentials: [
                     { type: 'SYSTEM_ADMIN', id: 'SA-001' },
@@ -287,7 +287,21 @@ async function main() {
             });
         }
 
+
         counselId = counsel.id;
+
+        // Ensure at least one dedicated Platform Admin exists (Global Scope)
+        console.log('🌱 Creating Dedicated Platform Admin...');
+        await prisma.user.create({
+            data: {
+                email: 'platform-admin@nomosdesk.com',
+                passwordHash,
+                name: 'Platform Operator',
+                roleString: 'GLOBAL_ADMIN',
+                roleId: globalAdminRole.id,
+                tenantId: null // Global Scope
+            }
+        });
     } else {
         console.log('ℹ️ Default tenant already exists. Enforcing Global Admin role and password...');
         tenantId = existingAdmin.tenantId;

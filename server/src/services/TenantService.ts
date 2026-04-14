@@ -113,6 +113,7 @@ export class TenantService {
                         name: adminName,
                         tenantId: tenant.id,
                         roleId: adminRole.id,
+                        roleString: 'TENANT_ADMIN',
                         region: region,
                         roleSeniority: 10.0
                     }
