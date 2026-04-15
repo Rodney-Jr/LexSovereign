@@ -289,38 +289,53 @@ async function main() {
 
 
         counselId = counsel.id;
-
-        // Ensure at least one dedicated Platform Admin exists (Global Scope)
-        console.log('🌱 Creating Dedicated Platform Admin...');
-        await prisma.user.create({
-            data: {
-                email: 'platform-admin@nomosdesk.com',
-                passwordHash,
-                name: 'Platform Operator',
-                roleString: 'GLOBAL_ADMIN',
-                roleId: globalAdminRole.id,
-                tenantId: null // Global Scope
-            }
-        });
     } else {
-        console.log('ℹ️ Default tenant already exists. Enforcing Global Admin role and password...');
+        console.log('ℹ️ Default tenant already exists. Enforcing Demo Admin role and password...');
         tenantId = existingAdmin.tenantId;
 
-        // Force reset admin and ensure role exists
+        // Force reset demo admin and ensure role exists
+        // Note: admin@nomosdesk.com is the DEMO admin, not the PLATFORM admin.
+        const demoAdminRole = await prisma.role.findFirst({ 
+            where: { name: 'TENANT_ADMIN', tenantId: result.tenantId } 
+        });
+
         await prisma.user.update({
             where: { email: 'admin@nomosdesk.com' },
             data: {
                 name: 'Sovereign Admin',
                 passwordHash,
-                roleString: 'GLOBAL_ADMIN',
-                role: { connect: { id: globalAdminRole.id } }
+                roleString: 'TENANT_ADMIN',
+                role: { connect: { id: demoAdminRole?.id } }
             }
         });
-        console.log('✅ Global Admin role and password enforced.');
+        console.log('✅ Demo Admin role and password enforced.');
 
         const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@nomosdesk.com' } });
         counselId = counselUser?.id;
     }
+
+    // --- ✨ Dedicated Platform Admin (Global Scope) ---
+    // Ensure at least one dedicated Platform Admin exists (Global Scope) regardless of tenant status
+    console.log('🌱 Ensuring Dedicated Platform Admin exists...');
+    await prisma.user.upsert({
+        where: { email: 'platform-admin@nomosdesk.com' },
+        update: {
+            name: 'Platform Operator',
+            passwordHash,
+            roleString: 'GLOBAL_ADMIN',
+            roleId: globalAdminRole.id,
+            tenantId: null // Global Scope
+        },
+        create: {
+            email: 'platform-admin@nomosdesk.com',
+            passwordHash,
+            name: 'Platform Operator',
+            roleString: 'GLOBAL_ADMIN',
+            roleId: globalAdminRole.id,
+            tenantId: null // Global Scope
+        }
+    });
+    console.log('✅ Platform Admin ensured.');
 
     // Role IDs (Refetched for use outside the if/else)
     const clerkRole = await prisma.role.findFirst({ where: { name: 'CLERK', tenantId: tenantId } });
