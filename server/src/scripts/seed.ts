@@ -296,7 +296,7 @@ async function main() {
         // Force reset demo admin and ensure role exists
         // Note: admin@nomosdesk.com is the DEMO admin, not the PLATFORM admin.
         const demoAdminRole = await prisma.role.findFirst({ 
-            where: { name: 'TENANT_ADMIN', tenantId: result.tenantId } 
+            where: { name: 'TENANT_ADMIN', tenantId: tenantId } 
         });
 
         await prisma.user.update({
