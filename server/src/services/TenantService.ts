@@ -115,7 +115,8 @@ export class TenantService {
                         roleId: adminRole.id,
                         roleString: 'TENANT_ADMIN',
                         region: region,
-                        roleSeniority: 10.0
+                        roleSeniority: 10.0,
+                        attributes: { forcePasswordChange: true }
                     }
                 });
 

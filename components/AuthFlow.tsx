@@ -40,6 +40,20 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
    const [mfaToken, setMfaToken] = useState<string | null>(null);
    const [mfaCode, setMfaCode] = useState('');
 
+   // Force Password State
+   const [isForceChange, setIsForceChange] = useState(false);
+   const [forceChangeToken, setForceChangeToken] = useState<string | null>(null);
+   const [newPassword, setNewPassword] = useState('');
+   const [confirmPassword, setConfirmPassword] = useState('');
+
+   React.useEffect(() => {
+       const params = new URLSearchParams(window.location.search);
+       const emailParam = params.get('email');
+       if (emailParam) {
+           setEmail(emailParam);
+       }
+   }, []);
+
    const handleLogoClick = () => {
       const nextClicks = logoClicks + 1;
       setLogoClicks(nextClicks);
@@ -91,6 +105,13 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             }
 
             const data = await response.json();
+
+            if (data.forcePasswordChange) {
+                setForceChangeToken(data.changeToken);
+                setIsForceChange(true);
+                setIsProcessing(false);
+                return;
+            }
             
             // Handle MFA Challenge
             if (data.mfaRequired) {
@@ -157,6 +178,66 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
            }
        } catch (err: any) {
            setError(err.message || 'Verification failed');
+       } finally {
+           setIsProcessing(false);
+       }
+   };
+
+   const handleForcePasswordChange = async (e: React.FormEvent) => {
+       e.preventDefault();
+       if (newPassword !== confirmPassword) {
+           setError('Passwords do not match.');
+           return;
+       }
+       if (newPassword.length < 8) {
+           setError('Password must be at least 8 characters.');
+           return;
+       }
+
+       setIsProcessing(true);
+       setError(null);
+
+       try {
+           const response = await fetch('/api/auth/change-password', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ changeToken: forceChangeToken, newPassword })
+           });
+
+           if (!response.ok) {
+               const data = await response.json().catch(() => ({}));
+               throw new Error(data.error || 'Password update failed.');
+           }
+
+           // Password updated successfully. Let's auto-login with the new credentials.
+           const loginResponse = await fetch('/api/auth/login', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ email, password: newPassword })
+           });
+
+           if (!loginResponse.ok) {
+               throw new Error('Password updated, but auto-login failed. Please sign in manually.');
+           }
+
+           const data = await loginResponse.json();
+           if (data.user && data.token) {
+               await onAuthenticated({
+                   role: data.user.role,
+                   userId: data.user.id,
+                   userName: data.user.name,
+                   tenantId: data.user.tenantId,
+                   permissions: data.user.permissions,
+                   token: data.token,
+                   mode: data.user.mode
+               });
+           }
+       } catch (err: any) {
+           setError(err.message || 'Password update failed.');
+           if (err.message.includes('auto-login failed')) {
+               setIsForceChange(false);
+               setPassword('');
+           }
        } finally {
            setIsProcessing(false);
        }
@@ -245,7 +326,66 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onAuthenticated, onStartOnboarding,
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl">
-               {isMfaStep ? (
+               {isForceChange ? (
+                  <form onSubmit={handleForcePasswordChange} className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+                     <div className="space-y-2 text-center">
+                        <div className="mx-auto p-3 bg-emerald-500/20 rounded-2xl w-fit mb-4">
+                           <Lock className="text-emerald-400" size={28} />
+                        </div>
+                        <h3 className="text-2xl font-bold text-white tracking-tight">Set Permanent Password</h3>
+                        <p className="text-slate-500 text-sm leading-relaxed">
+                           You are logging in with a temporary password. For security, please set a permanent password now to continue.
+                        </p>
+                     </div>
+
+                     <div className="space-y-6">
+                        <div className="relative group">
+                           <input
+                              type={showPassword ? 'text' : 'password'}
+                              required
+                              value={newPassword}
+                              onChange={e => setNewPassword(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-3xl py-4 pl-6 pr-14 text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-slate-600"
+                              placeholder="New Password (min 8 chars)"
+                              autoFocus
+                           />
+                           <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors"
+                           >
+                              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                           </button>
+                        </div>
+                        
+                        <div className="relative group">
+                           <input
+                              type={showPassword ? 'text' : 'password'}
+                              required
+                              value={confirmPassword}
+                              onChange={e => setConfirmPassword(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-3xl py-4 pl-6 pr-14 text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-slate-600"
+                              placeholder="Confirm New Password"
+                           />
+                        </div>
+
+                        {error && (
+                           <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-400 animate-shake">
+                              <AlertCircle size={20} className="shrink-0" />
+                              <p className="text-xs font-bold leading-none">{error}</p>
+                           </div>
+                        )}
+
+                        <button
+                           disabled={isProcessing || newPassword.length < 8}
+                           className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white py-5 rounded-3xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-emerald-900/20 group h-16"
+                        >
+                           {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <ShieldCheck size={20} />}
+                           Save & Sign In
+                        </button>
+                     </div>
+                  </form>
+               ) : isMfaStep ? (
                   <form onSubmit={handleMfaSubmit} className="space-y-8 animate-in slide-in-from-right-4 duration-500">
                      <div className="space-y-2 text-center">
                         <div className="mx-auto p-3 bg-blue-500/20 rounded-2xl w-fit mb-4">

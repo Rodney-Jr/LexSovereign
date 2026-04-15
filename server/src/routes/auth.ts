@@ -60,6 +60,16 @@ router.post('/login', async (req, res) => {
             return res.status(403).json({ error: 'Tenant account is suspended.' });
         }
 
+        // Force Password Change Required
+        if ((resolvedUser.attributes as any)?.forcePasswordChange) {
+             const passwordChangeToken = jwt.sign(
+                 { id: resolvedUser.id, type: 'PASSWORD_CHANGE' },
+                 JWT_SECRET,
+                 { expiresIn: '15m' }
+             );
+             return res.json({ forcePasswordChange: true, changeToken: passwordChangeToken });
+        }
+
         // --- NEW: MFA CHALLENGE ---
         if (resolvedUser.mfaEnabled) {
              const mfaChallengeToken = jwt.sign(
@@ -138,6 +148,53 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// 0.5 Change Password (From forced setup)
+router.post('/change-password', async (req, res) => {
+    const { changeToken, newPassword } = req.body;
+    if (!changeToken || !newPassword || newPassword.length < 8) {
+        return res.status(400).json({ error: 'Valid token and strong new password are required.' });
+    }
+
+    try {
+        let decoded: any;
+        try {
+            decoded = jwt.verify(changeToken, JWT_SECRET);
+        } catch (e) {
+            return res.status(401).json({ error: 'Token expired or invalid.' });
+        }
+
+        if (decoded.type !== 'PASSWORD_CHANGE') {
+            return res.status(401).json({ error: 'Invalid token type.' });
+        }
+
+        const dbUser: any = await (prisma as any).user.findUnique({
+            where: { id: decoded.id },
+            include: { role: { include: { permissions: true } }, tenant: true }
+        });
+
+        if (!dbUser) return res.status(404).json({ error: 'User not found.' });
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        
+        // Remove forcePasswordChange from attributes
+        const attributes = dbUser.attributes || {};
+        delete attributes.forcePasswordChange;
+
+        await prisma.user.update({
+            where: { id: dbUser.id },
+            data: { passwordHash, attributes }
+        });
+
+        // Audit Success
+        await AuditService.log('PASSWORD_CHANGED', dbUser.id, dbUser.tenantId, null, { method: 'FORCED_SETUP', ip: req.ip });
+
+        res.json({ success: true, message: 'Password updated successfully. Please log in with your new password.' });
+
+    } catch (error: any) {
+        console.error('[Change Password] Error:', error.message);
+        res.status(500).json({ error: 'Internal server error during password reset.' });
+    }
+});
 
 
 async function checkTenantUserLimit(tenantId: string) {
