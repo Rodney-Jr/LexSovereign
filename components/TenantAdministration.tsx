@@ -63,6 +63,12 @@ const TenantAdministration: React.FC = () => {
    const [emailError, setEmailError] = useState('');
    const [pendingInvites, setPendingInvites] = useState<any[]>([]);
 
+   // Role Creator State
+   const [showRoleModal, setShowRoleModal] = useState(false);
+   const [allPermissions, setAllPermissions] = useState<{ id: string, action: string, resource: string, description: string }[]>([]);
+   const [isSavingRole, setIsSavingRole] = useState(false);
+   const [roleForm, setRoleForm] = useState({ name: '', description: '', permissionIds: [] as string[] });
+
    const fetchData = async () => {
       const session = getSavedSession();
       if (!session?.token) return;
@@ -123,6 +129,7 @@ const TenantAdministration: React.FC = () => {
 
    React.useEffect(() => {
       fetchData();
+      fetchPermissions();
    }, []);
 
    // ESC key handler for modal
@@ -208,6 +215,56 @@ const TenantAdministration: React.FC = () => {
       } finally {
          setIsEmailing(false);
       }
+   };
+
+   const fetchPermissions = async () => {
+      const session = getSavedSession();
+      if (!session?.token) return;
+
+      try {
+         const data = await authorizedFetch('/api/roles/permissions', { token: session.token });
+         setAllPermissions(data);
+      } catch (e) {
+         console.error("[TenantAdmin] Permission discovery failed:", e);
+      }
+   };
+
+   const handleCreateRole = async () => {
+      if (!roleForm.name.trim()) {
+         alert("Role name is required");
+         return;
+      }
+
+      const session = getSavedSession();
+      if (!session?.token) return;
+
+      setIsSavingRole(true);
+      try {
+         await authorizedFetch('/api/roles', {
+            method: 'POST',
+            token: session.token,
+            body: JSON.stringify(roleForm)
+         });
+         setShowRoleModal(false);
+         setRoleForm({ name: '', description: '', permissionIds: [] });
+         fetchData();
+      } catch (e: any) {
+         console.error(e);
+         alert(`Role creation failed: ${e.message}`);
+      } finally {
+         setIsSavingRole(false);
+      }
+   };
+
+   const togglePermission = (id: string) => {
+      setRoleForm(prev => {
+         const exists = prev.permissionIds.includes(id);
+         if (exists) {
+            return { ...prev, permissionIds: prev.permissionIds.filter(pid => pid !== id) };
+         } else {
+            return { ...prev, permissionIds: [...prev.permissionIds, id] };
+         }
+      });
    };
 
    const removeUser = async (id: string, name: string) => {
@@ -546,12 +603,16 @@ const TenantAdministration: React.FC = () => {
                               <p className="text-sm text-slate-400">Manage custom roles and permissions for your organization.</p>
                            </div>
                            <button
-                              className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-purple-900/20 active:scale-95 transition-all"
-                              title="Create New Role"
-                           >
-                              <Plus size={16} />
-                              New Role
-                           </button>
+                               onClick={() => {
+                                  setShowRoleModal(true);
+                                  setRoleForm({ name: '', description: '', permissionIds: [] });
+                               }}
+                               className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-purple-900/20 active:scale-95 transition-all"
+                               title="Create New Role"
+                            >
+                               <Plus size={16} />
+                               New Role
+                            </button>
                         </div>
 
                         {/* Roles List */}
@@ -637,6 +698,104 @@ const TenantAdministration: React.FC = () => {
                {activeTab === 'billing' && <SovereignBilling />}
             </div>
          </div>
+
+          {/* Role Creator Modal */}
+          {showRoleModal && (
+             <div
+                className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-xl"
+                role="dialog"
+                aria-modal="true"
+             >
+                <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-[2.5rem] p-10 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300 relative overflow-hidden flex flex-col max-h-[90vh]">
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                         <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20">
+                            <Shield className="text-purple-400" size={24} />
+                         </div>
+                         <div>
+                            <h4 className="text-xl font-bold text-white tracking-tight">Create Custom Role</h4>
+                            <p className="text-xs text-slate-500">Define specific authorities for this silo.</p>
+                         </div>
+                      </div>
+                      <button
+                         onClick={() => setShowRoleModal(false)}
+                         className="p-2 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors"
+                      >
+                         <X size={20} />
+                      </button>
+                   </div>
+
+                   <div className="space-y-6 flex-1 overflow-y-auto pr-4 custom-scrollbar">
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Role Name</label>
+                         <input
+                            type="text"
+                            placeholder="e.g. Senior Litigation Clerk"
+                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all text-slate-200"
+                            value={roleForm.name}
+                            onChange={e => setRoleForm({ ...roleForm, name: e.target.value })}
+                         />
+                      </div>
+
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Description</label>
+                         <textarea
+                            placeholder="Briefly describe what this role is authorized to do..."
+                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all text-slate-200 min-h-[100px]"
+                            value={roleForm.description}
+                            onChange={e => setRoleForm({ ...roleForm, description: e.target.value })}
+                         />
+                      </div>
+
+                      <div className="space-y-4">
+                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 bg-slate-900 sticky top-0 py-2">Select Permissions</label>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
+                            {allPermissions.map(perm => {
+                               const isSelected = roleForm.permissionIds.includes(perm.id);
+                               return (
+                                  <button
+                                     key={perm.id}
+                                     onClick={() => togglePermission(perm.id)}
+                                     className={`text-left p-4 rounded-xl border transition-all ${isSelected
+                                           ? 'bg-purple-600/10 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.1)]'
+                                           : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                        }`}
+                                  >
+                                     <div className="flex items-start gap-3">
+                                        <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected ? 'bg-purple-500 border-purple-500' : 'border-slate-700'}`}>
+                                           {isSelected && <CheckCircle2 size={10} className="text-white" />}
+                                        </div>
+                                        <div>
+                                           <p className={`text-xs font-bold leading-tight ${isSelected ? 'text-white' : 'text-slate-400'}`}>{perm.id.replace(':', ' ')}</p>
+                                           <p className="text-[10px] text-slate-600 mt-1 line-clamp-2">{perm.description}</p>
+                                        </div>
+                                     </div>
+                                  </button>
+                               );
+                            })}
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="pt-6 border-t border-slate-800 flex gap-4">
+                      <button
+                         onClick={() => setShowRoleModal(false)}
+                         className="flex-1 py-4 bg-slate-950 hover:bg-slate-800 text-slate-400 rounded-2xl font-bold text-xs transition-all border border-slate-800"
+                      >
+                         Cancel
+                      </button>
+                      <button
+                         onClick={handleCreateRole}
+                         disabled={isSavingRole || !roleForm.name.trim() || roleForm.permissionIds.length === 0}
+                         className="flex-3 py-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all"
+                      >
+                         {isSavingRole ? <RefreshCw className="animate-spin" size={16} /> : <ShieldCheck size={16} />}
+                         {isSavingRole ? "Synthesizing Role..." : "Sign & Deploy Role"}
+                      </button>
+                   </div>
+                </div>
+             </div>
+          )}
 
          {/* Invite Modal */}
          {showInviteModal && (
