@@ -171,15 +171,7 @@ const Layout: React.FC<LayoutProps> = ({
   }, []);
 
   const isAllowed = (tab: string) => {
-    const baseAllowed = canAccessTab(tab);
-    if (!baseAllowed) return false;
-    
-    // UI Visibility Override
-    if (session?.allowedNavItems !== null && session?.allowedNavItems !== undefined) {
-      return session.allowedNavItems.includes(tab);
-    }
-    
-    return true;
+    return canAccessTab(tab);
   };
 
   const launchStudio = async () => {
@@ -255,7 +247,7 @@ const Layout: React.FC<LayoutProps> = ({
             />
           ) : (
             <>
-              {/* Intelligence Hub - Public/Common */}
+              {/* 0. Common Intelligence */}
               {isAllowed('dashboard') && (
                 <NavItem
                   icon={<LayoutDashboard size={18} />}
@@ -266,7 +258,7 @@ const Layout: React.FC<LayoutProps> = ({
                 />
               )}
 
-              {/* Platform Owner Section */}
+              {/* Platform Owner (Global Admin Only) */}
               {(isAllowed('platform-ops') || isAllowed('global-governance')) && (
                 <div className="pt-4 pb-2 px-4 flex items-center justify-between">
                   <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Platform Owner</span>
@@ -289,14 +281,6 @@ const Layout: React.FC<LayoutProps> = ({
                   onClick={() => setActiveTab('global-governance')}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
-              )}
-
-
-              {/* Firm Management Section */}
-              {(isAllowed('identity') || isAllowed('tenant-admin') || isAllowed('capacity') || isAllowed('tenant-governance') || isAllowed('hr-workbench') || isAllowed('expense-tracker') || isAllowed('asset-tracker') || isAllowed('clients')) && (
-                <div className="pt-4 pb-2 px-4">
-                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">Firm Management</span>
-                </div>
               )}
 
               {/* 1. Firm Management Pillar */}
