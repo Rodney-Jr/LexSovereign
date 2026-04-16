@@ -17,6 +17,7 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
         adminEmail: '',
         plan: 'STANDARD',
         region: 'GH_ACC_1',
+        appMode: 'LAW_FIRM',
         isTrial: true
     });
     const [result, setResult] = useState<any>(null);
@@ -136,6 +137,19 @@ export const ProvisionTenantModal: React.FC<ProvisionTenantModalProps> = ({ onCl
                                         <option value="ZA_CPT_1">South Africa (Cape Town)</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Application Mode</label>
+                                <select
+                                    title="Select Application Mode"
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:border-cyan-500 outline-none uppercase text-xs font-bold"
+                                    value={formData.appMode}
+                                    onChange={e => setFormData({ ...formData, appMode: e.target.value })}
+                                >
+                                    <option value="LAW_FIRM">Law Firm</option>
+                                    <option value="ENTERPRISE">In-House Legal Department</option>
+                                </select>
                             </div>
 
                             <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4 flex items-center justify-between">

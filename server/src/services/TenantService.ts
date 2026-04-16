@@ -77,11 +77,18 @@ export class TenantService {
                         tenantId: tenant.id,
                         permissions: {
                             connect: [
-                                { id: 'MANAGE:TENANT_SETTINGS' }, { id: 'MANAGE:USER' }, { id: 'MANAGE:ROLE' },
-                                { id: 'VIEW_BILLING:TENANT' }, { id: 'VIEW_STATS:TENANT' }, { id: 'CREATE:MATTER' },
-                                { id: 'VIEW:CLIENT' }, { id: 'CREATE:CLIENT' }, { id: 'UPLOAD:DOCUMENT' },
-                                { id: 'CREATE:DRAFT' }, { id: 'EDIT:DRAFT' }, { id: 'USE:CHAT' },
-                                { id: 'EXECUTE:AI' }, { id: 'ACCESS:HR' }, { id: 'ACCESS:ACCOUNTING' }
+                                { id: 'MANAGE:TENANT_SETTINGS' }, { id: 'VIEW:TENANT_SETTINGS' }, 
+                                { id: 'MANAGE:USER' }, { id: 'MANAGE:ROLE' },
+                                { id: 'VIEW_BILLING:TENANT' }, { id: 'VIEW_STATS:TENANT' }, 
+                                { id: 'CREATE:MATTER' }, { id: 'VIEW:MATTER' },
+                                { id: 'VIEW:CLIENT' }, { id: 'CREATE:CLIENT' }, 
+                                { id: 'UPLOAD:DOCUMENT' }, { id: 'APPROVE:DOCUMENT' },
+                                { id: 'CREATE:DRAFT' }, { id: 'EDIT:DRAFT' }, 
+                                { id: 'CHECK:CONFLICTS' }, { id: 'REVIEW:WORK' },
+                                { id: 'MANAGE:WORKFLOW' }, { id: 'USE:CHAT' }, { id: 'EXECUTE:AI' }, 
+                                { id: 'MANAGE:EXPENSES' }, { id: 'MANAGE:BUDGET' },
+                                { id: 'ACCESS:HR' }, { id: 'ACCESS:ACCOUNTING' },
+                                { id: 'ACCESS:ROADMAP' }, { id: 'ACCESS:INFRASTRUCTURE' }
                             ]
                         }
                     }
