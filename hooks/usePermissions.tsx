@@ -128,8 +128,6 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     }, [normalizePermissions]);
 
     const hasPermission = React.useCallback((permissionId: string): boolean => {
-        if (role === 'GLOBAL_ADMIN') return true;
-        
         return permissions.some(p => {
             if (permissionId.includes(':')) {
                 const [action, resource] = permissionId.split(':');
@@ -140,18 +138,16 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     }, [role, permissions]);
 
     const hasAnyPermission = React.useCallback((permissionIds: string[]): boolean => {
-        if (role === 'GLOBAL_ADMIN') return true;
         return permissionIds.some(id => hasPermission(id));
-    }, [role, hasPermission]);
+    }, [hasPermission]);
 
     const hasModule = React.useCallback((moduleId: string): boolean => {
         // HR and Accounting are now free for everyone
         if (moduleId === 'ACCOUNTING_HUB' || moduleId === 'HR_ENTERPRISE') return true;
         
-        if (role === 'GLOBAL_ADMIN') return true;
         if (enabledModules.includes('ALL')) return true;
         return enabledModules.includes(moduleId);
-    }, [role, enabledModules]);
+    }, [enabledModules]);
 
     const checkVisibility = React.useCallback((resource: any): boolean => {
         if (role === 'GLOBAL_ADMIN' || role === 'TENANT_ADMIN') return true;
@@ -177,8 +173,11 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     }, [role, separationMode, department, userId]);
 
     const canAccessTab = React.useCallback((tab: string): boolean => {
-        // 1. Global Admin Override
-        if (role === 'GLOBAL_ADMIN') return true;
+        // 1. Global Admin Override (Restrict to Platform specific sections and Dashboard)
+        if (role === 'GLOBAL_ADMIN') {
+            const platformTabs = ['dashboard', 'platform-ops', 'global-governance', 'status', 'system-settings'];
+            return platformTabs.includes(tab);
+        }
 
         // 2. Permission-based Gating (Primary)
         const required = TAB_REQUIRED_PERMISSIONS[tab];
