@@ -75,7 +75,7 @@ const GlobalControlPlane: React.FC<GlobalControlPlaneProps> = ({ userName, userR
             const [statsData, adminData, siloData, logData, conversationsData] = await Promise.all([
                authorizedFetch('/api/platform/stats', { token }),
                authorizedFetch('/api/platform/admins', { token }),
-               authorizedFetch('/api/platform/silos', { token }),
+               authorizedFetch('/api/platform/tenants', { token }),
                authorizedFetch('/api/platform/audit-logs', { token }),
                authorizedFetch('/api/chat-conversations', { token })
             ]);
