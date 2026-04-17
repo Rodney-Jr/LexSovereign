@@ -10,8 +10,10 @@ const router = express.Router();
  */
 router.post('/check', authenticateToken, async (req: any, res) => {
     try {
+        const tenantId = req.user.tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { matterId, content } = req.body;
-        const result = await ComplianceService.checkCompliance(req.user.tenantId, matterId, content);
+        const result = await ComplianceService.checkCompliance(tenantId, matterId, content);
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -23,7 +25,9 @@ router.post('/check', authenticateToken, async (req: any, res) => {
  */
 router.get('/integrity', authenticateToken, async (req: any, res) => {
     try {
-        const result = await AuditService.verifyTenantIntegrity(req.user.tenantId);
+        const tenantId = req.user.tenantId;
+        if (!tenantId) return res.json({ status: 'No context', integrity: 0 });
+        const result = await AuditService.verifyTenantIntegrity(tenantId);
         res.json(result);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -35,7 +39,9 @@ router.get('/integrity', authenticateToken, async (req: any, res) => {
  */
 router.get('/logs', authenticateToken, async (req: any, res) => {
     try {
-        const logs = await AuditService.getLogs(req.user.tenantId);
+        const tenantId = req.user.tenantId;
+        if (!tenantId) return res.json([]);
+        const logs = await AuditService.getLogs(tenantId);
         res.json(logs);
     } catch (error: any) {
         res.status(500).json({ error: error.message });

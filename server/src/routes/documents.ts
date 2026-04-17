@@ -62,7 +62,7 @@ router.get('/matter/:matterId', authenticateToken, async (req, res) => {
         const documents = await prisma.document.findMany({
             where: {
                 matterId,
-                matter: {
+                matter: req.user.role === 'GLOBAL_ADMIN' ? {} : {
                     tenantId: req.user.tenantId as string
                 }
             },
@@ -168,7 +168,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
         await prisma.documentVersion.create({
             data: {
                 documentId: doc.id,
-                tenantId: tenantId as string,
+                tenantId: (tenantId || 'SYSTEM'),
                 versionNumber: 1,
                 uri: doc.uri,
                 authorId: req.user?.id || null,
@@ -339,7 +339,7 @@ router.post('/', authenticateToken, async (req, res) => {
         const version = await prisma.documentVersion.create({
             data: {
                 documentId: doc.id,
-                tenantId: tenantId as string,
+                tenantId: (tenantId || 'SYSTEM'),
                 versionNumber: 1,
                 uri: doc.uri,
                 authorId: req.user?.id || null,
@@ -529,7 +529,7 @@ router.get('/client-audit', authenticateToken, async (req, res) => {
 
         // 1. Fetch matters for this tenant
         const matters = await prisma.matter.findMany({
-            where: { tenantId: req.user.tenantId as string },
+            where: req.user.role === 'GLOBAL_ADMIN' ? {} : { tenantId: req.user.tenantId as string },
             select: { id: true }
         });
 

@@ -118,7 +118,13 @@ router.get('/history', authenticateToken, async (req, res) => {
 router.get('/clm/stats', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Unauthorized' });
+        if (!tenantId) {
+            return res.json({
+                activeContracts: 0,
+                avgCycleTime: '0d',
+                riskHeatmap: { highLiability: 0, nonStandardIndemnity: 0, autoRenewal: 0, jurisdictionMismatch: 0 }
+            });
+        }
 
         const [activeContractsCount, closedMatters, riskAnalyses] = await Promise.all([
             prisma.contractMetadata.count({
@@ -171,7 +177,15 @@ router.get('/clm/stats', authenticateToken, async (req, res) => {
 router.get('/case-center', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
-        const matterFilter = tenantId ? { tenantId } : {};
+        if (!tenantId) {
+            return res.json({
+                activeCases: 0,
+                complianceRate: '100%',
+                proceduralDistribution: []
+            });
+        }
+
+        const matterFilter = { tenantId };
 
         const [matters, deadlines] = await Promise.all([
             prisma.matter.findMany({
@@ -179,7 +193,7 @@ router.get('/case-center', authenticateToken, async (req, res) => {
                 select: { status: true, id: true }
             }),
             prisma.deadline.findMany({
-                where: tenantId ? { matter: { tenantId } } : {}
+                where: { matter: { tenantId } }
             })
         ]);
 

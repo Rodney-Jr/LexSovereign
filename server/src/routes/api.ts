@@ -207,7 +207,7 @@ router.post('/document-templates/:id/hydrate', authenticateToken, async (req: Re
         await prisma.activityEntry.create({
             data: {
                 matterId: matterId,
-                tenantId: req.user?.tenantId as string,
+                tenantId: (req.user?.tenantId || 'SYSTEM'),
                 type: 'AI_HYDRATE',
                 actorId: req.user?.id || null,
                 details: `AI Auto-Hydrated template "${template.name}" using context from Sovereign Registry.`

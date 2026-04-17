@@ -263,6 +263,16 @@ const AppContent: React.FC = () => {
                         </div>
                       </div>
                     )}
+
+                    {(session?.role === 'TENANT_ADMIN' || session?.role === 'GLOBAL_ADMIN') && (
+                      <div onClick={() => navigate('/tenant-settings?tab=organization&invite=true')} className="bg-purple-500/10 border border-purple-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-purple-500/20 transition-all flex items-center gap-4 shadow-lg shadow-purple-500/5">
+                        <div className="p-3 bg-purple-500/20 rounded-2xl"><UserPlus className="text-purple-400" /></div>
+                        <div>
+                          <h4 className="font-bold text-brand-text">Invite Practitioner</h4>
+                          <p className="text-xs text-brand-muted">Expand Organization</p>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

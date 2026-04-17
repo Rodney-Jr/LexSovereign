@@ -12,7 +12,9 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         const tenantId = req.user?.tenantId;
-        if (!isGlobalAdmin && !tenantId) return res.status(401).json({ error: 'Tenant context missing' });
+        
+        // Safety: Global Admins can access branding without a specific tenant context
+        if (!tenantId && !isGlobalAdmin) return res.status(401).json({ error: 'Tenant context missing' });
 
         const profiles = await prisma.brandingProfile.findMany({
             where: isGlobalAdmin ? {} : { tenantId: req.user!.tenantId as string },

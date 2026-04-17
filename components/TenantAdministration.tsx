@@ -130,6 +130,12 @@ const TenantAdministration: React.FC = () => {
    React.useEffect(() => {
       fetchData();
       fetchPermissions();
+
+      // Handle Deep Linked Invitation
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('invite') === 'true') {
+         setShowInviteModal(true);
+      }
    }, []);
 
    // ESC key handler for modal
@@ -333,8 +339,6 @@ const TenantAdministration: React.FC = () => {
                <TabButton label="Users & RBAC" active={activeTab === 'users'} icon={<Users size={16} />} onClick={() => setActiveTab('users')} />
                <TabButton label="Roles" active={activeTab === 'roles'} icon={<Shield size={16} />} onClick={() => setActiveTab('roles')} />
                <TabButton label="Access Control" active={activeTab === 'access'} icon={<ShieldCheck size={16} />} onClick={() => setActiveTab('access')} />
-               <TabButton label="Bot Studio" active={activeTab === 'chatbot'} icon={<Bot size={16} />} onClick={() => setActiveTab('chatbot')} />
-               <TabButton label="Branding" active={activeTab === 'branding'} icon={<Droplet size={16} />} onClick={() => setActiveTab('branding')} />
                <TabButton label="Templates" active={activeTab === 'templates'} icon={<FileText size={16} />} onClick={() => setActiveTab('templates')} />
                <TabButton label="Compliance & Risk" active={activeTab === 'compliance'} icon={<ShieldCheck size={16} />} onClick={() => setActiveTab('compliance')} />
                <TabButton label="Sovereign Billing" active={activeTab === 'billing'} icon={<CreditCard size={16} />} onClick={() => setActiveTab('billing')} />

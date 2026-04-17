@@ -16,10 +16,13 @@ interface TenantSettingsProps {
     setUserRole: (role: UserRole) => void;
 }
 
-type SettingsTab = 'organization' | 'access' | 'integrations' | 'agent' | 'blueprint' | 'branding' | 'sovereignty' | 'ui-visibility';
+type SettingsTab = 'organization' | 'access' | 'integrations' | 'agent' | 'blueprint' | 'branding' | 'chatbot' | 'knowledgebase' | 'sovereignty' | 'ui-visibility';
 
 const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }) => {
-    const [activeTab, setActiveTab] = useState<SettingsTab>('organization');
+    const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
+        const params = new URLSearchParams(window.location.search);
+        return (params.get('tab') as SettingsTab) || 'organization';
+    });
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -37,18 +40,35 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-2 border-b border-slate-800 pb-2 overflow-x-auto scrollbar-hide">
                 <TabButton
                     icon={<Building2 size={16} />}
-                    label="Organization"
+                    label="Staff"
                     active={activeTab === 'organization'}
                     onClick={() => setActiveTab('organization')}
                 />
                 <TabButton
                     icon={<Key size={16} />}
-                    label="Access Control"
+                    label="Access & Roles"
                     active={activeTab === 'access'}
                     onClick={() => setActiveTab('access')}
+                />
+                <TabButton
+                    icon={<MessageSquare className="text-indigo-400" size={16} />}
+                    label="Chatbot Studio"
+                    active={activeTab === 'chatbot'}
+                    onClick={() => setActiveTab('chatbot')}
+                />
+                <TabButton
+                    icon={<Database className="text-cyan-400" size={16} />}
+                    label="Knowledgebase"
+                    active={activeTab === 'knowledgebase'}
+                    onClick={() => setActiveTab('knowledgebase')}
+                />
+                <TabButton
+                    icon={<Droplet size={16} />}
+                    label="Branding"
+                    active={activeTab === 'branding'}
+                    onClick={() => setActiveTab('branding')}
                 />
                 <TabButton
                     icon={<Plug size={16} />}
@@ -57,22 +77,10 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                     onClick={() => setActiveTab('integrations')}
                 />
                 <TabButton
-                    icon={<Settings className="text-indigo-400" size={16} />}
-                    label="Agent Sync"
-                    active={activeTab === 'agent'}
-                    onClick={() => setActiveTab('agent')}
-                />
-                <TabButton
                     icon={<GitBranch size={16} />}
                     label="Blueprint"
                     active={activeTab === 'blueprint'}
                     onClick={() => setActiveTab('blueprint')}
-                />
-                <TabButton
-                    icon={<Droplet size={16} />}
-                    label="White Label"
-                    active={activeTab === 'branding'}
-                    onClick={() => setActiveTab('branding')}
                 />
                 <TabButton
                     icon={<ShieldCheck className="text-emerald-400" size={16} />}
@@ -86,9 +94,7 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                     active={activeTab === 'ui-visibility'}
                     onClick={() => setActiveTab('ui-visibility')}
                 />
-            </div>
 
-            {/* Tab Content */}
             <div className="animate-in fade-in duration-500">
                 {activeTab === 'organization' && <TenantAdministration />}
                 {activeTab === 'access' && <AccessGovernance userRole={userRole} setUserRole={setUserRole} />}
@@ -96,6 +102,8 @@ const TenantSettings: React.FC<TenantSettingsProps> = ({ userRole, setUserRole }
                 {activeTab === 'agent' && <ApiKeysDashboard />}
                 {activeTab === 'blueprint' && <OrgChart />}
                 {activeTab === 'branding' && <BrandingSettings />}
+                {activeTab === 'chatbot' && <ChatbotStudio />}
+                {activeTab === 'knowledgebase' && <LegalRepositoryTab userRole={userRole} />}
                 {activeTab === 'sovereignty' && <SovereignResidencySettings />}
                 {activeTab === 'ui-visibility' && <UiVisibilityPanel />}
             </div>

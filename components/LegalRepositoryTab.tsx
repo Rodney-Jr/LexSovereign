@@ -114,7 +114,7 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-right-4 duration-500">
             {/* Left Section: Upload & Controls (Admins Only) */}
-            {userRole === 'GLOBAL_ADMIN' && (
+            {(userRole === 'GLOBAL_ADMIN' || userRole === 'TENANT_ADMIN') && (
                 <div className="lg:col-span-4 space-y-6">
                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden group">
                         <div className="flex items-center gap-3 mb-2">
@@ -159,6 +159,12 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
                                         active={category === 'CASEFILE'}
                                         onClick={() => setCategory('CASEFILE')}
                                         icon={<Scale size={14} />}
+                                    />
+                                    <CategoryButton
+                                        label="Firm Doc"
+                                        active={category === 'FIRM_DOCUMENT'}
+                                        onClick={() => setCategory('FIRM_DOCUMENT')}
+                                        icon={<FileText size={14} className="text-purple-400" />}
                                     />
                                     <CategoryButton
                                         label="Other"
@@ -286,7 +292,7 @@ export const LegalRepositoryTab = ({ userRole }: { userRole?: string }) => {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            {userRole === 'GLOBAL_ADMIN' && (
+                                            {(userRole === 'GLOBAL_ADMIN' || userRole === 'TENANT_ADMIN') && (
                                                 <button
                                                     onClick={() => handleDelete(doc.id)}
                                                     className="p-2 hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all rounded-xl"

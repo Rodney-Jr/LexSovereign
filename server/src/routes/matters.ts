@@ -701,7 +701,7 @@ router.post('/:id/time-entries', authenticateToken, async (req, res) => {
                 startTime: new Date(startTime),
                 isBillable: isBillable ?? true,
                 matterId: id,
-                tenantId: req.user!.tenantId as string,
+                tenantId: (req.user!.tenantId || 'SYSTEM'),
                 userId
             }
         });

@@ -19,6 +19,8 @@ export interface InternalUser {
 router.get('/assets', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
+
         const assets = await prisma.firmAsset.findMany({
             where: { tenantId },
             include: { assignedTo: true },
@@ -40,6 +42,7 @@ router.get('/assets', async (req: Request, res: Response) => {
 router.post('/assets', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required for asset creation' });
         const { name, serialNumber, category, status, purchaseDate, notes } = req.body;
 
         const asset = await prisma.firmAsset.create({
@@ -62,6 +65,7 @@ router.post('/assets', async (req: Request, res: Response) => {
 router.put('/assets/:id', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { status, assignedToId, notes } = req.body;
 
         const asset = await prisma.firmAsset.update({
@@ -80,6 +84,7 @@ router.put('/assets/:id', async (req: Request, res: Response) => {
 router.get('/expenses', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
         const expenses = await prisma.expense.findMany({
             where: { tenantId },
             orderBy: { expenseDate: 'desc' }
@@ -93,6 +98,7 @@ router.get('/expenses', async (req: Request, res: Response) => {
 router.post('/expenses', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { description, amount, category, status, expenseDate, notes, type } = req.body;
 
         const expense = await prisma.expense.create({
@@ -116,6 +122,7 @@ router.post('/expenses', async (req: Request, res: Response) => {
 router.put('/expenses/:id/status', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { status } = req.body;
 
         const expense = await prisma.expense.update({
@@ -134,6 +141,7 @@ router.put('/expenses/:id/status', async (req: Request, res: Response) => {
 router.get('/staff', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
         const users = await prisma.user.findMany({
             where: { tenantId },
             select: {
@@ -167,6 +175,7 @@ router.get('/staff', async (req: Request, res: Response) => {
 router.get('/payroll', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
         const users = await prisma.user.findMany({
             where: { tenantId },
             include: {
@@ -197,6 +206,7 @@ router.get('/payroll', async (req: Request, res: Response) => {
 router.get('/leaves', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
         const leaves = await prisma.leaveRecord.findMany({
             where: { tenantId },
             include: { user: true },
@@ -221,6 +231,7 @@ router.get('/leaves', async (req: Request, res: Response) => {
 router.post('/leaves', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { userId, type, startDate, endDate, reason } = req.body;
 
         const leave = await prisma.leaveRecord.create({
@@ -261,6 +272,7 @@ router.put('/leaves/:id/status', async (req: Request, res: Response) => {
 router.get('/recruitment/candidates', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
         const candidates = await prisma.candidate.findMany({
             where: { tenantId },
             orderBy: { appliedOn: 'desc' }
@@ -279,6 +291,7 @@ router.get('/recruitment/candidates', async (req: Request, res: Response) => {
 router.post('/recruitment/candidates', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { name, email, role, status } = req.body;
 
         const candidate = await prisma.candidate.create({
@@ -313,6 +326,7 @@ router.put('/recruitment/candidates/:id/stage', async (req: Request, res: Respon
 router.get('/compliance/cle', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
         // Mock-compatible aggregate format
         const cleRecords = await prisma.cLERecord.findMany({
             where: { tenantId },
@@ -344,6 +358,7 @@ router.get('/compliance/cle', async (req: Request, res: Response) => {
 router.post('/compliance/cle', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { userId, course, credits, date, deadline } = req.body;
 
         const cle = await prisma.cLERecord.create({
@@ -368,6 +383,7 @@ router.post('/compliance/cle', async (req: Request, res: Response) => {
 router.get('/onboarding', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.json([]);
         const items = await prisma.onboardingItem.findMany({
             where: { tenantId }
         });
@@ -474,6 +490,7 @@ router.get('/staff/:id/dossier', async (req: Request, res: Response) => {
 router.post('/salary', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { userId, baseSalary, bankAccount, effectiveFrom } = req.body;
         const salary = await prisma.salaryRecord.create({
             data: {
@@ -493,6 +510,7 @@ router.post('/salary', async (req: Request, res: Response) => {
 router.post('/appraisals', async (req: Request, res: Response) => {
     try {
         const tenantId = (req.user as InternalUser).tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const reviewerId = (req.user as InternalUser).id;
         const { userId, rating, notes, date } = req.body;
         const appraisal = await prisma.performanceAppraisal.create({

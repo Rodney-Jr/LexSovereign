@@ -116,7 +116,18 @@ router.post('/support/exit', authenticateToken, async (req: any, res) => {
 router.get('/analytics', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Tenant context missing' });
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        
+        if (!tenantId && !isGlobalAdmin) return res.status(401).json({ error: 'Tenant context missing' });
+
+        // If Global Admin but no tenantId, either return platform stats or empty
+        if (!tenantId) {
+            return res.json({
+                totalUsers: 0,
+                activeTenants: 0,
+                systemLoad: 'Normal'
+            });
+        }
 
         const analytics = await AnalyticsService.getTenantAnalytics(tenantId);
         res.json(analytics);
@@ -144,7 +155,7 @@ router.get('/audit-export/:matterId', authenticateToken, async (req, res) => {
 router.post('/departments', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Tenant context missing' });
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
 
         const { name, description } = req.body;
         const dept = await GovernanceService.createDepartment(tenantId, name, description);
