@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Settings, Building2, Key, GitBranch, Plug, Droplet, ShieldCheck, Eye } from 'lucide-react';
+import { Settings, Building2, Key, GitBranch, Plug, Droplet, ShieldCheck, Eye, MessageSquare, Database } from 'lucide-react';
 import TenantAdministration from './TenantAdministration';
 import AccessGovernance from './AccessGovernance';
 import BridgeRegistry from './BridgeRegistry';
@@ -9,6 +9,8 @@ import BrandingSettings from './BrandingSettings';
 import ApiKeysDashboard from './ApiKeysDashboard';
 import SovereignResidencySettings from './SovereignResidencySettings';
 import UiVisibilityPanel from './UiVisibilityPanel';
+import ChatbotStudio from './ChatbotStudio';
+import { LegalRepositoryTab } from './LegalRepositoryTab';
 import { UserRole } from '../types';
 
 interface TenantSettingsProps {
