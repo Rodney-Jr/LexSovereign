@@ -50,7 +50,7 @@ export const TAB_REQUIRED_PERMISSIONS: Record<string, string[]> = {
   'accounting-hub': ['ACCESS:ACCOUNTING'],
   'capacity': ['MANAGE:USER'],
   'system-settings': ['ACCESS:INFRASTRUCTURE'],
-  'tenant-settings': ['VIEW:TENANT_SETTINGS'],
+  'tenant-settings': ['VIEW:TENANT_SETTINGS', 'MANAGE:TENANT_SETTINGS'],
   'status': ['ACCESS:ROADMAP'],
   'analysis': ['CREATE:DRAFT', 'REVIEW:WORK'],
   'client-portal': ['ACCESS:CLIENT_PORTAL'],
