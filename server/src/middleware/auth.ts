@@ -117,7 +117,7 @@ export const requirePermission = (action: string, resource: string) => {
 
         // 2. TENANT_ADMIN Fallback logic for settings
         const isTenantAdmin = user.role === 'TENANT_ADMIN';
-        const isSettingsPerm = resource === 'TENANT_SETTINGS' || resource === 'TENANT';
+        const isSettingsPerm = resource === 'TENANT_SETTINGS' || resource === 'TENANT' || resource === 'USER' || resource === 'INVITATION';
 
         if (isTenantAdmin && isSettingsPerm) {
             return next();

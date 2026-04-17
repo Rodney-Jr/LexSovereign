@@ -14,7 +14,7 @@ router.get('/', authenticateToken, async (req, res) => {
         const tenantId = req.user?.tenantId;
         
         // Safety: Global Admins can access branding without a specific tenant context
-        if (!tenantId && !isGlobalAdmin) return res.status(401).json({ error: 'Tenant context missing' });
+        if (!tenantId && !isGlobalAdmin) return res.status(403).json({ error: 'Tenant context missing' });
 
         const profiles = await prisma.brandingProfile.findMany({
             where: isGlobalAdmin ? {} : { tenantId: req.user!.tenantId as string },
@@ -34,7 +34,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user!.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Tenant context missing' });
+        if (!tenantId) return res.status(403).json({ error: 'Tenant context missing' });
 
         const { name, logoUrl, primaryColor, secondaryColor, primaryFont, headerText, footerText, coverPageEnabled, watermarkText } = req.body;
 
@@ -67,7 +67,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const tenantId = req.user!.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Tenant context missing' });
+        if (!tenantId) return res.status(403).json({ error: 'Tenant context missing' });
 
         const { name, logoUrl, primaryColor, secondaryColor, primaryFont, headerText, footerText, coverPageEnabled, watermarkText } = req.body;
 

@@ -37,7 +37,7 @@ router.get('/config', authenticateToken, async (req: any, res) => {
     try {
         const tenantId = req.user?.tenantId;
         if (!tenantId) {
-            return res.status(401).json({ error: "Authentication required" });
+            return res.status(403).json({ error: "Tenant context missing" });
         }
         const config = await ChatbotService.getConfig(tenantId);
         res.json(config);
@@ -55,7 +55,7 @@ router.post('/config', authenticateToken, async (req: any, res) => {
         }
         const tenantId = req.user?.tenantId;
         if (!tenantId) {
-            return res.status(401).json({ error: "Authentication required" });
+            return res.status(403).json({ error: "Tenant context missing" });
         }
         const saved = await ChatbotService.saveConfig(tenantId, newConfig);
         res.json(saved);

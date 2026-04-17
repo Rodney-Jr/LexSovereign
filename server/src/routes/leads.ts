@@ -87,7 +87,7 @@ router.get('/', authenticateToken, async (req: any, res) => {
         const where: any = {};
         if (!isGlobalAdmin) {
             // Regular tenants only see their own leads
-            if (!tenantId) return res.status(401).json({ error: "Tenant context required" });
+            if (!tenantId) return res.status(403).json({ error: "Tenant context required" });
             where.tenantId = tenantId;
         }
 

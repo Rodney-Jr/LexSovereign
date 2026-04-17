@@ -11,7 +11,7 @@ router.post('/backfill', async (req, res) => {
     try {
         const tenantId = (req as any).user?.tenant?.id || (req as any).user?.tenantId;
         if (!tenantId) {
-            return res.status(401).json({ error: "Tenant context required for backfill" });
+            return res.status(403).json({ error: "Tenant context required for backfill" });
         }
 
         const mattersWithBilling = await prisma.matter.findMany({
@@ -95,7 +95,7 @@ router.get('/financials', async (req, res) => {
         const tenantId = (req as any).user?.tenant?.id || (req as any).user?.tenantId;
         const { type } = req.query; // 'CASE' or 'CONTRACT'
 
-        if (!tenantId) return res.status(401).json({ error: "Unauthorized" });
+        if (!tenantId) return res.status(403).json({ error: "Unauthorized" });
 
         const data = await BillingService.getAggregateFinancials(tenantId, type as any || 'CASE');
         res.json(data);
@@ -112,7 +112,7 @@ router.get('/financials', async (req, res) => {
 router.get('/invoices', async (req, res) => {
     try {
         const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
-        if (!tenantId) return res.status(401).json({ error: "Tenant context missing" });
+        if (!tenantId) return res.status(403).json({ error: "Tenant context missing" });
 
         const invoices = await BillingService.getTenantInvoices(tenantId);
         res.json(invoices);
@@ -167,7 +167,7 @@ router.get('/matters/:matterId/usage', async (req, res) => {
     try {
         const { matterId } = req.params;
         const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
-        if (!tenantId) return res.status(401).json({ error: "Tenant context missing" });
+        if (!tenantId) return res.status(403).json({ error: "Tenant context missing" });
 
         const usage = await BillingService.getMatterUsage(matterId, tenantId);
         res.json(usage);
@@ -185,7 +185,7 @@ router.get('/matters/:matterId/disbursement-csv', async (req, res) => {
     try {
         const { matterId } = req.params;
         const tenantId = (req as any).user?.tenantId || (req as any).user?.tenant?.id;
-        if (!tenantId) return res.status(401).json({ error: "Tenant context missing" });
+        if (!tenantId) return res.status(403).json({ error: "Tenant context missing" });
 
         const csv = await BillingService.generateClientDisbursementCSV(matterId, tenantId);
 

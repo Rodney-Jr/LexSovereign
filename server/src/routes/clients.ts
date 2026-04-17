@@ -39,7 +39,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
         const userTenantId = req.user?.tenantId;
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
 
-        if (!userTenantId && !isGlobalAdmin) return res.status(401).json({ error: 'Authentication required' });
+        if (!userTenantId && !isGlobalAdmin) return res.status(403).json({ error: 'Tenant context missing' });
+
 
         const whereClause: any = { id: req.params.id };
         if (!isGlobalAdmin) {
@@ -100,7 +101,8 @@ router.post('/', authenticateToken, async (req, res) => {
 router.patch('/:id', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Authentication required' });
+        if (!tenantId) return res.status(403).json({ error: 'Tenant context missing' });
+
         const { name, industry, contactEmail, contactPhone, billingAddress, taxId, type } = req.body;
 
         const existing = await prisma.client.findFirst({ where: { id: req.params.id, tenantId } });
@@ -122,7 +124,8 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
-        if (!tenantId) return res.status(401).json({ error: 'Authentication required' });
+        if (!tenantId) return res.status(403).json({ error: 'Tenant context missing' });
+
 
         const client = await prisma.client.findFirst({
             where: { id: req.params.id, tenantId },

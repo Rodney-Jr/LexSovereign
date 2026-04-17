@@ -118,7 +118,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
         const tenantId = req.user?.tenantId;
         const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         
-        if (!tenantId && !isGlobalAdmin) return res.status(401).json({ error: 'Tenant context missing' });
+        if (!tenantId && !isGlobalAdmin) return res.status(403).json({ error: 'Tenant context missing' });
 
         // If Global Admin but no tenantId, either return platform stats or empty
         if (!tenantId) {
