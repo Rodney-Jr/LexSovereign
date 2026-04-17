@@ -39,7 +39,9 @@ router.get('/', authenticateToken, requirePermission('MANAGE', 'USER'), async (r
         }
 
         // Make sure we set the updated tenantId if we overrode it
-        req.user.tenantId = tenantId;
+        if (req.user) {
+            req.user.tenantId = tenantId || null;
+        }
 
         const users = await prisma.user.findMany({
             where: isGlobalAdmin ? {} : {
