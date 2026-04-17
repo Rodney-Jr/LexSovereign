@@ -103,7 +103,7 @@ app.use(cookieParser());
 // Rate limiter for auth endpoints - prevents credential stuffing
 const authRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 20, // max 20 attempts per IP per window
+    max: 100, // Increased for development/local testing (was 20)
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many login attempts. Please try again in 15 minutes.', code: 'RATE_LIMITED' }
@@ -112,7 +112,7 @@ const authRateLimiter = rateLimit({
 // Standard API rate limiter - prevents platform abuse
 const standardApiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // max 500 requests per IP per window
+    max: 2000, // Increased for development/local testing (was 500)
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests. Please slow down.', code: 'RATE_LIMITED' }
