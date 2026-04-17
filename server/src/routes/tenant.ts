@@ -9,11 +9,29 @@ const router = express.Router();
 // Returns live counts for the current tenant
 router.get('/admin-stats', authenticateToken, requirePermission('VIEW_STATS', 'TENANT'), async (req, res) => {
     try {
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-        const tenantId = req.user?.tenantId;
+        let isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        let tenantId = req.user?.tenantId;
+
+        if (!tenantId && isGlobalAdmin) {
+            tenantId = req.query.targetTenantId as string;
+            if (!tenantId) {
+                const firstTenant = await prisma.tenant.findFirst();
+                tenantId = firstTenant?.id;
+            }
+        }
+
+        // Just in case the JWT had the wrong role
+        if (!tenantId && !isGlobalAdmin) {
+            const dbUser = await prisma.user.findUnique({ where: { id: req.user?.id } });
+            if (dbUser?.roleString === 'GLOBAL_ADMIN') {
+                isGlobalAdmin = true;
+                const firstTenant = await prisma.tenant.findFirst();
+                tenantId = firstTenant?.id;
+            }
+        }
 
         if (!isGlobalAdmin && !tenantId) {
-            res.status(400).json({ error: 'Tenant context missing' });
+            res.status(403).json({ error: 'Tenant context missing' });
             return;
         }
 
@@ -307,15 +325,28 @@ router.get('/billing', authenticateToken, requirePermission('VIEW_BILLING', 'TEN
 // Returns organization-specific settings
 router.get('/settings', authenticateToken, requirePermission('VIEW', 'TENANT_SETTINGS'), async (req, res) => {
     try {
-        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
+        let isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
         let tenantId = req.user?.tenantId;
 
         if (!tenantId && isGlobalAdmin) {
             tenantId = req.query.targetTenantId as string;
+            if (!tenantId) {
+                const firstTenant = await prisma.tenant.findFirst();
+                tenantId = firstTenant?.id;
+            }
+        }
+
+        if (!tenantId && !isGlobalAdmin) {
+            const dbUser = await prisma.user.findUnique({ where: { id: req.user?.id } });
+            if (dbUser?.roleString === 'GLOBAL_ADMIN') {
+                isGlobalAdmin = true;
+                const firstTenant = await prisma.tenant.findFirst();
+                tenantId = firstTenant?.id;
+            }
         }
 
         if (!tenantId) {
-            res.status(400).json({ error: 'Tenant context missing' });
+            res.status(403).json({ error: 'Tenant context missing' });
             return;
         }
 
