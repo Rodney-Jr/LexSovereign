@@ -9,7 +9,8 @@ import {
   LogOut,
   ShieldAlert,
   Sparkles,
-  Calendar
+  Calendar,
+  UserPlus
 } from 'lucide-react';
 
 import Dashboard from './components/Dashboard';
