@@ -33,6 +33,21 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
             isImpersonating: !!decodedPayload.isImpersonating
         };
 
+        // Complete Universal Fallback for GLOBAL_ADMIN Sessions
+        // This instantly prevents the cluster cascade of 403 Tenant Context missing errors
+        // on specialized sub-modules (chatbot, ui-visibility, branding) without requiring route-by-route null checks.
+        if (req.user.role === 'GLOBAL_ADMIN' && !req.user.tenantId) {
+            try {
+                const defaultTenant = await prisma.tenant.findFirst({ orderBy: { createdAt: 'asc' } });
+                if (defaultTenant) {
+                    req.user.tenantId = defaultTenant.id;
+                    console.log(`[Auth-Fallback] Hydrated tenantId context for GLOBAL_ADMIN from master pool:`, defaultTenant.id);
+                }
+            } catch (err) {
+                console.warn('[Auth-Fallback] Error hydrating global admin tenant context:', err);
+            }
+        }
+
         if (req.user && !req.user.isImpersonating) {
              const userStatus: any = await prisma.user.findUnique({ 
                 where: { id: req.user.id },
