@@ -154,7 +154,7 @@ const ChatbotStudio: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Bot Public Name</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Bot Public Name</label>
                 <input
                   type="text"
                   title="Bot Public Name"
@@ -165,7 +165,7 @@ const ChatbotStudio: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Egress Channels</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Egress Channels</label>
                 <div className="flex gap-3">
                   <ChannelToggle active={config.channels.whatsapp} label="WhatsApp" icon={<Smartphone size={14} />} onClick={() => setConfig({ ...config, channels: { ...config.channels, whatsapp: !config.channels.whatsapp } })} />
                   <ChannelToggle active={config.channels.webWidget} label="Web Widget" icon={<Globe size={14} />} onClick={() => setConfig({ ...config, channels: { ...config.channels, webWidget: !config.channels.webWidget } })} />
@@ -174,7 +174,7 @@ const ChatbotStudio: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Welcome Hook</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Welcome Hook</label>
               <input
                 type="text"
                 title="Welcome Hook"
@@ -186,7 +186,7 @@ const ChatbotStudio: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">AI Strategic Mandate (System Prompt)</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">AI Strategic Mandate (System Prompt)</label>
               <textarea
                 title="AI Strategic Mandate"
                 placeholder="Describe bot instructions"
@@ -263,45 +263,54 @@ const ChatbotStudio: React.FC = () => {
         {/* Right: Live Sandbox & Guardrails */}
         <div className="lg:col-span-5 space-y-8">
           {/* Sandbox Terminal */}
-          <div className="bg-black border border-slate-800 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col h-[600px]">
-            <div className="bg-slate-900/50 p-6 border-b border-slate-800 flex items-center justify-between">
+          <div className="bg-slate-950 border border-slate-800 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col h-[600px] relative">
+            
+            {/* Terminal Header */}
+            <div className="bg-slate-900/80 p-5 pl-7 border-b border-slate-800/80 flex items-center justify-between backdrop-blur-sm z-10">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <h5 className="text-[10px] font-bold text-white uppercase tracking-widest">Public Sandbox Preview</h5>
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                <h5 className="text-xs font-bold text-slate-200 uppercase tracking-widest">Public Sandbox Preview</h5>
               </div>
-              <span className="text-[9px] font-mono text-slate-500">
+              <span className="text-[10px] font-mono text-slate-500 px-3 py-1 bg-black/40 rounded-full border border-slate-800/50">
                 GATEWAY: {chatMessages.filter(m => m.role === 'bot').slice(-1)[0]?.provider?.toUpperCase() || 'READY'}
               </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
+            {/* Chat Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+              {/* Welcome Message */}
               <div className="flex justify-start">
-                <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-xs text-indigo-100">
+                <div className="bg-indigo-500/15 border border-indigo-500/30 p-4 rounded-3xl rounded-tl-sm max-w-[85%] text-sm text-indigo-100 shadow-md">
                   {config.welcomeMessage}
                 </div>
               </div>
+              
+              {/* Standard Messages */}
               {chatMessages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`p-4 rounded-2xl text-xs max-w-[85%] ${m.role === 'user'
-                    ? 'bg-slate-800 text-white rounded-tr-none'
-                    : 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-100 rounded-tl-none'
+                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
+                  <div className={`px-5 py-3.5 rounded-3xl text-sm max-w-[85%] shadow-md ${m.role === 'user'
+                    ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-white rounded-tr-sm'
+                    : 'bg-indigo-500/15 border border-indigo-500/30 text-indigo-100 rounded-tl-sm'
                     }`}>
                     {m.text}
                   </div>
                 </div>
               ))}
+              
+              {/* Typing Indicator */}
               {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-indigo-500/10 p-3 rounded-2xl rounded-tl-none flex gap-1">
-                    <div className="w-1 h-1 bg-indigo-400 rounded-full animate-bounce"></div>
-                    <div className="w-1 h-1 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                    <div className="w-1 h-1 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                <div className="flex justify-start animate-in fade-in">
+                  <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-3xl rounded-tl-sm flex gap-1.5 shadow-sm">
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="p-6 bg-slate-950 border-t border-slate-800">
+            {/* Chat Input */}
+            <div className="p-6 bg-slate-900/50 border-t border-slate-800/80 backdrop-blur-md">
               <div className="relative">
                 <input
                   type="text"
@@ -309,23 +318,23 @@ const ChatbotStudio: React.FC = () => {
                   onChange={e => setChatInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleTestChat()}
                   placeholder="Simulate user query..."
-                  className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 text-sm text-white pr-16 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full bg-slate-950 border border-slate-700/50 rounded-2xl px-6 py-4 text-sm text-white pr-16 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner"
                 />
                 <button
                   onClick={handleTestChat}
                   title="Send Message"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 rounded-xl text-white hover:bg-indigo-500 transition-all"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-600 rounded-xl text-white hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20 active:scale-95 transition-all"
                 >
                   <MessageSquare size={18} />
                 </button>
               </div>
-              <div className="mt-4 flex items-center justify-between px-2">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-slate-500 uppercase tracking-widest">
-                    <ShieldCheck size={10} className="text-emerald-500" /> RRE Intercept: ACTIVE
+              <div className="mt-5 flex items-center justify-between px-2">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <ShieldCheck size={12} className="text-emerald-500" /> RRE Intercept: ACTIVE
                   </div>
-                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-slate-500 uppercase tracking-widest">
-                    <EyeOff size={10} className="text-amber-500" /> DAS Proxy: ACTIVE
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <EyeOff size={12} className="text-amber-500" /> DAS Proxy: ACTIVE
                   </div>
                 </div>
               </div>

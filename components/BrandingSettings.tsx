@@ -110,7 +110,7 @@ const BrandingSettings: React.FC = () => {
 
                         {/* Profile Name */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Profile Name (Internal)</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Profile Name (Internal)</label>
                             <input
                                 type="text"
                                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-purple-500 transition-all placeholder:text-slate-700"
@@ -122,7 +122,7 @@ const BrandingSettings: React.FC = () => {
 
                         {/* Watermark Text */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                            <label className="text-xs font-bold text-emerald-500 uppercase tracking-widest ml-1 flex items-center gap-2">
                                 <Droplet size={12} /> Watermark Text
                             </label>
                             <input
@@ -132,12 +132,12 @@ const BrandingSettings: React.FC = () => {
                                 value={formData.watermarkText || ''}
                                 onChange={e => setFormData({ ...formData, watermarkText: e.target.value })}
                             />
-                            <p className="text-[10px] text-slate-500 italic">This text will be overlaid diagonally on all document drafts and PDF exports.</p>
+                            <p className="text-xs text-slate-500 italic mt-1 ml-1">This text will be overlaid diagonally on all document drafts and PDF exports.</p>
                         </div>
 
                         {/* Font Selection */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
                                 <Type size={12} /> Primary Font
                             </label>
                             <select
@@ -155,7 +155,7 @@ const BrandingSettings: React.FC = () => {
 
                         {/* Header Text */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Header Text</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Header Text</label>
                             <input
                                 type="text"
                                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-purple-500 transition-all placeholder:text-slate-700"
@@ -167,7 +167,7 @@ const BrandingSettings: React.FC = () => {
 
                         {/* Footer Text */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Footer Text</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Footer Text</label>
                             <input
                                 type="text"
                                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-purple-500 transition-all placeholder:text-slate-700"
@@ -199,48 +199,55 @@ const BrandingSettings: React.FC = () => {
                     </div>
 
                     {/* Right Column: Preview */}
-                    <div className="bg-slate-950 border border-slate-800 rounded-xl p-8 flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-black border border-slate-800/80 rounded-[2rem] p-8 flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden shadow-inner">
 
-                        {/* Watermark Preview */}
-                        <div className="absolute inset-0 pointer-events-none opacity-[0.05] flex items-center justify-center rotate-45 select-none text-6xl font-black text-slate-200 whitespace-nowrap overflow-hidden">
+                        {/* Background Watermark Hint */}
+                        <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center rotate-12 select-none text-8xl font-black text-slate-100 whitespace-nowrap overflow-hidden">
                             {formData.watermarkText || 'TENANT NAME'}
                         </div>
 
-                        <div className="w-full max-w-[300px] aspect-[1/1.41] bg-white text-black text-[8px] p-8 shadow-2xl relative flex flex-col">
-                            {/* Header */}
-                            <div className="absolute top-4 right-4 text-gray-400 text-[6px] text-right">
-                                {formData.headerText || 'CONFIDENTIAL'}
-                            </div>
+                        {/* Page Container wrapper with glow */}
+                        <div className="relative group">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-emerald-600 rounded-sm blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                            
+                            <div className="w-full min-w-[280px] max-w-[320px] aspect-[1/1.41] bg-white text-black text-[8px] p-8 shadow-2xl relative flex flex-col overflow-hidden">
+                                
+                                {/* Overlay Watermark on Document itself */}
+                                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 overflow-hidden mix-blend-multiply opacity-15">
+                                    <span className="font-serif text-3xl font-black rotate-[-45deg] uppercase whitespace-nowrap tracking-widest text-slate-500">
+                                        {formData.watermarkText || 'TENANT NAME'}
+                                    </span>
+                                </div>
 
-                            {/* Body Content Placeholder */}
-                            <div className="mt-8 space-y-2 opacity-30">
-                                <div className="h-2 bg-black w-3/4 mb-4"></div>
-                                <div className="h-1 bg-black w-full"></div>
-                                <div className="h-1 bg-black w-full"></div>
-                                <div className="h-1 bg-black w-9/10"></div>
-                                <div className="h-1 bg-black w-full"></div>
-                                <div className="h-1 bg-black w-4/5"></div>
-                            </div>
+                                {/* Header */}
+                                <div className="absolute top-4 right-5 text-slate-400 text-[7px] text-right font-semibold uppercase tracking-wider">
+                                    {formData.headerText || 'CONFIDENTIAL'}
+                                </div>
 
-                            <div className="flex-1 flex items-center justify-center">
-                                <span className="font-serif text-lg opacity-20 rotate-45 font-bold uppercase text-center leading-tight">
-                                    {formData.watermarkText || 'TENANT NAME'}
-                                </span>
-                            </div>
+                                {/* Body Content Placeholder */}
+                                <div className="mt-8 space-y-3 opacity-20 flex-1 relative z-0">
+                                    <div className="h-2.5 bg-slate-800 w-2/3 mb-6 rounded-sm"></div>
+                                    <div className="h-1.5 bg-slate-800 w-full rounded-full"></div>
+                                    <div className="h-1.5 bg-slate-800 w-full rounded-full"></div>
+                                    <div className="h-1.5 bg-slate-800 w-11/12 rounded-full"></div>
+                                    <div className="h-1.5 bg-slate-800 w-full rounded-full"></div>
+                                    <div className="h-1.5 bg-slate-800 w-4/5 rounded-full"></div>
+                                    
+                                    <div className="h-1.5 bg-slate-800 w-full rounded-full mt-6"></div>
+                                    <div className="h-1.5 bg-slate-800 w-9/10 rounded-full"></div>
+                                    <div className="h-1.5 bg-slate-800 w-3/4 rounded-full"></div>
+                                </div>
 
-                            <div className="mb-8 space-y-2 opacity-30">
-                                <div className="h-1 bg-black w-full"></div>
-                                <div className="h-1 bg-black w-full"></div>
-                                <div className="h-1 bg-black w-3/4"></div>
-                            </div>
-
-                            {/* Footer */}
-                            <div className="absolute bottom-4 left-0 w-full text-center text-gray-400 text-[6px] border-t border-gray-100 pt-2">
-                                {formData.footerText || 'Page 1 of 1'}
+                                {/* Footer */}
+                                <div className="absolute bottom-4 left-0 w-full text-center text-slate-400 text-[6px] border-t border-slate-200 pt-3 font-semibold uppercase tracking-widest">
+                                    {formData.footerText || 'Page 1 of 1'}
+                                </div>
                             </div>
                         </div>
 
-                        <p className="mt-6 text-[10px] text-slate-500 font-mono">Live Preview (Approximation)</p>
+                        <p className="mt-8 text-xs text-slate-500 font-mono flex items-center gap-2">
+                            <Eye size={14} className="text-slate-400" /> Live Document Preview
+                        </p>
                     </div>
                 </div>
 

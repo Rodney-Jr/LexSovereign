@@ -34,6 +34,7 @@ router.get('/', authenticateToken, requirePermission('MANAGE', 'USER'), async (r
         }
 
         if (!isGlobalAdmin && !tenantId) {
+            console.error(`[DEBUG users.ts] Failed tenant check. User Payload: ${JSON.stringify(req.user)}. DB User Role: ${(await prisma.user.findUnique({ where: { id: req.user?.id } }))?.roleString}`);
             res.status(403).json({ error: 'Tenant context missing' });
             return;
         }
