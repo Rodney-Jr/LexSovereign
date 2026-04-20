@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Loader2, Image as ImageIcon, Type, FileText, CheckCircle2, AlertTriangle, Droplet } from 'lucide-react';
+import { Save, Loader2, Image as ImageIcon, Type, FileText, CheckCircle2, AlertTriangle, Droplet, Eye } from 'lucide-react';
 import { BrandingProfile } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
