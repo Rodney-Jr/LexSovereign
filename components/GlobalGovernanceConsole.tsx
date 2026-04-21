@@ -19,7 +19,8 @@ import {
   Pause,
   Play,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  CreditCard
 } from 'lucide-react';
 import { TenantMetadata, Region, SaaSPlan } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
@@ -42,9 +43,6 @@ const GlobalGovernanceConsole: React.FC = () => {
 
     try {
       setLoading(true);
-      // PLATFORM ENDPOINTS are restricted to GLOBAL_ADMIN. 
-      // Tenant-level users should not hit these to avoid 403 Forbidden logs.
-      /*
       const [tenantsData, statsData] = await Promise.all([
         authorizedFetch('/api/platform/tenants', { token: session.token }),
         authorizedFetch('/api/platform/stats', { token: session.token })
@@ -52,9 +50,6 @@ const GlobalGovernanceConsole: React.FC = () => {
 
       if (Array.isArray(tenantsData)) setTenants(tenantsData);
       if (statsData && !statsData.error) setPlatformStats(statsData);
-      */
-
-      // Seed with local or mock data if necessary, or just leave empty for now
       // as TenantGovernance is intended for Global Admin visibility primarily.
     } catch (e) {
       console.error("Failed to load platform data", e);
@@ -113,6 +108,27 @@ const GlobalGovernanceConsole: React.FC = () => {
       fetchPlatformData();
     } catch (e) {
       console.error("Failed to delete tenant", e);
+    }
+  };
+
+  const handleManageBilling = async (tenantId: string) => {
+    const session = getSavedSession();
+    if (!session?.token) return;
+
+    try {
+      const response = await authorizedFetch('/api/stripe/portal', {
+        method: 'POST',
+        token: session.token,
+        body: JSON.stringify({ targetTenantId: tenantId })
+      });
+      if (response.url) {
+        window.open(response.url, '_blank');
+      } else {
+        alert(response.error || "Billing portal is not available for this tenant.");
+      }
+    } catch (e) {
+      console.error("Failed to open billing portal", e);
+      alert("Failed to access billing portal. Ensure the tenant has an active Stripe subscription.");
     }
   };
 
@@ -222,6 +238,13 @@ const GlobalGovernanceConsole: React.FC = () => {
                 <div className="flex items-center gap-2">
                   {tenant.status !== 'DELETED' && (
                     <>
+                      <button
+                        onClick={() => handleManageBilling(tenant.id)}
+                        className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded-xl transition-all"
+                        title="Manage Tenant Billing"
+                      >
+                        <CreditCard size={16} />
+                      </button>
                       <button
                         onClick={() => handleStatusToggle(tenant.id, tenant.status)}
                         className={`p-2 rounded-xl transition-all ${tenant.status === 'ACTIVE' ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
