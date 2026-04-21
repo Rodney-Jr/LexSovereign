@@ -175,7 +175,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     const canAccessTab = React.useCallback((tab: string): boolean => {
         // 1. Global Admin Override (Restrict to Platform specific sections and Dashboard)
         if (role === 'GLOBAL_ADMIN') {
-            const platformTabs = ['dashboard', 'platform-ops', 'global-governance', 'status', 'system-settings'];
+            const platformTabs = ['dashboard', 'platform-ops', 'global-governance', 'status', 'system-settings', 'pricing-calib'];
             return platformTabs.includes(tab);
         }
 
@@ -187,7 +187,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
 
         // 3. Fallback / Structural Role Rules
         // Platform owner items are STRICTLY for GLOBAL_ADMIN
-        const platformTabs = ['platform-ops', 'global-governance', 'status', 'system-settings'];
+        const platformTabs = ['platform-ops', 'global-governance', 'status', 'system-settings', 'pricing-calib'];
         if (platformTabs.includes(tab)) return false;
 
         // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)

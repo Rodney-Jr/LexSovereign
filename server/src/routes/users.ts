@@ -46,7 +46,7 @@ router.get('/', authenticateToken, requirePermission('MANAGE', 'USER'), async (r
 
         const users = await prisma.user.findMany({
             where: isGlobalAdmin ? {} : {
-                tenantId: req.user!.tenantId as string
+                tenantId: req.user?.tenantId || ''
             },
             select: {
                 id: true,

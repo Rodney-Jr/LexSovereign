@@ -24,7 +24,7 @@ import {
 import { TenantMetadata, Region, SaaSPlan } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
-const TenantGovernance: React.FC = () => {
+const GlobalGovernanceConsole: React.FC = () => {
   const [tenants, setTenants] = useState<TenantMetadata[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -304,4 +304,4 @@ const ResourceCard = ({ label, value, sub, icon }: any) => (
   </div>
 );
 
-export default TenantGovernance;
+export default GlobalGovernanceConsole;

@@ -56,7 +56,7 @@ const STATUS_ICON: Record<AssetStatus, React.ReactNode> = {
     Retired: <Archive size={12} />,
 };
 
-const SovereignAssetManager: React.FC = () => {
+const SovereignAssetManager: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
     const [assets, setAssets] = useState<FirmAsset[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -155,12 +155,22 @@ const SovereignAssetManager: React.FC = () => {
                     </h2>
                     <p className="text-slate-400 text-xs mt-2">Track and manage firm inventory, hardware assignments, and lifecycle.</p>
                 </div>
-                <button
-                    onClick={() => setShowLogModal(true)}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-xl shadow-blue-900/20"
-                >
-                    <Plus size={16} /> Log New Asset
-                </button>
+                <div className="flex items-center gap-3">
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-2xl transition-all border border-slate-700"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setShowLogModal(true)}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-xl shadow-blue-900/20"
+                    >
+                        <Plus size={16} /> Log New Asset
+                    </button>
+                </div>
             </div>
 
             {/* Summary Cards */}

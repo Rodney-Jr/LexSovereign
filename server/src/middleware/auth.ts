@@ -22,29 +22,32 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     try {
         // Strict Native JWT Verification
         const decodedPayload: any = jwt.verify(token, JWT_SECRET);
+
+        // Universal Context Hydration for Unified Platform Administration
+        // ensures that GLOBAL_ADMIN sessions (which lack a fixed tenantId in their JWT)
+        // are seamlessly anchored to the primary sovereign enclave context.
+        const isAdmin = decodedPayload.role === 'GLOBAL_ADMIN' || decodedPayload.role === 'Global Admin';
         
         req.user = {
             id: decodedPayload.id,
             email: decodedPayload.email,
-            role: decodedPayload.role,
+            role: isAdmin ? 'GLOBAL_ADMIN' : decodedPayload.role,
             tenantId: decodedPayload.tenantId,
             name: decodedPayload.name || 'User Session',
             permissions: decodedPayload.permissions || [],
             isImpersonating: !!decodedPayload.isImpersonating
         };
 
-        // Complete Universal Fallback for GLOBAL_ADMIN Sessions
-        // This instantly prevents the cluster cascade of 403 Tenant Context missing errors
-        // on specialized sub-modules (chatbot, ui-visibility, branding) without requiring route-by-route null checks.
-        if (req.user.role === 'GLOBAL_ADMIN' && !req.user.tenantId) {
+        if (isAdmin && !req.user.tenantId) {
             try {
-                const defaultTenant = await prisma.tenant.findFirst({ orderBy: { createdAt: 'asc' } });
-                if (defaultTenant) {
-                    req.user.tenantId = defaultTenant.id;
-                    console.log(`[Auth-Fallback] Hydrated tenantId context for GLOBAL_ADMIN from master pool:`, defaultTenant.id);
+                // Pin to the root tenant as the stable administration context
+                const primaryTenant = await prisma.tenant.findFirst({ orderBy: { createdAt: 'asc' } });
+                if (primaryTenant) {
+                    req.user.tenantId = primaryTenant.id;
+                    console.log(`[Auth-Control] Hydrated GLOBAL_ADMIN context with Enclave: ${primaryTenant.id}`);
                 }
             } catch (err) {
-                console.warn('[Auth-Fallback] Error hydrating global admin tenant context:', err);
+                console.warn('[Auth-Control] Critical: Failed to hydrate Global Admin context:', err);
             }
         }
 
@@ -71,7 +74,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
                  if (t.status === 'SUSPENDED') return res.status(403).json({ error: 'Tenant suspended' });
                  
                  // Trial Expiry Check
-                 if (t.isTrial && t.trialExpiresAt && new Date(t.trialExpiresAt) < new Date()) {
+                 if (process.env.NODE_ENV !== 'development' && t.isTrial && t.trialExpiresAt && new Date(t.trialExpiresAt) < new Date()) {
                      // If it's a trial and it's expired, and hasn't been upgraded to ACTIVE/PAID
                      if (t.subscriptionStatus !== 'active' && t.status !== 'ACTIVE_PAID') {
                          return res.status(402).json({ 

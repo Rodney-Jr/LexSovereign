@@ -62,6 +62,7 @@ import { getRuntimeConfig } from '../utils/runtimeConfig';
 
 import CommandPalette from './CommandPalette';
 import SovereignStaffDossierModal from './SovereignStaffDossierModal';
+import SovereignAssetManager from './SovereignAssetManager';
 import ResizablePanel from './ResizablePanel';
 import Breadcrumbs from './Breadcrumbs';
 import MatterCreationModal from './MatterCreationModal';
@@ -115,6 +116,7 @@ const Layout: React.FC<LayoutProps> = ({
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showMyDossierModal, setShowMyDossierModal] = React.useState(false);
+  const [showAssetModal, setShowAssetModal] = React.useState(false);
 
 
   React.useEffect(() => {
@@ -340,6 +342,15 @@ const Layout: React.FC<LayoutProps> = ({
                   label="HR Workbench"
                   isActive={activeTab === 'hr-workbench'}
                   onClick={() => setActiveTab('hr-workbench')}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
+              )}
+              {isAllowed('asset-tracker') && (
+                <NavItem
+                  icon={<MonitorSmartphone size={18} className="text-blue-400" />}
+                  label="Asset Register"
+                  isActive={false}
+                  onClick={() => setShowAssetModal(true)}
                   setIsSidebarOpen={setIsSidebarOpen}
                 />
               )}
@@ -636,6 +647,16 @@ const Layout: React.FC<LayoutProps> = ({
         <TrialExpirationModal
           expiresAt={trialExpiredData?.expiresAt}
         />
+      )}
+
+      {showAssetModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] flex items-center justify-center p-4 lg:p-8 animate-in fade-in duration-300">
+          <div className="bg-slate-950 border border-slate-800 rounded-[2.5rem] w-full max-w-7xl h-full max-h-[90vh] overflow-hidden shadow-2xl relative">
+            <div className="h-full overflow-y-auto p-1 lg:p-8">
+              <SovereignAssetManager onClose={() => setShowAssetModal(false)} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

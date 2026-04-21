@@ -20,8 +20,7 @@ import TenantSettings from './components/TenantSettings';
 import GlobalSettings from './components/GlobalSettings';
 import ProjectStatus from './components/ProjectStatus';
 import MatterIntelligence from './components/MatterIntelligence';
-import TenantGovernance from './components/TenantGovernance';
-import TenantAdministration from './components/TenantAdministration';
+import GlobalGovernanceConsole from './components/GlobalGovernanceConsole';
 import MatterWorkflow from './components/MatterWorkflow';
 import ReviewHub from './components/ReviewHub';
 import AccessGovernance from './components/AccessGovernance';
@@ -47,7 +46,7 @@ import CaseAnalysisModal from './components/CaseAnalysisModal';
 import CLMCenter from './components/CLMCenter';
 import CaseCenter from './components/CaseCenter';
 import EnterpriseDashboard from './components/EnterpriseDashboard';
-import AdminControlPlane from './components/AdminControlPlane';
+import TenantGovernanceConsole from './components/TenantGovernanceConsole';
 import SovereignExpenseTracker from './components/SovereignExpenseTracker';
 import SovereignHRWorkbench from './components/HRWorkbench';
 import SovereignAssetManager from './components/SovereignAssetManager';
@@ -288,13 +287,12 @@ const AppContent: React.FC = () => {
           } />
 
           <Route path="/platform-ops" element={<ProtectedRoute tab="platform-ops"><GlobalControlPlane userName={session?.userName || 'Administrator'} userRole={session?.role as any} onNavigate={(t) => navigate(`/${t}`)} /></ProtectedRoute>} />
-          <Route path="/global-governance" element={<ProtectedRoute tab="global-governance"><TenantGovernance /></ProtectedRoute>} />
-          <Route path="/tenant-governance" element={<ProtectedRoute tab="tenant-governance"><AdminControlPlane /></ProtectedRoute>} />
+          <Route path="/global-governance" element={<ProtectedRoute tab="global-governance"><GlobalGovernanceConsole /></ProtectedRoute>} />
+          <Route path="/tenant-governance" element={<ProtectedRoute tab="tenant-governance"><TenantGovernanceConsole /></ProtectedRoute>} />
           <Route path="/org-blueprint" element={<ProtectedRoute tab="org-blueprint"><OrgChart /></ProtectedRoute>} />
           <Route path="/integration-bridge" element={<ProtectedRoute tab="integration-bridge"><BridgeRegistry /></ProtectedRoute>} />
           <Route path="/identity" element={<ProtectedRoute tab="identity"><AccessGovernance userRole={session?.role as any} setUserRole={() => { }} /></ProtectedRoute>} />
           <Route path="/reviews" element={<ProtectedRoute tab="reviews"><ReviewHub userRole={session?.role as any} /></ProtectedRoute>} />
-          <Route path="/tenant-admin" element={<ProtectedRoute tab="tenant-admin"><TenantAdministration /></ProtectedRoute>} />
           <Route path="/capacity" element={<ProtectedRoute tab="capacity"><CapacityDashboard /></ProtectedRoute>} />
           <Route path="/predictive" element={<ProtectedRoute tab="predictive"><PredictiveOps mode={mode} /></ProtectedRoute>} />
           <Route path="/workflow" element={<ProtectedRoute tab="workflow"><MatterWorkflow /></ProtectedRoute>} />

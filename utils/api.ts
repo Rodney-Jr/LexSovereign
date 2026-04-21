@@ -21,7 +21,7 @@ export const getSovereignPin = () => {
         }
         // Access window property indirectly to bypass potential Vite 'define' replacements
         // and improve compatibility with SES strict environment
-        return (window as any)['_SOVEREIGN_PIN_'] || '';
+        return (window as any)['_SOVEREIGN_PIN_'] || import.meta.env.VITE_SOVEREIGN_PIN || '';
     } catch (e) {
         return '';
     }

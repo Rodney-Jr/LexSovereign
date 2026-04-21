@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 
-const AdminControlPlane: React.FC = () => {
+const TenantGovernanceConsole: React.FC = () => {
     const [departments, setDepartments] = useState<any[]>([]);
     const [showAddDept, setShowAddDept] = useState(false);
     const [newDept, setNewDept] = useState({ name: '', description: '' });
@@ -230,4 +230,4 @@ const AdminControlPlane: React.FC = () => {
     );
 };
 
-export default AdminControlPlane;
+export default TenantGovernanceConsole;

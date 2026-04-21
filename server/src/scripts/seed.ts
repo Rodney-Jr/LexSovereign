@@ -305,7 +305,7 @@ async function main() {
                 name: 'Sovereign Admin',
                 passwordHash,
                 roleString: 'TENANT_ADMIN',
-                role: { connect: { id: demoAdminRole?.id } }
+                ...(demoAdminRole?.id ? { role: { connect: { id: demoAdminRole.id } } } : {})
             }
         });
         console.log('✅ Demo Admin role and password enforced.');
