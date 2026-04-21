@@ -434,7 +434,7 @@ const Layout: React.FC<LayoutProps> = ({
               {isAllowed('billing') && (
                 <NavItem
                   icon={<Coins size={18} className="text-emerald-400" />}
-                  label="Billing & Finance Ops"
+                  label="Billing"
                   isActive={activeTab === 'billing'}
                   onClick={() => setActiveTab('billing')}
                   setIsSidebarOpen={setIsSidebarOpen}

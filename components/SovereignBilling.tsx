@@ -21,13 +21,12 @@ import {
 import { SaaSPlan } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
 import ClientInvoicesRecord from './ClientInvoicesRecord';
-import SovereignFinanceOps from './SovereignFinanceOps';
 
 const SovereignBilling: React.FC = () => {
    const [isSyncing, setIsSyncing] = useState(false);
    const [billingData, setBillingData] = useState<any>(null);
    const showPlatformBilling = import.meta.env.VITE_SHOW_PRICING === 'true';
-   const [activeTab, setActiveTab] = useState<'PLATFORM' | 'CLIENT' | 'FINANCE_OPS'>(
+   const [activeTab, setActiveTab] = useState<'PLATFORM' | 'CLIENT'>(
       showPlatformBilling ? 'PLATFORM' : 'CLIENT'
    );
 
@@ -89,18 +88,10 @@ const SovereignBilling: React.FC = () => {
             >
                Client Invoicing
             </button>
-            <button
-               onClick={() => setActiveTab('FINANCE_OPS')}
-               className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'FINANCE_OPS' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-            >
-               Finance Ops
-            </button>
          </div>
 
          {activeTab === 'CLIENT' ? (
             <ClientInvoicesRecord />
-         ) : activeTab === 'FINANCE_OPS' ? (
-            <SovereignFinanceOps userRole={(getSavedSession()?.user as any)?.role || 'ASSOCIATE'} />
          ) : (
             <>
                {/* Usage Meters */}
