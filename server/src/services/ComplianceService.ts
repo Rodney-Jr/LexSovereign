@@ -55,4 +55,64 @@ export class ComplianceService {
             issues: evaluation.issues
         };
     }
+
+    /**
+     * Fetch all risks for a tenant
+     */
+    static async getTenantRisks(tenantId: string) {
+        return await prisma.predictiveRisk.findMany({
+            where: { tenantId },
+            include: {
+                matter: {
+                    select: { name: true }
+                }
+            },
+            orderBy: { probability: 'desc' }
+        });
+    }
+
+    /**
+     * Get aggregated compliance stats for a tenant
+     */
+    static async getComplianceStats(tenantId: string) {
+        const [totalRisks, highRisks, mitigatedRisks, totalMatters] = await Promise.all([
+            prisma.predictiveRisk.count({ where: { tenantId } }),
+            prisma.predictiveRisk.count({ 
+                where: { 
+                    tenantId, 
+                    OR: [{ impact: 'High' }, { impact: 'Critical' }] 
+                } 
+            }),
+            prisma.predictiveRisk.count({ 
+                where: { tenantId, status: 'MITIGATED' } 
+            }),
+            prisma.matter.count({ where: { tenantId } })
+        ]);
+
+        // Heuristic health score: heavily penalize critical risks
+        const penalty = highRisks * 15;
+        const healthScore = Math.max(0, Math.min(100, 100 - penalty));
+
+        return {
+            totalRisks,
+            highRisks,
+            mitigatedRisks,
+            totalMatters,
+            healthScore
+        };
+    }
+
+    /**
+     * Update risk mitigation plan and status
+     */
+    static async updateRisk(tenantId: string, riskId: string, data: any) {
+        return await prisma.predictiveRisk.update({
+            where: { id: riskId, tenantId },
+            data: {
+                mitigationPlan: data.mitigationPlan,
+                status: data.status,
+                riskCategory: data.riskCategory
+            }
+        });
+    }
 }

@@ -48,4 +48,46 @@ router.get('/logs', authenticateToken, async (req: any, res) => {
     }
 });
 
+/**
+ * Get aggregated compliance stats
+ */
+router.get('/stats', authenticateToken, async (req: any, res) => {
+    try {
+        const tenantId = req.user.tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
+        const stats = await ComplianceService.getComplianceStats(tenantId);
+        res.json(stats);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Get all organization risks
+ */
+router.get('/organization-risks', authenticateToken, async (req: any, res) => {
+    try {
+        const tenantId = req.user.tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
+        const risks = await ComplianceService.getTenantRisks(tenantId);
+        res.json(risks);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Update a specific risk
+ */
+router.patch('/risks/:id', authenticateToken, async (req: any, res) => {
+    try {
+        const tenantId = req.user.tenantId;
+        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
+        const updated = await ComplianceService.updateRisk(tenantId, req.params.id, req.body);
+        res.json(updated);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

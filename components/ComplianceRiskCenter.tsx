@@ -40,10 +40,11 @@ const ComplianceRiskCenter: React.FC = () => {
                 authorizedFetch('/api/compliance/organization-risks', { token: session.token })
             ]);
 
-            setStats(statsData);
-            setRisks(risksData);
+            setStats(statsData || { totalRisks: 0, highRisks: 0, mitigatedRisks: 0, totalMatters: 0, healthScore: 0 });
+            setRisks(Array.isArray(risksData) ? risksData : []);
         } catch (e) {
             console.error("Compliance data acquisition failed", e);
+            setRisks([]);
         } finally {
             setIsLoading(false);
         }
@@ -79,9 +80,9 @@ const ComplianceRiskCenter: React.FC = () => {
         }
     };
 
-    const filteredRisks = risks.filter(r =>
-        r.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.matter.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredRisks = (Array.isArray(risks) ? risks : []).filter(r =>
+        r.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.matter?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (isLoading) {
