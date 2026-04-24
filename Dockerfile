@@ -1,6 +1,8 @@
 # Stage 1: Build the React Client
 FROM node:20-alpine AS client-builder
 WORKDIR /app-client
+# Force cache invalidation to fix Railway broken pipe / missing server context
+RUN echo "Cache bust: 2026-04-24 v1" > /dev/null
 COPY package*.json ./
 RUN npm ci
 COPY . .
@@ -14,6 +16,8 @@ RUN npm run build
 # Stage 2: Build the Node.js Server
 FROM node:20-alpine AS server-builder
 WORKDIR /app-server
+# Force cache invalidation for the server layer
+RUN echo "Cache bust: 2026-04-24 v1" > /dev/null
 COPY server/package*.json ./
 RUN apk add --no-cache openssl
 RUN npm ci
