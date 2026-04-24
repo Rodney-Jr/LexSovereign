@@ -189,7 +189,7 @@ export default function App() {
 
         // 2. Notify Host & Close
         toast.success('Vault sync complete', { id: 'save-op' });
-        commitToNomosDesk(htmlContent, currentDocId);
+        commitToNomosDesk(htmlContent, currentDocId ?? undefined);
     } catch (e) {
       console.error('Error saving document:', e);
       toast.error('Vault synchronization failed.', { id: 'save-op' });
