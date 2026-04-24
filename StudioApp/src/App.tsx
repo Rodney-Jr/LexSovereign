@@ -169,7 +169,7 @@ export default function App() {
                 body: JSON.stringify({ 
                     content: htmlContent,
                     name: documentTitle,
-                    matterId: documentData?.matterId || 'MT-GENERAL'
+                    matterId: documentData?.matterId ?? 'MT-GENERAL'
                 })
             });
             currentDocId = newDoc.id;
