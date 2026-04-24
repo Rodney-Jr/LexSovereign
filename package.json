@@ -10,7 +10,7 @@
     "dev:studio": "cd StudioApp && npm install && npm run dev -- --port 3006",
     "dev:all": "npx concurrently \"npm run dev\" \"npm run dev:server\" \"npm run dev:marketing\" \"npm run dev:studio\"",
     "build": "vite build",
-    "start": "npx prisma migrate deploy && npx prisma db push --accept-data-loss && (node server/dist/index.js || node dist/index.js)"
+    "start": "(npx prisma migrate deploy || (echo 'Retrying migration' && sleep 5 && npx prisma migrate deploy)) && npx prisma db push --accept-data-loss && (node server/dist/index.js || node dist/index.js)"
   },
   "//": "Updated 2026-02-12: Removed db:repair to prevent Railway timeouts",
   "dependencies": {
