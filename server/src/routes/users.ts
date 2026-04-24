@@ -14,14 +14,15 @@ const router = express.Router();
 router.get('/', authenticateToken, requirePermission('MANAGE', 'USER'), async (req, res) => {
     try {
         const tenantId = req.user?.tenantId;
+        const isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
 
-        if (!tenantId) {
+        if (!isGlobalAdmin && !tenantId) {
             return res.status(403).json({ error: 'Tenant context missing' });
         }
 
         const users = await prisma.user.findMany({
             where: isGlobalAdmin ? {} : {
-                tenantId: req.user?.tenantId || ''
+                tenantId: tenantId as string
             },
             select: {
                 id: true,
