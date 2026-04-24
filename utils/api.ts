@@ -54,6 +54,17 @@ export async function authorizedFetch(url: string, options: FetchOptions = {}) {
         headers.set('x-sov-pin', sovPin);
     }
 
+    // --- NEW: Platform Management Context ---
+    // If a Global Admin is managing a specific silo, inject the target tenant header
+    try {
+        const targetTenantId = localStorage.getItem('nomosdesk_target_tenant');
+        if (targetTenantId && targetTenantId !== 'undefined' && targetTenantId !== 'null') {
+            headers.set('x-target-tenant-id', targetTenantId);
+        }
+    } catch (e) {
+        // Silently ignore localStorage errors in restricted environments
+    }
+
     if (!headers.has('Content-Type') && fetchOptions.body && !(fetchOptions.body instanceof FormData)) {
         headers.set('Content-Type', 'application/json');
     }

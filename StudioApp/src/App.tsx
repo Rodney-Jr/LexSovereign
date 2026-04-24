@@ -87,6 +87,7 @@ export default function App() {
         try {
             const result = await apiFetch('/api/ai/risk-analysis', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content })
             });
             if (Array.isArray(result)) setRisks(result);
@@ -119,8 +120,7 @@ export default function App() {
       action: {
         label: "Confirm",
         onClick: () => {
-          const newId = Math.random().toString(36).substring(7);
-          setDocId(newId);
+          setDocId(null);
           setDocumentTitle(prev => `Copy_of_${prev}`);
           toast.success('Document branched as a new draft');
           // Note: Selection will be persisted on next Save click
@@ -140,8 +140,7 @@ export default function App() {
       action: {
         label: "Confirm",
         onClick: () => {
-          const newId = Math.random().toString(36).substring(7);
-          setDocId(newId);
+          setDocId(null);
           setContent('');
           setDocumentTitle('Untitled_Draft.docx');
           toast.success('New blank draft created');
@@ -158,26 +157,39 @@ export default function App() {
   };
 
   const handleSave = async (htmlContent: string) => {
-    if (!docId) {
-        toast.error('No document context found. Artifact cannot be persisted.');
-        return;
-    }
-    
     toast.loading('Persisting back to Sovereign Vault...', { id: 'save-op' });
     try {
-        // 1. Persist to DB
-        await apiFetch(`/api/documents/${docId}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ 
-                content: htmlContent,
-                name: documentTitle,
-                changeSummary: 'Sovereign Studio Session Commit'
-            })
-        });
+        let currentDocId = docId;
+
+        if (!currentDocId) {
+            // 1a. Create new document
+            const newDoc = await apiFetch('/api/documents', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    content: htmlContent,
+                    name: documentTitle,
+                    matterId: documentData?.matterId || 'MT-GENERAL'
+                })
+            });
+            currentDocId = newDoc.id;
+            setDocId(currentDocId); // Update state so subsequent saves use PATCH
+        } else {
+            // 1b. Update existing document
+            await apiFetch(`/api/documents/${currentDocId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    content: htmlContent,
+                    name: documentTitle,
+                    changeSummary: 'Sovereign Studio Session Commit'
+                })
+            });
+        }
 
         // 2. Notify Host & Close
         toast.success('Vault sync complete', { id: 'save-op' });
-        commitToNomosDesk(htmlContent);
+        commitToNomosDesk(htmlContent, currentDocId);
     } catch (e) {
       console.error('Error saving document:', e);
       toast.error('Vault synchronization failed.', { id: 'save-op' });
@@ -206,6 +218,7 @@ export default function App() {
     try {
         const result = await apiFetch('/api/ai/command', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ command, context: content })
         });
         if (result.suggestion) {

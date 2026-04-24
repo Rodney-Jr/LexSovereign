@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { Department, Permission } from '../types';
+import { Department, Permission, UserRole } from '../types';
 import { TAB_REQUIRED_PERMISSIONS } from '../constants';
+import { useSovereign } from '../contexts/SovereignContext';
 
 // Define the shape of our context
 interface PermissionContextType {
     permissions: Permission[];
     role: string | null;
     userId: string | null;
+    clientId: string | null;
     department?: Department;
     separationMode: 'OPEN' | 'DEPARTMENTAL' | 'STRICT';
     enabledModules: string[];
@@ -30,9 +32,12 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [role, setRole] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
+    const [clientId, setClientId] = useState<string | null>(null);
     const [department, setDepartment] = useState<Department | undefined>(undefined);
     const [separationMode, setSeparationMode] = useState<'OPEN' | 'DEPARTMENTAL' | 'STRICT'>('OPEN');
     const [enabledModules, setEnabledModules] = useState<string[]>(["CORE", "ACCOUNTING_HUB", "HR_ENTERPRISE"]);
+    const { targetTenant } = useSovereign();
+    const isTargetingTenant = !!targetTenant;
 
     const normalizePermissions = useCallback((perms: (string | Permission)[]): Permission[] => {
         const legacyMap: Record<string, string> = {
@@ -111,6 +116,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
                 }
                 if (parsed.role) setRole(parsed.role);
                 if (parsed.userId) setUserId(parsed.userId);
+                if (parsed.clientId) setClientId(parsed.clientId);
                 if (parsed.department) setDepartment(parsed.department);
                 
                 // Merge default free modules with tenant's enabled modules
@@ -128,6 +134,9 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     }, [normalizePermissions]);
 
     const hasPermission = React.useCallback((permissionId: string): boolean => {
+        // Global Admin in Management Mode has full clearance
+        if (role === 'GLOBAL_ADMIN' && isTargetingTenant) return true;
+
         return permissions.some(p => {
             if (permissionId.includes(':')) {
                 const [action, resource] = permissionId.split(':');
@@ -135,7 +144,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
             }
             return p.id === permissionId;
         });
-    }, [role, permissions]);
+    }, [role, permissions, isTargetingTenant]);
 
     const hasAnyPermission = React.useCallback((permissionIds: string[]): boolean => {
         return permissionIds.some(id => hasPermission(id));
@@ -150,7 +159,8 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     }, [enabledModules]);
 
     const checkVisibility = React.useCallback((resource: any): boolean => {
-        if (role === 'GLOBAL_ADMIN' || role === 'TENANT_ADMIN') return true;
+        const effectiveRole = (role === 'GLOBAL_ADMIN' && isTargetingTenant) ? 'TENANT_ADMIN' : role;
+        if (effectiveRole === 'GLOBAL_ADMIN' || effectiveRole === 'TENANT_ADMIN') return true;
 
         if (separationMode === 'OPEN') return true;
 
@@ -160,7 +170,9 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         }
 
         if (separationMode === 'STRICT') {
-            if (role === 'CLIENT') return true;
+            if (role === 'CLIENT') {
+                return resource.clientId === clientId;
+            }
             if (resource.internalCounsel === userId) return true;
             if (resource.team && Array.isArray(resource.team)) {
                 return resource.team.some((member: any) => member.id === userId);
@@ -170,29 +182,32 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         }
 
         return true;
-    }, [role, separationMode, department, userId]);
+    }, [role, separationMode, department, userId, isTargetingTenant]);
 
     const canAccessTab = React.useCallback((tab: string): boolean => {
-        // 1. Global Admin Override (Restrict to Platform specific sections and Dashboard)
-        if (role === 'GLOBAL_ADMIN') {
+        // Virtualize role for Global Admins in Management Mode
+        const effectiveRole = (role === 'GLOBAL_ADMIN' && isTargetingTenant) ? 'TENANT_ADMIN' : role;
+
+        // 1. Global Admin Override (Strict Platform Mode)
+        if (effectiveRole === 'GLOBAL_ADMIN') {
             const platformTabs = ['dashboard', 'platform-ops', 'global-governance', 'status', 'system-settings', 'pricing-calib'];
             return platformTabs.includes(tab);
         }
 
-        // 2. Permission-based Gating (Primary)
+        // 2. Structural Role Rules
+        // Platform owner items are STRICTLY for GLOBAL_ADMIN in Platform scope
+        const platformTabs = ['platform-ops', 'global-governance', 'status', 'system-settings', 'pricing-calib'];
+        if (platformTabs.includes(tab)) return false;
+
+        // 3. Permission-based Gating (Primary)
         const required = TAB_REQUIRED_PERMISSIONS[tab];
         if (required && required.length > 0) {
             return hasAnyPermission(required);
         }
 
-        // 3. Fallback / Structural Role Rules
-        // Platform owner items are STRICTLY for GLOBAL_ADMIN
-        const platformTabs = ['platform-ops', 'global-governance', 'status', 'system-settings', 'pricing-calib'];
-        if (platformTabs.includes(tab)) return false;
-
-        // Technical/Admin management items are for TENANT_ADMIN only (not MANAGING_PARTNER)
-        const adminTabs = ['identity', 'tenant-admin'];
-        if (role === 'MANAGING_PARTNER' && adminTabs.includes(tab)) return false;
+        // Technical/Admin management items are for TENANT_ADMIN only
+        const adminTabs = ['identity', 'tenant-admin', 'tenant-settings'];
+        if (effectiveRole === 'MANAGING_PARTNER' && adminTabs.includes(tab)) return false;
 
         // Managing Partner gets default clearance for firm items
         if (role === 'MANAGING_PARTNER') return true;
@@ -201,7 +216,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         if (!required || required.length === 0) return true;
 
         return false;
-    }, [role, hasAnyPermission]);
+    }, [role, hasAnyPermission, isTargetingTenant]);
 
     const updatePermissions = React.useCallback((perms: (string | Permission)[]) => {
         setPermissions(prev => {
@@ -215,24 +230,28 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
         setRole(prev => (prev === newRole ? prev : newRole));
     }, []);
 
-    const contextValue = React.useMemo(() => ({
-        permissions,
-        role,
-        userId,
-        department,
-        separationMode,
-        enabledModules,
-        setPermissions: updatePermissions as any,
-        setRole: updateRole,
-        setDepartment,
-        setSeparationMode,
-        setEnabledModules,
-        hasPermission,
-        hasAnyPermission,
-        hasModule,
-        checkVisibility,
-        canAccessTab
-    }), [permissions, role, userId, department, separationMode, enabledModules, updatePermissions, updateRole, hasPermission, hasAnyPermission, hasModule, checkVisibility, canAccessTab]);
+    const contextValue = React.useMemo(() => {
+        const effectiveRole = (role === 'GLOBAL_ADMIN' && isTargetingTenant) ? 'TENANT_ADMIN' : role;
+        return {
+            permissions,
+            role: effectiveRole,
+            userId,
+            clientId,
+            department,
+            separationMode,
+            enabledModules,
+            setPermissions: updatePermissions as any,
+            setRole: updateRole,
+            setDepartment,
+            setSeparationMode,
+            setEnabledModules,
+            hasPermission,
+            hasAnyPermission,
+            hasModule,
+            checkVisibility,
+            canAccessTab
+        };
+    }, [permissions, role, userId, department, separationMode, enabledModules, updatePermissions, updateRole, hasPermission, hasAnyPermission, hasModule, checkVisibility, canAccessTab, isTargetingTenant]);
 
     return (
         <PermissionContext.Provider value={contextValue}>

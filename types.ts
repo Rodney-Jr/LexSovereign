@@ -45,7 +45,8 @@ export interface IntegrationBridge {
 
 export enum AppMode {
   LAW_FIRM = 'LAW_FIRM',
-  ENTERPRISE = 'ENTERPRISE'
+  ENTERPRISE = 'ENTERPRISE',
+  LEGAL_DEPT = 'LEGAL_DEPT'
 }
 
 export enum SaaSPlan {
@@ -87,6 +88,7 @@ export interface SessionData {
   userId: string;
   userName?: string;
   tenantId: string;
+  tenantName?: string;
   department?: TenantDepartment;
   permissions: Permission[];
   mode?: AppMode;
@@ -546,6 +548,7 @@ export interface TenantMetadata {
   activeMatters: number;
   userCount: number;
   dataGravity: string;
+  appMode: AppMode;
 }
 
 export interface BrandingProfile {

@@ -114,6 +114,7 @@ export const useAuth = (activeTab: string, selectedMatter: string | null) => {
                             userId: verifiedSessionData.user?.id || sessionData.userId || '',
                             userName: verifiedSessionData.user?.name || sessionData.userName || '',
                             tenantId: verifiedSessionData.user?.tenantId || sessionData.tenantId || null,
+                            tenantName: verifiedSessionData.user?.tenantName || sessionData.tenantName || '',
                             permissions: verifiedSessionData.user?.permissions || sessionData.permissions || [],
                             token: verifiedSessionData.token || sessionData.token
                         });

@@ -27,7 +27,7 @@ router.post('/login', async (req, res) => {
             where: { email },
             include: {
                 role: { include: { permissions: true } },
-                tenant: { select: { id: true, status: true, appMode: true, enabledModules: true } }
+                tenant: { select: { id: true, name: true, status: true, appMode: true, enabledModules: true } }
             }
         });
 
@@ -88,6 +88,7 @@ router.post('/login', async (req, res) => {
                 email: resolvedUser.email,
                 role: resolvedUser.roleString,
                 tenantId: resolvedUser.tenantId,
+                clientId: resolvedUser.clientId,
                 name: resolvedUser.name,
                 permissions: permissions.map((p: any) => p.id),
                 isImpersonating: false
@@ -124,6 +125,8 @@ router.post('/login', async (req, res) => {
                 name: resolvedUser.name,
                 role: resolvedUser.roleString,
                 tenantId: resolvedUser.tenantId,
+                tenantName: resolvedUser.tenant?.name,
+                clientId: resolvedUser.clientId,
                 permissions,
                 mode: resolvedUser.tenant?.appMode || 'LAW_FIRM'
             }
@@ -484,15 +487,26 @@ router.get('/me', authenticateToken, async (req: any, res) => {
         const user = req.user;
         if (!user) return res.status(401).json({ error: 'Session context missing' });
 
+        const dbUser: any = await prisma.user.findUnique({
+            where: { id: user.id },
+            include: {
+                tenant: { select: { name: true, appMode: true } }
+            }
+        });
+
+        if (!dbUser) return res.status(404).json({ error: 'User not found' });
+
         return res.json({
             user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: user.role,
-                tenantId: user.tenantId,
-                permissions: user.permissions.map((p: any) => p.id) || [],
-                mode: user.tenant?.appMode || 'LAW_FIRM'
+                id: dbUser.id,
+                email: dbUser.email,
+                name: dbUser.name,
+                role: dbUser.roleString,
+                tenantId: dbUser.tenantId,
+                tenantName: dbUser.tenant?.name,
+                clientId: dbUser.clientId,
+                permissions: user.permissions || [],
+                mode: dbUser.tenant?.appMode || 'LAW_FIRM'
             }
         });
     } catch (error: any) {
@@ -631,6 +645,7 @@ router.post('/mfa/verify', async (req, res) => {
                 email: user.email,
                 role: user.roleString,
                 tenantId: user.tenantId,
+                clientId: user.clientId,
                 name: user.name,
                 permissions: permissions.map((p: any) => p.id),
                 isImpersonating: false
@@ -654,6 +669,7 @@ router.post('/mfa/verify', async (req, res) => {
                 name: user.name,
                 role: user.roleString,
                 tenantId: user.tenantId,
+                tenantName: user.tenant?.name,
                 permissions,
                 mode: user.tenant?.appMode || 'LAW_FIRM'
             }

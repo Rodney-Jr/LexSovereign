@@ -1,4 +1,5 @@
 import { PrismaClient, BillingComponentType, InvoiceStatus } from '@prisma/client';
+import { AccountingService } from './AccountingService';
 
 const prisma = new PrismaClient();
 
@@ -441,8 +442,46 @@ export class BillingService {
                 status,
                 issuedAt: status === InvoiceStatus.ISSUED ? new Date() : undefined,
                 paidAt: status === InvoiceStatus.PAID ? new Date() : undefined
-            }
+            },
+            include: { matter: true }
         });
+
+        // --- 💰 Accounting Integration ---
+        try {
+            if (status === InvoiceStatus.ISSUED) {
+                // Post to Accounts Receivable & Revenue
+                const arAccount = await prisma.firmAccount.findFirst({ where: { tenantId, category: 'ACCOUNTS_RECEIVABLE' } });
+                const revAccount = await prisma.firmAccount.findFirst({ where: { tenantId, type: 'REVENUE' } });
+
+                if (arAccount && revAccount) {
+                    await AccountingService.postTransaction({
+                        tenantId,
+                        description: `Invoice Issued: ${updated.id} for Matter: ${updated.matter.name}`,
+                        entries: [
+                            { accountId: arAccount.id, debit: updated.totalAmount, credit: 0, description: 'Accounts Receivable Increase' },
+                            { accountId: revAccount.id, debit: 0, credit: updated.totalAmount, description: 'Revenue Recognition' }
+                        ]
+                    });
+                }
+            } else if (status === InvoiceStatus.PAID) {
+                // Post to Cash/Operating & Accounts Receivable
+                const cashAccount = await prisma.firmAccount.findFirst({ where: { tenantId, category: 'BANK' } });
+                const arAccount = await prisma.firmAccount.findFirst({ where: { tenantId, category: 'ACCOUNTS_RECEIVABLE' } });
+
+                if (cashAccount && arAccount) {
+                    await AccountingService.postTransaction({
+                        tenantId,
+                        description: `Invoice Paid: ${updated.id} for Matter: ${updated.matter.name}`,
+                        entries: [
+                            { accountId: cashAccount.id, debit: updated.totalAmount, credit: 0, description: 'Cash Collection' },
+                            { accountId: arAccount.id, debit: 0, credit: updated.totalAmount, description: 'AR Settlement' }
+                        ]
+                    });
+                }
+            }
+        } catch (accErr) {
+            console.error("[Billing->Accounting] Failed to post auto-transaction:", accErr);
+        }
 
         await prisma.auditLog.create({
             data: {

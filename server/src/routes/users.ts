@@ -13,35 +13,10 @@ const router = express.Router();
  */
 router.get('/', authenticateToken, requirePermission('MANAGE', 'USER'), async (req, res) => {
     try {
-        let isGlobalAdmin = req.user?.role === 'GLOBAL_ADMIN';
-        let tenantId = req.user?.tenantId;
+        const tenantId = req.user?.tenantId;
 
-        if (!tenantId && isGlobalAdmin) {
-            tenantId = req.query.targetTenantId as string;
-            if (!tenantId) {
-                const firstTenant = await prisma.tenant.findFirst();
-                tenantId = firstTenant?.id;
-            }
-        }
-
-        if (!tenantId && !isGlobalAdmin) {
-            const dbUser = await prisma.user.findUnique({ where: { id: req.user?.id } });
-            if (dbUser?.roleString === 'GLOBAL_ADMIN') {
-                isGlobalAdmin = true;
-                const firstTenant = await prisma.tenant.findFirst();
-                tenantId = firstTenant?.id;
-            }
-        }
-
-        if (!isGlobalAdmin && !tenantId) {
-            console.error(`[DEBUG users.ts] Failed tenant check. User Payload: ${JSON.stringify(req.user)}. DB User Role: ${(await prisma.user.findUnique({ where: { id: req.user?.id } }))?.roleString}`);
-            res.status(403).json({ error: 'Tenant context missing' });
-            return;
-        }
-
-        // Make sure we set the updated tenantId if we overrode it
-        if (req.user) {
-            req.user.tenantId = tenantId || null;
+        if (!tenantId) {
+            return res.status(403).json({ error: 'Tenant context missing' });
         }
 
         const users = await prisma.user.findMany({

@@ -19,10 +19,11 @@ import { useNotification } from './NotificationProvider';
 const Dashboard: React.FC<{
   mode: AppMode;
   userName: string;
+  tenantName?: string;
   mattersCount: number;
   docsCount: number;
   rulesCount: number;
-}> = ({ mode, userName, mattersCount, docsCount, rulesCount }) => {
+}> = ({ mode, userName, tenantName, mattersCount, docsCount, rulesCount }) => {
   const [historyData, setHistoryData] = useState<{ name: string; value: number }[]>([]);
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -63,7 +64,9 @@ const Dashboard: React.FC<{
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Welcome back, {userName}</h2>
-          <p className="text-slate-500 text-sm mt-1">Here's what's happening in your {mode === AppMode.LAW_FIRM ? 'practice' : 'organization'} today.</p>
+          <p className="text-slate-500 text-sm mt-1">
+            {tenantName ? `Member of ${tenantName}` : `Here's what's happening in your ${mode === AppMode.LAW_FIRM ? 'practice' : 'organization'} today.`}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <a

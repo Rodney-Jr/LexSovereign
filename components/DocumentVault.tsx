@@ -75,6 +75,28 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
   const [showBulkMatterMenu, setShowBulkMatterMenu] = useState(false);
 
+  // Renaming state
+  const [renamingDocId, setRenamingDocId] = useState<string | null>(null);
+  const [newDocName, setNewDocName] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
+
+  const handleRenameSubmit = async (id: string) => {
+    if (!newDocName.trim() || newDocName.trim() === documents.find(d => d.id === id)?.name) {
+      setRenamingDocId(null);
+      return;
+    }
+    setIsRenaming(true);
+    try {
+      await onUpdateDocument(id, { name: newDocName.trim() });
+      setRenamingDocId(null);
+    } catch (err: any) {
+      console.error('Failed to rename document:', err);
+      alert('Failed to rename document: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsRenaming(false);
+    }
+  };
+
   const gemini = new LexGeminiService();
 
   useEffect(() => {
@@ -539,8 +561,40 @@ const DocumentVault: React.FC<DocumentVaultProps> = ({
                         <FileText size={22} className="text-brand-primary" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition-colors truncate">
-                          {highlightText(doc.name, search)}
+                        <div className="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition-colors truncate flex items-center gap-2">
+                          {renamingDocId === doc.id ? (
+                            <div className="flex items-center gap-2">
+                                <input 
+                                  type="text" 
+                                  value={newDocName}
+                                  onChange={(e) => setNewDocName(e.target.value)}
+                                  onKeyDown={(e) => {
+                                      if (e.key === 'Enter') handleRenameSubmit(doc.id);
+                                      if (e.key === 'Escape') setRenamingDocId(null);
+                                  }}
+                                  autoFocus
+                                  disabled={isRenaming}
+                                  className="bg-brand-bg border border-brand-primary/50 rounded px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-primary min-w-[200px]"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                {isRenaming && <RefreshCw size={12} className="animate-spin text-brand-primary" />}
+                            </div>
+                          ) : (
+                            <>
+                                {highlightText(doc.name, search)}
+                                <button 
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      setRenamingDocId(doc.id);
+                                      setNewDocName(doc.name);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-brand-primary/20 rounded text-slate-400 hover:text-brand-primary transition-all"
+                                  title="Rename Document"
+                                >
+                                  <Edit3 size={12} />
+                                </button>
+                            </>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="text-[10px] text-slate-500 mono tracking-tighter uppercase">

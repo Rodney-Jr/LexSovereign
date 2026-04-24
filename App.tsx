@@ -10,7 +10,8 @@ import {
   ShieldAlert,
   Sparkles,
   Calendar,
-  UserPlus
+  UserPlus,
+  Shield
 } from 'lucide-react';
 
 import Dashboard from './components/Dashboard';
@@ -136,6 +137,15 @@ const AppContent: React.FC = () => {
 
   const { notify } = useNotification();
 
+  const { targetTenant, setTargetTenant } = useSovereign();
+
+
+  const releaseTargetTenant = () => {
+    setTargetTenant(null);
+    notify('success', 'Management Context Released', 'Returning to Global Governance scope.');
+    navigate('/global-governance');
+  };
+
   // API Sentinel
   useEffect(() => {
     const handleAuthFailure = () => {
@@ -174,20 +184,23 @@ const AppContent: React.FC = () => {
     setIsOnboarding(false);
   };
 
+  const effectiveRole = (session?.role === 'GLOBAL_ADMIN' && targetTenant) ? 'TENANT_ADMIN' : (session?.role || '');
+  const effectiveMode = (session?.role === 'GLOBAL_ADMIN' && targetTenant) ? targetTenant.mode : mode;
+
   return (
     <AppRouter
       isAuthenticated={!!session}
       isOnboarding={isOnboarding}
       isUserInvitation={isUserInvitation}
       isPlatformMode={isPlatformMode}
-      mode={mode}
+      mode={effectiveMode}
       userId={session?.userId || null}
       userName={session?.userName}
       tenantId={session?.tenantId || null}
       activeTab={activeTab}
       setActiveTab={(t) => navigate(`/${t === 'dashboard' ? '' : t}`)}
       setMode={setMode}
-      contextRole={session?.role || ''}
+      contextRole={effectiveRole}
       theme={theme}
       setTheme={setTheme}
       killSwitchActive={killSwitchActive}
@@ -211,11 +224,33 @@ const AppContent: React.FC = () => {
         addMatter(m);
       }}
     >
+      {/* Sovereign Management Banner (Focus Plane) */}
+      {targetTenant && session?.role === 'GLOBAL_ADMIN' && (
+        <div className="bg-brand-primary/20 border-b border-brand-primary/30 py-3 px-6 flex items-center justify-between animate-fade-in sticky top-0 z-[60] backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-brand-primary/30 rounded-lg animate-pulse">
+              <Shield className="text-brand-primary" size={18} />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-brand-primary uppercase tracking-tighter">Sovereign Management Mode</span>
+              <p className="text-sm font-bold text-brand-text">Managing Silo: <span className="text-brand-primary">{targetTenant.name}</span></p>
+            </div>
+          </div>
+          <button 
+            onClick={releaseTargetTenant}
+            className="px-4 py-1.5 bg-brand-primary hover:bg-brand-primary/80 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-brand-primary/20"
+          >
+            Release Context
+          </button>
+        </div>
+      )}
+
       <div className="animate-fade-in-up">
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to={session?.role === UserRole.CLIENT ? "/client-portal" : "/dashboard"} replace />} />
           
           <Route path="/dashboard" element={
+            session?.role === UserRole.CLIENT ? <Navigate to="/client-portal" replace /> :
             <div className="space-y-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] flex-1 flex items-center justify-between shadow-lg shadow-brand-primary/5">
@@ -223,7 +258,7 @@ const AppContent: React.FC = () => {
                     <div className="p-3 bg-brand-primary/20 rounded-2xl animate-float"><Rocket className="text-brand-primary" /></div>
                     <div>
                       <h4 className="font-bold text-brand-text tracking-tight">{session?.userName ? `Welcome, ${session.userName}` : 'System Operational Pulse'}</h4>
-                      <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{session?.role}</span> • SOV-PRIMARY-1</p>
+                      <p className="text-xs text-brand-muted">Verified as <span className="text-brand-primary font-bold">{effectiveRole}</span> • SOV-PRIMARY-1</p>
                     </div>
                   </div>
                   <div className="flex gap-3">
@@ -232,7 +267,7 @@ const AppContent: React.FC = () => {
                     </button>
                   </div>
                 </div>
-                {session?.role !== 'GLOBAL_ADMIN' && (
+                {effectiveRole !== 'GLOBAL_ADMIN' && effectiveRole !== UserRole.CLIENT && (
                   <>
                     {(session?.allowedQuickActions === null || session?.allowedQuickActions === undefined || session.allowedQuickActions.includes('quick_draft')) && (
                       <Link to="/drafting" className="bg-brand-primary/10 border border-brand-primary/20 p-6 rounded-[2rem] cursor-pointer hover:bg-brand-primary/20 transition-all flex items-center gap-4 shadow-lg shadow-brand-primary/5">
@@ -264,7 +299,7 @@ const AppContent: React.FC = () => {
                       </div>
                     )}
 
-                    {(session?.role === 'TENANT_ADMIN' || session?.role === 'GLOBAL_ADMIN') && (
+                    {(effectiveRole === 'TENANT_ADMIN' || effectiveRole === 'GLOBAL_ADMIN') && (
                       <div onClick={() => navigate('/tenant-settings?tab=organization&invite=true')} className="bg-purple-500/10 border border-purple-500/20 p-6 rounded-[2rem] cursor-pointer hover:bg-purple-500/20 transition-all flex items-center gap-4 shadow-lg shadow-purple-500/5">
                         <div className="p-3 bg-purple-500/20 rounded-2xl"><UserPlus className="text-purple-400" /></div>
                         <div>
@@ -277,8 +312,9 @@ const AppContent: React.FC = () => {
                 )}
               </div>
               <Dashboard
-                mode={mode}
+                mode={effectiveMode}
                 userName={session?.userName || 'User'}
+                tenantName={session?.tenantName}
                 mattersCount={matters.length}
                 docsCount={documents.length}
                 rulesCount={rules.length}

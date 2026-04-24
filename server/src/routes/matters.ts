@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { prisma } from '../db';
 import { authenticateToken } from '../middleware/auth';
 import { PolicyEngine } from '../services/policyEngine';
@@ -6,10 +6,30 @@ import { CapacityService } from '../services/capacityService';
 import { AuditService } from '../services/auditService';
 import multer from 'multer';
 import { saveDocumentContent } from '../utils/fileStorage';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../jwtConfig';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
+
+// ─── SSE Connection Registry ─────────────────────────────────────────────────
+// Maps matterId → Set of active SSE response objects + their tenantId
+interface SSEClient { res: Response; tenantId: string; }
+const sseClients = new Map<string, Set<SSEClient>>();
+
+/** Broadcast a JSON event to all SSE clients watching a given matter (tenant-scoped) */
+function broadcastToMatter(matterId: string, tenantId: string, payload: object) {
+    const clients = sseClients.get(matterId);
+    if (!clients) return;
+    const data = `data: ${JSON.stringify(payload)}\n\n`;
+    clients.forEach(client => {
+        if (client.tenantId === tenantId) {
+            try { client.res.write(data); } catch (_) { /* client disconnected */ }
+        }
+    });
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Get all matters (Scoped by Departmental Separation)
 router.get('/', authenticateToken, async (req, res) => {
@@ -35,13 +55,18 @@ router.get('/', authenticateToken, async (req, res) => {
             const isAdmin = user.role === 'TENANT_ADMIN';
 
             if (user.role === 'CLIENT') {
-                whereClause = {
-                    ...whereClause,
-                    OR: [
-                        { clientRef: { name: { contains: user.name, mode: 'insensitive' } } },
-                        { clientRef: { name: { contains: user.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } } }
-                    ]
-                };
+                if (user.clientId) {
+                    whereClause = { ...whereClause, clientId: user.clientId };
+                } else {
+                    // Fallback to name-based search if clientId is missing
+                    whereClause = {
+                        ...whereClause,
+                        OR: [
+                            { clientRef: { name: { contains: user.name, mode: 'insensitive' } } },
+                            { clientRef: { name: { contains: user.name.split('(').pop()?.replace(')', '').trim() || '', mode: 'insensitive' } } }
+                        ]
+                    };
+                }
             } else if (!isAdmin) {
                 if (separationMode === 'STRICT') {
                     whereClause = { ...whereClause, internalCounselId: user.id };
@@ -591,9 +616,24 @@ router.get('/:id/notes', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user?.id;
+        const tenantId = req.user?.tenantId;
+
+        // Security Check: Matter existence and tenant isolation
+        const matter = await prisma.matter.findUnique({ where: { id } });
+        if (!matter || matter.tenantId !== tenantId) {
+            return res.status(404).json({ error: 'Matter not found or access denied' });
+        }
+
+        // Additional Security for Clients: Ensure they only see notes for their own matters
+        // Note: Using case-insensitive check for 'CLIENT' role variations
+        const isClient = req.user?.role?.toUpperCase() === 'CLIENT';
+        if (isClient && matter.clientId !== req.user?.clientId) {
+            console.warn(`[Security-Alert] Client ${req.user?.email} attempted unauthorized access to notes for matter ${id}`);
+            return res.status(403).json({ error: 'Unauthorized: You are not associated with this matter.' });
+        }
 
         const notes = await prisma.collaborationMessage.findMany({
-            where: { matterId: id },
+            where: { matterId: id, tenantId: tenantId as string },
             include: { author: true },
             orderBy: { createdAt: 'desc' }
         });
@@ -622,12 +662,25 @@ router.patch('/:id/notes/read', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params; // matterId
         const userId = req.user?.id;
+        const tenantId = req.user?.tenantId;
 
-        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        if (!userId || !tenantId) return res.status(401).json({ error: 'Unauthorized' });
+
+        // Verify matter belongs to tenant
+        const matter = await prisma.matter.findUnique({ where: { id } });
+        if (!matter || matter.tenantId !== tenantId) {
+            return res.status(404).json({ error: 'Matter not found or access denied' });
+        }
+
+        // Client authorization check
+        if (req.user?.role?.toUpperCase() === 'CLIENT' && matter.clientId !== req.user?.clientId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
 
         await prisma.collaborationMessage.updateMany({
             where: {
                 matterId: id,
+                tenantId: tenantId as string,
                 authorId: { not: userId },
                 isRead: false
             },
@@ -652,13 +705,24 @@ router.post('/:id/notes', authenticateToken, upload.single('file'), async (req, 
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
+        // Verify matter belongs to tenant
+        const matter = await prisma.matter.findUnique({ where: { id } });
+        if (!matter || matter.tenantId !== tenantId) {
+            return res.status(404).json({ error: 'Matter not found or access denied' });
+        }
+
+        // Client authorization check
+        if (req.user?.role?.toUpperCase() === 'CLIENT' && matter.clientId !== req.user?.clientId) {
+            return res.status(403).json({ error: 'Unauthorized: You are not associated with this matter.' });
+        }
+
         let attachmentUrl = null;
         let attachmentName = null;
 
         if (req.file && req.user?.tenant) {
             attachmentName = req.file.originalname;
             const relativePath = await saveDocumentContent(
-                req.user.tenant,
+                { ...req.user.tenant, jurisdiction: req.user.tenant.jurisdiction ?? 'GH_ACC_1' },
                 id, // Use matterId for folder structure
                 `chat_${Date.now()}_${attachmentName}`,
                 req.file.buffer
@@ -677,6 +741,9 @@ router.post('/:id/notes', authenticateToken, upload.single('file'), async (req, 
             },
             include: { author: true }
         });
+
+        // 🔴 Live Signal Broadcast — push new message to all SSE subscribers
+        broadcastToMatter(id, tenantId as string, { type: 'new_message', message: note });
 
         return res.json(note);
     } catch (error: any) {
@@ -713,3 +780,64 @@ router.post('/:id/time-entries', authenticateToken, async (req, res) => {
 });
 
 export default router;
+
+// ─── GET /:id/stream — Live SSE Collaboration Channel ────────────────────────
+// NOTE: This is intentionally declared AFTER the router export so that the
+// route is still registered on the router object before export.
+// EventSource cannot send Authorization headers, so we accept ?token= or cookie.
+router.get('/:id/stream', async (req, res) => {
+    const { id } = req.params;
+
+    // Auth: cookie token preferred, query param fallback (EventSource limitation)
+    const token = req.cookies?.token || (req.query.token as string);
+    if (!token || token === 'undefined') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    let tenantId: string;
+    let userEmail: string;
+    try {
+        const decoded: any = jwt.verify(token, JWT_SECRET);
+        tenantId = decoded.tenantId;
+        userEmail = decoded.email;
+        if (!tenantId) throw new Error('No tenantId in token');
+    } catch {
+        return res.status(401).json({ error: 'Invalid or expired session' });
+    }
+
+    // Verify matter belongs to this tenant
+    const matter = await prisma.matter.findFirst({
+        where: { id, tenantId }
+    });
+    if (!matter) return res.status(404).json({ error: 'Matter not found' });
+
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+    res.flushHeaders();
+
+    // Register client
+    const client: SSEClient = { res, tenantId };
+    if (!sseClients.has(id)) sseClients.set(id, new Set());
+    sseClients.get(id)!.add(client);
+    console.log(`[SSE] Client connected: ${userEmail} → matter ${id} (${sseClients.get(id)!.size} total)`);
+
+    // Send initial connection acknowledgement
+    res.write(`data: ${JSON.stringify({ type: 'connected', matterId: id })}\n\n`);
+
+    // Heartbeat every 25s to keep proxy connections alive
+    const heartbeat = setInterval(() => {
+        try { res.write(': heartbeat\n\n'); } catch (_) { clearInterval(heartbeat); }
+    }, 25000);
+
+    // Cleanup on client disconnect
+    req.on('close', () => {
+        clearInterval(heartbeat);
+        sseClients.get(id)?.delete(client);
+        if (sseClients.get(id)?.size === 0) sseClients.delete(id);
+        console.log(`[SSE] Client disconnected: ${userEmail} → matter ${id}`);
+    });
+});
+// ─────────────────────────────────────────────────────────────────────────────

@@ -25,6 +25,7 @@ import {
 import { LexGeminiService } from '../services/geminiService';
 import DocumentTemplateMarketplace from './DocumentTemplateMarketplace';
 import DraftingStudio from './DraftingStudio';
+import { useMatterStream } from '../hooks/useMatterStream';
 
 interface MatterIntelligenceProps {
   matterId: string;
@@ -143,6 +144,15 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
     fetchNotes();
   }, [fetchIntelligence, fetchNotes]);
 
+  // Live SSE — receive signals from clients and other practitioners instantly
+  useMatterStream(matterId, (incomingNote) => {
+    setNotes(prev => {
+      // Deduplication: skip if already in list (e.g. from optimistic send)
+      if (prev.some(n => n.id === incomingNote.id)) return prev;
+      return [incomingNote, ...prev];
+    });
+  });
+
   // ---------- Timer ----------
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -210,6 +220,7 @@ const MatterIntelligence: React.FC<MatterIntelligenceProps> = ({ matterId, mode,
     setIsSendingNote(true);
     try {
       const note = await gemini.addMatterNote(matterId, text);
+      // Optimistic add — SSE will also broadcast this; deduplication in useMatterStream
       setNotes(prev => [note, ...prev]);
       setNoteInput('');
     } catch (e) {

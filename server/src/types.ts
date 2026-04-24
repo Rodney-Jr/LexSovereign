@@ -6,16 +6,19 @@ export interface AuthUser {
     name: string; // Added for UI display
     role: string;
     tenantId: string | null;
+    clientId?: string | null;  // For CLIENT-role users linked to a specific client record
     permissions: any[];
     department?: any;
     tenant?: {
         id: string;
-        jurisdiction: string;
+        name?: string;
+        jurisdiction?: string;
         storageBucketUri?: string | null;
         enabledModules?: string[];
         status?: string;
         isTrial?: boolean;
         trialExpiresAt?: Date | string | null;
+        subscriptionStatus?: string;
     };
     attributes?: Record<string, any>;
     isImpersonating?: boolean;

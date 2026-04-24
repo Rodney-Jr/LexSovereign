@@ -29,6 +29,7 @@ model User {
   mfaEnabled            Boolean                @default(false)
   mfaBackupCodes        Json?                  @default("[]")
   departmentId          String?
+  clientId              String?
   passkeys              PasskeyCredential[]
   aiRiskAnalyses        AIRiskAnalysis[]
   activityEntries       ActivityEntry[]
@@ -47,6 +48,7 @@ model User {
   timeEntries           TimeEntry[]
   matterTeams           MatterTeamMember[]
   department            Department?            @relation(fields: [departmentId], references: [id])
+  client                Client?                @relation(fields: [clientId], references: [id])
   role                  Role?                  @relation(fields: [roleId], references: [id])
   tenant                Tenant?                @relation(fields: [tenantId], references: [id])
 }
@@ -234,6 +236,7 @@ model Client {
   trustAlertThreshold Float?               // Alert when trust balance drops below this
   tenant              Tenant               @relation(fields: [tenantId], references: [id])
   matters             Matter[]
+  users               User[]
   ledgerTransactions  LedgerTransaction[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt

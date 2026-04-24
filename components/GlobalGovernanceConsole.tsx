@@ -22,8 +22,9 @@ import {
   AlertTriangle,
   CreditCard
 } from 'lucide-react';
-import { TenantMetadata, Region, SaaSPlan } from '../types';
+import { TenantMetadata, Region, SaaSPlan, AppMode } from '../types';
 import { authorizedFetch, getSavedSession } from '../utils/api';
+import { useSovereign } from '../contexts/SovereignContext';
 
 const GlobalGovernanceConsole: React.FC = () => {
   const [tenants, setTenants] = useState<TenantMetadata[]>([]);
@@ -36,6 +37,7 @@ const GlobalGovernanceConsole: React.FC = () => {
     aiTokens: '0',
     systemHealth: 100
   });
+  const { setTargetTenant } = useSovereign();
 
   const fetchPlatformData = async () => {
     const session = getSavedSession();
@@ -133,9 +135,15 @@ const GlobalGovernanceConsole: React.FC = () => {
   };
 
   const handleManageSilo = (tenantId: string) => {
-    // For now, redirect to identity or show a toast
-    console.log(`Navigating to management console for silo: ${tenantId}`);
-    // Assuming we might have a specific silo management tab or use identity
+    const tenant = tenants.find(t => t.id === tenantId);
+    if (!tenant) return;
+
+    setTargetTenant({ id: tenantId, name: tenant.name, mode: tenant.appMode });
+
+    console.log(`[Governance] Entering management context for silo: ${tenant.name} (${tenantId})`);
+    
+    // Navigate to tenant settings to begin management
+    window.location.href = '/tenant-settings';
   };
 
   return (

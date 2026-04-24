@@ -80,6 +80,7 @@ router.get('/tenants', authenticateToken, requireRole(['GLOBAL_ADMIN']), async (
             primaryRegion: t.primaryRegion || 'GLOBAL',
             plan: t.plan,
             status: t.status,
+            appMode: t.appMode,
             sovereignCredits: 10000, // Heuristic/Static for now
             activeMatters: t._count.matters,
             userCount: t._count.users,

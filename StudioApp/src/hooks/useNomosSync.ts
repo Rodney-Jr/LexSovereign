@@ -60,7 +60,7 @@ export function useNomosSync() {
 
   const [isCommitting, setIsCommitting] = useState(false);
 
-  const commitToNomosDesk = async (htmlContent: string) => {
+  const commitToNomosDesk = async (htmlContent: string, savedDocId?: string) => {
     if (isCommitting) return;
     setIsCommitting(true);
 
@@ -68,7 +68,7 @@ export function useNomosSync() {
     const channel = new BroadcastChannel('sovereign_studio_sync');
     channel.postMessage({
         type: 'STUDIO_COMMIT',
-        docId: documentData?.docId,
+        docId: savedDocId || documentData?.docId,
         content: htmlContent
     });
     

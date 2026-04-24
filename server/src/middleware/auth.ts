@@ -33,14 +33,21 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
             email: decodedPayload.email,
             role: isAdmin ? 'GLOBAL_ADMIN' : decodedPayload.role,
             tenantId: decodedPayload.tenantId,
+            clientId: decodedPayload.clientId,
             name: decodedPayload.name || 'User Session',
             permissions: decodedPayload.permissions || [],
             isImpersonating: !!decodedPayload.isImpersonating
         };
 
-        if (isAdmin && !req.user.tenantId) {
+        // --- NEW: Impersonation Logic for Global Enclave Governance ---
+        const targetTenantHeader = req.headers['x-target-tenant-id'];
+        if (isAdmin && targetTenantHeader && typeof targetTenantHeader === 'string') {
+             req.user.tenantId = targetTenantHeader;
+             req.user.isImpersonating = true;
+             console.log(`[Auth-Impersonation] GLOBAL_ADMIN ${req.user.email} assuming context of Tenant: ${targetTenantHeader}`);
+        } else if (isAdmin && !req.user.tenantId) {
             try {
-                // Pin to the root tenant as the stable administration context
+                // Pin to the root tenant as the stable administration context if no specific silo is targeted
                 const primaryTenant = await prisma.tenant.findFirst({ orderBy: { createdAt: 'asc' } });
                 if (primaryTenant) {
                     req.user.tenantId = primaryTenant.id;
@@ -58,10 +65,13 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
                     isActive: true, 
                     tenant: { 
                         select: { 
+                            id: true,
+                            name: true,
                             status: true, 
                             isTrial: true, 
                             trialExpiresAt: true,
-                            subscriptionStatus: true
+                            subscriptionStatus: true,
+                            enabledModules: true
                         } 
                     } 
                 }
@@ -70,6 +80,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
              if (userStatus && !userStatus.isActive) return res.status(403).json({ error: 'Account disabled' });
              
              if (userStatus?.tenant) {
+                 req.user.tenant = userStatus.tenant;
                  const t = userStatus.tenant;
                  if (t.status === 'SUSPENDED') return res.status(403).json({ error: 'Tenant suspended' });
                  

@@ -34,12 +34,15 @@ import DocumentPreviewModal from './DocumentPreviewModal';
 import { ClientTrustLedger } from './ClientTrustLedger';
 import { getSavedSession } from '../utils/api';
 import { LexGeminiService } from '../services/geminiService';
+import { useSovereign } from '../contexts/SovereignContext';
+import { useMatterStream } from '../hooks/useMatterStream';
 
 const gemini = new LexGeminiService();
 
 const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ userName, onLogout }) => {
-   const { matters, documents } = useSovereignData(true);
+   const { matters, documents, isLoaded } = useSovereignData(true);
    const { checkVisibility } = usePermissions();
+   const { session } = useSovereign();
    const [docFilter, setDocFilter] = useState<'all' | 'drafts' | 'final'>('all');
    const [activeTab, setActiveTab] = useState<'overview' | 'billing'>('overview');
    const [localDocs, setLocalDocs] = useState<any[]>([]);
@@ -55,31 +58,41 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
       setLocalDocs(documents);
    }, [documents]);
 
-   // Filter matters visible to this client
-   const clientMatters = matters.filter(m => checkVisibility(m));
-   const latestMatter = clientMatters[0];
+   // Filter matters visible to this client, excluding mock/constants IDs
+   const clientMatters = matters
+      .filter(m => checkVisibility(m))
+      .filter(m => !/^(MAT-|MT-)/.test(m.id)); // Exclude hardcoded mock IDs
+   const latestMatter = isLoaded ? clientMatters[0] : undefined;
 
+   // Initial load of notes history on matter change
    React.useEffect(() => {
       const fetchNotes = async () => {
-         if (latestMatter?.id) {
-            try {
-               const newNotes = await gemini.getMatterNotes(latestMatter.id);
-               setNotes(newNotes);
-
-               // Count unread messages from practitioner
-               const session = getSavedSession();
-               const unread = newNotes.filter(n => !n.isRead && n.authorId !== session?.user?.id).length;
-               setUnreadCount(unread);
-            } catch (err) {
-               console.error(err);
-            }
+         if (!latestMatter?.id) return;
+         // Guard: skip hardcoded mock matter IDs (e.g. 'MAT-GEN-001', 'MT-GENERAL')
+         const isMockId = /^(MAT-|MT-)/.test(latestMatter.id);
+         if (isMockId) return;
+         try {
+            const newNotes = await gemini.getMatterNotes(latestMatter.id);
+            setNotes(newNotes);
+            const session = getSavedSession();
+            const unread = newNotes.filter(n => !n.isRead && n.authorId !== session?.user?.id).length;
+            setUnreadCount(unread);
+         } catch (err) {
+            console.error(err);
          }
       };
-
       fetchNotes();
-      const interval = setInterval(fetchNotes, 10000); // Poll every 10s
-      return () => clearInterval(interval);
    }, [latestMatter?.id]);
+
+   // Live SSE — append incoming messages instantly (no polling)
+   useMatterStream(latestMatter?.id, (incomingNote) => {
+      setNotes(prev => {
+         // Avoid duplicate if we already have this note (from optimistic update)
+         if (prev.some(n => n.id === incomingNote.id)) return prev;
+         setUnreadCount(c => c + 1);
+         return [incomingNote, ...prev];
+      });
+   });
 
    // Filter documents for the latest matter
    const matterDocs = localDocs.filter(d => d.matterId === latestMatter?.id);
@@ -178,6 +191,25 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
 
    return (
       <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-20 px-6 lg:px-0">
+         {/* Enclave Loading State */}
+         {!isLoaded && (
+            <div className="flex flex-col items-center justify-center py-32 gap-6">
+               <div className="p-6 bg-emerald-500/10 rounded-[3rem] border border-emerald-500/20 shadow-2xl shadow-emerald-500/10">
+                  <ShieldCheck className="text-emerald-500 animate-pulse" size={56} />
+               </div>
+               <div className="text-center space-y-2">
+                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em]">Synchronizing Sovereign Enclave</p>
+                  <p className="text-slate-500 text-sm">Establishing secure channel to your matter vault...</p>
+               </div>
+               <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:300ms]" />
+               </div>
+            </div>
+         )}
+         {isLoaded && (
+         <>
          {/* Hero Header */}
          <div className="flex flex-col lg:flex-row items-center gap-8 pt-10">
             <div className="relative">
@@ -189,6 +221,9 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                </div>
             </div>
             <div className="text-center lg:text-left space-y-2">
+               <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-2 animate-in fade-in slide-in-from-left-4 duration-1000">
+                  Partnering with {session?.tenantName || 'LexSovereign Enclave'}
+               </p>
                <h2 className="text-4xl font-bold text-white tracking-tight leading-tight">
                   <span className="text-slate-500">Welcome,</span> {userName}
                </h2>
@@ -516,6 +551,8 @@ const ClientPortal: React.FC<{ userName: string; onLogout?: () => void }> = ({ u
                documentId={previewDocId}
                onClose={() => setPreviewDocId(null)}
             />
+         )}
+         </> /* end isLoaded */
          )}
       </div>
    );

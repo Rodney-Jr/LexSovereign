@@ -226,7 +226,14 @@ const Layout: React.FC<LayoutProps> = ({
             <div className="bg-emerald-500/20 p-2 rounded-lg">
               <ShieldCheck className="text-emerald-400 w-6 h-6" />
             </div>
-            <span className="font-bold text-xl tracking-tight text-white">NomosDesk</span>
+            <div className="flex flex-col">
+              <span className="font-bold text-xl tracking-tight text-white leading-none">NomosDesk</span>
+              {session?.tenantName && (
+                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-1 opacity-70 truncate max-w-[140px]">
+                  {session.tenantName}
+                </span>
+              )}
+            </div>
           </a>
           <button
             className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-brand-muted"

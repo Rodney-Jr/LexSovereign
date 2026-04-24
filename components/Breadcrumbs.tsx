@@ -20,17 +20,23 @@ const ROUTE_LABELS: Record<string, string> = {
     'drafting': 'Drafting Studio',
     'analysis': 'Case Analysis',
     'accounting-hub': 'Accounting Hub',
-    'billing': 'Sovereign Billing'
+    'billing': 'Sovereign Billing',
+    'client-portal': 'Client Portal'
 };
+
+import { useSovereign } from '../contexts/SovereignContext';
+import { UserRole } from '../types';
 
 const Breadcrumbs: React.FC = () => {
     const location = useLocation();
+    const { session } = useSovereign();
     const pathnames = location.pathname.split('/').filter((x) => x);
+    const homeTarget = session?.role === UserRole.CLIENT ? "/client-portal" : "/dashboard";
 
     return (
         <nav className="flex items-center space-x-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest text-brand-muted">
             <Link 
-                to="/dashboard" 
+                to={homeTarget} 
                 className="hover:text-brand-primary transition-colors flex items-center gap-1.5 group"
             >
                 <Home size={14} className="group-hover:scale-110 transition-transform" />

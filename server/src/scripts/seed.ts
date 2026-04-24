@@ -14,6 +14,7 @@ const PERMISSIONS = [
     { id: 'VIEW_STATS:TENANT', description: 'Can view tenant stats', resource: 'TENANT', action: 'VIEW_STATS' },
     { id: 'VIEW_BILLING:TENANT', description: 'Can view billing', resource: 'TENANT', action: 'VIEW_BILLING' },
     { id: 'MANAGE:TENANT_SETTINGS', description: 'Manage tenant settings', resource: 'TENANT_SETTINGS', action: 'MANAGE' },
+    { id: 'VIEW:TENANT_SETTINGS', description: 'View tenant settings', resource: 'TENANT_SETTINGS', action: 'VIEW' },
     { id: 'MANAGE_UI:TENANT', description: 'Manage UI visibility', resource: 'TENANT', action: 'MANAGE_UI' },
     { id: 'MANAGE:USER', description: 'Manage users', resource: 'USER', action: 'MANAGE' },
     { id: 'MANAGE:ROLE', description: 'Manage roles', resource: 'ROLE', action: 'MANAGE' },
@@ -67,20 +68,20 @@ async function main() {
     
     // --- 🔥 Sovereign HARD PURGE (Bootstrap Clean) ---
     console.log('--- 🔥 Sovereign HARD PURGE Starting (Bootstrap) ---');
-    const demoTenantName = 'NomosDesk Demo';
-    const demoTenantSnapshot = await prisma.tenant.findFirst({ where: { name: demoTenantName } });
+    const demoTenants = ['Nomos Law', 'AstraCorp Legal'];
+    const demoSnapshots = await prisma.tenant.findMany({ where: { name: { in: demoTenants } } });
+    const preservedIds = demoSnapshots.map(t => t.id);
     
-    if (demoTenantSnapshot) {
-        const demoId = demoTenantSnapshot.id;
-        console.log(`🛡️ Preserving Tenant: ${demoTenantSnapshot.name} (${demoId})`);
-        const whereNotDemoStrict = { tenantId: { not: demoId } };
+    if (preservedIds.length > 0) {
+        console.log(`🛡️ Preserving Tenants: ${demoSnapshots.map(t => t.name).join(', ')}`);
+        const whereNotDemoStrict = { tenantId: { notIn: preservedIds } };
         const p = prisma as any;
 
         // Leaf-level and dependent tables
         await p.auditLog.deleteMany({ 
             where: { 
                 AND: [
-                    { tenantId: { not: demoId } },
+                    { tenantId: { notIn: preservedIds } },
                     { tenantId: { not: null } }
                 ]
             } 
@@ -100,80 +101,95 @@ async function main() {
         await p.predictiveRisk.deleteMany({ where: whereNotDemoStrict });
         await p.aIRiskAnalysis.deleteMany({ where: whereNotDemoStrict });
         await p.aIUsage.deleteMany({ where: whereNotDemoStrict });
-        await p.chatbotConfig.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.invitation.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.apiKey.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.chatbotConfig.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.invitation.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.apiKey.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
         
         // --- Billing and Accounting Stack (FK Heavy) ---
-        await p.ledgerEntry.deleteMany({ where: { account: { tenantId: { not: demoId } } } });
-        await p.ledgerTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.bankTransaction.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.firmAccount.deleteMany({ where: { tenantId: { not: demoId } } });
+        await p.ledgerEntry.deleteMany({ where: { account: { tenantId: { notIn: preservedIds } } } });
+        await p.ledgerTransaction.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.bankTransaction.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.firmAccount.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
         
-        await p.invoiceLineItem.deleteMany({ where: { invoice: { tenantId: { not: demoId } } } });
+        await p.invoiceLineItem.deleteMany({ where: { invoice: { tenantId: { notIn: preservedIds } } } });
         await p.aIUsage.deleteMany({ where: whereNotDemoStrict });
         await p.invoice.deleteMany({ where: whereNotDemoStrict });
-        await p.billingComponent.deleteMany({ where: { matter: { tenantId: { not: demoId } } } });
+        await p.billingComponent.deleteMany({ where: { matter: { tenantId: { notIn: preservedIds } } } });
         
-        // --- Workflow Stack ---
-        await p.workflowTransition.deleteMany({ where: { fromState: { workflow: { tenantId: { not: demoId } } } } });
-        await p.workflowState.deleteMany({ where: { workflow: { tenantId: { not: demoId } } } });
-        await p.workflow.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.matterType.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.department.deleteMany({ where: { tenantId: { not: demoId } } });
-
-        await p.externalMapping.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.syncLog.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.cloudIntegration.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.platformFolderSync.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.firmAsset.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.expense.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.leaveRecord.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.candidate.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.cLERecord.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.salaryRecord.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.performanceAppraisal.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.onboardingItem.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.brandingProfile.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.lead.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.bridge.deleteMany({ where: { tenantId: { not: demoId } } });
-        await p.chatConversation.deleteMany({ where: { tenantId: { not: demoId } } });
+        // --- Workflow         await p.workflowTransition.deleteMany({ where: { fromState: { workflow: { tenantId: { notIn: preservedIds } } } } });
+        await p.workflowState.deleteMany({ where: { workflow: { tenantId: { notIn: preservedIds } } } });
+        await p.workflow.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.matterType.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.department.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.externalMapping.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.syncLog.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.cloudIntegration.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.platformFolderSync.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.firmAsset.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.expense.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.leaveRecord.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.candidate.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.cLERecord.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.salaryRecord.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.performanceAppraisal.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.onboardingItem.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.brandingProfile.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.lead.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.bridge.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.chatConversation.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
         await p.documentTemplate.deleteMany({ 
             where: { 
                 AND: [
-                    { tenantId: { not: demoId } },
+                    { tenantId: { notIn: preservedIds } },
                     { tenantId: { not: null } }
                 ]
             } 
         });
         
-        await p.matterTeamMember.deleteMany({ where: { matter: { tenantId: { not: demoId } } } });
+        await p.matterTeamMember.deleteMany({ where: { matter: { tenantId: { notIn: preservedIds } } } });
+        await p.deadline.deleteMany({ where: { matter: { tenantId: { notIn: preservedIds } } } });
+        await p.invoiceLineItem.deleteMany({ where: { invoice: { tenantId: { notIn: preservedIds } } } });
+        await p.invoice.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.aIUsage.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.activityEntry.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.approval.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.billingComponent.deleteMany({ where: { matter: { tenantId: { notIn: preservedIds } } } });
+        await p.collaborationMessage.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.evidenceLink.deleteMany({ where: { matter: { tenantId: { notIn: preservedIds } } } });
+        await p.hearing.deleteMany({ where: { matter: { tenantId: { notIn: preservedIds } } } });
+        await p.predictiveRisk.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.task.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.timeEntry.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.documentVersion.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+        await p.document.deleteMany({ where: { tenantId: { notIn: preservedIds } } });
+
         await p.matter.deleteMany({ where: whereNotDemoStrict });
         await p.client.deleteMany({ where: whereNotDemoStrict });
         await p.policy.deleteMany({ where: whereNotDemoStrict });
         await p.user.deleteMany({ 
             where: { 
                 AND: [
-                    { tenantId: { not: demoId } },
+                    { tenantId: { notIn: preservedIds } },
                     { tenantId: { not: null } },
-                    { email: { not: 'admin@nomosdesk.com' } }
+                    { email: { notIn: ['law-admin@nomosdesk.com', 'legal-admin@nomosdesk.com', 'harvey@nomoslaw.com', 'mike@astracorp.legal'] } }
                 ]
             } 
         });
         await p.role.deleteMany({ 
             where: { 
                 AND: [
-                    { tenantId: { not: demoId } },
+                    { tenantId: { notIn: preservedIds } },
                     { tenantId: { not: null } }
                 ]
             } 
         });
 
-        const purged = await prisma.tenant.deleteMany({ where: { id: { not: demoId } } });
+        const purged = await prisma.tenant.deleteMany({ where: { id: { notIn: preservedIds } } });
         console.log(`🚀 [Success] Hard Purged ${purged.count} stale tenants.`);
     }
 
     console.log('🌱 Bulk Seeding Permissions...');
+
     await prisma.permission.createMany({
         data: PERMISSIONS,
         skipDuplicates: true
@@ -202,116 +218,88 @@ async function main() {
         }
     }
     console.log('✅ System Roles seeded.');
-
-    // Tenant & User Seeding using Service
-    console.log('🌱 Provisioning Default Tenant via Service...');
-
-    // Check if admin user already exists to prevent duplicate seeding errors
-    const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@nomosdesk.com' } });
-
-    let tenantId;
-    let counselId;
-
+    
     const globalAdminRole = await prisma.role.findFirst({ where: { name: 'GLOBAL_ADMIN', isSystem: true, tenantId: null } });
     if (!globalAdminRole) {
         console.error('❌ Critical: GLOBAL_ADMIN role not found after seeding!');
         throw new Error('GLOBAL_ADMIN role missing.');
     }
 
-    if (!existingAdmin) {
+    // --- 🏛️ Demo Enclave 1: Nomos Law & Co (Law Firm) ---
+    const lawFirmEmail = 'law-admin@nomoslaw.com';
+    const existingLawAdmin = await prisma.user.findUnique({ where: { email: lawFirmEmail } });
+
+    let lawTenantId;
+    let lawAdminId;
+    if (!existingLawAdmin) {
         const result = await TenantService.provisionTenant({
-            name: 'NomosDesk Demo',
-            adminEmail: 'admin@nomosdesk.com',
-            adminName: 'Sovereign Admin',
-            plan: 'ENTERPRISE',
+            name: 'Nomos Law',
+            adminEmail: lawFirmEmail,
+            adminName: 'Senior Partner',
+            plan: 'Institutional',
             region: 'GH_ACC_1',
             appMode: 'LAW_FIRM'
         });
+        lawTenantId = result.tenantId;
+        lawAdminId = result.adminId;
 
-        tenantId = result.tenantId;
+        // Upgrade modules
+        await prisma.tenant.update({
+            where: { id: lawTenantId },
+            data: { 
+                enabledModules: ["CORE", "AI", "STRATEGY", "BILLING", "HR", "CRM"],
+                isTrial: false,
+                status: 'ACTIVE'
+            }
+        });
 
-        console.log(`✅ Provisioned Tenant: ${result.tenantId}`);
-        console.log(`✅ Admin Credentials: admin@nomosdesk.com / password123`);
-
-        console.log('🌱 Updating Admin User details...');
+        // Enforce password for demo convenience
         await prisma.user.update({
             where: { id: result.adminId },
-            data: {
-                roleString: 'TENANT_ADMIN',
-                role: { connect: { name_tenantId: { name: 'TENANT_ADMIN', tenantId: result.tenantId } } },
-                jurisdictionPins: ['GH_ACC_1', 'SOV-PR-1'],
-                credentials: [
-                    { type: 'SYSTEM_ADMIN', id: 'SA-001' },
-                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-GH-001', region: 'GH_ACC_1' },
-                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-SOV-001', region: 'SOV-PR-1' }
-                ]
-            }
+            data: { passwordHash, attributes: {} } // Remove force change
         });
-
-        // Create secondary user (Internal Counsel)
-        const counselRole = await prisma.role.findFirst({
-            where: { name: 'INTERNAL_COUNSEL', tenantId: result.tenantId }
-        });
-
-        const counsel = await prisma.user.create({
-            data: {
-                email: 'counsel@nomosdesk.com',
-                passwordHash,
-                name: 'Internal Counsel',
-                roleId: counselRole?.id,
-                roleString: 'INTERNAL_COUNSEL',
-                region: 'GH_ACC_1',
-                tenantId: result.tenantId,
-                jurisdictionPins: ['GH_ACC_1', 'SOV-PR-1'],
-                credentials: [
-                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-GH-002', region: 'GH_ACC_1' },
-                    { type: 'JURISDICTION_BAR_LICENSE', id: 'BAR-SOV-002', region: 'SOV-PR-1' }
-                ]
-            }
-        });
-
-        // Create more users for capacity dashboard
-        for (let i = 1; i <= 3; i++) {
-            await prisma.user.create({
-                data: {
-                    email: `associate${i}@nomosdesk.com`,
-                    passwordHash,
-                    name: `Associate ${i}`,
-                    roleId: counselRole?.id,
-                    roleString: 'JUNIOR_ASSOCIATE',
-                    region: 'GH_ACC_1',
-                    tenantId: result.tenantId,
-                    maxWeeklyHours: 35 + (i * 5),
-                    jurisdictionPins: ['GH_ACC_1']
-                }
-            });
-        }
-
-
-        counselId = counsel.id;
     } else {
-        console.log('ℹ️ Default tenant already exists. Enforcing Demo Admin role and password...');
-        tenantId = existingAdmin.tenantId;
+        lawTenantId = existingLawAdmin.tenantId;
+        lawAdminId = existingLawAdmin.id;
+    }
 
-        // Force reset demo admin and ensure role exists
-        // Note: admin@nomosdesk.com is the DEMO admin, not the PLATFORM admin.
-        const demoAdminRole = await prisma.role.findFirst({ 
-            where: { name: 'TENANT_ADMIN', tenantId: tenantId } 
+    const counselId = lawAdminId;
+    const tenantId = lawTenantId;
+
+    // --- 🏢 Demo Enclave 2: AstraCorp Legal (Legal Dept) ---
+    const legalDeptEmail = 'legal-admin@nomosdesk.com';
+    const existingLegalAdmin = await prisma.user.findUnique({ where: { email: legalDeptEmail } });
+
+    let legalTenantId;
+    if (!existingLegalAdmin) {
+        const result = await TenantService.provisionTenant({
+            name: 'AstraCorp Legal',
+            adminEmail: legalDeptEmail,
+            adminName: 'General Counsel',
+            plan: 'Institutional',
+            region: 'GH_ACC_1',
+            appMode: 'LEGAL_DEPT'
         });
+        legalTenantId = result.tenantId;
 
-        await prisma.user.update({
-            where: { email: 'admin@nomosdesk.com' },
-            data: {
-                name: 'Sovereign Admin',
-                passwordHash,
-                roleString: 'TENANT_ADMIN',
-                ...(demoAdminRole?.id ? { role: { connect: { id: demoAdminRole.id } } } : {})
+        // Upgrade modules
+        await prisma.tenant.update({
+            where: { id: legalTenantId },
+            data: { 
+                enabledModules: ["CORE", "AI", "STRATEGY", "BILLING", "HR", "CRM"],
+                isTrial: false,
+                status: 'ACTIVE'
             }
         });
-        console.log('✅ Demo Admin role and password enforced.');
 
-        const counselUser = await prisma.user.findUnique({ where: { email: 'counsel@nomosdesk.com' } });
-        counselId = counselUser?.id;
+
+        // Enforce password for demo convenience
+        await prisma.user.update({
+            where: { id: result.adminId },
+            data: { passwordHash, attributes: {} }
+        });
+    } else {
+        legalTenantId = existingLegalAdmin.tenantId;
     }
 
     // --- ✨ Dedicated Platform Admin (Global Scope) ---
@@ -337,27 +325,164 @@ async function main() {
     });
     console.log('✅ Platform Admin ensured.');
 
+    // --- 🖋️ Demo Personas & Advanced Enclave State ---
+    console.log('🌱 Seeding Practitioner & Client Personas...');
+
+    if (lawTenantId) {
+        // 1. Create Nomos Client
+        const nomosClient = await prisma.client.upsert({
+            where: { id: 'client-nomos-1' },
+            update: { name: 'Global Real Estate IDP', contactEmail: 'realestate@idp.com' },
+            create: { 
+                id: 'client-nomos-1', 
+                name: 'Global Real Estate IDP', 
+                contactEmail: 'realestate@idp.com',
+                tenantId: lawTenantId
+            }
+        });
+
+        // 2. Create CLIENT Role for Nomos
+        const clientRoleNomos = await prisma.role.upsert({
+            where: { name_tenantId: { name: 'CLIENT', tenantId: lawTenantId } },
+            update: {},
+            create: { name: 'CLIENT', tenantId: lawTenantId }
+        });
+
+        // 3. Create Harvey Specter (Lawyer)
+        const harvey = await prisma.user.upsert({
+            where: { email: 'harvey@nomoslaw.com' },
+            update: {},
+            create: {
+                email: 'harvey@nomoslaw.com',
+                name: 'Harvey Specter',
+                passwordHash,
+                roleString: 'INTERNAL_COUNSEL',
+                tenantId: lawTenantId,
+                region: 'GH_ACC_1'
+            }
+        });
+
+        // 4. Create John Doe (Client User)
+        await prisma.user.upsert({
+            where: { email: 'john.doe@client.com' },
+            update: { clientId: nomosClient.id },
+            create: {
+                email: 'john.doe@client.com',
+                name: 'John Doe',
+                passwordHash,
+                roleString: 'CLIENT',
+                roleId: clientRoleNomos.id,
+                tenantId: lawTenantId,
+                clientId: nomosClient.id,
+                region: 'GH_ACC_1'
+            }
+        });
+
+        // 5. Create Demo Matter
+        await prisma.matter.upsert({
+            where: { id: 'matter-nomos-demo-1' },
+            update: {},
+            create: {
+                id: 'matter-nomos-demo-1',
+                name: 'Acquisition of Prime Meridian Plaza',
+                type: 'Real Estate',
+                status: 'ACTIVE',
+                tenantId: lawTenantId,
+                clientId: nomosClient.id,
+                internalCounselId: harvey.id,
+                description: 'High-value real estate acquisition for Global IDP.',
+            }
+        });
+    }
+
+    if (legalTenantId) {
+        // 1. Create Astra Client
+        const astraClient = await prisma.client.upsert({
+            where: { id: 'client-astra-1' },
+            update: { name: 'AstraCorp Internal Operations', contactEmail: 'ops@astracorp.com' },
+            create: { 
+                id: 'client-astra-1', 
+                name: 'AstraCorp Internal Operations', 
+                contactEmail: 'ops@astracorp.com',
+                tenantId: legalTenantId
+            }
+        });
+
+        // 2. Create CLIENT Role for Astra
+        const clientRoleAstra = await prisma.role.upsert({
+            where: { name_tenantId: { name: 'CLIENT', tenantId: legalTenantId } },
+            update: {},
+            create: { name: 'CLIENT', tenantId: legalTenantId }
+        });
+
+        // 3. Create Mike Ross (In-House Counsel)
+        const mike = await prisma.user.upsert({
+            where: { email: 'mike@astracorp.legal' },
+            update: {},
+            create: {
+                email: 'mike@astracorp.legal',
+                name: 'Mike Ross',
+                passwordHash,
+                roleString: 'INTERNAL_COUNSEL',
+                tenantId: legalTenantId,
+                region: 'GH_ACC_1'
+            }
+        });
+
+        // 4. Create Jane Smith (Client User)
+        await prisma.user.upsert({
+            where: { email: 'jane.smith@client.com' },
+            update: { clientId: astraClient.id },
+            create: {
+                email: 'jane.smith@client.com',
+                name: 'Jane Smith',
+                passwordHash,
+                roleString: 'CLIENT',
+                roleId: clientRoleAstra.id,
+                tenantId: legalTenantId,
+                clientId: astraClient.id,
+                region: 'GH_ACC_1'
+            }
+        });
+
+        // 5. Create Demo Matter
+        await prisma.matter.upsert({
+            where: { id: 'matter-astra-demo-1' },
+            update: {},
+            create: {
+                id: 'matter-astra-demo-1',
+                name: 'Internal Compliance Audit Q2',
+                type: 'Compliance',
+                status: 'REVIEW',
+                tenantId: legalTenantId,
+                clientId: astraClient.id,
+                internalCounselId: mike.id,
+                description: 'Quarterly compliance check for AstraCorp European division.',
+            }
+        });
+    }
+
     // Role IDs (Refetched for use outside the if/else)
-    const clerkRole = await prisma.role.findFirst({ where: { name: 'CLERK', tenantId: tenantId } });
-    const adminManagerRole = await prisma.role.findFirst({ where: { name: 'ADMIN_MANAGER', tenantId: tenantId } });
+    const clerkRole = await prisma.role.findFirst({ where: { name: 'CLERK', tenantId: lawTenantId } });
+    const adminManagerRole = await prisma.role.findFirst({ where: { name: 'ADMIN_MANAGER', tenantId: lawTenantId } });
 
     // Idempotent Clerk Seeding
     console.log('🌱 Ensuring Clerk Demo Account exists...');
     await prisma.user.upsert({
-        where: { email: 'clerk@nomosdesk.com' },
+        where: { email: 'clerk@nomoslaw.com' },
         update: {
             roleId: clerkRole?.id,
             roleString: 'CLERK',
             name: 'Firm Clerk',
         },
         create: {
-            email: 'clerk@nomosdesk.com',
+            email: 'clerk@nomoslaw.com',
             passwordHash,
             name: 'Firm Clerk',
             roleId: clerkRole?.id,
             roleString: 'CLERK',
             region: 'GH_ACC_1',
-            tenantId: tenantId!,
+            tenantId: lawTenantId,
             jurisdictionPins: ['GH_ACC_1'],
             credentials: [{ type: 'FIELD_OPERATIONS_POCKET', id: 'CLERK-001' }]
         }
@@ -366,20 +491,20 @@ async function main() {
     // Idempotent Admin Manager Seeding
     console.log('🌱 Ensuring Admin Manager Demo Account exists...');
     await prisma.user.upsert({
-        where: { email: 'admin_manager@nomosdesk.com' },
+        where: { email: 'admin_manager@nomoslaw.com' },
         update: {
             roleId: adminManagerRole?.id,
             roleString: 'ADMIN_MANAGER',
             name: 'Firm Admin Manager',
         },
         create: {
-            email: 'admin_manager@nomosdesk.com',
+            email: 'admin_manager@nomoslaw.com',
             passwordHash,
             name: 'Firm Admin Manager',
             roleId: adminManagerRole?.id,
             roleString: 'ADMIN_MANAGER',
             region: 'GH_ACC_1',
-            tenantId: tenantId!,
+            tenantId: lawTenantId,
             jurisdictionPins: ['GH_ACC_1'],
             credentials: [{ type: 'EXECUTIVE_OPS_BADGE', id: 'ADMIN-001' }]
         }
@@ -1160,6 +1285,191 @@ Title: **{{receiving_party_signer_title}}**
             });
             console.log(`   - Seeded Clause: ${c.title}`);
         }
+    }
+
+    // --- 💰 Financial & Accounting Seeding ---
+    console.log('🌱 Seeding Financial Artifacts...');
+    if (lawTenantId) {
+        await seedFinancialsForTenant(lawTenantId, 'Nomos Law', passwordHash);
+    }
+    if (legalTenantId) {
+        await seedFinancialsForTenant(legalTenantId, 'AstraCorp Legal', passwordHash);
+    }
+
+    console.log('✨ [Nomosdesk] Seeding Complete.');
+}
+
+async function seedFinancialsForTenant(tenantId: string, tenantName: string, passwordHash: string) {
+    console.log(`   [Financials] Seeding for: ${tenantName}`);
+    
+    // 0. Purge Existing Financial Records for Idempotency
+    await prisma.bankTransaction.deleteMany({ where: { tenantId } });
+    await prisma.ledgerEntry.deleteMany({ where: { transaction: { tenantId } } });
+    await prisma.ledgerTransaction.deleteMany({ where: { tenantId } });
+    await prisma.firmAccount.deleteMany({ where: { tenantId } });
+    await prisma.expense.deleteMany({ where: { tenantId } });
+    await prisma.invoiceLineItem.deleteMany({ where: { invoice: { tenantId } } });
+    await prisma.invoice.deleteMany({ where: { tenantId } });
+    await prisma.timeEntry.deleteMany({ where: { tenantId } });
+
+    // 1. Chart of Accounts (Using categories recognized by services)
+    const accounts = [
+        { name: 'Operating Account (GHS)', type: 'ASSET', category: 'BANK', balance: 450000, currency: 'GHS' },
+        { name: 'Trust Account (GHS)', type: 'ASSET', category: 'TRUST', balance: 250000, currency: 'GHS' },
+        { name: 'Accounts Receivable', type: 'ASSET', category: 'ACCOUNTS_RECEIVABLE', balance: 125000, currency: 'GHS' },
+        { name: 'Legal Fees Revenue', type: 'REVENUE', category: 'SERVICE_REVENUE', balance: 850000, currency: 'GHS' },
+        { name: 'Office Rent & Utilities', type: 'EXPENSE', category: 'OPERATING_EXPENSE', balance: 120000, currency: 'GHS' },
+        { name: 'Software & AI Licensing', type: 'EXPENSE', category: 'TECHNOLOGY', balance: 45000, currency: 'GHS' },
+        { name: 'Retained Earnings', type: 'EQUITY', category: 'EQUITY', balance: 350000, currency: 'GHS' }
+    ];
+
+    const dbAccounts: any = {};
+    for (const acc of accounts) {
+        dbAccounts[acc.name] = await prisma.firmAccount.create({
+            data: { ...acc, tenantId }
+        });
+    }
+
+    // 2. Client Trust Deposit & Drawdown History
+    const client = await prisma.client.findFirst({ where: { tenantId } });
+    if (client) {
+        // Initial Deposit
+        const txDep = await prisma.ledgerTransaction.create({
+            data: {
+                description: 'Initial Retainer Deposit',
+                type: 'TRUST_DEPOSIT',
+                status: 'POSTED',
+                tenantId,
+                clientId: client.id,
+                date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+            }
+        });
+
+        await prisma.ledgerEntry.createMany({
+            data: [
+                { transactionId: txDep.id, accountId: dbAccounts['Trust Account (GHS)'].id, debit: 50000, credit: 0, description: 'Trust Funds Received' },
+                { transactionId: txDep.id, accountId: dbAccounts['Retained Earnings'].id, debit: 0, credit: 50000, description: 'Liability Recognized' }
+            ]
+        });
+
+        // Partial Drawdown
+        const txDraw = await prisma.ledgerTransaction.create({
+            data: {
+                description: 'Trust Drawdown: Earned Fees - Q1',
+                type: 'TRUST_DRAWDOWN',
+                status: 'POSTED',
+                tenantId,
+                clientId: client.id,
+                date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+            }
+        });
+
+        await prisma.ledgerEntry.createMany({
+            data: [
+                { transactionId: txDraw.id, accountId: dbAccounts['Trust Account (GHS)'].id, debit: 0, credit: 15000, description: 'Trust Funds Transfer Out' },
+                { transactionId: txDraw.id, accountId: dbAccounts['Operating Account (GHS)'].id, debit: 15000, credit: 0, description: 'Earned Fees Received' }
+            ]
+        });
+    }
+
+    // 3. Bank Transactions for Reconciliation
+    const bankTxs = [
+        { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), description: 'MTN Ghana Utility Payment', amount: -1250.50, type: 'DEBIT', status: 'PENDING' },
+        { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), description: 'Client Wire Transfer - INV-2024-001', amount: 8400.00, type: 'CREDIT', status: 'PENDING' },
+        { date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), description: 'Amazon Web Services Enclave Hosting', amount: -2450.00, type: 'DEBIT', status: 'PENDING' },
+        { date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), description: 'Office Rent - Landmark Towers', amount: -15000.00, type: 'DEBIT', status: 'MATCHED' }
+    ];
+
+    await prisma.bankTransaction.createMany({
+        data: bankTxs.map(tx => ({ ...tx, tenantId, externalId: `EXT-${Math.random().toString(36).substr(2, 9)}` }))
+    });
+
+    // 4. Invoices & Historical Performance
+    const matters = await prisma.matter.findMany({ where: { tenantId } });
+    for (const matter of matters) {
+        // Create PAID invoice
+        const invPaid = await prisma.invoice.create({
+            data: {
+                matterId: matter.id,
+                tenantId,
+                status: 'PAID',
+                totalAmount: 25000,
+                issuedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+                paidAt: new Date(Date.now() - 75 * 24 * 60 * 60 * 1000)
+            }
+        });
+
+        await prisma.invoiceLineItem.create({
+            data: {
+                invoiceId: invPaid.id,
+                amount: 25000,
+                description: 'Legacy Litigation Settlement Fee'
+            }
+        });
+
+        // Create OUTSTANDING invoice
+        const invIssued = await prisma.invoice.create({
+            data: {
+                matterId: matter.id,
+                tenantId,
+                status: 'ISSUED',
+                totalAmount: 12400,
+                issuedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+                dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000)
+            }
+        });
+
+        await prisma.invoiceLineItem.create({
+            data: {
+                invoiceId: invIssued.id,
+                amount: 12400,
+                description: 'Current Quarter Retainer'
+            }
+        });
+
+        // Add some time entries
+        await prisma.timeEntry.createMany({
+            data: [
+                { tenantId, userId: (await prisma.user.findFirst({ where: { tenantId } }))?.id || '', matterId: matter.id, description: 'Case Strategy Review', durationMinutes: 120, status: 'Approved', isBillable: true, startTime: new Date() },
+                { tenantId, userId: (await prisma.user.findFirst({ where: { tenantId } }))?.id || '', matterId: matter.id, description: 'Document Drafting', durationMinutes: 240, status: 'Draft', isBillable: true, startTime: new Date() }
+            ]
+        });
+    }
+
+    // 5. Operational Expenses (Detailed)
+    const expenses = [
+        { description: 'Global Office Rent', amount: 45000, category: 'Rent', type: 'OPERATIONAL', status: 'APPROVED' },
+        { description: 'Sovereign Cloud Infrastructure', amount: 12000, category: 'Technology', type: 'OPERATIONAL', status: 'APPROVED' },
+        { description: 'Employee Health Insurance', amount: 8500, category: 'HR', type: 'OPERATIONAL', status: 'APPROVED' }
+    ];
+
+    for (const exp of expenses) {
+        await prisma.expense.create({
+            data: { ...exp, tenantId, expenseDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000) }
+        });
+    }
+
+    // 6. Collaboration Messages
+    const admin = await prisma.user.findFirst({ where: { tenantId, roleString: 'TENANT_ADMIN' } });
+    if (admin && matters.length > 0) {
+        await prisma.collaborationMessage.createMany({
+            data: [
+                {
+                    text: 'Welcome to the Sovereign Enclave. All matter artifacts are now pinned to this region.',
+                    authorId: admin.id,
+                    matterId: matters[0].id,
+                    tenantId,
+                    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+                },
+                {
+                    text: 'I have uploaded the initial case strategy for your review.',
+                    authorId: admin.id,
+                    matterId: matters[0].id,
+                    tenantId,
+                    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+                }
+            ]
+        });
     }
 }
 

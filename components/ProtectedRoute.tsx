@@ -4,6 +4,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useSovereign } from '../contexts/SovereignContext';
 import { usePermissions } from '../hooks/usePermissions';
 
+import { UserRole } from '../types';
+
 interface ProtectedRouteProps {
     children: React.ReactNode;
     permission?: string;
@@ -29,12 +31,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, permission, t
     }
 
     // Gating Logic: Centralized Tab Check OR Manual Permission Check
+    const fallbackPath = session.role === UserRole.CLIENT ? '/client-portal' : '/dashboard';
+
     if (tab && !canAccessTab(tab)) {
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to={fallbackPath} replace />;
     }
 
     if (permission && !can(permission)) {
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to={fallbackPath} replace />;
     }
 
     return <>{children}</>;

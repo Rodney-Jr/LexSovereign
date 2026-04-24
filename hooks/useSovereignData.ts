@@ -7,6 +7,7 @@ export const useSovereignData = (isAuthenticated: boolean) => {
     const [documents, setDocuments] = useState<DocumentMetadata[]>(INITIAL_DOCS);
     const [matters, setMatters] = useState<Matter[]>(INITIAL_MATTERS);
     const [rules, setRules] = useState<RegulatoryRule[]>(INITIAL_RULES);
+    const [isLoaded, setIsLoaded] = useState(false);
     const [pinVersion, setPinVersion] = useState(0);
 
     useEffect(() => {
@@ -35,11 +36,15 @@ export const useSovereignData = (isAuthenticated: boolean) => {
                 if (Array.isArray(rulesData)) setRules(rulesData);
             } catch (e) {
                 console.error("[Data] Failed to fetch sovereign data", e);
+            } finally {
+                setIsLoaded(true);
             }
         };
 
         if (isAuthenticated) {
             fetchData();
+        } else {
+            setIsLoaded(true); // unauthenticated — no fetch needed
         }
     }, [isAuthenticated, pinVersion]);
 
@@ -94,6 +99,7 @@ export const useSovereignData = (isAuthenticated: boolean) => {
         documents,
         matters,
         rules,
+        isLoaded,
         addDocument,
         removeDocument,
         addMatter,

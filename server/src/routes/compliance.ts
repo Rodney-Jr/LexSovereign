@@ -11,7 +11,6 @@ const router = express.Router();
 router.post('/check', authenticateToken, async (req: any, res) => {
     try {
         const tenantId = req.user.tenantId;
-        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const { matterId, content } = req.body;
         const result = await ComplianceService.checkCompliance(tenantId, matterId, content);
         res.json(result);
@@ -26,7 +25,6 @@ router.post('/check', authenticateToken, async (req: any, res) => {
 router.get('/integrity', authenticateToken, async (req: any, res) => {
     try {
         const tenantId = req.user.tenantId;
-        if (!tenantId) return res.json({ status: 'No context', integrity: 0 });
         const result = await AuditService.verifyTenantIntegrity(tenantId);
         res.json(result);
     } catch (error: any) {
@@ -40,7 +38,6 @@ router.get('/integrity', authenticateToken, async (req: any, res) => {
 router.get('/logs', authenticateToken, async (req: any, res) => {
     try {
         const tenantId = req.user.tenantId;
-        if (!tenantId) return res.json([]);
         const logs = await AuditService.getLogs(tenantId);
         res.json(logs);
     } catch (error: any) {
@@ -54,7 +51,6 @@ router.get('/logs', authenticateToken, async (req: any, res) => {
 router.get('/stats', authenticateToken, async (req: any, res) => {
     try {
         const tenantId = req.user.tenantId;
-        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const stats = await ComplianceService.getComplianceStats(tenantId);
         res.json(stats);
     } catch (error: any) {
@@ -68,7 +64,6 @@ router.get('/stats', authenticateToken, async (req: any, res) => {
 router.get('/organization-risks', authenticateToken, async (req: any, res) => {
     try {
         const tenantId = req.user.tenantId;
-        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const risks = await ComplianceService.getTenantRisks(tenantId);
         res.json(risks);
     } catch (error: any) {
@@ -82,7 +77,6 @@ router.get('/organization-risks', authenticateToken, async (req: any, res) => {
 router.patch('/risks/:id', authenticateToken, async (req: any, res) => {
     try {
         const tenantId = req.user.tenantId;
-        if (!tenantId) return res.status(400).json({ error: 'Tenant context required' });
         const updated = await ComplianceService.updateRisk(tenantId, req.params.id, req.body);
         res.json(updated);
     } catch (error: any) {
