@@ -1,5 +1,7 @@
 import { prisma } from '../db';
 import { LegalRiskEngine } from '../engines/risk/riskEngine';
+import { AIServiceFactory } from './ai/AIServiceFactory';
+import { ChatParams } from './ai/types';
 
 export interface AIAnalysisResult {
     score: number;
@@ -47,8 +49,7 @@ export class AIService {
     }
 
     /**
-     * Generic LLM abstraction - In a production environment, this would call 
-     * a Sovereign hosted provider or a secure LLM gateway.
+     * Generic LLM abstraction - Now operationalized via AIServiceFactory
      */
     private static async callLLM(prompt: string, context: { tenantId: string, matterId: string | null }): Promise<string> {
         // 1. Credit Check
@@ -57,28 +58,52 @@ export class AIService {
             throw new Error("AI Credits Depleted. Please upgrade your enclave subscription to continue using generative features.");
         }
 
-        // 2. Simulate LLM delay and response
-        console.log(`[AIService] Processing prompt for Tenant ${context.tenantId}: ${prompt.substring(0, 50)}...`);
+        // 2. Resolve Provider
+        const tenant = await prisma.tenant.findUnique({ where: { id: context.tenantId } });
+        const provider = AIServiceFactory.getProvider(tenant);
 
-        // 3. Log Usage (Fixed cost per request for now: 1.0 credit)
-        await this.logUsage(context.tenantId, context.matterId, 1.0);
+        console.log(`[AIService] Routing to ${provider.name} for Tenant ${context.tenantId}...`);
 
-        return JSON.stringify({
-            score: 0.75,
-            summary: "Simulated AI insight based on document analysis.",
-            clauses: [{ type: "Indemnity", risk: "Medium", suggestion: "Broaden coverage." }],
-            confidence: 0.88
-        });
+        // 3. Execute Chat (Operational)
+        const chatParams: ChatParams = {
+            input: prompt,
+            matterId: context.matterId,
+            documents: [], // Context documents could be passed here if available
+            usePrivateModel: true,
+            killSwitchActive: false,
+            useGlobalSearch: true,
+            jurisdiction: tenant?.primaryRegion || "GH"
+        };
+
+        const result = await provider.chat(chatParams);
+
+        // 4. Log Usage (Real usage tracking)
+        const cost = (result.usage?.totalTokens || 1000) / 1000; // Example: 1 credit per 1k tokens
+        await this.logUsage(context.tenantId, context.matterId, cost);
+
+        return result.text;
     }
 
     /**
-     * Analyze Contract Risk (CLM)
+     * Analyze Contract Risk (CLM) - Operationalized
      */
     static async analyzeContractRisk(tenantId: string, matterId: string, content: string): Promise<AIAnalysisResult> {
-        const prompt = `Analyze the following contract for liability, indemnity, and termination risks. Return a JSON structure with score (0-1), summary, and key identified clauses. Content: ${content.substring(0, 2000)}`;
+        const prompt = `Analyze the following contract for liability, indemnity, and termination risks. Return a JSON structure ONLY with score (0-1), summary, and key identified clauses (array of {type, risk, suggestion}). Content: ${content.substring(0, 4000)}`;
 
         const llmResponse = await this.callLLM(prompt, { tenantId, matterId });
-        const result = JSON.parse(llmResponse);
+        
+        let result: AIAnalysisResult;
+        try {
+            result = JSON.parse(llmResponse);
+        } catch (e) {
+            console.error("[AIService] Failed to parse LLM response as JSON:", llmResponse);
+            result = {
+                score: 0.5,
+                summary: llmResponse,
+                clauses: [],
+                confidence: 0.5
+            };
+        }
 
         // Persist as AIRiskAnalysis
         await prisma.aIRiskAnalysis.create({
@@ -97,28 +122,27 @@ export class AIService {
     }
 
     /**
-     * Summarize Legal Case (Litigation)
+     * Summarize Legal Case (Litigation) - Operationalized
      */
     static async summarizeCase(tenantId: string, matterId: string, documents: string[]): Promise<string> {
-        const prompt = `Summarize the following legal case based on ${documents?.length || 0} documents. Identify the core dispute, key parties, and pending procedural hurdles.`;
+        const prompt = `Summarize the following legal case based on the provided document content. Identify the core dispute, key parties, and pending procedural hurdles. Keep it concise and professional. Content: ${documents.join('\n').substring(0, 8000)}`;
 
         const summary = await this.callLLM(prompt, { tenantId, matterId });
-        const parsed = JSON.parse(summary);
 
         await prisma.activityEntry.create({
             data: {
                 matterId,
                 tenantId,
                 type: 'AI_INSIGHT',
-                details: `Auto-summary generated: ${parsed.summary}`
+                details: `Auto-summary generated: ${summary.substring(0, 500)}...`
             }
         });
 
-        return parsed.summary;
+        return summary;
     }
 
     /**
-     * Predict Deadline Risk
+     * Predict Deadline Risk - Operationalized
      */
     static async predictDeadlineRisk(tenantId: string, deadlineId: string): Promise<{ riskLevel: string, reason: string }> {
         const deadlineElement = await prisma.deadline.findUnique({
@@ -128,11 +152,17 @@ export class AIService {
 
         if (!deadlineElement) throw new Error("Deadline not found");
 
-        const prompt = `Predict the risk of missing this deadline: ${deadlineElement.title} on ${deadlineElement.dueDate}. Context: ${deadlineElement.matter.name}.`;
+        const prompt = `Assess the risk of missing this legal deadline. Return a JSON object with 'riskLevel' (High/Medium/Low) and 'reason'. 
+        Deadline: ${deadlineElement.title} on ${deadlineElement.dueDate}. 
+        Matter Context: ${deadlineElement.matter.name} (${deadlineElement.matter.status}).`;
 
-        await this.callLLM(prompt, { tenantId, matterId: deadlineElement.matterId });
-
-        return { riskLevel: 'Low', reason: 'Historical performance is stable.' };
+        const response = await this.callLLM(prompt, { tenantId, matterId: deadlineElement.matterId });
+        
+        try {
+            return JSON.parse(response);
+        } catch {
+            return { riskLevel: 'Medium', reason: response };
+        }
     }
 
     /**
@@ -277,9 +307,11 @@ export class AIService {
              };
         }
 
+        // 6. Generic Generative Fallback - Operationalized
+        const response = await this.callLLM(command, { tenantId, matterId: null });
         return { 
             action: "CHAT", 
-            message: "I've analyzed your request. I recommend adding a standardized Governing Law provision to ensure enforceability in Ghana." 
+            message: response 
         };
     }
 

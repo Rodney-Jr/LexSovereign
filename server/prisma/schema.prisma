@@ -11,7 +11,6 @@ datasource db {
 model User {
   id                    String                 @id @default(uuid())
   email                 String                 @unique
-  passwordHash          String?
   name                  String
   roleString            String                 @default("INTERNAL_COUNSEL") @map("role")
   region                String                 @default("GH_ACC_1")
@@ -29,8 +28,8 @@ model User {
   mfaEnabled            Boolean                @default(false)
   mfaBackupCodes        Json?                  @default("[]")
   departmentId          String?
+  passwordHash          String?
   clientId              String?
-  passkeys              PasskeyCredential[]
   aiRiskAnalyses        AIRiskAnalysis[]
   activityEntries       ActivityEntry[]
   approvals             Approval[]
@@ -41,32 +40,32 @@ model User {
   firmAssets            FirmAsset[]
   leaveRecords          LeaveRecord[]
   assignedMatters       Matter[]
+  matterTeams           MatterTeamMember[]
+  passkeys              PasskeyCredential[]
   authoredAppraisals    PerformanceAppraisal[] @relation("Reviewer")
   appraisals            PerformanceAppraisal[] @relation("AppraisalSubject")
   salaryRecords         SalaryRecord[]
   tasks                 Task[]
   timeEntries           TimeEntry[]
-  matterTeams           MatterTeamMember[]
-  department            Department?            @relation(fields: [departmentId], references: [id])
   client                Client?                @relation(fields: [clientId], references: [id])
+  department            Department?            @relation(fields: [departmentId], references: [id])
   role                  Role?                  @relation(fields: [roleId], references: [id])
   tenant                Tenant?                @relation(fields: [tenantId], references: [id])
 }
 
 model PasskeyCredential {
-  id              String   @id @default(uuid())
-  userId          String
-  webauthnUserId  String
-  credentialID    Bytes    @unique
-  publicKey       Bytes
-  counter         BigInt   @default(0)
-  transports      Json?
-  deviceType      String   @default("singleDevice")
-  backedUp        Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  lastUsedAt      DateTime @default(now())
-  
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(uuid())
+  userId         String
+  webauthnUserId String
+  credentialID   Bytes    @unique
+  publicKey      Bytes
+  counter        BigInt   @default(0)
+  transports     Json?
+  deviceType     String   @default("singleDevice")
+  backedUp       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  lastUsedAt     DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Role {
@@ -140,6 +139,8 @@ model Tenant {
   candidates            Candidate[]
   chatConversations     ChatConversation[]     @relation("TenantChatConversations")
   chatbotConfig         ChatbotConfig?
+  clauses               Clause[]
+  clients               Client[]
   cloudIntegrations     CloudIntegration[]
   departments           Department[]
   documentTemplates     DocumentTemplate[]
@@ -149,7 +150,6 @@ model Tenant {
   firmAssets            FirmAsset[]
   invitations           Invitation[]
   leads                 Lead[]
-  clients               Client[]
   leaveRecords          LeaveRecord[]
   ledgerTransactions    LedgerTransaction[]
   matters               Matter[]
@@ -163,7 +163,6 @@ model Tenant {
   syncLogs              SyncLog[]
   users                 User[]
   workflows             Workflow[]
-  clauses               Clause[]
 }
 
 model ChatbotConfig {
@@ -183,7 +182,6 @@ model ChatbotConfig {
 model Matter {
   id                    String                 @id @default(uuid())
   name                  String
-  clientId              String?
   type                  String
   status                String                 @default("OPEN")
   riskLevel             String                 @default("LOW")
@@ -197,6 +195,7 @@ model Matter {
   departmentId          String?
   matterTypeId          String?
   workflowStateId       String?
+  clientId              String?
   aiRiskAnalyses        AIRiskAnalysis[]
   aiUsages              AIUsage[]
   activityTimeline      ActivityEntry[]
@@ -211,47 +210,46 @@ model Matter {
   evidenceLinks         EvidenceLink[]
   hearings              Hearing[]
   invoices              Invoice[]
+  clientRef             Client?                @relation(fields: [clientId], references: [id])
   department            Department?            @relation(fields: [departmentId], references: [id])
   internalCounsel       User?                  @relation(fields: [internalCounselId], references: [id])
-  clientRef             Client?                @relation(fields: [clientId], references: [id])
   matterType            MatterType?            @relation(fields: [matterTypeId], references: [id])
   tenant                Tenant                 @relation(fields: [tenantId], references: [id])
   workflowState         WorkflowState?         @relation(fields: [workflowStateId], references: [id])
+  teamMembers           MatterTeamMember[]
   risks                 PredictiveRisk[]
   tasks                 Task[]
   timeEntries           TimeEntry[]
-  teamMembers           MatterTeamMember[]
 }
 
 model Client {
-  id                  String               @id @default(uuid())
+  id                  String              @id @default(uuid())
   name                String
   industry            String?
   contactEmail        String?
   contactPhone        String?
   billingAddress      String?
   taxId               String?
-  type                String               @default("CORPORATE")
+  type                String              @default("CORPORATE")
   tenantId            String
-  trustAlertThreshold Float?               // Alert when trust balance drops below this
-  tenant              Tenant               @relation(fields: [tenantId], references: [id])
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  attributes          Json?               @default("{}")
+  trustAlertThreshold Float?
+  tenant              Tenant              @relation(fields: [tenantId], references: [id])
+  ledgerTransactions  LedgerTransaction[]
   matters             Matter[]
   users               User[]
-  ledgerTransactions  LedgerTransaction[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  attributes          Json?                @default("{}")
 }
 
 model MatterTeamMember {
-  id        String   @id @default(uuid())
-  matterId  String
-  userId    String
-  role      String   @default("COLLABORATOR") // e.g. LEAD_COUNSEL, PARALEGAL, REVIEWER
-  addedAt   DateTime @default(now())
-
-  matter    Matter   @relation(fields: [matterId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String   @id @default(uuid())
+  matterId String
+  userId   String
+  role     String   @default("COLLABORATOR")
+  addedAt  DateTime @default(now())
+  matter   Matter   @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([matterId, userId])
 }
@@ -547,8 +545,8 @@ model AuditLog {
   ipAddress    String?
   resourceId   String?
   matterId     String?
-  metadata     Json?    @default("{}")
   tenantId     String?
+  metadata     Json?    @default("{}")
   hash         String   @default("UNSIGN")
   previousHash String?
   matter       Matter?  @relation(fields: [matterId], references: [id])
@@ -570,12 +568,12 @@ model Invitation {
   id        String   @id @default(uuid())
   token     String   @unique
   email     String
-  name      String?
   roleName  String
   tenantId  String
   isUsed    Boolean  @default(false)
   expiresAt DateTime
   createdAt DateTime @default(now())
+  name      String?
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
 }
 
@@ -922,15 +920,15 @@ model LedgerTransaction {
   description String
   reference   String?
   status      String        @default("POSTED")
-  type        String        @default("GENERAL") // GENERAL | TRUST_DEPOSIT | TRUST_DRAWDOWN
   tenantId    String
-  clientId    String?       // For trust transactions: which client's funds
-  matterId    String?       // For trust transactions: which matter these funds are for
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  clientId    String?
+  matterId    String?
+  type        String        @default("GENERAL")
   entries     LedgerEntry[]
-  tenant      Tenant        @relation(fields: [tenantId], references: [id])
   client      Client?       @relation(fields: [clientId], references: [id])
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
 }
 
 model LedgerEntry {
